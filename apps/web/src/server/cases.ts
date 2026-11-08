@@ -10,6 +10,7 @@ import { paypal } from './paypal';
 import { dbReservations } from './gate-ports';
 import { audit } from './audit';
 import { writeCaseNarrative } from './ai';
+import { extractTokens } from '@sightline/agent';
 import { isHeld } from './after-check';
 
 export type CaseReasonCode = 'wrong_colour' | 'wrong_size' | 'wrong_item' | 'damaged' | 'not_received';
@@ -31,6 +32,18 @@ function templateNarrative(title: string, v: Verdict | null, amount: string): { 
     summary: `The ${title} that arrived does not match what you ordered. ${what} I'll ask Demo Store for your ${amount} back.`,
     seller: `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${what} The buyer checked the parcel with photos and a size-tag reading, and the evidence pack is attached with its signature. Please refund ${amount}; the buyer can return the item.`,
   };
+}
+
+function narrativeGrounded(text: string, f: { amountCents: number; verdict: Verdict; snapshot: { attributes?: Record<string, string | undefined> } | undefined }): boolean {
+  const allowed = new Set<string>();
+  allowed.add(`USD ${f.amountCents}`);
+  for (const v of [f.snapshot?.attributes?.colour, f.snapshot?.attributes?.size, ...f.verdict.reasons.flatMap((r) => [r.expected, r.observed])])
+    if (v) for (const t of extractTokens(v)) allowed.add(`${t.kind}:${t.value}`);
+  for (const t of extractTokens(text)) {
+    if (t.kind === 'money' && !allowed.has(t.value)) return false;
+    if ((t.kind === 'size' || t.kind === 'colour' || t.kind === 'date') && !allowed.has(`${t.kind}:${t.value}`)) return false;
+  }
+  return true;
 }
 
 export interface MoneyBackPreview {
@@ -61,10 +74,16 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
   const [rb] = await db().select().from(tables.readbacks).where(eq(tables.readbacks.id, o.readbackId)).limit(1);
   const [ver] = await db().select().from(tables.verifications).where(eq(tables.verifications.orderId, orderId)).orderBy(desc(tables.verifications.createdAt)).limit(1);
   const verdict = (ver?.verdict ?? null) as Verdict | null;
+  if (!verdict || verdict.kind === 'match')
+    throw new Error('Money back needs a check that says the item does not match, or is not sure. Check the parcel first.');
   const tpl = templateNarrative(o.title, verdict, amount);
   let narrative = tpl;
   const ai = await writeCaseNarrative({ item: o.title, amount, findings: verdict?.reasons, merchant: 'Demo Store' }).catch(() => null);
-  if (ai) narrative = { summary: ai.summary_for_buyer, seller: ai.message_to_seller };
+  // The model's text may only use facts we hold: every amount, size and colour it mentions must
+  // appear in the facts; otherwise the template text is used instead.
+  if (ai && narrativeGrounded(`${ai.summary_for_buyer} ${ai.message_to_seller}`, { amountCents: o.amountCents, verdict, snapshot: snapRow?.body as never })) {
+    narrative = { summary: ai.summary_for_buyer, seller: ai.message_to_seller };
+  }
 
   const photos = [];
   for (const p of ver?.photos ?? []) {

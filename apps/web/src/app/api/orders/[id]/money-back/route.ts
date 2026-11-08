@@ -13,6 +13,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json(await prepareMoneyBack(user.id, id));
   } catch (e) {
     if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    if (e instanceof Error && e.message.startsWith('Money back needs')) return NextResponse.json({ error: e.message }, { status: 409 });
     console.error('[money-back]', e);
     return NextResponse.json({ error: 'I could not build the evidence just now. Nothing was sent.' }, { status: 500 });
   }

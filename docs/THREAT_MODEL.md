@@ -262,21 +262,24 @@ Files: `apps/mcp/src/*`.
 | Face or background content in the photo | **Open.** No detection or blurring. The camera guidance asks for the item and the tag only. |
 | Listing images fetched from third parties | Sent on to the vision service, not stored by the web app. |
 
+## Fixed since the first draft of this model
+
+- **Merchant console scope.** Each visitor plays both the shopper and the Demo Store; merchant pages and every `/api/merchant/*` action are scoped to the session's own demo shopper (`requireMerchantScope`, `assertOrderInScope`, `assertCaseInScope` in `apps/web/src/server/merchant.ts`).
+- **Rate limits.** Per-IP budgets on the judge run, demo start, check, money back, cases, studio, turn and merchant routes (`apps/web/src/proxy.ts`), plus same-origin enforcement for state-changing API calls.
+- **Unknown payment outcomes.** An unanswered saved-PayPal order keeps its budget hold, blocks repeat purchases of the same item with no time limit, and is reconciled by re-sending the same `PayPal-Request-Id` when the buyer returns (`reconcileUnknownOrders` in `apps/web/src/server/payments.ts`). Measured in `evals/duplicates`.
+- **Shared demo identities.** Every "Try it" creates a fresh, isolated demo shopper (`ensurePersona` in `apps/web/src/server/personas.ts`).
+- **SSRF on listing images.** Only https, public addresses (DNS-resolved, private and link-local ranges refused), no redirects, image content types and an 8 MB cap (`isPublicHttpsUrl` in `apps/web/src/server/vision.ts`).
+- **Money back without a check.** `prepareMoneyBack` refuses unless the latest check says mismatch or not sure.
+- **Case narrative.** Model text is used only if every amount, size, colour and date it mentions is in the facts; otherwise the template text is sent (`narrativeGrounded` in `apps/web/src/server/cases.ts`).
+- **Helper links** can be cancelled from the order page (`/api/orders/[id]/helper/revoke`).
+
 ## Known gaps, ranked by risk
 
-Ranked by (likelihood on the current public demo) x (harm). Items 1 to 3 are the ones I would fix before any real money.
-
-1. **Unauthenticated merchant console and API.** Anyone can ship, deliver, refund or void through `/api/merchant/*`. Fix: login and role, or unmount from the public build. (Sections 2, 5.)
-2. **No rate limits or spend caps anywhere, and unauthenticated session minting.** Model, PayPal-sandbox and CPU costs can be driven by anyone; `/api/judge/run` runs a whole lifecycle for any caller. Fix: edge and per-session limits, daily model budget, auth on the judge run. (Section 12.)
-3. **Unknown payment outcomes are never reconciled.** A lost PayPal answer leaves a `confirmed` order with no PayPal id; after 10 minutes a new readback can create a second order; webhooks cannot match it. Fix: look up by `invoice_id` or replay with the stored request id before allowing a new purchase of the same cart. (Sections 2, 4.2.)
-4. **Shared demo identities and public receipt and evidence pages.** All visitors are Maya or Raj, so per-user checks do not separate people, and receipts (user id, utterance) and evidence pages are readable by id without login. Fix: real sign-in and owner-only or expiring links. (Sections 2, 10.)
-5. **SSRF on listing image fetches in the web app.** Plain `fetch` of catalog-supplied URLs with no address check; the guarded fetcher exists in the vision service and MCP but is not used here. (Section 9.)
-6. **Buyer controls the evidence and the server does not require a mismatch to void.** A dishonest buyer can void a held payment with unrelated photos or with none. Fix: require a stored `mismatch` verdict (and a stage check) in `sendMoneyBack`, add a seller review window before release, and treat photo provenance as a product problem. (Sections 5, 7.)
-7. **Case narrative is not grounding-checked, and is signed.** Model-written claims go to the seller inside a signed pack. Fix: run `checkGrounding` or fill a template. (Sections 6.4, 10.)
-8. **Webhook handling gaps.** Verification calls PayPal on every unauthenticated POST; a failed handler is never retried (no replay tool exists); no transmission-time freshness check; no full status transition table. (Section 6.)
-9. **Helper link cannot be revoked** although the page promises it, and has no rate limit. (Section 8.)
-10. **Single signing secret, no rotation, no audit-chain verification or anchor.** One leaked `RECEIPT_SIGNING_KEY` forges everything; the chain is written but never verified. (Section 10.)
-11. **Held payments are not followed up.** Failed capture after a match is not retried; authorization expiry is not watched; `sendMoneyBack` can move a voided order to `case_open`. (Section 5.)
-12. **Photos and conversations have no retention or deletion path**, are unencrypted at application level and survive user deletion. (Section 13.)
-13. **Header and CSP hardening, CSRF token, DNS-rebinding gaps in the two guarded fetchers, unauthenticated vision service, pre-commit secret hook missing.** (Sections 2.2, 7, 9, 13.)
-14. **Background speech can satisfy key 1 text matching.** Measured as a negative result; reduced by push-to-talk and the second key, not removed. (Section 3.)
+1. **Public receipt and evidence pages by id.** Ids are unguessable, but anyone with a link can read them (by design for judges). Fix for production: owner-only or expiring links.
+2. **Webhook handling gaps.** Verification calls PayPal on every unauthenticated POST; a failed handler is not retried automatically; no transmission-time freshness check.
+3. **Single signing secret, no rotation, no audit-chain anchor.** One leaked `RECEIPT_SIGNING_KEY` forges receipts; the chain is written and checkable but not anchored externally.
+4. **Held payments are not followed up on a timer.** A failed capture after a match is not retried automatically; authorization expiry is not watched.
+5. **A dishonest buyer controls the photos.** The server needs a non-matching verdict before money back, but the photos come from the buyer; production needs a seller review window and photo provenance.
+6. **Photos and conversations have no retention or deletion path** yet.
+7. **CSP headers, unauthenticated internal vision service** (private network only on Render), **no pre-commit secret hook** (gitleaks runs in CI).
+8. **Background speech can satisfy key 1 text matching.** Measured as a negative result; reduced by push-to-talk and the second key, not removed.

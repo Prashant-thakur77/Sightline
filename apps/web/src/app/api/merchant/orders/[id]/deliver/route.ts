@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { assertSameOrigin, markDelivered, merchantFailure } from '@/server/merchant';
+import { assertOrderInScope, assertSameOrigin, markDelivered, merchantFailure, requireMerchantScope } from '@/server/merchant';
 
 export const runtime = 'nodejs';
 
@@ -7,7 +7,9 @@ export const runtime = 'nodejs';
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     assertSameOrigin(req);
+    const scope = await requireMerchantScope();
     const { id } = await ctx.params;
+    await assertOrderInScope(id, scope);
     return NextResponse.json(await markDelivered(id));
   } catch (e) {
     const f = merchantFailure(e, 'deliver');

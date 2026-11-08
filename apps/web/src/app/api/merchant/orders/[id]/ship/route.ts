@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import {
   assertSameOrigin,
+  assertOrderInScope,
+  requireMerchantScope,
   merchantFailure,
   shipOrder,
   SHIP_CHOICES,
@@ -14,7 +16,9 @@ export const runtime = 'nodejs';
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     assertSameOrigin(req);
+    const scope = await requireMerchantScope();
     const { id } = await ctx.params;
+    await assertOrderInScope(id, scope);
     const body = (await req.json().catch(() => ({}))) as { variant?: string };
     if (!SHIP_CHOICES.includes(body.variant as ShipChoice))
       throw new MerchantError(400, 'Choose what to ship.');

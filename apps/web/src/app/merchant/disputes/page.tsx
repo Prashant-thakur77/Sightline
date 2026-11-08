@@ -1,3 +1,4 @@
+import { currentUser } from '@/server/session';
 import { CaseDesk } from '@/components/merchant/case-desk';
 import { listMerchantCases, paypalConfigured } from '@/server/merchant';
 
@@ -5,7 +6,8 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Cases' };
 
 export default async function MerchantCases() {
-  const cases = await listMerchantCases();
+  const user = await currentUser();
+  const cases = await listMerchantCases(user?.id ?? '__none__');
   const open = cases.filter((c) => c.open);
   const overdue = open.filter((c) => c.overdue).length;
   const paypalReady = paypalConfigured();

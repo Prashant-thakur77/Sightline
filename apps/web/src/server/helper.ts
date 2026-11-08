@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { newId, type ProductSnapshot, type Verdict } from '@sightline/core';
 import { db, ENV, appUrl } from './runtime';
@@ -83,4 +83,22 @@ export async function answerHelper(token: string, answer: 'matches' | 'different
   await notify(r.userId, 'helper', `Your helper ${words}.${note ? ` They said: “${note.slice(0, 200)}”.` : ''} Nothing about your payment has changed; you decide what happens next.`, `/app/orders/${r.orderId}`);
   await audit({ userId: r.userId, actor: 'helper', action: 'helper.answered', subjectId: r.orderId, payload: { answer } });
   return { already: false };
+}
+
+/** Cancel every open helper link for this order. */
+export async function revokeHelperLinks(userId: string, orderId: string): Promise<number> {
+  const [o] = await db().select({ id: tables.orders.id }).from(tables.orders).where(and(eq(tables.orders.id, orderId), eq(tables.orders.userId, userId))).limit(1);
+  if (!o) throw new Error('Order not found');
+  const vers = await db().select({ id: tables.verifications.id }).from(tables.verifications).where(eq(tables.verifications.orderId, orderId));
+  let n = 0;
+  for (const v of vers) {
+    const res = await db()
+      .update(tables.helperRequests)
+      .set({ revokedAt: new Date().toISOString() })
+      .where(and(eq(tables.helperRequests.verificationId, v.id), isNull(tables.helperRequests.revokedAt)))
+      .returning({ id: tables.helperRequests.id });
+    n += res.length;
+  }
+  await audit({ userId, actor: 'user', action: 'helper.revoked', subjectId: orderId, payload: { links: n } });
+  return n;
 }

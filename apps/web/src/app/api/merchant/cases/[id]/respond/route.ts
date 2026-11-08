@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import {
   assertSameOrigin,
+  assertCaseInScope,
+  requireMerchantScope,
   CASE_ACTIONS,
   MerchantError,
   merchantFailure,
@@ -15,7 +17,9 @@ export const maxDuration = 60;
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     assertSameOrigin(req);
+    const scope = await requireMerchantScope();
     const { id } = await ctx.params;
+    await assertCaseInScope(id, scope);
     const body = (await req.json().catch(() => ({}))) as { action?: string; confirm?: boolean };
     if (!CASE_ACTIONS.includes(body.action as CaseAction)) throw new MerchantError(400, 'Choose a reply.');
     if (body.confirm !== true) throw new MerchantError(400, 'Confirm the reply first. Nothing was sent.');

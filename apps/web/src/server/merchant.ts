@@ -1,6 +1,6 @@
 import 'server-only';
 import { randomInt } from 'node:crypto';
-import { asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { asc, desc, eq, inArray, sql, and } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import {
   formatMoney,
@@ -19,6 +19,7 @@ import {
   type OfferType,
   type PortableAddress,
 } from '@sightline/paypal';
+import { currentUser } from './session';
 import { db, INTEGRATIONS } from './runtime';
 import { paypal, PayPalNotConfiguredError } from './paypal';
 import { audit } from './audit';
@@ -234,8 +235,13 @@ function blockedReason(o: OrderRow, s: ShipmentRow | null): string | null {
   return null;
 }
 
-export async function listMerchantOrders(): Promise<MerchantOrderRow[]> {
-  const orders = await db().select().from(tables.orders).orderBy(desc(tables.orders.createdAt)).limit(200);
+export async function listMerchantOrders(scopeUserId?: string): Promise<MerchantOrderRow[]> {
+  const orders = await db()
+    .select()
+    .from(tables.orders)
+    .where(scopeUserId ? eq(tables.orders.userId, scopeUserId) : undefined)
+    .orderBy(desc(tables.orders.createdAt))
+    .limit(200);
   if (orders.length === 0) return [];
   const ids = orders.map((o) => o.id);
   const [users, snaps, ships, vers, kases] = await Promise.all([
@@ -672,11 +678,15 @@ function disputeOptions(d: Dispute) {
   };
 }
 
-export async function listMerchantCases(): Promise<MerchantCase[]> {
+export async function listMerchantCases(scopeUserId?: string): Promise<MerchantCase[]> {
   const rows = await db()
     .select()
     .from(tables.cases)
-    .where(sql`${tables.cases.stage} not in ('draft', 'evidence_built')`)
+    .where(
+      scopeUserId
+        ? and(sql`${tables.cases.stage} not in ('draft', 'evidence_built')`, eq(tables.cases.userId, scopeUserId))
+        : sql`${tables.cases.stage} not in ('draft', 'evidence_built')`,
+    )
     .orderBy(sql`${tables.cases.dueAt} asc nulls last`, asc(tables.cases.createdAt));
   if (rows.length === 0) return [];
   const orderIds = [...new Set(rows.map((c) => c.orderId))];
@@ -1169,4 +1179,26 @@ export function merchantFailure(e: unknown, tag: string): { status: number; body
       message: 'Something went wrong on our side. Nothing changed. Try again in a minute.',
     },
   };
+}
+
+
+/**
+ * Each visitor plays both sides of the demo: their own demo shopper and the Demo Store. Merchant
+ * pages and actions are scoped to the shopper in this browser session, so one visitor can never
+ * ship, refund or void another visitor's order.
+ */
+export async function requireMerchantScope(): Promise<string> {
+  const user = await currentUser();
+  if (!user) throw new MerchantError(401, 'Start a demo first. The Demo Store console shows the orders from your own demo shopper.');
+  return user.id;
+}
+
+export async function assertOrderInScope(orderId: string, userId: string): Promise<void> {
+  const [o] = await db().select({ userId: tables.orders.userId }).from(tables.orders).where(eq(tables.orders.id, orderId)).limit(1);
+  if (!o || o.userId !== userId) throw new MerchantError(404, 'That order is not one of your demo orders.');
+}
+
+export async function assertCaseInScope(caseId: string, userId: string): Promise<void> {
+  const [c] = await db().select({ userId: tables.cases.userId }).from(tables.cases).where(eq(tables.cases.id, caseId)).limit(1);
+  if (!c || c.userId !== userId) throw new MerchantError(404, 'That case is not one of your demo cases.');
 }

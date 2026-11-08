@@ -1,3 +1,4 @@
+import { currentUser } from '@/server/session';
 import { OrdersConsole } from '@/components/merchant/orders-console';
 import { listMerchantOrders, paypalConfigured } from '@/server/merchant';
 
@@ -7,7 +8,8 @@ export const metadata = { title: 'Orders' };
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 export default async function MerchantOrders() {
-  const rows = await listMerchantOrders();
+  const user = await currentUser();
+  const rows = await listMerchantOrders(user?.id ?? '__none__');
   const paypalReady = paypalConfigured();
   const toShip = rows.filter((r) => r.can.ship).length;
   const inTransit = rows.filter((r) => r.shipment.state === 'in_transit').length;

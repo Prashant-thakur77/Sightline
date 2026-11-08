@@ -41,6 +41,19 @@ export function AskHelper({ orderId, helperName }: { orderId: string; helperName
             Link for {helperName}
           </label>
           <input id="helper-link" type="text" readOnly value={link} onFocus={(e) => e.currentTarget.select()} />
+          <button
+            type="button"
+            className="btn"
+            onClick={async () => {
+              const res = await fetch(`/api/orders/${orderId}/helper/revoke`, { method: 'POST' });
+              if (res.ok) {
+                setLink(null);
+                announce(`The link for ${helperName} is cancelled. It no longer opens.`, { source: 'helper' });
+              }
+            }}
+          >
+            Cancel this link
+          </button>
         </div>
       )}
     </div>
