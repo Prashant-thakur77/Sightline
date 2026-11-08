@@ -1,0 +1,16 @@
+{
+  "name": "@sightline/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "shots": "node shots.mjs",
+    "typecheck": "echo ok",
+    "lint": "echo ok"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.0"
+  }
+}

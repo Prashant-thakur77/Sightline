@@ -1,5 +1,3 @@
-import { randomBytes } from 'node:crypto';
-
 const ALPHABET = '0123456789abcdefghjkmnpqrstvwxyz';
 
 /** Sortable, URL-safe ids: prefix + 10 chars of time + 12 chars of randomness. */
@@ -10,7 +8,8 @@ export function newId(prefix: string): string {
     time = ALPHABET[t % 32] + time;
     t = Math.floor(t / 32);
   }
-  const rnd = randomBytes(12);
+  const rnd = new Uint8Array(12);
+  globalThis.crypto.getRandomValues(rnd);
   let r = '';
   for (const b of rnd) r += ALPHABET[b % 32];
   return `${prefix}_${time}${r}`;

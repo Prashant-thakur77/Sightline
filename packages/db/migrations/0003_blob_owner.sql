@@ -1,0 +1,1 @@
+ALTER TABLE "blobs" ADD COLUMN "owner_id" text;

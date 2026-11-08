@@ -1,0 +1,82 @@
+/** The contract between the conversation UI and POST /api/turn. */
+
+export type Politeness = 'polite' | 'assertive';
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'agent';
+  text: string;
+}
+
+export interface OptionItem {
+  index: number;
+  productId: string;
+  title: string;
+  brand?: string;
+  colour?: string;
+  size?: string;
+  price: string;
+  returns: string;
+  available: boolean;
+  imageUrl?: string;
+  imageAlt?: string;
+  why: string[];
+}
+
+export interface Fact {
+  label: string;
+  value: string;
+  /** Where the fact came from: "listing", or a quoted review. */
+  source?: string;
+}
+
+export type Card =
+  | { kind: 'options'; heading: string; items: OptionItem[] }
+  | { kind: 'details'; heading: string; item: OptionItem; facts: Fact[]; quotes: { text: string; source: string }[] }
+  | { kind: 'compare'; heading: string; columns: string[]; rows: { label: string; values: string[] }[] }
+  | {
+      kind: 'readback';
+      heading: string;
+      readbackId: string;
+      fields: { key: string; label: string; value: string }[];
+      text: string;
+      total: string;
+      payWith: string;
+      needsSecondPress: boolean;
+      held: boolean;
+    }
+  | { kind: 'paypal'; heading: string; readbackId: string; total: string; clientId: string; orderIntent: 'CAPTURE' | 'AUTHORIZE' }
+  | {
+      kind: 'paid';
+      heading: string;
+      orderId: string;
+      amount: string;
+      merchant: string;
+      receiptId?: string;
+      payAfterCheck: boolean;
+    }
+  | { kind: 'refusal'; heading: string; reason: string; code: string }
+  | { kind: 'help'; heading: string; groups: { title: string; phrases: string[] }[] }
+  | { kind: 'link'; heading: string; text: string; href: string; label: string };
+
+export interface TurnResponse {
+  messages: ChatMessage[];
+  say: string;
+  politeness: Politeness;
+  cue?: 'done' | 'attention' | 'error' | 'paid' | 'thinking';
+  card: Card | null;
+  suggestions: { label: string; utterance: string }[];
+  phase: string;
+}
+
+export type TurnRequest =
+  | { text: string; source: 'voice' | 'keyboard' }
+  | { action: 'choose'; index: number }
+  | { action: 'details'; index: number }
+  | { action: 'buy'; index: number }
+  | { action: 'confirm-button'; readbackId: string }
+  | { action: 'hold'; readbackId: string }
+  | { action: 'cancel' }
+  | { action: 'paypal-approved'; readbackId: string; paypalOrderId: string }
+  | { action: 'repeat' }
+  | { action: 'start' };

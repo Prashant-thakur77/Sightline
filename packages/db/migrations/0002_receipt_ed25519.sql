@@ -1,0 +1,1 @@
+ALTER TABLE "receipts" ADD COLUMN "ed25519" text;

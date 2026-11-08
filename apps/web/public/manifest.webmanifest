@@ -1,0 +1,9 @@
+{
+  "name": "Sightline",
+  "short_name": "Sightline",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#fbfbf8",
+  "theme_color": "#0b0b0c",
+  "icons": []
+}
