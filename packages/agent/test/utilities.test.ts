@@ -128,7 +128,7 @@ describe('copy bank', () => {
 
   it('includes the reference lines', () => {
     expect(en.general.listening).toBe('Listening.');
-    expect(en.general.notHeard).toBe("I didn't catch that. Hold space and try again, or type it.");
+    expect(en.general.notHeard).toBe("I didn't catch that. Press Talk and try again, or type it.");
     expect(en.payment.paid({ cents: 3672, currency: 'USD' }, 'Demo Store')).toBe(
       "Paid. $36.72 to Demo Store. Your receipt is saved. I'll tell you when it ships.",
     );

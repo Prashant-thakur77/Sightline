@@ -60,10 +60,10 @@ function capitaliseFirst(s: string): string {
 export const en = {
   general: {
     listening: 'Listening.',
-    notHeard: "I didn't catch that. Hold space and try again, or type it.",
+    notHeard: "I didn't catch that. Press Talk and try again, or type it.",
     thinking: 'One moment.',
     stopped: 'Stopped.',
-    welcome: (): string => `Welcome to ${PRODUCT_NAME}. Hold space to talk, or type. Say 'help' any time.`,
+    welcome: (): string => `Welcome to ${PRODUCT_NAME}. Press Talk, or type. Say 'help' any time.`,
     intro: (): string =>
       `I'm ${PRODUCT_NAME}. I can find things, read back exactly what you're buying, and check your parcel when it arrives.`,
     nothingToRepeat: "There's nothing to repeat yet. Say what you're looking for.",

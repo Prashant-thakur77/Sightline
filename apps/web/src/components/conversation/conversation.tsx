@@ -64,7 +64,9 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       setError(null);
       cue('thinking');
       // Focus inside the card is about to disappear with the card; remember to move it.
-      const focusWasInCard = Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body;
+      const focusWasInCard =
+        !('action' in req && req.action === 'start') &&
+        (Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body);
       if ('text' in req) setMessages((m) => [...m, { id: `local-${Date.now()}`, role: 'user', text: req.text }]);
       try {
         const res = await fetch('/api/turn', {
