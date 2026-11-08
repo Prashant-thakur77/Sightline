@@ -28,7 +28,7 @@ We wanted the whole money lifecycle to be something a blind person can do alone,
 - **JS SDK v6** web component and one-time payment session for the first purchase, with **Vault** (`store_in_vault`) so later purchases need only the spoken confirmation.
 - **Payments v2 authorize, capture and void** for pay after check; **Refunds** from the merchant cases desk.
 - **Shipment tracking** on the order from the merchant console.
-- **Disputes API** (merchant side gated on HATEOAS links and allowed response options; sandbox simulation endpoints).
+- **Disputes API** on the cases desk: read a dispute, make an offer or accept the claim, each only when the dispute's HATEOAS links allow it. The client also covers evidence upload and escalation (spike scripts, not yet in the app).
 - **Webhooks** verified on the raw body, stored once per event id, processed after a fast 200.
 
 **AI**
@@ -36,7 +36,7 @@ We wanted the whole money lifecycle to be something a blind person can do alone,
 - **Claude Opus 5.5** for free questions about a listing (citations to listing fields or verbatim quotes, then a grounding guard removes unsupported claims), for unclear requests, for reading the size tag, product and damage in photos, and for drafting case text from the evidence (checked against the facts before use).
 - Model output never moves money: amounts, payee and confirmation come from frozen listing snapshots, the readback and an eight-guard payment gate that signs a receipt for every decision.
 
-**Also:** Channel3 product data, an MCP server so other shopping agents can use the accessible readback, delivery check and evidence packs, a read-only cloud page reader on KERNEL, AG Grid and AG Studio for the Demo Store console and dashboards, and Render for hosting.
+**Also:** an MCP server so other shopping agents can use the accessible readback, delivery check and evidence packs; AG Grid and AG Studio for the Demo Store console and dashboards; Render for hosting.
 
 ## Accessibility is the product
 
@@ -54,7 +54,7 @@ One announcer for every live update, focus that moves only when it should, full 
 
 ## Challenges
 
-- Buyer-side dispute creation by API is a limited-release, sandbox-only path. We built the seller and PayPal sides fully, and made the most common case not need a dispute at all: the money waits for the check.
+- Buyer-side dispute creation by API is a limited-release, sandbox-only path. We made the most common case not need a dispute at all: the money waits for the check. For payments already captured, the store gets the signed evidence on its cases desk.
 - Saying "nothing was charged" after a lost PayPal response is a lie that leads to double charges. Our duplicate evaluation found it; we now keep the hold, block repeats and reconcile with the same request id.
 - Making a camera check say "not sure" instead of guessing, and making that useful.
 
@@ -64,7 +64,7 @@ Accessibility and payment safety pull in the same direction: a readback that a b
 
 ## What's next
 
-Sessions with blind and low-vision testers (the consent form, task script and SUS questionnaire are in the repo), Hindi voice and readback, a phone line, and a merchant program where stores opt in to pay after check.
+Sessions with blind and low-vision testers (the consent form, task script and SUS questionnaire are in the repo), live product data from Channel3 and read-only store page reading on KERNEL (both written, not yet connected), Hindi voice and readback, a phone line, and a merchant program where stores opt in to pay after check.
 
 ## What we do not claim
 

@@ -14,7 +14,7 @@ All payments run on the **PayPal sandbox**. The app refuses to start if it is po
 |---|---|---|
 | 1 | `/judge` | One page: the problem, the path, live integration status and every number. |
 | 2 | "Shop as Maya, Speech Viewer on" | The real app with a panel that shows, word for word, what a screen reader says. No sign-up. |
-| 3 | "Run the whole lifecycle" | Every step on the sandbox in about 90 seconds: voice request, readback, two-key confirmation, PayPal hold, wrong size shipped, camera check, money back. |
+| 3 | "Run the whole lifecycle" | About 90 seconds: voice request, readback, two-key confirmation, PayPal hold, wrong size shipped, camera check, money back. Every PayPal call is a real sandbox call; shipping and delivery are simulated by the Demo Store controls. Needs PayPal sandbox keys on the server. |
 | 4 | Any receipt link | The page re-checks the receipt's hash and Ed25519 signature on load. `node scripts/verify-receipt.mjs` checks it offline. |
 | 5 | `evals/RESULTS.md` | Every number, the script that produced it, its baseline and interval. |
 
@@ -24,7 +24,7 @@ All payments run on the **PayPal sandbox**. The app refuses to start if it is po
 2. **Readback before paying.** A template (not the model) reads the item, colour, size, seller, total with tax and shipping, delivery date and return window. Paying needs two independent keys: your words or the Confirm button, and a second check by a separate model call. "Wait" holds it open with no time limit.
 3. **Money waits for the check.** For stores that opt in, PayPal only authorizes the payment. The camera check decides: a match captures it, a wrong item voids it, and the money never leaves.
 4. **Unboxing check.** The phone camera talks you into frame ("move back a little", "there's a glare") and takes the photos. It compares colour in CIELAB colour space, reads the size tag twice with two different readers, and checks the product and any damage. When it is not sure it says so, and you can ask someone you trust to look through a private, view-only link.
-5. **Money back.** "This is wrong" builds a signed evidence pack (order, the readback you heard, the listing as it was, your photos, the check), reads you a two-sentence summary, and only then voids the PayPal hold or opens the case with the seller.
+5. **Money back.** "This is wrong" builds a signed evidence pack (order, the readback you heard, the listing as it was, your photos, the check), reads you a two-sentence summary, and only then voids the PayPal hold, or, for a payment already captured, sends the case to the store with the evidence.
 
 ## How PayPal is used
 
@@ -37,7 +37,7 @@ All payments run on the **PayPal sandbox**. The app refuses to start if it is po
 | Authorize / capture / void | Pay after check: authorize at purchase, capture on a match, void on a wrong item. |
 | Refunds | Merchant refunds from the cases desk. |
 | Shipment tracking | Added to the PayPal order by the Demo Store merchant console. |
-| Disputes | Merchant side: list, get, make offer, accept claim, evidence (multipart), escalate, all gated on the dispute's HATEOAS links. Buyer side and sandbox simulation endpoints for the case lifecycle. |
+| Disputes | The cases desk reads a PayPal dispute and can make an offer or accept the claim, each only when the dispute's HATEOAS links allow it. The client in `packages/paypal` also covers listing, multipart evidence upload, escalation and the sandbox simulation endpoints; those run in the spike scripts, not in the app. |
 | Webhooks | Signature verified on the raw body, stored once per event id, processed after a fast 200. |
 
 ## How AI is used

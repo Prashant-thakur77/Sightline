@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useAnnouncer } from '@/components/a11y/announcer';
 
 /**
  * PayPal JS SDK v6 checkout for the first purchase. The order is created on our server from the
@@ -52,19 +53,25 @@ function loadSdk(): Promise<void> {
 
 export function PayPalCheckout({
   clientId,
-  readbackId,
-  intent,
+  paypalOrderId,
   onApproved,
   onError,
 }: {
   clientId: string;
-  readbackId: string;
-  intent: 'CAPTURE' | 'AUTHORIZE';
+  /** Created on our server from the confirmed readback before this card was shown. */
+  paypalOrderId: string;
   onApproved: (paypalOrderId: string) => void;
   onError: (message: string) => void;
 }) {
   const [state, setState] = useState<'loading' | 'ready' | 'unavailable' | 'working'>('loading');
   const session = useRef<Session | null>(null);
+  const { announce } = useAnnouncer();
+
+  // State changes are spoken through the announcer, never by writing to a live region here.
+  useEffect(() => {
+    if (state === 'unavailable') announce('PayPal checkout is not available right now. Nothing was charged.', { politeness: 'assertive', source: 'PayPal' });
+    if (state === 'working') announce('PayPal window open. Finish there, then come back here.', { source: 'PayPal' });
+  }, [state, announce]);
 
   useEffect(() => {
     let alive = true;
@@ -104,15 +111,8 @@ export function PayPalCheckout({
     };
   }, [clientId, onApproved, onError]);
 
-  const createOrder = async (): Promise<{ orderId: string }> => {
-    const res = await fetch('/api/paypal/orders', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ readbackId, intent }),
-    });
-    if (!res.ok) throw new Error('create order failed');
-    return (await res.json()) as { orderId: string };
-  };
+  // The SDK asks for the order to approve; it already exists on our server, bound to the readback.
+  const createOrder = async (): Promise<{ orderId: string }> => ({ orderId: paypalOrderId });
 
   const start = async () => {
     if (!session.current) return;
@@ -127,9 +127,7 @@ export function PayPalCheckout({
 
   if (state === 'unavailable')
     return (
-      <p role="status" className="receipt-note">
-        PayPal checkout is not available right now. Nothing was charged.
-      </p>
+      <p className="receipt-note">PayPal checkout is not available right now. Nothing was charged.</p>
     );
 
   return (
@@ -137,7 +135,7 @@ export function PayPalCheckout({
       {state === 'ready' ? (
         <paypal-button type="pay" class="paypal-gold" onClick={start} />
       ) : (
-        <p role="status">{state === 'loading' ? 'Loading PayPal…' : 'PayPal window open. Finish there, then come back here.'}</p>
+        <p>{state === 'loading' ? 'Loading PayPal…' : 'PayPal window open. Finish there, then come back here.'}</p>
       )}
       <p className="receipt-note">A PayPal window opens. Log in there, approve, and you come back here.</p>
     </div>

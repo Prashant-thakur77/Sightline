@@ -198,7 +198,7 @@ export async function sendMoneyBack(userId: string, caseId: string): Promise<Mon
   await audit({ userId, actor: 'user', action: 'case.sent_to_seller', subjectId: o!.id, payload: { caseId: c.id, dueAt: due.toISOString() } });
   return {
     stage: 'seller_contacted',
-    say: `I sent your case to Demo Store with the evidence. They have until ${spokenDate(due)} to reply. If they don't, I'll ask PayPal to step in. I'll tell you as soon as anything changes.`,
+    say: `I sent your case to Demo Store with the evidence. They have until ${spokenDate(due)} to reply. If they don't, you can open a case with PayPal yourself and attach the signed evidence pack. I'll tell you as soon as anything changes.`,
   };
 }
 

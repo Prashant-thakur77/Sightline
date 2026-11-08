@@ -1,11 +1,13 @@
 import 'server-only';
 import { and, eq, isNull, lt, or } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import { formatMoney, newId } from '@sightline/core';
+import { formatMoney, newId, parseMoney } from '@sightline/core';
 import { parseWebhookEvent } from '@sightline/paypal';
 import { db } from './runtime';
 import { audit } from './audit';
 import { notify } from './cases';
+import { completeApprovedOrder } from './payments';
+import { dbReservations } from './gate-ports';
 
 type Resource = Record<string, unknown> & {
   id?: string;
@@ -15,10 +17,22 @@ type Resource = Record<string, unknown> & {
   disputed_transactions?: { seller_transaction_id?: string }[];
   dispute_id?: string;
   dispute_life_cycle_stage?: string;
+  /** Disputes v1 resolution; older payloads used `outcome`. */
+  dispute_outcome?: { outcome_code?: string };
   outcome?: { outcome_code?: string };
+  /** Our order id, sent as the purchase unit's invoice_id. */
+  invoice_id?: string;
+  expiration_time?: string;
 };
 
+const outcomeCode = (r: Resource) => r.dispute_outcome?.outcome_code ?? r.outcome?.outcome_code;
+
 async function orderByPayPal(r: Resource) {
+  // Our own order id travels as invoice_id, so even an order whose create response was lost matches.
+  if (r.invoice_id) {
+    const [o] = await db().select().from(tables.orders).where(eq(tables.orders.id, r.invoice_id)).limit(1);
+    if (o) return o;
+  }
   const rel = r.supplementary_data?.related_ids ?? {};
   const keys = [rel.order_id, rel.capture_id, rel.authorization_id, r.id].filter(Boolean) as string[];
   for (const k of keys) {
@@ -32,6 +46,19 @@ async function orderByPayPal(r: Resource) {
   return null;
 }
 
+async function holdFor(requestId: string) {
+  const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, requestId)).limit(1);
+  return rsv && rsv.status === 'reserved' ? rsv : null;
+}
+async function commitHold(requestId: string) {
+  const rsv = await holdFor(requestId);
+  if (rsv) await dbReservations.commit(rsv.id, new Date());
+}
+async function releaseHold(requestId: string, reason: string) {
+  const rsv = await holdFor(requestId);
+  if (rsv) await dbReservations.release(rsv.id, reason, new Date());
+}
+
 /** Apply one verified, de-duplicated event. Safe to run more than once for the same event. */
 export async function processWebhookEvent(eventRowId: string): Promise<void> {
   const [row] = await db().select().from(tables.webhookEvents).where(eq(tables.webhookEvents.id, eventRowId)).limit(1);
@@ -43,13 +70,58 @@ export async function processWebhookEvent(eventRowId: string): Promise<void> {
     const order = await orderByPayPal(r);
     switch (ev.event_type) {
       case 'PAYMENT.CAPTURE.COMPLETED':
+        // A capture is a payment, not a check result: it may have been made outside the app.
+        if (order && ['approval_pending', 'confirmed', 'authorized'].includes(order.status)) {
+          await db()
+            .update(tables.orders)
+            .set({
+              status: 'captured',
+              captureId: order.captureId ?? r.id ?? null,
+              paypalOrderId: order.paypalOrderId ?? r.supplementary_data?.related_ids?.order_id ?? null,
+              updatedAt: now,
+            })
+            .where(eq(tables.orders.id, order.id));
+          await commitHold(order.paypalRequestId);
+          if (order.status === 'confirmed') await notify(order.userId, 'payment', `PayPal confirmed your order for the ${order.title}. It went through once.`, `/app/orders/${order.id}`);
+        }
+        break;
+      case 'PAYMENT.AUTHORIZATION.CREATED':
+        // Settles an order whose create or authorize answer was lost or pending.
+        if (order && ['approval_pending', 'confirmed'].includes(order.status)) {
+          await db()
+            .update(tables.orders)
+            .set({
+              status: 'authorized',
+              authorizationId: order.authorizationId ?? r.id ?? null,
+              authorizationExpiresAt: order.authorizationExpiresAt ?? r.expiration_time ?? null,
+              paypalOrderId: order.paypalOrderId ?? r.supplementary_data?.related_ids?.order_id ?? null,
+              updatedAt: now,
+            })
+            .where(eq(tables.orders.id, order.id));
+          if (order.status === 'confirmed')
+            await notify(order.userId, 'payment', `PayPal confirmed your order for the ${order.title}. The money is on hold until you check the parcel.`, `/app/orders/${order.id}`);
+        }
+        break;
+      case 'PAYMENT.CAPTURE.PENDING':
         if (order && ['approval_pending', 'confirmed', 'authorized'].includes(order.status))
-          await db().update(tables.orders).set({ status: order.status === 'authorized' ? 'verified_match' : 'captured', captureId: order.captureId ?? r.id ?? null, updatedAt: now }).where(eq(tables.orders.id, order.id));
+          await db().update(tables.orders).set({ status: 'confirmed', captureId: r.id ?? order.captureId, updatedAt: now }).where(eq(tables.orders.id, order.id));
+        break;
+      case 'PAYMENT.CAPTURE.DENIED':
+      case 'PAYMENT.CAPTURE.DECLINED':
+        if (order && ['approval_pending', 'confirmed'].includes(order.status)) {
+          await db().update(tables.orders).set({ status: 'failed', updatedAt: now }).where(eq(tables.orders.id, order.id));
+          await releaseHold(order.paypalRequestId, 'paypal_capture_declined');
+          await notify(order.userId, 'payment', `PayPal declined the payment for the ${order.title}, so nothing was charged.`, `/app/orders/${order.id}`);
+        }
+        break;
+      case 'CHECKOUT.ORDER.APPROVED':
+        // The buyer approved in PayPal but the page never told us (closed tab, lost network).
+        if (order && order.status === 'approval_pending' && order.paypalOrderId) await completeApprovedOrder({ userId: order.userId, paypalOrderId: order.paypalOrderId });
         break;
       case 'PAYMENT.CAPTURE.REFUNDED':
         if (order) {
           await db().update(tables.orders).set({ status: 'resolved_refund', updatedAt: now }).where(eq(tables.orders.id, order.id));
-          const amt = r.amount?.value ? formatMoney({ cents: Math.round(Number(r.amount.value) * 100), currency: r.amount.currency_code ?? 'USD' }) : 'Your money';
+          const amt = r.amount?.value ? formatMoney(parseMoney(r.amount.value, r.amount.currency_code ?? 'USD')) : 'Your money';
           await notify(order.userId, 'refund', `PayPal refunded ${amt}. It should reach your PayPal balance within minutes.`, `/app/orders/${order.id}`);
         }
         break;
@@ -82,7 +154,7 @@ export async function processWebhookEvent(eventRowId: string): Promise<void> {
             .set({
               stage: resolved ? 'resolved' : r.dispute_life_cycle_stage === 'CLAIM' ? 'escalated' : target.stage,
               status: resolved ? 'resolved' : (r.status ?? target.status),
-              outcome: resolved ? (r.outcome ?? null) : target.outcome,
+              outcome: resolved ? (r.dispute_outcome ?? r.outcome ?? null) : target.outcome,
               updatedAt: now,
             })
             .where(eq(tables.cases.id, target.id));
@@ -90,7 +162,7 @@ export async function processWebhookEvent(eventRowId: string): Promise<void> {
             target.userId,
             'case',
             resolved
-              ? r.outcome?.outcome_code === 'RESOLVED_BUYER_FAVOUR'
+              ? outcomeCode(r) === 'RESOLVED_BUYER_FAVOUR'
                 ? 'PayPal decided in your favour. Your refund is on its way.'
                 : 'PayPal closed your case. Open the order to hear the outcome.'
               : 'There is an update on your PayPal case.',

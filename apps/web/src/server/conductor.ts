@@ -442,6 +442,7 @@ function payReply(ctx: Ctx, outcome: PayOutcome, cart: Cart): Reply {
           kind: 'paypal',
           heading: 'Approve in PayPal, once',
           readbackId: ctx.state.readbackId!,
+          paypalOrderId: outcome.paypalOrderId,
           total: formatMoney(cart.totals.total),
           clientId: ENV.PAYPAL_CLIENT_ID ?? '',
           orderIntent: outcome.intent,

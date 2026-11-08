@@ -10,6 +10,18 @@ import { gatePorts, dbReservations } from './gate-ports';
 import { signingSecret } from './keys';
 import { paypal } from './paypal';
 import { audit } from './audit';
+import { shipToForDisplayName } from './personas';
+
+type ShipTo = NonNullable<ReturnType<typeof shipToForDisplayName>>;
+
+async function shipToFor(userId: string): Promise<ShipTo | undefined> {
+  const [u] = await db().select({ displayName: tables.users.displayName }).from(tables.users).where(eq(tables.users.id, userId)).limit(1);
+  return u ? shipToForDisplayName(u.displayName) : undefined;
+}
+
+/** How long a lost create may be re-sent with the same PayPal-Request-Id. PayPal keeps request ids
+ *  for a limited time (hours); after that a re-send could create a second payment, so we stop well inside it. */
+export const RECONCILE_RESEND_MS = 3 * 60 * 60 * 1000;
 
 export type PayOutcome =
   | { kind: 'refused'; say: string; code: string; receiptId?: string }
@@ -24,6 +36,9 @@ export type PayOutcome =
 export function isAmbiguous(e: unknown): boolean {
   return e instanceof PayPalNetworkError || (e instanceof PayPalApiError && e.status >= 500);
 }
+
+export const PENDING_SAY =
+  "PayPal is still reviewing this payment. I won't charge you again for it, and I'll tell you as soon as PayPal decides.";
 
 export const UNKNOWN_SAY =
   "PayPal didn't answer in time, so I can't tell yet whether that payment went through. I've paused this purchase so you can't be charged twice, and I'll check with PayPal before anything else happens.";
@@ -54,9 +69,11 @@ async function vaultIdFor(userId: string): Promise<string | null> {
   return v?.vaultId ?? null;
 }
 
-function orderBody(cart: Cart, readbackBinding: string, orderId: string, intent: 'CAPTURE' | 'AUTHORIZE') {
+function orderBody(cart: Cart, readbackBinding: string, orderId: string, intent: 'CAPTURE' | 'AUTHORIZE', shipTo?: ShipTo) {
   const line = cart.lines[0]!;
   return {
+    // Physical goods carry a delivery address, which keeps seller protection and tracking meaningful.
+    ...(shipTo && { shipTo }),
     intent,
     items: cart.lines.map((l) => ({
       name: l.snapshot.title.slice(0, 127),
@@ -181,7 +198,7 @@ export async function payForReadback(input: { userId: string; readbackId: string
       });
 
   try {
-    const body = orderBody(cart, binding, orderId, intent);
+    const body = orderBody(cart, binding, orderId, intent, await shipToFor(input.userId));
     if (vaultId) {
       const created = await pp.orders.create({
         ...body,
@@ -198,7 +215,6 @@ export async function payForReadback(input: { userId: string; readbackId: string
         storeInVault: true,
         experienceContext: {
           brandName: 'Demo Store',
-          shippingPreference: 'NO_SHIPPING',
           userAction: 'PAY_NOW',
           returnUrl: `${appUrl()}/app`,
           cancelUrl: `${appUrl()}/app`,
@@ -247,6 +263,25 @@ async function settleCreatedOrder(a: {
         : await pp.orders.capture(order.id, { requestId: paypalRequestId('capture', order.id) });
   }
   const now = new Date().toISOString();
+  // PayPal can answer an authorize or capture with a payment that is still pending review, or
+  // denied. Only a created authorization or a completed capture counts as paid.
+  const auth0 = a.intent === 'AUTHORIZE' ? authorizationFromOrder(order) : undefined;
+  const cap0 = a.intent === 'CAPTURE' ? captureFromOrder(order) : undefined;
+  const state = (a.intent === 'AUTHORIZE' ? auth0?.status : cap0?.status)?.toUpperCase();
+  if (state && ['DENIED', 'DECLINED', 'FAILED', 'VOIDED', 'EXPIRED'].includes(state)) {
+    await db().update(tables.orders).set({ paypalOrderId: order.id, status: 'failed', updatedAt: now }).where(eq(tables.orders.id, a.orderId));
+    if (a.reservationId) await dbReservations.release(a.reservationId, `paypal_${state.toLowerCase()}`, new Date());
+    await audit({ userId: a.userId, actor: 'paypal', action: 'payment.declined', subjectId: a.orderId, payload: { paypalOrderId: order.id, state } });
+    return { kind: 'declined', say: 'PayPal declined this payment, so nothing was charged. You can try again and choose another way to pay in PayPal.' };
+  }
+  if (state === 'PENDING') {
+    await db()
+      .update(tables.orders)
+      .set({ paypalOrderId: order.id, status: 'confirmed', authorizationId: auth0?.id ?? null, captureId: cap0?.id ?? null, updatedAt: now })
+      .where(eq(tables.orders.id, a.orderId));
+    await audit({ userId: a.userId, actor: 'paypal', action: 'payment.pending', subjectId: a.orderId, payload: { paypalOrderId: order.id } });
+    return { kind: 'unknown', orderId: a.orderId, say: PENDING_SAY };
+  }
   if (a.intent === 'AUTHORIZE') {
     const auth = authorizationFromOrder(order);
     await db()
@@ -327,13 +362,48 @@ export async function reconcileUnknownOrders(userId: string): Promise<string[]> 
     } catch {
       return said;
     }
+    const [rsv0] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o.paypalRequestId)).limit(1);
+    // A known PayPal order (for example one pending review) is read, never re-created.
+    if (o.paypalOrderId) {
+      try {
+        const out = await settleCreatedOrder({
+          userId,
+          orderId: o.id,
+          intent: o.intent as 'CAPTURE' | 'AUTHORIZE',
+          created: await pp.orders.get(o.paypalOrderId),
+          amount: { cents: o.amountCents, currency: o.currency },
+          receiptId: o.receiptId ?? undefined,
+          reservationId: rsv0?.id,
+        });
+        if (out.kind === 'paid') said.push(`PayPal confirmed your order for the ${o.title}. It went through once, for ${formatMoney(out.amount)}.`);
+        if (out.kind === 'declined') said.push(`PayPal declined your order for the ${o.title}, so nothing was charged.`);
+      } catch {
+        /* still unknown; try again next time */
+      }
+      continue;
+    }
+    // Past the re-send window a create could charge a second time, so stop and say so, once.
+    if (Date.now() - Date.parse(o.createdAt) > RECONCILE_RESEND_MS) {
+      const [told] = await db()
+        .select({ seq: tables.auditLog.seq })
+        .from(tables.auditLog)
+        .where(and(eq(tables.auditLog.subjectId, o.id), eq(tables.auditLog.action, 'order.reconcile_stopped')))
+        .limit(1);
+      if (!told) {
+        await audit({ userId, actor: 'system', action: 'order.reconcile_stopped', subjectId: o.id, payload: { requestId: o.paypalRequestId } });
+        said.push(
+          `I still can't tell whether your order for the ${o.title} went through, and it's too late to ask PayPal again safely, so I won't. You can't be charged twice for it. Your PayPal activity will show it if it went through, and I'll tell you if PayPal sends word.`,
+        );
+      }
+      continue;
+    }
     const { rb, cart } = loaded;
     const binding = hashReadbackBinding({ id: rb.id, cartId: rb.cartId, cartHash: rb.cartHash, textHash: rb.textHash });
     const [vault] = await db().select().from(tables.vaultTokens).where(and(eq(tables.vaultTokens.userId, userId), eq(tables.vaultTokens.status, 'ACTIVE'))).limit(1);
     if (o.paymentSource !== 'vault' || !vault) continue;
     try {
       const created = await pp.orders.create({
-        ...orderBody(cart, binding, o.id, o.intent as 'CAPTURE' | 'AUTHORIZE'),
+        ...orderBody(cart, binding, o.id, o.intent as 'CAPTURE' | 'AUTHORIZE', await shipToFor(userId)),
         requestId: o.paypalRequestId,
         paymentSource: { type: 'vault', vaultId: vault.vaultId, storedCredential: { payment_initiator: 'CUSTOMER', usage: 'SUBSEQUENT' } },
       });
@@ -349,6 +419,12 @@ export async function reconcileUnknownOrders(userId: string): Promise<string[]> 
       });
       if (out.kind === 'paid') said.push(`PayPal confirmed your earlier order for the ${o.title}. It went through once, for ${formatMoney(out.amount)}.`);
     } catch (e) {
+      // The store already has an order with this invoice id: the first create went through.
+      if (e instanceof PayPalApiError && e.issue === 'DUPLICATE_INVOICE_ID') {
+        await audit({ userId, actor: 'paypal', action: 'order.duplicate_invoice', subjectId: o.id, payload: { requestId: o.paypalRequestId } });
+        said.push(`PayPal says your earlier order for the ${o.title} already exists, so it did go through, once. I'm waiting for PayPal to confirm the details.`);
+        continue;
+      }
       if (!isAmbiguous(e)) {
         await db().update(tables.orders).set({ status: 'failed', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, o.id));
         const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o.paypalRequestId)).limit(1);

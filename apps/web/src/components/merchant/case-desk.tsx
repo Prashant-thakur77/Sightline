@@ -21,7 +21,7 @@ const ACTIONS: { action: CaseAction; label: string }[] = [
   { action: 'refund', label: 'Refund in full' },
   { action: 'replacement', label: 'Offer a replacement' },
   { action: 'return', label: 'Ask for the item back first' },
-  { action: 'no_response', label: "Don't respond (let it escalate)" },
+  { action: 'no_response', label: "Don't respond for now" },
 ];
 
 
@@ -60,7 +60,7 @@ function confirmCopy(c: MerchantCase, a: CaseAction): { title: string; body: str
     default:
       return {
         title: `Leave case ${c.ref} without a reply?`,
-        body: `Nothing is sent. The case stays open${c.dueWords ? `, and after the deadline ${c.buyer} can ask PayPal to step in` : ''}.`,
+        body: `Nothing is sent. The case stays open${c.dueWords ? `, and after the deadline ${c.buyer} can open a case with PayPal` : ''}.`,
         yes: "Yes, don't respond",
       };
   }

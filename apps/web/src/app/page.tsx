@@ -36,8 +36,8 @@ const FILE = [
   },
   {
     tab: 'Paid',
-    title: 'Hear exactly what you pay for. Then say yes twice.',
-    body: 'Before any money moves, a template, not the AI, reads back the item, colour, size, seller and total. Paying needs your words and a second independent check. A repeated “yes” can never charge you twice: the PayPal request is bound to the readback.',
+    title: 'Hear exactly what you pay for. Then say yes.',
+    body: 'Before any money moves, a template, not the AI, reads back the item, colour, size, seller and total. Paying needs your words and a second, independent check of what you said. A repeated “yes” can never charge you twice: the PayPal request is bound to the readback.',
     said: '“Confirm purchase.”',
   },
   {

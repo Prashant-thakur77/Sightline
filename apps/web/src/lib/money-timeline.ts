@@ -193,7 +193,7 @@ export function buildMoneyTimeline(input: { orders: TimelineOrder[]; cases: Time
       status: { word: upcoming ? 'Reply due' : 'Reply was due', glyph: '!', tone: 'waiting' },
       amount: null,
       sentence: upcoming
-        ? `${STORE}'s deadline to reply to your case. If they don't, I'll ask PayPal to step in.`
+        ? `${STORE}'s deadline to reply to your case. If they don't, you can take it to PayPal with the evidence pack.`
         : `${STORE}'s deadline to reply to your case has passed.`,
       upcoming: upcoming || undefined,
     });

@@ -11,6 +11,8 @@ interface Persona {
   summary: string;
   prefs: Partial<typeof tables.preferences.$inferInsert>;
   helper?: { name: string; contact: string };
+  /** A made-up sandbox delivery address, so orders carry a shipping address like real ones. */
+  shipTo: { fullName: string; address: { addressLine1: string; adminArea2: string; adminArea1: string; postalCode: string; countryCode: string } };
 }
 
 export const PERSONAS: Record<PersonaKey, Persona> = {
@@ -27,6 +29,7 @@ export const PERSONAS: Record<PersonaKey, Persona> = {
       payAfterCheck: true,
     },
     helper: { name: 'Asha', contact: 'asha@demo.sightline.app' },
+    shipTo: { fullName: 'Maya Demo', address: { addressLine1: '100 Example Street', adminArea2: 'San Jose', adminArea1: 'CA', postalCode: '95131', countryCode: 'US' } },
   },
   raj: {
     email: 'raj@demo.sightline.app',
@@ -41,6 +44,7 @@ export const PERSONAS: Record<PersonaKey, Persona> = {
       lowVision: { enabled: true, textScale: 1.5, highContrast: true },
       payAfterCheck: true,
     },
+    shipTo: { fullName: 'Raj Demo', address: { addressLine1: '200 Sample Avenue', adminArea2: 'Austin', adminArea1: 'TX', postalCode: '78701', countryCode: 'US' } },
   },
 };
 
@@ -66,4 +70,9 @@ export async function ensurePersona(key: PersonaKey): Promise<string> {
       await tx.insert(tables.vaultTokens).values({ id: newId('vlt'), userId, vaultId, status: 'ACTIVE', label: 'your saved PayPal (sandbox demo buyer)' });
   });
   return userId;
+}
+
+/** The delivery address for a demo shopper, found by their persona's display name. */
+export function shipToForDisplayName(displayName: string): Persona['shipTo'] | undefined {
+  return Object.values(PERSONAS).find((p) => p.displayName === displayName)?.shipTo;
 }

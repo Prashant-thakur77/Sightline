@@ -929,7 +929,7 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
     return {
       ok: true,
       paypal: 'not-needed',
-      message: `Nothing was sent for case ${ref}. It stays open${due ? `, and after ${due} the buyer can ask PayPal to step in` : ''}.`,
+      message: `Nothing was sent for case ${ref}. It stays open${due ? `, and after ${due} the buyer can open a case with PayPal` : ''}.`,
     };
   }
 

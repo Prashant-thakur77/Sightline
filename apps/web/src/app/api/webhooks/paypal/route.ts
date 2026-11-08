@@ -1,6 +1,7 @@
 import { after, NextResponse } from 'next/server';
 import { ENV } from '@/server/runtime';
 import { paypal } from '@/server/paypal';
+import { PayPalValidationError } from '@sightline/paypal';
 import { processWebhookEvent, recordWebhook, retryFailedWebhooks } from '@/server/webhooks';
 
 export const runtime = 'nodejs';
@@ -12,10 +13,15 @@ export const runtime = 'nodejs';
 export async function POST(req: Request) {
   const raw = await req.text();
   if (!ENV.PAYPAL_WEBHOOK_ID) return NextResponse.json({ error: 'webhook not configured' }, { status: 503 });
-  const verified = await paypal()
-    .webhooks.verifySignature({ rawBody: raw, headers: req.headers, webhookId: ENV.PAYPAL_WEBHOOK_ID })
-    .then((r) => r.verified)
-    .catch(() => false);
+  let verified: boolean;
+  try {
+    verified = (await paypal().webhooks.verifySignature({ rawBody: raw, headers: req.headers, webhookId: ENV.PAYPAL_WEBHOOK_ID })).verified;
+  } catch (e) {
+    // Missing signature headers can never verify: refuse. Anything else (PayPal unreachable, 5xx)
+    // is our failure to check, so answer 503 and PayPal will deliver the event again.
+    if (e instanceof PayPalValidationError) return NextResponse.json({ error: 'signature headers missing' }, { status: 400 });
+    return NextResponse.json({ error: 'could not verify yet' }, { status: 503 });
+  }
   if (!verified) return NextResponse.json({ error: 'signature not verified' }, { status: 400 });
   let rec;
   try {

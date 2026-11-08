@@ -45,7 +45,7 @@ export type Card =
       needsSecondPress: boolean;
       held: boolean;
     }
-  | { kind: 'paypal'; heading: string; readbackId: string; total: string; clientId: string; orderIntent: 'CAPTURE' | 'AUTHORIZE' }
+  | { kind: 'paypal'; heading: string; readbackId: string; paypalOrderId: string; total: string; clientId: string; orderIntent: 'CAPTURE' | 'AUTHORIZE' }
   | {
       kind: 'paid';
       heading: string;

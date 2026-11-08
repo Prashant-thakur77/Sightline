@@ -258,7 +258,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           {caseSent && kase!.stage === 'seller_contacted' && kase!.dueAt && (
             <p>
               Demo Store has until {spokenDate(kase!.dueAt)} to reply. If they
-              don’t, I’ll ask PayPal to step in. I’ll tell you when anything changes.
+              don’t, you can open a case with PayPal yourself and attach the signed evidence pack. I’ll tell you when anything changes.
             </p>
           )}
           {pack && (

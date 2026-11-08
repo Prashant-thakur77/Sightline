@@ -1,8 +1,8 @@
 {
   "suite": "confirmation",
   "title": "Spoken purchase confirmation",
-  "ranAt": "2026-11-08T20:05:21.235Z",
-  "gitSha": "uncommitted",
+  "ranAt": "2026-11-08T22:45:01.367Z",
+  "gitSha": "30fef95",
   "headlines": [
     {
       "id": "heldout-false-confirm",

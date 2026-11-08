@@ -279,8 +279,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
                 card.kind === 'paypal' ? (
                   <PayPalCheckout
                     clientId={card.clientId}
-                    readbackId={card.readbackId}
-                    intent={card.orderIntent}
+                    paypalOrderId={card.paypalOrderId}
                     onApproved={(paypalOrderId) => void send({ action: 'paypal-approved', readbackId: card.readbackId, paypalOrderId })}
                     onError={(m) => announce(m, { politeness: 'assertive', source: 'PayPal' })}
                   />

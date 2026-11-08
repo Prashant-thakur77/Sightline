@@ -20,11 +20,14 @@ const deliveryHeaders = {
 };
 
 describe('webhook event names', () => {
-  it('subscribes to the twelve plan events, all spelled as PayPal lists them', () => {
+  it('subscribes to the plan events plus capture outcomes, all spelled as PayPal lists them', () => {
     expect(SUBSCRIBED_WEBHOOK_EVENTS).toEqual([
       'CHECKOUT.ORDER.APPROVED',
       'CHECKOUT.ORDER.COMPLETED',
       'PAYMENT.CAPTURE.COMPLETED',
+      'PAYMENT.CAPTURE.PENDING',
+      'PAYMENT.CAPTURE.DENIED',
+      'PAYMENT.CAPTURE.DECLINED',
       'PAYMENT.CAPTURE.REFUNDED',
       'PAYMENT.CAPTURE.REVERSED',
       'PAYMENT.AUTHORIZATION.CREATED',
@@ -35,7 +38,8 @@ describe('webhook event names', () => {
       'VAULT.PAYMENT-TOKEN.CREATED',
       'VAULT.PAYMENT-TOKEN.DELETED',
     ]);
-    expect(isSubscribedEvent('PAYMENT.CAPTURE.DENIED')).toBe(false);
+    expect(isSubscribedEvent('PAYMENT.CAPTURE.DENIED')).toBe(true);
+    expect(isSubscribedEvent('BILLING.SUBSCRIPTION.CREATED')).toBe(false);
     expect(isSubscribedEvent(WEBHOOK_EVENTS.CUSTOMER_DISPUTE_RESOLVED)).toBe(true);
   });
 });

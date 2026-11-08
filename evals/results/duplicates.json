@@ -1,8 +1,8 @@
 {
   "suite": "duplicates",
   "title": "Duplicate orders",
-  "ranAt": "2026-11-08T20:05:22.549Z",
-  "gitSha": "uncommitted",
+  "ranAt": "2026-11-08T22:45:02.678Z",
+  "gitSha": "30fef95",
   "headlines": [
     {
       "id": "duplicate-scenarios",

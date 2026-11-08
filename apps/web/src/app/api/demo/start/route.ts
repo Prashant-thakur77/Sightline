@@ -2,6 +2,7 @@ import { after, NextResponse } from 'next/server';
 import { ensurePersona, type PersonaKey } from '@/server/personas';
 import { createSession } from '@/server/session';
 import { maybePurgeExpiredPhotos } from '@/server/privacy';
+import { retryFailedWebhooks } from '@/server/webhooks';
 
 /** Starts a demo session as a seeded persona. Demo personas only; no real accounts. */
 export async function POST(req: Request) {
@@ -11,6 +12,10 @@ export async function POST(req: Request) {
   const userId = await ensurePersona(key);
   await createSession(userId);
   // Photo retention runs here at most once an hour, after the response is sent.
-  after(() => maybePurgeExpiredPhotos().catch(() => undefined));
+  after(async () => {
+    await maybePurgeExpiredPhotos().catch(() => undefined);
+    // Webhook events whose processing failed are retried here too, not only when the next one arrives.
+    await retryFailedWebhooks().catch(() => undefined);
+  });
   return NextResponse.json({ ok: true, userId });
 }
