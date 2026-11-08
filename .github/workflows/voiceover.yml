@@ -1,0 +1,34 @@
+name: voiceover
+# Real VoiceOver walkthroughs of the core flows on macOS, saving the spoken phrases as artifacts.
+# Manual trigger: macOS minutes are limited on private repositories.
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Deployed app URL (https://...)
+        required: true
+
+jobs:
+  voiceover:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare VoiceOver automation
+        run: npx @guidepup/setup
+      - name: Install runner
+        run: |
+          cd tests/sr && npm init -y >/dev/null && npm i @guidepup/guidepup@0.40.0 @guidepup/playwright@0.21.0 @playwright/test@1.65.0
+          npx playwright install webkit
+      - name: Walk the core flows with VoiceOver
+        env:
+          BASE_URL: ${{ inputs.url }}
+        run: cd tests/sr && npx playwright test -c voiceover.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: voiceover-logs
+          path: tests/sr/logs/

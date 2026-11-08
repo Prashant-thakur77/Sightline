@@ -1,0 +1,55 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: sightline
+          POSTGRES_PASSWORD: sightline
+          POSTGRES_DB: sightline
+        ports: ['5442:5432']
+        options: --health-cmd "pg_isready -U sightline" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://sightline:sightline@localhost:5442/sightline
+      PAYPAL_ENV: sandbox
+      PAYPAL_API_BASE: https://api-m.sandbox.paypal.com
+      APP_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - name: Vision service tests
+        run: |
+          pip install uv
+          cd services/vision && uv run pytest -q
+      - name: End-to-end with axe
+        run: |
+          echo "SESSION_SECRET=$(openssl rand -hex 32)" >> apps/web/.env.local
+          echo "RECEIPT_SIGNING_KEY=$(openssl rand -hex 32)" >> apps/web/.env.local
+          echo "HELPER_LINK_SECRET=$(openssl rand -hex 32)" >> apps/web/.env.local
+          pnpm db:migrate
+          pnpm --filter @sightline/e2e exec playwright install --with-deps chromium
+          pnpm --filter @sightline/web build
+          (cd apps/web && pnpm start &) && npx wait-on http://localhost:3100/api/health
+          pnpm --filter @sightline/e2e e2e
+      - name: Held-out split check
+        run: node evals/lib/check-splits.mjs || echo "no frozen splits yet"

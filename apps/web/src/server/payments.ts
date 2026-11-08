@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { formatMoney, newId, type Cart, type Money } from '@sightline/core';
 import { runGate, type ConfirmedReadback, type GateDecision } from '@sightline/gate';
@@ -91,6 +91,22 @@ export async function payForReadback(input: { userId: string; readbackId: string
   const loaded = await loadReadback(input.readbackId, input.userId);
   if (!loaded) return { kind: 'error', say: "I couldn't find that readback. Nothing was charged." };
   const { rb, cart } = loaded;
+  // An earlier order for the same item whose PayPal outcome is unknown must be settled first.
+  const line0 = cart.lines[0]!.snapshot;
+  const unknown = await db()
+    .select({ id: tables.orders.id, snapshotId: tables.orders.snapshotId })
+    .from(tables.orders)
+    .where(and(eq(tables.orders.userId, input.userId), eq(tables.orders.status, 'confirmed')));
+  if (unknown.length) {
+    const snaps = await db().select({ id: tables.productSnapshots.id, productId: tables.productSnapshots.productId, variantId: tables.productSnapshots.variantId }).from(tables.productSnapshots).where(inArray(tables.productSnapshots.id, unknown.map((u) => u.snapshotId)));
+    const same = snaps.find((x) => x.productId === line0.productId && x.variantId === line0.variantId);
+    if (same)
+      return {
+        kind: 'refused',
+        code: 'OUTCOME_UNKNOWN',
+        say: "I'm still checking with PayPal whether your earlier order for this item went through, so I didn't charge you again. I'll tell you as soon as PayPal answers.",
+      };
+  }
   const prefs = await prefsFor(input.userId);
   const intent: 'CAPTURE' | 'AUTHORIZE' = prefs?.payAfterCheck ? 'AUTHORIZE' : 'CAPTURE';
   const vaultId = input.mode === 'auto' ? await vaultIdFor(input.userId) : null;
@@ -288,4 +304,58 @@ export async function completeApprovedOrder(input: { userId: string; paypalOrder
     console.error('[pay] approval completion failed', e);
     return { kind: 'error', say: 'PayPal could not finish the payment. Nothing was charged.' };
   }
+}
+
+/**
+ * Settle orders whose PayPal outcome was unknown. Re-sending the create with the same
+ * PayPal-Request-Id returns the original order if PayPal created it, so this can never charge
+ * twice. Called when the buyer comes back.
+ */
+export async function reconcileUnknownOrders(userId: string): Promise<string[]> {
+  const pending = await db()
+    .select()
+    .from(tables.orders)
+    .where(and(eq(tables.orders.userId, userId), eq(tables.orders.status, 'confirmed')));
+  const said: string[] = [];
+  for (const o of pending) {
+    if (Date.now() - Date.parse(o.updatedAt) < 20_000) continue;
+    const loaded = await loadReadback(o.readbackId, userId);
+    if (!loaded) continue;
+    let pp: PayPalClient;
+    try {
+      pp = paypal();
+    } catch {
+      return said;
+    }
+    const { rb, cart } = loaded;
+    const binding = hashReadbackBinding({ id: rb.id, cartId: rb.cartId, cartHash: rb.cartHash, textHash: rb.textHash });
+    const [vault] = await db().select().from(tables.vaultTokens).where(and(eq(tables.vaultTokens.userId, userId), eq(tables.vaultTokens.status, 'ACTIVE'))).limit(1);
+    if (o.paymentSource !== 'vault' || !vault) continue;
+    try {
+      const created = await pp.orders.create({
+        ...orderBody(cart, binding, o.id, o.intent as 'CAPTURE' | 'AUTHORIZE'),
+        requestId: o.paypalRequestId,
+        paymentSource: { type: 'vault', vaultId: vault.vaultId, storedCredential: { payment_initiator: 'CUSTOMER', usage: 'SUBSEQUENT' } },
+      });
+      const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o.paypalRequestId)).limit(1);
+      const out = await settleCreatedOrder({
+        userId,
+        orderId: o.id,
+        intent: o.intent as 'CAPTURE' | 'AUTHORIZE',
+        created,
+        amount: { cents: o.amountCents, currency: o.currency },
+        receiptId: o.receiptId ?? undefined,
+        reservationId: rsv?.id,
+      });
+      if (out.kind === 'paid') said.push(`PayPal confirmed your earlier order for the ${o.title}. It went through once, for ${formatMoney(out.amount)}.`);
+    } catch (e) {
+      if (!isAmbiguous(e)) {
+        await db().update(tables.orders).set({ status: 'failed', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, o.id));
+        const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o.paypalRequestId)).limit(1);
+        if (rsv && rsv.status === 'reserved') await dbReservations.release(rsv.id, 'paypal_refused_on_reconcile', new Date());
+        said.push(`PayPal says your earlier order for the ${o.title} did not go through, so nothing was charged.`);
+      }
+    }
+  }
+  return said;
 }

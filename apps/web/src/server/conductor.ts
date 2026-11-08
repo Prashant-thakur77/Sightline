@@ -31,7 +31,7 @@ import {
 import type { Card, ChatMessage, OptionItem, TurnRequest, TurnResponse } from '@/components/conversation/types';
 import { appUrl, db, demoSeller, ENV, INTEGRATIONS } from './runtime';
 import { aiAvailable, answerAboutListing, confirmationClassifier, extractShoppingQuery } from './ai';
-import { payForReadback, completeApprovedOrder, type PayOutcome } from './payments';
+import { payForReadback, completeApprovedOrder, reconcileUnknownOrders, type PayOutcome } from './payments';
 import { audit } from './audit';
 
 const SNAPSHOT_MAX_AGE_MS = 12 * 60 * 1000;
@@ -730,6 +730,8 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
             .update(tables.notifications)
             .set({ readAt: new Date().toISOString() })
             .where(inArray(tables.notifications.id, unread.map((n) => n.id)));
+        const settled = await reconcileUnknownOrders(userId).catch(() => [] as string[]);
+        for (const t of settled) unread.unshift({ text: t } as (typeof unread)[number]);
         const updates = unread.length
           ? ` ${unread.length === 1 ? 'One update' : `${unread.length} updates`}. ${unread.map((n) => n.text).join(' ')}`
           : '';

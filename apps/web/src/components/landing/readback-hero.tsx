@@ -32,6 +32,28 @@ const CELLS = 14;
  */
 export function ReadbackHero() {
   const [run, setRun] = useState(0);
+  const [speaking, setSpeaking] = useState(false);
+  const hear = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    setRun((r) => r + 1);
+    const said = new SpeechSynthesisUtterance('I need a navy crew-neck sweater, medium, under forty dollars.');
+    const readback = new SpeechSynthesisUtterance(
+      "Here's what you're buying. Harbor knit crew-neck sweater. Colour: navy. Size: M. Sold by Demo Store. Total $36.72 with tax. Arrives Tuesday 17 November. Free returns within 30 days. To pay, say confirm purchase.",
+    );
+    said.rate = 1;
+    readback.rate = 1.05;
+    readback.onend = () => setSpeaking(false);
+    readback.onerror = () => setSpeaking(false);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(said);
+    window.speechSynthesis.speak(readback);
+    setSpeaking(true);
+  };
   let tagIndex = 0;
   return (
     <figure className="rbh" aria-label="Example: what you say, and the readback you hear before paying">
@@ -95,9 +117,14 @@ export function ReadbackHero() {
           the app reads back: Harbor knit crew-neck sweater. Colour navy. Size M. Seller Demo Store. Total $36.72 with tax. Arrives Tuesday 17
           November. Free returns for 30 days. To pay, say confirm purchase.
         </span>
-        <button type="button" className="btn btn-quiet rbh-replay" onClick={() => setRun((r) => r + 1)}>
-          Play the readback again
-        </button>
+        <span className="rbh-buttons">
+          <button type="button" className="btn rbh-hear" onClick={hear} aria-pressed={speaking}>
+            <span aria-hidden="true">{speaking ? '■' : '▶'}</span> {speaking ? 'Stop' : 'Hear it'}
+          </button>
+          <button type="button" className="btn btn-quiet rbh-replay" onClick={() => setRun((r) => r + 1)}>
+            Replay the animation
+          </button>
+        </span>
       </figcaption>
     </figure>
   );

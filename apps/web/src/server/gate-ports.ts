@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, gte, inArray, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, or, sql } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { money, newId, type Money } from '@sightline/core';
 import type { GatePorts, Reservation, ReservationOutcome, ReservationPort, ReservationRequest, SpendLimits } from '@sightline/gate';
@@ -134,8 +134,19 @@ export function gatePorts(): GatePorts {
         .select({ id: tables.orders.id, createdAt: tables.orders.createdAt, status: tables.orders.status, cartHash: tables.carts.hash })
         .from(tables.orders)
         .innerJoin(tables.carts, eq(tables.carts.id, tables.orders.cartId))
-        .where(and(eq(tables.carts.hash, cartHash), gte(tables.orders.createdAt, new Date(sinceMs).toISOString()), inArray(tables.orders.status, PLACED)));
-      return rows.map((r) => ({ id: r.id, cartHash: r.cartHash, createdAt: r.createdAt, status: r.status as never }));
+        .where(
+          and(
+            eq(tables.carts.hash, cartHash),
+            or(
+              and(gte(tables.orders.createdAt, new Date(sinceMs).toISOString()), inArray(tables.orders.status, PLACED)),
+              // An order whose PayPal outcome is unknown blocks repeats of the same goods with no
+              // time limit, until it is reconciled with PayPal.
+              eq(tables.orders.status, 'confirmed'),
+            ),
+          ),
+        );
+      // Report unknown-outcome orders as recent so the duplicate guard refuses the repeat.
+      return rows.map((r) => ({ id: r.id, cartHash: r.cartHash, createdAt: r.status === 'confirmed' ? new Date().toISOString() : r.createdAt, status: r.status as never }));
     },
     async spentToday(userId, now) {
       const since = new Date(now.getTime() - DAY_MS).toISOString();

@@ -44,3 +44,4 @@ tests/sr/logs/*.tmp
 .design/taste.md
 .claude/settings.json
 .mcp.json
+tests/sr/logs/*.txt
