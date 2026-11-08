@@ -36,6 +36,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
       - run: pnpm check
       - name: Vision service tests
         run: |
@@ -47,7 +48,6 @@ jobs:
           echo "RECEIPT_SIGNING_KEY=$(openssl rand -hex 32)" >> apps/web/.env.local
           echo "HELPER_LINK_SECRET=$(openssl rand -hex 32)" >> apps/web/.env.local
           echo "RATE_LIMITS=off" >> apps/web/.env.local
-          pnpm db:migrate
           pnpm --filter @sightline/e2e exec playwright install --with-deps chromium
           pnpm --filter @sightline/web build
           (cd apps/web && pnpm start &) && npx wait-on http://localhost:3100/api/health
