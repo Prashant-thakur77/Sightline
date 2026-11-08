@@ -17,6 +17,8 @@ import {
   type GridApi,
   type GridOptions,
 } from 'ag-grid-community';
+import type { StatusWord } from '@sightline/core';
+import { StatusChip } from './status-chip';
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -68,29 +70,14 @@ export const gridTheme = themeQuartz.withParams({
   cellHorizontalPadding: 12,
   browserColorScheme: 'inherit',
   focusShadow: { spread: 4, color: 'var(--focus-outer)' },
+  // No empty band under the last row: the body is exactly as tall as its rows.
+  autoHeightMinBodyHeight: 0,
 });
 
-export interface Status {
-  word: string;
-  glyph: string;
-  tone: string;
-  short?: string;
-}
-
-/** A status as a word and a shape; the shape is decorative, the word carries the meaning. */
-export function StatusChip({ s, short }: { s: Status; short?: boolean }) {
-  return (
-    <span className="mx-status" data-tone={s.tone}>
-      <span className="mx-glyph" aria-hidden="true">
-        {s.glyph}
-      </span>
-      <span>{short ? (s.short ?? s.word) : s.word}</span>
-    </span>
-  );
-}
+type Status = Pick<StatusWord, 'word' | 'glyph' | 'tone'>;
 
 export function StatusCell(p: CustomCellRendererProps<unknown, Status>) {
-  return p.value ? <StatusChip s={p.value} short /> : null;
+  return p.value ? <StatusChip s={p.value} /> : null;
 }
 
 export const statusColumn = <T,>(def: ColDef<T>): ColDef<T> => ({
@@ -108,6 +95,8 @@ interface DataGridProps<T extends { id: string }> {
   onSelect?: (id: string) => void;
   /** Rows with wrapped text grow to fit. */
   autoHeight?: boolean;
+  /** Called once the first rows are drawn and measured, so the grid can be shown without a jump. */
+  onReady?: () => void;
 }
 
 /**
@@ -121,6 +110,7 @@ export function DataGrid<T extends { id: string }>({
   selectedId,
   onSelect,
   autoHeight,
+  onReady,
 }: DataGridProps<T>) {
   const api = useRef<GridApi<T> | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -179,7 +169,11 @@ export function DataGrid<T extends { id: string }>({
           nameGrid();
           if (selectedId) e.api.getRowNode(selectedId)?.setSelected(true, true, 'api');
         }}
-        onFirstDataRendered={nameGrid}
+        onFirstDataRendered={() => {
+          nameGrid();
+          // Auto row heights are measured after the first draw; two frames later they are final.
+          if (onReady) requestAnimationFrame(() => requestAnimationFrame(onReady));
+        }}
         onSelectionChanged={(e) => {
           if (e.source === 'api') return;
           const id = e.api.getSelectedRows()[0]?.id;

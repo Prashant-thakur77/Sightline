@@ -7,7 +7,7 @@ import { ThemeSwitch } from './theme-switch';
 export function SiteHeader({ current }: { current?: 'home' | 'judge' | 'barrier' }) {
   return (
     <header className="lp-header">
-      <Link href="/" className="no-underline" aria-label={`${PRODUCT_NAME}, home`}>
+      <Link href="/" className="no-underline lp-home" aria-label={`${PRODUCT_NAME}, home`}>
         <Wordmark size={24} />
       </Link>
       <nav aria-label="Main">

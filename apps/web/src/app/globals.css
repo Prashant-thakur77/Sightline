@@ -197,8 +197,11 @@ a {
   border: 3px solid var(--yellow-ink);
   border-radius: var(--radius-m);
 }
+/* When focused it takes its own row, so it never covers the header links. */
 .skip-link:focus {
-  top: var(--space-4);
+  position: static;
+  display: inline-block;
+  margin: var(--space-4);
 }
 
 .mono {
@@ -1212,6 +1215,12 @@ a {
   }
   .no-underline {
     text-decoration: none;
+  }
+  .lp-home {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 

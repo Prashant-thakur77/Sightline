@@ -274,7 +274,7 @@
   font-weight: 800;
   line-height: 1;
 }
-.mx-status[data-tone='ok'] .mx-glyph {
+.mx-status[data-tone='good'] .mx-glyph {
   color: var(--match);
 }
 .mx-status[data-tone='bad'] .mx-glyph {
@@ -283,8 +283,14 @@
 .mx-status[data-tone='unsure'] .mx-glyph {
   color: var(--unsure);
 }
-.mx-status[data-tone='held'] .mx-glyph {
+.mx-status[data-tone='waiting'] .mx-glyph {
   color: var(--signal);
+}
+/* A status and its detail, one under the other. */
+.mx-stack {
+  display: inline-grid;
+  justify-items: start;
+  gap: var(--space-1);
 }
 
 /* ---------- Grid ---------- */
@@ -307,6 +313,17 @@
 }
 .mx-grid {
   min-width: 0;
+}
+.mx-orders-view {
+  position: relative;
+  min-width: 0;
+}
+/* The grid lays itself out out of sight, under the table, until its rows are measured. */
+.mx-grid-slot[data-pending] {
+  position: absolute;
+  inset: 0 0 auto 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 .mx-grid .ag-root-wrapper {
   font-size: var(--step--1);
@@ -372,6 +389,144 @@
 }
 .mx-grid .ag-row {
   cursor: pointer;
+}
+
+/* ---------- Plain table: server-rendered, kept on narrow screens ---------- */
+.mx-table-wrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+.mx-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 3px solid var(--line);
+  border-radius: var(--radius-l);
+  overflow: clip;
+  font-size: var(--step--1);
+}
+.mx-table thead th {
+  background: var(--paper-2);
+  font-weight: 800;
+  text-align: left;
+  padding: var(--space-3);
+  border-bottom: 3px solid var(--line);
+  vertical-align: bottom;
+}
+.mx-table tbody th,
+.mx-table td {
+  text-align: left;
+  font-weight: 400;
+  padding: 10px var(--space-3);
+  border-bottom: 2px solid var(--hairline);
+  vertical-align: middle;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+.mx-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.mx-table .mx-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.mx-table tr[data-selected] > * {
+  background: var(--paper-2);
+  font-weight: 700;
+}
+.mx-table tr[data-selected] > th {
+  box-shadow:
+    inset 8px 0 0 var(--yellow),
+    inset 10px 0 0 var(--ink);
+}
+.mx-t-label {
+  display: none;
+}
+.mx-pick {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-3);
+  border: 2.5px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--step-0);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mx-pick:hover {
+  background: var(--paper-2);
+}
+.mx-pick[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+/* Narrow screens: each order is a card of labelled facts. The table stays a table for screen readers. */
+@media (max-width: 899.98px) {
+  .mx-table,
+  .mx-table tbody {
+    display: block;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+  .mx-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .mx-table tbody {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .mx-table tr {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-4);
+    border: 3px solid var(--line);
+    border-radius: var(--radius-l);
+  }
+  .mx-table tbody th,
+  .mx-table td,
+  .mx-table tbody tr:last-child > * {
+    display: grid;
+    align-content: start;
+    gap: var(--space-1);
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .mx-table tbody th,
+  .mx-table .mx-t-item {
+    grid-column: 1 / -1;
+  }
+  .mx-table .mx-num {
+    text-align: left;
+  }
+  .mx-table tr[data-selected] {
+    background: var(--paper-2);
+    border-left-width: 12px;
+  }
+  .mx-table tr[data-selected] > * {
+    background: none;
+    box-shadow: none;
+  }
+  .mx-t-label {
+    display: block;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .mx-pick {
+    justify-self: start;
+  }
 }
 
 /* ---------- Selected order panel ---------- */
@@ -497,6 +652,58 @@
   color: var(--muted);
   font-size: var(--step--1);
   max-width: 60ch;
+}
+.mx-demo-line {
+  margin: 0;
+  font-weight: 700;
+}
+/* Nothing to simulate: the controls fold behind one line that says why. */
+.mx-demo-off {
+  padding: 0;
+  gap: 0;
+}
+.mx-demo-off summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-height: var(--target);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-l);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+.mx-demo-off summary::-webkit-details-marker {
+  display: none;
+}
+.mx-demo-off summary::after {
+  content: '+';
+  content: '+' / '';
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: var(--step-1);
+  line-height: 1;
+}
+.mx-demo-off[open] summary::after {
+  content: '\2212';
+  content: '\2212' / '';
+}
+.mx-demo-off-body {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: 0 var(--space-5) var(--space-5);
+}
+/* Shown but unavailable: still focusable, still readable, never mistaken for the next step. */
+.mx-demo .btn[aria-disabled='true'],
+.mx-reply .btn[aria-disabled='true'] {
+  opacity: 1;
+  color: var(--muted);
+  border-style: dashed;
+  box-shadow: none;
+  transform: none;
 }
 .mx-demo-ship {
   display: grid;
@@ -796,6 +1003,14 @@
     padding-right: var(--space-4);
   }
   .mx-demo {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+  .mx-demo-off {
+    padding: 0;
+  }
+  .mx-demo-off summary,
+  .mx-demo-off-body {
     padding-left: var(--space-4);
     padding-right: var(--space-4);
   }

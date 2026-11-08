@@ -14,7 +14,7 @@ export default async function MerchantOrders() {
   const toShip = rows.filter((r) => r.can.ship).length;
   const inTransit = rows.filter((r) => r.shipment.state === 'in_transit').length;
   const needReply = rows.filter((r) => r.case.stage === 'seller_contacted').length;
-  const held = rows.filter((r) => r.payment.tone === 'held').length;
+  const held = rows.filter((r) => r.held).length;
   const counts = [
     { n: toShip, label: 'ready to ship' },
     { n: inTransit, label: 'in transit' },

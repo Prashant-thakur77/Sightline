@@ -3,11 +3,20 @@ import { randomInt } from 'node:crypto';
 import { asc, desc, eq, inArray, sql, and } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import {
+  CONFIDENCE_WORD,
+  FINDING,
+  MODULE_LABEL,
+  caseStatus,
   formatMoney,
   newId,
+  paymentStatus,
+  reasonForSeller,
+  shipmentStatus,
   spokenDate,
+  verdictStatus,
   type ProductSnapshot,
   type ShippedVariant,
+  type StatusWord,
   type Verdict,
   type VerdictReason,
 } from '@sightline/core';
@@ -49,15 +58,6 @@ export interface MerchantResult {
   paypal: PayPalSync;
 }
 
-/** A word plus a shape, so no status depends on colour. */
-export interface StatusWord {
-  word: string;
-  glyph: string;
-  tone: 'ok' | 'held' | 'bad' | 'unsure' | 'neutral';
-  /** A shorter form for narrow table cells; the full word is shown beside the table. */
-  short?: string;
-}
-
 export class MerchantError extends Error {
   constructor(
     readonly status: number,
@@ -79,110 +79,107 @@ export function shortRef(id: string): string {
 const money = (cents: number, currency: string) => formatMoney({ cents, currency });
 
 // ---------------------------------------------------------------------------------------------
-// Words
+// Words. Every status comes from the shared vocabulary in @sightline/core, so the console says
+// exactly what the buyer's pages say, with the same glyphs and tones.
 
 type OrderRow = typeof tables.orders.$inferSelect;
 type ShipmentRow = typeof tables.shipments.$inferSelect;
-type CaseRow = typeof tables.cases.$inferSelect;
 
-export function paymentWord(
-  o: Pick<OrderRow, 'status' | 'captureId' | 'authorizationId' | 'intent'>,
-): StatusWord {
-  switch (o.status) {
-    case 'voided':
-      return { word: 'Hold released, never paid', short: 'Hold released', glyph: '↺', tone: 'neutral' };
-    case 'resolved_refund':
-      return { word: 'Refunded', glyph: '↺', tone: 'neutral' };
-    case 'failed':
-      return { word: 'Not placed', glyph: '✕', tone: 'bad' };
-    case 'readback_pending':
-    case 'confirmed':
-    case 'approval_pending':
-      return { word: 'Waiting for buyer approval', short: 'Awaiting approval', glyph: '…', tone: 'neutral' };
-  }
-  if (o.captureId || o.status === 'captured') return { word: 'Paid', glyph: '✓', tone: 'ok' };
-  const pastPayment = [
-    'authorized',
-    'shipped',
-    'delivered',
-    'verified_mismatch',
-    'verified_unsure',
-    'case_open',
-  ].includes(o.status);
-  if (o.intent === 'AUTHORIZE' && (o.authorizationId || pastPayment))
-    return { word: "On hold until the buyer's check", short: 'On hold', glyph: '…', tone: 'held' };
-  return { word: 'Payment pending', glyph: '…', tone: 'neutral' };
-}
+export type { StatusWord };
 
+/** What the demo controls sent, in words. Used in messages and in the shipment detail. */
 const VARIANT_WORD: Record<string, string> = {
-  correct: 'right item',
-  wrong_colour: 'wrong colour (black)',
-  wrong_size: 'wrong size (L)',
-  damaged: 'damaged item',
+  correct: 'the right item',
+  wrong_colour: 'the wrong colour (black)',
+  wrong_size: 'the wrong size (L)',
+  damaged: 'a damaged item',
   nothing: 'nothing',
 };
 
-export function shipmentWord(s: ShipmentRow | null): StatusWord {
-  if (!s || s.status === 'awaiting_shipment') return { word: 'Ready to ship', glyph: '○', tone: 'neutral' };
-  if (s.status === 'not_shipped') return { word: 'Not shipped', glyph: '✕', tone: 'bad' };
-  const what =
-    s.shippedVariant === 'correct' ? '' : `, ${VARIANT_WORD[s.shippedVariant] ?? s.shippedVariant}`;
-  if (s.deliveredAt)
-    return { word: `Delivered${what}`, glyph: '✓', tone: s.shippedVariant === 'correct' ? 'ok' : 'bad' };
-  return {
-    word: `In transit with ${s.carrier ?? 'the carrier'}${what}`,
-    glyph: '→',
-    tone: s.shippedVariant === 'correct' ? 'neutral' : 'bad',
-  };
+const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+
+/**
+ * The demo choice behind a shipment, as a detail beside the delivery status. A wrong or damaged
+ * item is flagged with "!", never "✓", even once the carrier has delivered it.
+ */
+function sentWord(s: ShipmentRow | null): StatusWord | null {
+  if (!s || s.status === 'awaiting_shipment' || s.shippedVariant === 'nothing') return null;
+  const what = VARIANT_WORD[s.shippedVariant] ?? s.shippedVariant.replace(/_/g, ' ');
+  return s.shippedVariant === 'correct'
+    ? { word: `Sent ${what}`, glyph: '✓', tone: 'good' }
+    : { word: `Sent ${what}`, glyph: '!', tone: 'bad' };
 }
 
-export function verdictWord(v: Verdict | null): StatusWord {
-  if (!v) return { word: 'Not checked', glyph: '–', tone: 'neutral' };
-  if (v.kind === 'match') return { word: 'Match', glyph: '✓', tone: 'ok' };
-  if (v.kind === 'mismatch') return { word: 'Mismatch', glyph: '✕', tone: 'bad' };
-  return { word: 'Not sure', glyph: '?', tone: 'unsure' };
+/** A check's reason as one row of the merchant's table: the buyer's words, told in the third person. */
+export interface ReasonRow {
+  module: VerdictReason['module'];
+  label: string;
+  finding: VerdictReason['finding'];
+  result: StatusWord;
+  confidence: string;
+  text: string;
 }
 
-/** Case stages, from the merchant's side of the desk. Drafts are the buyer's and are not shown. */
-export function stageWord(c: Pick<CaseRow, 'stage' | 'outcome'> | null): StatusWord {
-  if (!c || c.stage === 'draft' || c.stage === 'evidence_built')
-    return { word: 'No case', glyph: '–', tone: 'neutral' };
-  switch (c.stage) {
-    case 'seller_contacted':
-      return { word: 'Needs your reply', glyph: '!', tone: 'bad' };
-    case 'offer_received':
-      return { word: 'Offer made, buyer deciding', short: 'Offer made', glyph: '…', tone: 'held' };
-    case 'accepted':
-      return { word: 'Buyer accepted', glyph: '✓', tone: 'ok' };
-    case 'declined':
-      return { word: 'Buyer declined the offer', glyph: '✕', tone: 'bad' };
-    case 'escalated':
-      return { word: 'Escalated to PayPal', glyph: '!', tone: 'bad' };
-    case 'under_review':
-      return { word: 'PayPal is reviewing', glyph: '…', tone: 'held' };
-    case 'resolved': {
-      const kind = (c.outcome as { kind?: string } | null)?.kind;
-      const how = kind === 'voided' ? ': hold released' : kind === 'refunded' ? ': refunded' : '';
-      return { word: `Resolved${how}`, glyph: '✓', tone: 'ok' };
-    }
-    default:
-      return { word: c.stage.replace(/_/g, ' '), glyph: '•', tone: 'neutral' };
-  }
+function reasonRows(v: Verdict): ReasonRow[] {
+  return v.reasons.map((r) => ({
+    module: r.module,
+    label: MODULE_LABEL[r.module] ?? r.module,
+    finding: r.finding,
+    result: FINDING[r.finding],
+    confidence: CONFIDENCE_WORD[r.confidence] ?? r.confidence,
+    text: reasonForSeller(r),
+  }));
 }
 
-const REASON_WORD: Record<string, string> = {
-  wrong_colour: 'Wrong colour',
-  wrong_size: 'Wrong size',
-  wrong_item: 'Wrong item',
-  damaged: 'Damaged',
-  not_received: 'Not received',
+/** One third-person sentence on what the buyer's check found, for the order panel. */
+function verdictSummary(v: Verdict | null): string | null {
+  if (!v) return null;
+  if (v.kind === 'match') return 'Every check matched the order.';
+  const lead = v.reasons.find((r) => r.finding === 'disagree') ?? v.reasons.find((r) => r.finding !== 'agree');
+  return lead ? reasonForSeller(lead) : null;
+}
+
+const REASON_MODULE: Record<string, VerdictReason['module'] | undefined> = {
+  wrong_colour: 'colour',
+  wrong_size: 'size',
+  wrong_item: 'identity',
+  damaged: 'damage',
 };
 
-const CONFIDENCE_WORD: Record<string, string> = {
-  sure: 'sure',
-  fairly_sure: 'fairly sure',
-  not_sure: 'not sure',
+const REASON_PHRASE: Record<string, string> = {
+  wrong_colour: 'the wrong colour',
+  wrong_size: 'the wrong size',
+  wrong_item: 'the wrong item',
+  damaged: 'damaged',
 };
+
+/**
+ * The case title follows the check's confidence: it only asserts what the check is sure of.
+ * "is the wrong size" when sure, "is probably the wrong size" when fairly sure, otherwise
+ * "may be the wrong size".
+ */
+function caseTitle(reason: string, item: string, buyer: string, v: Verdict | null): string {
+  if (reason === 'not_received') return `${buyer} says the ${item} has not arrived`;
+  const phrase = REASON_PHRASE[reason] ?? reason.replace(/_/g, ' ');
+  const module = REASON_MODULE[reason];
+  const bad = v?.reasons.filter((r) => r.finding === 'disagree') ?? [];
+  const lead = bad.find((r) => r.module === module) ?? bad[0];
+  const verb =
+    v?.kind === 'mismatch' && lead?.confidence === 'sure'
+      ? 'is'
+      : v?.kind === 'mismatch' && lead?.confidence === 'fairly_sure'
+        ? 'is probably'
+        : 'may be';
+  return `${buyer}'s ${item} ${verb} ${phrase}`;
+}
+
+/** Demo Store's own record, in one sentence. Sizes keep their case: "Sent the wrong size (L), delivered." */
+function shippingRecord(s: ShipmentRow | null): string | null {
+  if (!s || s.status === 'awaiting_shipment') return null;
+  const status = shipmentStatus(s).word;
+  const sent = sentWord(s);
+  return sent ? `${sent.word}, ${lowerFirst(status)}.` : `${status}.`;
+}
 
 // ---------------------------------------------------------------------------------------------
 // Orders
@@ -200,20 +197,24 @@ export interface MerchantOrderRow {
   intent: string;
   status: string;
   payment: StatusWord;
+  /** PayPal holds the money until the buyer's check (pay after check). */
+  held: boolean;
   shipment: StatusWord & {
     state: 'ready' | 'not_shipped' | 'in_transit' | 'delivered';
-    variant: string | null;
-    variantWord: string | null;
+    /** What the demo controls sent; a wrong item is flagged with "!", never "✓". */
+    sent: StatusWord | null;
     carrier: string | null;
     trackingNumber: string | null;
     trackerId: string | null;
     shippedAt: string | null;
     deliveredAt: string | null;
   };
-  verdict: StatusWord & { kind: Verdict['kind'] | 'none'; headline: string | null };
+  verdict: StatusWord & { kind: Verdict['kind'] | 'none'; summary: string | null };
   case: StatusWord & { id: string | null; stage: string | null };
   can: { ship: boolean; deliver: boolean; sendTracking: boolean };
-  /** One plain sentence on why an action is not available, for the console. */
+  /** Why shipping or delivery is not available right now, one plain sentence each. */
+  why: { ship: string | null; deliver: string | null };
+  /** When no demo action is possible: the one line shown instead of the controls. */
   blocked: string | null;
   /** Pay-after-check order that still has no capture: tracking goes to PayPal after the capture. */
   awaitingCapture: boolean;
@@ -233,6 +234,12 @@ function blockedReason(o: OrderRow, s: ShipmentRow | null): string | null {
   if (['readback_pending', 'confirmed', 'approval_pending'].includes(o.status))
     return 'The buyer has not approved the payment yet, so it cannot ship.';
   return null;
+}
+
+function deliverBlockedReason(o: OrderRow, s: ShipmentRow | null): string {
+  if (s?.deliveredAt) return 'Already delivered.';
+  if (s?.status === 'not_shipped') return 'Nothing was shipped, so nothing can be delivered.';
+  return blockedReason(o, s) ?? 'Ship it first. Nothing is on its way yet.';
 }
 
 export async function listMerchantOrders(scopeUserId?: string): Promise<MerchantOrderRow[]> {
@@ -275,7 +282,7 @@ export async function listMerchantOrders(scopeUserId?: string): Promise<Merchant
   const verdictOf = new Map<string, Verdict>();
   for (const v of vers)
     if (v.verdict && !verdictOf.has(v.orderId)) verdictOf.set(v.orderId, v.verdict as Verdict);
-  const caseOf = new Map<string, CaseRow>();
+  const caseOf = new Map<string, typeof tables.cases.$inferSelect>();
   for (const c of kases) if (!caseOf.has(c.orderId)) caseOf.set(c.orderId, c);
 
   return orders.map((o) => {
@@ -294,6 +301,11 @@ export async function listMerchantOrders(scopeUserId?: string): Promise<Merchant
     const ship = canShip(o, s);
     const deliver = s?.status === 'shipped' && !s.deliveredAt;
     const sendTracking = Boolean(o.captureId && s?.trackingNumber && !s.trackerId);
+    const payment = paymentStatus(o);
+    const why = {
+      ship: ship ? null : (blockedReason(o, s) ?? 'This order cannot ship right now.'),
+      deliver: deliver ? null : deliverBlockedReason(o, s),
+    };
     return {
       id: o.id,
       ref: shortRef(o.id),
@@ -306,23 +318,23 @@ export async function listMerchantOrders(scopeUserId?: string): Promise<Merchant
       amountCents: o.amountCents,
       intent: o.intent,
       status: o.status,
-      payment: paymentWord(o),
+      payment,
+      held: payment.word === 'On hold',
       shipment: {
-        ...shipmentWord(s),
+        ...shipmentStatus(s),
         state,
-        variant: s && s.status !== 'awaiting_shipment' ? s.shippedVariant : null,
-        variantWord:
-          s && s.status !== 'awaiting_shipment' ? (VARIANT_WORD[s.shippedVariant] ?? s.shippedVariant) : null,
+        sent: sentWord(s),
         carrier: s?.carrier ?? null,
         trackingNumber: s?.trackingNumber ?? null,
         trackerId: s?.trackerId ?? null,
         shippedAt: s?.shippedAt ?? null,
         deliveredAt: s?.deliveredAt ?? null,
       },
-      verdict: { ...verdictWord(v), kind: v?.kind ?? 'none', headline: v?.headline ?? null },
-      case: { ...stageWord(visibleCase), id: visibleCase?.id ?? null, stage: visibleCase?.stage ?? null },
+      verdict: { ...verdictStatus(v?.kind), kind: v?.kind ?? 'none', summary: verdictSummary(v) },
+      case: { ...caseStatus(visibleCase?.stage), id: visibleCase?.id ?? null, stage: visibleCase?.stage ?? null },
       can: { ship, deliver, sendTracking },
-      blocked: ship || deliver ? null : blockedReason(o, s),
+      why,
+      blocked: ship || deliver || sendTracking ? null : (why.ship ?? why.deliver),
       awaitingCapture: o.intent === 'AUTHORIZE' && !o.captureId,
     };
   });
@@ -465,7 +477,7 @@ export async function shipOrder(orderId: string, variant: ShipChoice): Promise<M
   return {
     ok: true,
     paypal: t.sync,
-    message: `Order ${ref} shipped with ${carrier}: the ${VARIANT_WORD[variant]}. Tracking number ${number}. ${trackingSentence(t.sync, awaitingCapture)}`,
+    message: `Order ${ref} shipped with ${carrier}: ${VARIANT_WORD[variant]}. Tracking number ${number}. ${trackingSentence(t.sync, awaitingCapture)}`,
   };
 }
 
@@ -550,7 +562,8 @@ export interface Suggestion {
 
 /**
  * The suggested fair response. Deterministic: a mismatch with at least one "sure" reason earns a
- * full refund; anything less certain asks for a daylight photo. Shown, never sent.
+ * full refund; anything less certain asks for a daylight photo. Shown, never sent. Reasons are
+ * told to the merchant in the third person, never in the buyer's own words.
  */
 export function suggestResponse(
   v: Verdict | null,
@@ -562,14 +575,14 @@ export function suggestResponse(
     return {
       action: 'refund',
       title: `Refund ${amount} in full`,
-      why: `The buyer's check is sure about this: ${sure.sentence}`,
+      why: `The buyer's check is sure. ${reasonForSeller(sure)}`,
     };
   if (v && v.kind !== 'match') {
-    const doubt = v.reasons.find((r) => r.finding !== 'agree');
+    const doubt = v.reasons.find((r) => r.finding === 'disagree') ?? v.reasons.find((r) => r.finding !== 'agree');
     return {
       action: 'photo',
       title: 'Ask for a photo in daylight',
-      why: `The check was not sure${doubt ? `: ${doubt.sentence}` : '.'} A clear photo by a window settles it either way.`,
+      why: `The buyer's check is not sure enough to settle it.${doubt ? ` ${reasonForSeller(doubt)}` : ''} A clear photo by a window settles it either way.`,
     };
   }
   if (v?.kind === 'match')
@@ -578,7 +591,7 @@ export function suggestResponse(
     return {
       action: 'refund',
       title: `Refund ${amount} in full`,
-      why: 'Your own records say this order was never shipped.',
+      why: "Demo Store's own records say this order was never shipped.",
     };
   return {
     action: 'tracking',
@@ -607,10 +620,11 @@ export interface MerchantCase {
   size: string | null;
   amount: string;
   stage: string;
-  stageWord: StatusWord;
+  status: StatusWord;
   open: boolean;
   reason: string;
-  reasonWord: string;
+  /** "Sam's Linen shirt may be the wrong size": asserts only what the check is sure of. */
+  title: string;
   createdAt: string;
   dueAt: string | null;
   dueWords: string | null;
@@ -620,13 +634,11 @@ export interface MerchantCase {
   readbackText: string | null;
   verdict: {
     kind: Verdict['kind'];
-    headline: string;
     word: StatusWord;
-    reasons: (Pick<VerdictReason, 'module' | 'finding' | 'sentence' | 'expected' | 'observed'> & {
-      confidence: string;
-    })[];
+    reasons: ReasonRow[];
   } | null;
-  shippedWord: string | null;
+  /** Demo Store's own shipping record in one sentence, e.g. "Sent the wrong size (L), delivered." */
+  shippingRecord: string | null;
   payment: StatusWord;
   refundPath: 'refund' | 'void' | 'none';
   offers: CaseOffer[];
@@ -738,6 +750,8 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
     const v = verdictOf.get(o.id) ?? null;
     const s = shipOf.get(o.id) ?? null;
     const amount = money(o.amountCents, o.currency);
+    const buyer = nameOf.get(o.userId) ?? 'Buyer';
+    const item = snap?.title ?? o.title;
     const open = c.stage !== 'resolved';
     const due = open ? dueWords(c.dueAt) : { words: null, overdue: false };
     let dispute: MerchantCase['dispute'] = null;
@@ -773,16 +787,16 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
       ref: shortRef(c.id),
       orderId: o.id,
       orderRef: shortRef(o.id),
-      buyer: nameOf.get(o.userId) ?? 'Buyer',
-      item: snap?.title ?? o.title,
+      buyer,
+      item,
       colour: snap?.attributes.colour ?? null,
       size: snap?.attributes.size ?? null,
       amount,
       stage: c.stage,
-      stageWord: stageWord(c),
+      status: caseStatus(c.stage),
       open,
       reason: c.reason,
-      reasonWord: REASON_WORD[c.reason] ?? c.reason.replace(/_/g, ' '),
+      title: caseTitle(c.reason, item, buyer, v),
       createdAt: c.createdAt,
       dueAt: c.dueAt,
       dueWords: due.words,
@@ -790,23 +804,9 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
       evidencePackId: c.evidencePackId,
       evidenceSummary: c.evidencePackId ? (packOf.get(c.evidencePackId) ?? null) : null,
       readbackText: rbOf.get(o.readbackId) ?? null,
-      verdict: v
-        ? {
-            kind: v.kind,
-            headline: v.headline,
-            word: verdictWord(v),
-            reasons: v.reasons.map((r) => ({
-              module: r.module,
-              finding: r.finding,
-              sentence: r.sentence,
-              expected: r.expected,
-              observed: r.observed,
-              confidence: CONFIDENCE_WORD[r.confidence] ?? r.confidence,
-            })),
-          }
-        : null,
-      shippedWord: s && s.status !== 'awaiting_shipment' ? shipmentWord(s).word : null,
-      payment: paymentWord(o),
+      verdict: v ? { kind: v.kind, word: verdictStatus(v.kind), reasons: reasonRows(v) } : null,
+      shippingRecord: shippingRecord(s),
+      payment: paymentStatus(o),
       refundPath: o.captureId ? 'refund' : o.authorizationId && o.status !== 'voided' ? 'void' : 'none',
       offers: (c.offers as CaseOffer[]) ?? [],
       outcome: outcomeWords(c.outcome, o.currency),

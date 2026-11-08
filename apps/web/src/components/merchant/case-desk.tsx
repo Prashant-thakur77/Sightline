@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import type { CaseAction, MerchantCase, MerchantResult } from '@/server/merchant';
-import { StatusChip } from './grid';
+import { StatusChip } from './status-chip';
 
 const OFFER_WORDS: Record<string, string> = {
   REFUND: 'Refund',
@@ -14,20 +14,6 @@ const OFFER_WORDS: Record<string, string> = {
   REPLACEMENT_WITHOUT_REFUND: 'Replacement',
   PARTIAL_REFUND: 'Partial refund',
   REFUND_WITH_RETURN_SHIPMENT_LABEL: 'Refund with a return label',
-};
-
-const FINDING: Record<string, { glyph: string; word: string }> = {
-  agree: { glyph: '✓', word: 'Matches' },
-  disagree: { glyph: '✕', word: 'Does not match' },
-  unknown: { glyph: '?', word: 'Could not tell' },
-};
-
-const MODULE_WORDS: Record<string, string> = {
-  colour: 'Colour',
-  size: 'Size',
-  identity: 'Item',
-  damage: 'Condition',
-  quality: 'Photo quality',
 };
 
 const ACTIONS: { action: CaseAction; label: string }[] = [
@@ -201,35 +187,29 @@ function CaseCard({
 
   const confirm = pending ? confirmCopy(c, pending) : null;
   const refundBlocked = !c.dispute && c.refundPath === 'none';
-  const caseName = (
-    <span className="sr-only">
-      {' '}
-      on case {c.ref} for {c.buyer}
-    </span>
-  );
 
   return (
     <li id={`case-${c.id}`} className="mx-case" data-open={c.open || undefined}>
       <article aria-labelledby={h}>
-        <p className="mx-case-tab">
+        <p id={`${h}-tab`} className="mx-case-tab">
           Case #{c.ref} · Order #{c.orderRef}
         </p>
         <div className="mx-case-box">
           <header className="mx-case-head">
             <h3 id={h} className="mx-case-h">
-              {c.buyer}: {c.item}, {c.reasonWord.toLowerCase()}
+              {c.title}
             </h3>
             <ul className="mx-case-meta" aria-label="Case status">
               <li>
-                <StatusChip s={c.stageWord} />
+                <StatusChip s={c.status} />
               </li>
               {c.dueWords && (
                 <li>
                   <StatusChip
                     s={{
                       word: c.dueWords,
-                      glyph: c.overdue ? '!' : '◷',
-                      tone: c.overdue ? 'bad' : 'neutral',
+                      glyph: c.overdue ? '!' : '…',
+                      tone: c.overdue ? 'bad' : 'waiting',
                     }}
                   />
                 </li>
@@ -268,33 +248,35 @@ function CaseCard({
                 {c.verdict ? (
                   <>
                     <p className="mx-verdict" data-kind={c.verdict.kind}>
-                      <StatusChip s={c.verdict.word} /> <span>{c.verdict.headline}</span>
+                      <StatusChip s={c.verdict.word} />
                     </p>
                     {c.verdict.reasons.length > 0 && (
                       <table className="verdict-table mx-reasons">
-                        <caption className="sr-only">Each check, what it found, and how sure it is</caption>
+                        <caption className="sr-only">
+                          Each check, its result, what it found and how sure it is
+                        </caption>
                         <thead>
                           <tr>
                             <th scope="col">Check</th>
-                            <th scope="col">Finding</th>
+                            <th scope="col">Result</th>
+                            <th scope="col">What it found</th>
                             <th scope="col">How sure</th>
-                            <th scope="col">In words</th>
                           </tr>
                         </thead>
                         <tbody>
                           {c.verdict.reasons.map((r, i) => (
-                            <tr key={`${r.module}-${i}`}>
-                              <th scope="row">{MODULE_WORDS[r.module] ?? r.module}</th>
+                            <tr key={`${r.module}-${i}`} data-finding={r.finding}>
+                              <th scope="row">{r.label}</th>
                               <td>
                                 <span className="mx-finding">
                                   <span className="verdict-mark" data-finding={r.finding} aria-hidden="true">
-                                    {FINDING[r.finding]?.glyph ?? '?'}
+                                    {r.result.glyph}
                                   </span>
-                                  {FINDING[r.finding]?.word ?? r.finding}
+                                  {r.result.word}
                                 </span>
                               </td>
+                              <td>{r.text}</td>
                               <td>{r.confidence}</td>
-                              <td>{r.sentence}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -304,8 +286,8 @@ function CaseCard({
                 ) : (
                   <p>{c.buyer} has not checked the parcel with the camera.</p>
                 )}
-                {c.shippedWord && (
-                  <p className="mx-records">Your shipping record: {c.shippedWord.toLowerCase()}.</p>
+                {c.shippingRecord && (
+                  <p className="mx-records">Demo Store&rsquo;s shipping record: {c.shippingRecord}</p>
                 )}
                 {c.evidencePackId && (
                   <p>
@@ -397,28 +379,42 @@ function CaseCard({
                     Your reply
                   </h4>
                   <div className="mx-reply-actions">
-                    {ACTIONS.map((a) => (
-                      <button
-                        key={a.action}
-                        ref={(el) => {
-                          triggerRefs.current[a.action] = el;
-                        }}
-                        type="button"
-                        className={a.action === 'refund' ? 'btn btn-primary mx-btn' : 'btn mx-btn'}
-                        aria-describedby={h}
-                        aria-expanded={pending === a.action}
-                        disabled={anyBusy || (a.action === 'refund' && refundBlocked)}
-                        onClick={() => setPending(a.action)}
-                      >
-                        {a.label}
-                        {suggested === a.action && <span className="mx-suggested-tag">Suggested</span>}
-                        {caseName}
-                      </button>
-                    ))}
+                    {ACTIONS.map((a) => {
+                      const blocked = a.action === 'refund' && refundBlocked;
+                      const unavailable = anyBusy || blocked;
+                      return (
+                        <Fragment key={a.action}>
+                          <button
+                            ref={(el) => {
+                              triggerRefs.current[a.action] = el;
+                            }}
+                            type="button"
+                            className={
+                              a.action === 'refund' && !blocked ? 'btn btn-primary mx-btn' : 'btn mx-btn'
+                            }
+                            aria-describedby={blocked ? `${h}-norefund` : `${h}-tab`}
+                            aria-expanded={pending === a.action}
+                            aria-disabled={unavailable || undefined}
+                            onClick={() => {
+                              if (!unavailable) setPending(a.action);
+                            }}
+                          >
+                            {a.label}
+                            {suggested === a.action && (
+                              <span className="mx-suggested-tag">
+                                <span className="sr-only">, </span>Suggested
+                              </span>
+                            )}
+                          </button>
+                          {blocked && (
+                            <p id={`${h}-norefund`} className="mx-demo-note">
+                              This order has no PayPal payment to refund.
+                            </p>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </div>
-                  {refundBlocked && (
-                    <p className="mx-demo-note">This order has no PayPal payment to refund.</p>
-                  )}
 
                   {confirm && pending && (
                     <div className="mx-confirm" role="group" aria-labelledby={`${h}-confirm`}>
@@ -430,18 +426,24 @@ function CaseCard({
                         <button
                           type="button"
                           className="btn btn-primary mx-btn"
-                          disabled={busy}
+                          aria-disabled={busy || undefined}
                           onClick={async () => {
+                            if (busy) return;
                             await onRespond(pending);
                             setPending(null);
                           }}
                         >
                           {busy ? 'Sending…' : confirm.yes}
-                          {caseName}
                         </button>
-                        <button type="button" className="btn mx-btn" disabled={busy} onClick={cancel}>
+                        <button
+                          type="button"
+                          className="btn mx-btn"
+                          aria-disabled={busy || undefined}
+                          onClick={() => {
+                            if (!busy) cancel();
+                          }}
+                        >
                           Cancel
-                          {caseName}
                         </button>
                       </div>
                     </div>
