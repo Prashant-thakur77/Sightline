@@ -3,6 +3,7 @@ import { FiguresTicket } from '@/components/studio/figures-ticket';
 import { VerifiedDeliveryStudio } from '@/components/studio/verified-delivery-studio';
 import { ChartTables } from '@/components/studio/chart-tables';
 import { VERIFIED_DELIVERY_TITLE, verifiedDeliveryChartTables } from '@/components/studio/verified-delivery-report';
+import type { VerifiedDeliverySummary } from '@/components/studio/types';
 import { currentUser } from '@/server/session';
 import { loadVerifiedDelivery, studioAgentStatus, studioLicenceKey, verifiedDeliveryFigures } from '@/server/studio';
 
@@ -13,8 +14,8 @@ const DEFINITIONS = [
   { term: 'Verified delivery', text: 'The carrier delivered the parcel and the buyer then checked it with the camera.' },
   { term: 'Wrong-item rate', text: 'Checks that found a mismatch, out of all checks. A check that could not tell is not counted as wrong.' },
   {
-    term: 'Held, captured, voided, refunded',
-    text: "Each order counted once, under its payment state now. Held money waits for the buyer's check.",
+    term: 'On hold, paid, released, refunded',
+    text: "Each order counted once, under its PayPal payment state now. On hold means PayPal holds the money until the buyer's check. An order with no PayPal order counts as not paid: nothing was charged.",
   },
   { term: 'Cases avoided', text: 'Holds released after the check found the wrong item. The buyer was never charged, so no dispute was needed.' },
   { term: 'Time to resolution', text: 'From the case being opened to it being resolved.' },
@@ -22,6 +23,21 @@ const DEFINITIONS = [
 
 const stamp = (iso: string) =>
   new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** The lede says the money waited for the check only when PayPal really held it. */
+function lede(s: VerifiedDeliverySummary): string {
+  if (s.orders === 0) return 'No orders yet. The dashboard fills in as buyers order, check their parcels and open cases.';
+  const checked = `What happened after each parcel arrived: ${s.verifiedDeliveries} of ${plural(s.delivered, 'delivered order')} ${s.verifiedDeliveries === 1 ? 'was' : 'were'} checked with the camera.`;
+  if (s.heldForCheck > 0)
+    return `${checked} For ${s.heldForCheck === s.verifiedDeliveries ? (s.heldForCheck === 1 ? 'it' : 'all of them') : `${s.heldForCheck} of them`}, PayPal held the money until the check answered.`;
+  if (s.noPayPalOrders > 0)
+    return s.noPayPalOrders === s.orders
+      ? `${checked} ${s.orders === 1 ? 'This order has no PayPal order' : 'None of these orders has a PayPal order'}, so no money was held or charged.`
+      : `${checked} ${plural(s.noPayPalOrders, 'order')} ${s.noPayPalOrders === 1 ? 'has' : 'have'} no PayPal order, so nothing was charged for ${s.noPayPalOrders === 1 ? 'it' : 'them'}.`;
+  return checked;
+}
 
 export default async function MerchantAnalytics() {
   // The layout asks for a demo session first; this page shows only that demo shopper's orders.
@@ -37,9 +53,7 @@ export default async function MerchantAnalytics() {
           <p className="eyebrow">Demo Store · Analytics</p>
           <h1 className="mx-h1">Verified delivery</h1>
           <p className="mx-lede">
-            {s.orders === 0
-              ? 'No orders yet. The dashboard fills in as buyers order, check their parcels and open cases.'
-              : `What happened after each parcel arrived: ${s.checks} of ${s.delivered} delivered orders were checked with the camera, and the money waited for the answer.`}
+            {lede(s)}
           </p>
           <p className="mx-hint">
             Read from your demo shopper&apos;s order, check and case records each time the page loads. The ticket gives the
@@ -64,7 +78,7 @@ export default async function MerchantAnalytics() {
           heading="The figures"
           asOf={stamp(data.asOf)}
           figures={figures}
-          stub={`${s.orders} orders · ${s.checks} checks · ${s.openCases + s.resolvedCases} cases`}
+          stub={`${plural(s.orders, 'order')} · ${plural(s.checks, 'check')} · ${plural(s.openCases + s.resolvedCases, 'case')}`}
         />
       </div>
 

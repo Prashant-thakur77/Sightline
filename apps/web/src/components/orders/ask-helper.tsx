@@ -72,7 +72,7 @@ export function AskHelper({ orderId, helperName }: { orderId: string; helperName
     <div id="helper" className="grid gap-3">
       {error && <p className="card-refusal">{error}</p>}
       {!link ? (
-        <button ref={askRef} type="button" className="btn btn-xl" onClick={ask} aria-disabled={busy || undefined}>
+        <button ref={askRef} type="button" className="btn btn-xl" onClick={ask} aria-disabled={busy || undefined} data-focus-target="">
           {busy ? 'Making a link…' : `Ask ${helperName} to look`}
         </button>
       ) : (

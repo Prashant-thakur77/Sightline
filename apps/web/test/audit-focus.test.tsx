@@ -274,4 +274,18 @@ describe('CaseDesk', () => {
     expect(document.activeElement?.id).toBe('case-cas_1-result');
     expect(document.activeElement?.textContent).toContain(message);
   });
+
+  it('closes the reply question on Escape and puts focus back on the button that opened it', async () => {
+    wrap(<CaseDesk cases={[kase(true)]} />);
+    const trigger = screen.getByRole('button', { name: /^Offer a replacement/ });
+    fireEvent.click(trigger);
+    await settle();
+    const question = screen.getByRole('heading', { name: 'Offer Maya a replacement?' });
+    expect(document.activeElement).toBe(question);
+    fireEvent.keyDown(question, { key: 'Escape' });
+    await settle();
+    expect(screen.queryByRole('heading', { name: 'Offer Maya a replacement?' })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

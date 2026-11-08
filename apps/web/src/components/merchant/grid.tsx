@@ -136,7 +136,9 @@ export function DataGrid<T extends { id: string }>({
       rowSelection: onSelect
         ? { mode: 'singleRow', checkboxes: false, enableClickSelection: true }
         : undefined,
+      // Tab leaves the grid from a cell or a header, as the hint above the grid says.
       tabToNextCell: () => false,
+      tabToNextHeader: () => false,
       suppressDragLeaveHidesColumns: true,
       enableCellTextSelection: !onSelect,
       ensureDomOrder: true,

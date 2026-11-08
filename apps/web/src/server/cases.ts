@@ -1,7 +1,7 @@
 import 'server-only';
 import { and, desc, eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import { addBusinessDays, formatMoney, newId, reasonForSeller, type OrderStatus, type Readback, type Verdict } from '@sightline/core';
+import { addBusinessDays, formatMoney, newId, reasonForSeller, spokenDate, type OrderStatus, type Readback, type Verdict } from '@sightline/core';
 import { buildManifest, paypalRequestId, signHash, type EvidenceManifest } from '@sightline/evidence';
 import { db } from './runtime';
 import { getBlob } from './blobs';
@@ -74,7 +74,8 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
   if (!o) throw new Error('Order not found');
   const [existing] = await db().select().from(tables.cases).where(eq(tables.cases.orderId, orderId)).orderBy(desc(tables.cases.createdAt)).limit(1);
   const amount = formatMoney({ cents: o.amountCents, currency: o.currency });
-  if (existing && existing.stage !== 'draft') {
+  // A pack that was built but never sent ("Not now") is rebuilt; anything past that is a sent case.
+  if (existing && existing.stage !== 'draft' && existing.stage !== 'evidence_built') {
     return { caseId: existing.id, evidencePackId: existing.evidencePackId ?? '', summary: 'This case is already open.', path: isHeld(o) ? 'void' : 'refund-request', amount };
   }
   const [snapRow] = await db().select().from(tables.productSnapshots).where(eq(tables.productSnapshots.id, o.snapshotId)).limit(1);
@@ -197,7 +198,7 @@ export async function sendMoneyBack(userId: string, caseId: string): Promise<Mon
   await audit({ userId, actor: 'user', action: 'case.sent_to_seller', subjectId: o!.id, payload: { caseId: c.id, dueAt: due.toISOString() } });
   return {
     stage: 'seller_contacted',
-    say: `I sent your case to Demo Store with the evidence. They have until ${new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'UTC' }).format(due)} to reply. If they don't, I'll ask PayPal to step in. I'll tell you as soon as anything changes.`,
+    say: `I sent your case to Demo Store with the evidence. They have until ${spokenDate(due)} to reply. If they don't, I'll ask PayPal to step in. I'll tell you as soon as anything changes.`,
   };
 }
 

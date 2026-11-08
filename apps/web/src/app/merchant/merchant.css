@@ -8,6 +8,8 @@
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
+  /* The column never grows past the viewport, whatever the text size. */
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* ---------- Header ---------- */
@@ -138,12 +140,15 @@
 }
 .mx-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-7);
   min-width: 0;
 }
 .mx-page-head {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
+  overflow-wrap: anywhere;
 }
 .mx-h1 {
   font-size: var(--step-4);
@@ -212,6 +217,19 @@
   color: var(--yellow-ink);
   font-family: var(--font-mono);
   font-weight: 800;
+}
+/* The cases count is a link to the cases desk: the whole pill is its target. */
+.mx-count-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  color: inherit;
+  text-decoration: none;
+}
+.mx-count-link .mx-count-label {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 .mx-counts li[data-zero] .mx-count-n {
   background: transparent;

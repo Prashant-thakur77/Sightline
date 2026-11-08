@@ -1,15 +1,19 @@
 import { PRODUCT_NAME } from '@sightline/core';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { loadSuites } from '@/server/stats';
+import { platformName, sentence } from '@/server/studio';
+import { utcWhen } from '@/lib/when';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Checkout Barrier Index' };
 
 interface PlatformRow {
   stores: number;
+  crawled?: number;
   medianViolationsProduct?: number;
   medianViolationsHome?: number;
   keyboardReachAddToCartRate?: number;
+  keyboardReachDenominator?: number;
 }
 interface Details {
   byPlatform?: Record<string, PlatformRow>;
@@ -17,6 +21,16 @@ interface Details {
 }
 
 const pct = (x?: number) => (typeof x === 'number' ? `${Math.round(x * 100)}%` : '—');
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** The interval as the results file wrote it, named: an IQR is a spread, not a 95% interval. */
+function intervalText(interval: string): string {
+  const iqr = /^IQR\s+(.*)$/i.exec(interval);
+  if (iqr) return `Middle half of stores (interquartile range): ${iqr[1]}`;
+  const wilson = /^95% Wilson\s+(.*)$/i.exec(interval);
+  if (wilson) return `95% Wilson interval: ${wilson[1]}`;
+  return interval;
+}
 
 export default async function BarrierIndex() {
   const suite = (await loadSuites()).find((s) => s.suite === 'barrier') as (Awaited<ReturnType<typeof loadSuites>>[number] & { details?: Details }) | undefined;
@@ -33,7 +47,11 @@ export default async function BarrierIndex() {
             How hard real online stores are to use with a screen reader or a keyboard on the way to checkout, measured with automated accessibility
             checks and a keyboard-only walk on each product page. Stores are reported by platform, never named.
           </p>
-          {suite && <p className="muted">Measured {new Date(suite.ranAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} · build {suite.gitSha}</p>}
+          {suite && (
+            <p className="muted">
+              Measured {utcWhen(suite.ranAt)} · build {suite.gitSha}
+            </p>
+          )}
         </section>
 
         {!suite ? (
@@ -49,7 +67,12 @@ export default async function BarrierIndex() {
                   <li key={h.id}>
                     <p className="bi-fig">{h.value}</p>
                     <p>{h.label}</p>
-                    {h.interval && <p className="muted">95% interval {h.interval}{h.n ? `, n = ${h.n}` : ''}</p>}
+                    {h.interval && (
+                      <p className="muted">
+                        {intervalText(h.interval)}
+                        {h.n ? `, n = ${h.n}` : ''}
+                      </p>
+                    )}
                     {h.note && <p className="muted">{h.note}</p>}
                   </li>
                 ))}
@@ -61,13 +84,15 @@ export default async function BarrierIndex() {
                 <h2 id="bi-plat-h" className="lp-h2">
                   By store platform
                 </h2>
-                <div className="table-wrap">
+                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}
+                <div className="table-wrap" tabIndex={0} role="region" aria-label="Results by store platform, scrolls sideways">
                   <table className="verdict-table">
                     <caption className="sr-only">Accessibility failures and keyboard reach by store platform</caption>
                     <thead>
                       <tr>
                         <th scope="col">Platform</th>
-                        <th scope="col">Stores</th>
+                        <th scope="col">Stores sampled</th>
+                        <th scope="col">Product page audited</th>
                         <th scope="col">Median failures, product page</th>
                         <th scope="col">Median failures, home page</th>
                         <th scope="col">Add to cart reachable by keyboard</th>
@@ -76,11 +101,15 @@ export default async function BarrierIndex() {
                     <tbody>
                       {Object.entries(details.byPlatform).map(([name, r]) => (
                         <tr key={name}>
-                          <th scope="row">{name}</th>
+                          <th scope="row">{platformName(name)}</th>
                           <td>{r.stores}</td>
+                          <td>{r.crawled ?? '—'}</td>
                           <td>{r.medianViolationsProduct ?? '—'}</td>
                           <td>{r.medianViolationsHome ?? '—'}</td>
-                          <td>{pct(r.keyboardReachAddToCartRate)}</td>
+                          <td>
+                            {pct(r.keyboardReachAddToCartRate)}
+                            {typeof r.keyboardReachAddToCartRate === 'number' && r.keyboardReachDenominator ? ` of ${r.keyboardReachDenominator} judged` : ''}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -97,7 +126,7 @@ export default async function BarrierIndex() {
                 <ol className="bi-rules">
                   {details.topRules.slice(0, 10).map((r) => (
                     <li key={r.id}>
-                      <strong className="mono">{r.id}</strong>: {r.help ?? ''} Found on {r.storesAffected} stores.
+                      <strong className="mono">{r.id}</strong>: {sentence(r.help ?? '')} Found on {plural(r.storesAffected, 'store')}.
                     </li>
                   ))}
                 </ol>

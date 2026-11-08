@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { currentUser } from '@/server/session';
 import { OrdersConsole } from '@/components/merchant/orders-console';
 import { listMerchantOrders, paypalConfigured } from '@/server/merchant';
@@ -15,11 +16,11 @@ export default async function MerchantOrders() {
   const inTransit = rows.filter((r) => r.shipment.state === 'in_transit').length;
   const needReply = rows.filter((r) => r.case.stage === 'seller_contacted').length;
   const held = rows.filter((r) => r.held).length;
-  const counts = [
+  const counts: { n: number; label: string; href?: string }[] = [
     { n: toShip, label: 'ready to ship' },
     { n: inTransit, label: 'in transit' },
     { n: held, label: "on hold until the buyer's check" },
-    { n: needReply, label: needReply === 1 ? 'case needs your reply' : 'cases need your reply' },
+    { n: needReply, label: needReply === 1 ? 'case needs your reply' : 'cases need your reply', href: '/merchant/disputes' },
   ];
 
   return (
@@ -34,7 +35,15 @@ export default async function MerchantOrders() {
           <ul className="mx-counts" aria-label="At a glance">
             {counts.map((c) => (
               <li key={c.label} data-zero={c.n === 0 || undefined}>
-                <span className="mx-count-n">{c.n}</span> {c.label}
+                {c.href && c.n > 0 ? (
+                  <Link href={c.href} className="mx-count-link">
+                    <span className="mx-count-n">{c.n}</span> <span className="mx-count-label">{c.label}</span>
+                  </Link>
+                ) : (
+                  <>
+                    <span className="mx-count-n">{c.n}</span> {c.label}
+                  </>
+                )}
               </li>
             ))}
           </ul>

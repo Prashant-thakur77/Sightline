@@ -21,17 +21,26 @@ export function CheckFlow({
   ordered,
   demoShots,
   initial,
+  helperName,
 }: {
   orderId: string;
   itemName: string;
   ordered: { title: string; imageUrl?: string; colour?: string; size?: string };
   demoShots?: { kind: ShotKind; url: string }[];
   initial?: { verdict: Verdict; itemPhoto?: string } | null;
+  /** The buyer's trusted helper, if they have one; the "ask" action is shown only then. */
+  helperName?: string | null;
 }) {
   const { announce } = useAnnouncer();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ verdict: Verdict; next?: Next; itemPhoto?: string; fresh?: boolean } | null>(initial ?? null);
   const [error, setError] = useState<string | null>(null);
+  // Set when the person leaves a verdict to check again, so the camera step takes focus.
+  const [cameBack, setCameBack] = useState(false);
+  const again = () => {
+    setCameBack(true);
+    setResult(null);
+  };
 
   const submit = async (shots: CapturedShot[]) => {
     setBusy(true);
@@ -42,13 +51,14 @@ export function CheckFlow({
     for (const s of shots) form.append(s.kind, s.blob, `${s.kind}.jpg`);
     try {
       const res = await fetch(`/api/orders/${orderId}/check`, { method: 'POST', body: form });
-      const data = (await res.json()) as { verdict?: Verdict; next?: Next; itemPhoto?: string; error?: string };
-      if (!res.ok || !data.verdict) throw new Error(data.error ?? 'The check did not finish.');
+      const data = (await res.json().catch(() => ({}))) as { verdict?: Verdict; next?: Next; itemPhoto?: string; error?: string };
+      if (!res.ok || !data.verdict) throw new Error(data.error ?? 'Something went wrong on my side. Your photos are still here. Try again.');
       setResult({ verdict: data.verdict, next: data.next, itemPhoto: data.itemPhoto, fresh: true });
       cue(data.verdict.kind === 'match' ? 'done' : 'attention');
       announce(data.next?.say ?? data.verdict.headline, { politeness: 'assertive', source: 'check' });
     } catch (e) {
-      const msg = (e as Error).message;
+      // A network failure has no words of its own; a server refusal does.
+      const msg = e instanceof TypeError ? 'Could not reach the server. Your photos are still here. Try again.' : (e as Error).message;
       setError(msg);
       cue('error');
       announce(msg, { politeness: 'assertive', source: 'check' });
@@ -71,16 +81,21 @@ export function CheckFlow({
               <Link className="btn btn-primary btn-xl" href={`/app/orders/${orderId}#money-back`}>
                 Get my money back
               </Link>
-              <button type="button" className="btn btn-xl" onClick={() => setResult(null)}>
+              <button type="button" className="btn btn-xl" onClick={again}>
                 Check again
               </button>
             </>
           ) : v.kind === 'unsure' ? (
             <>
-              <Link className="btn btn-primary btn-xl" href={`/app/orders/${orderId}#helper`}>
-                {result.next?.helperName ? `Ask ${result.next.helperName} to look` : 'Ask someone I trust'}
+              {(result.next?.helperName ?? helperName) && (
+                <Link className="btn btn-primary btn-xl" href={`/app/orders/${orderId}#checked`}>
+                  Ask {result.next?.helperName ?? helperName} to look
+                </Link>
+              )}
+              <Link className={(result.next?.helperName ?? helperName) ? 'btn btn-xl' : 'btn btn-primary btn-xl'} href={`/app/orders/${orderId}#money-back`}>
+                Get my money back
               </Link>
-              <button type="button" className="btn btn-xl" onClick={() => setResult(null)}>
+              <button type="button" className="btn btn-xl" onClick={again}>
                 Try again in better light
               </button>
             </>
@@ -101,7 +116,7 @@ export function CheckFlow({
           {error}
         </p>
       )}
-      <CameraCheck itemName={itemName} onSubmit={submit} demoShots={demoShots} busy={busy} />
+      <CameraCheck itemName={itemName} onSubmit={submit} demoShots={demoShots} busy={busy} focusOnMount={cameBack} />
     </div>
   );
 }

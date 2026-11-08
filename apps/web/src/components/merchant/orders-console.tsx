@@ -178,8 +178,21 @@ export function OrdersConsole({ rows, paypalReady }: { rows: MerchantOrderRow[];
   if (!selected) {
     return (
       <div className="mx-empty">
-        <p className="mx-empty-h">No orders yet.</p>
-        <p>When a buyer pays Demo Store with PayPal, the order appears here, newest first.</p>
+        <p className="mx-empty-h">{paypalReady ? 'No orders yet.' : 'Why there are no orders'}</p>
+        {paypalReady ? (
+          <p>When your demo shopper pays Demo Store with PayPal, the order appears here, newest first.</p>
+        ) : (
+          <>
+            <p>
+              Orders reach Demo Store only through PayPal, and PayPal is not connected on this server. So a purchase stops after the
+              payment check, nothing is charged, and no order appears here.
+            </p>
+            <p>
+              What works now: <Link href="/app">shop as your demo shopper</Link> up to the payment check, open a signed payment receipt
+              from the <Link href="/judge">judge page</Link>, and read the <Link href="/barrier-index">Barrier Index</Link>.
+            </p>
+          </>
+        )}
       </div>
     );
   }

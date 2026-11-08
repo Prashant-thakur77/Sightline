@@ -36,7 +36,8 @@ export function OrdersTable({
 }) {
   const label = (text: string) => <span className="mx-t-label">{text}</span>;
   return (
-    <div className="mx-table-wrap">
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1)
+    <div className="mx-table-wrap" tabIndex={0} role="region" aria-labelledby={labelledBy}>
       <table className="mx-table" aria-labelledby={labelledBy}>
         <thead>
           <tr>

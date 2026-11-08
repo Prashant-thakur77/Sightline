@@ -45,7 +45,7 @@ export async function createHelperRequest(userId: string, orderId: string): Prom
   const s = snap!.body as ProductSnapshot;
   const id = newId('hlq');
   const { token, hash } = tokenFor(id);
-  const question = `Does this look like the ${s.attributes.colour ?? ''} ${s.title.toLowerCase()} in size ${s.attributes.size ?? 'as listed'}?`.replace(/\s+/g, ' ');
+  const question = `Does this look like the ${s.title}${s.attributes.colour ? ` in ${s.attributes.colour}` : ''}, size ${s.attributes.size ?? 'as listed'}?`.replace(/\s+/g, ' ');
   await db().insert(tables.helperRequests).values({ id, verificationId: ver.id, helperId: helper.id, question, tokenHash: hash, expiresAt: new Date(Date.now() + TTL_MS).toISOString() });
   await audit({ userId, actor: 'user', action: 'helper.asked', subjectId: orderId, payload: { helperRequestId: id, helper: helper.name } });
   return { link: `${appUrl()}/helper/${token}`, helperName: helper.name };
@@ -80,7 +80,17 @@ export async function answerHelper(token: string, answer: 'matches' | 'different
   await db().update(tables.helperRequests).set({ answer: { answer, note: note.slice(0, 500) }, answeredAt: at }).where(eq(tables.helperRequests.id, r.request.id));
   await db().update(tables.verifications).set({ helperAnswer: { answer, note: note.slice(0, 500), at }, updatedAt: at }).where(eq(tables.verifications.id, r.request.verificationId));
   const words = answer === 'matches' ? 'thinks it matches what you ordered' : answer === 'different' ? 'thinks it is not what you ordered' : "couldn't tell from the photos";
-  await notify(r.userId, 'helper', `Your helper ${words}.${note ? ` They said: “${note.slice(0, 200)}”.` : ''} Nothing about your payment has changed; you decide what happens next.`, `/app/orders/${r.orderId}`);
+  const [h] = r.request.helperId
+    ? await db().select({ name: tables.helpers.name }).from(tables.helpers).where(eq(tables.helpers.id, r.request.helperId)).limit(1)
+    : [];
+  // The note ends with exactly one full stop inside the quotes, whatever the helper typed.
+  const said = note.trim() ? ` They said: “${note.trim().slice(0, 200).replace(/[.!?…]+$/, '')}.”` : '';
+  await notify(
+    r.userId,
+    'helper',
+    `${h?.name ?? 'Your helper'} ${words}.${said} Nothing about your payment has changed; you decide what happens next.`,
+    `/app/orders/${r.orderId}`,
+  );
   await audit({ userId: r.userId, actor: 'helper', action: 'helper.answered', subjectId: r.orderId, payload: { answer } });
   return { already: false };
 }

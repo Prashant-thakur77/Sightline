@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import type { Confidence, ProductSnapshot, Verdict, VerdictReason } from '@sightline/core';
+import { paymentStatus, type Confidence, type ProductSnapshot, type Verdict, type VerdictReason } from '@sightline/core';
 import { centsText, durationText } from '@/components/studio/formats';
 import type {
   BarrierData,
@@ -93,19 +93,14 @@ const SHIPPED: Record<string, string> = {
 type OrderRecord = typeof tables.orders.$inferSelect;
 
 /*
- * The payment and case words below follow the merchant console's (server/merchant.ts). They are
- * repeated here so the public Barrier Index dashboard never loads merchant or PayPal code.
+ * Where the money is comes from paymentStatus in @sightline/core, the same words the buyer's pages
+ * and the merchant console use. "On hold" means PayPal holds an authorization; an order with no
+ * PayPal order is "Not paid", whatever its delivery status says.
  */
-const PAST_PAYMENT = ['authorized', 'shipped', 'delivered', 'verified_mismatch', 'verified_unsure', 'case_open'];
+const MONEY = { held: 'On hold', paid: 'Paid', released: 'Hold released', refunded: 'Refunded', notPaid: 'Not paid' } as const;
 
 function moneyState(o: OrderRecord): MoneyState {
-  if (o.status === 'voided') return 'Voided';
-  if (o.status === 'resolved_refund') return 'Refunded';
-  if (o.status === 'failed') return 'Not placed';
-  if (['readback_pending', 'confirmed', 'approval_pending'].includes(o.status)) return 'Awaiting approval';
-  if (o.captureId || o.status === 'captured') return 'Captured';
-  if (o.intent === 'AUTHORIZE' && (o.authorizationId || PAST_PAYMENT.includes(o.status))) return 'Held';
-  return 'Pending';
+  return paymentStatus(o).word;
 }
 
 /** Short, speakable reference for an id: the last six characters, upper case. */
@@ -297,6 +292,7 @@ export async function loadVerifiedDelivery(scopeUserId: string): Promise<Verifie
     const delivered = s?.deliveredAt ? 1 : 0;
     const checked = checkedOrders.has(o.id) ? 1 : 0;
     const cents = (want: MoneyState) => (state === want ? o.amountCents : 0);
+    const noPayPal = state === MONEY.notPaid && !o.paypalOrderId;
     return {
       id: o.id,
       ref: shortRef(o.id),
@@ -309,14 +305,19 @@ export async function loadVerifiedDelivery(scopeUserId: string): Promise<Verifie
       moneyState: state,
       payAfterCheck: o.intent === 'AUTHORIZE' ? 1 : 0,
       amountCents: o.amountCents,
-      heldCents: cents('Held'),
-      capturedCents: cents('Captured'),
-      voidedCents: cents('Voided'),
-      refundedCents: cents('Refunded'),
+      heldCents: cents(MONEY.held),
+      capturedCents: cents(MONEY.paid),
+      voidedCents: cents(MONEY.released),
+      refundedCents: cents(MONEY.refunded),
+      // paymentStatus says "No PayPal order exists. Nothing was charged." for exactly these.
+      notPaidCents: noPayPal ? o.amountCents : 0,
+      noPayPalOrder: noPayPal ? 1 : 0,
       shipped: !s || s.status === 'awaiting_shipment' ? 'Not shipped yet' : (SHIPPED[s.shippedVariant] ?? s.shippedVariant),
       delivered,
       checked,
       verifiedDelivery: delivered && checked ? 1 : 0,
+      // PayPal held this order's money while the buyer checked the parcel.
+      heldForCheck: checked && o.intent === 'AUTHORIZE' && o.paypalOrderId && o.authorizationId ? 1 : 0,
       // A hold released after the buyer's check found the wrong item: a dispute that never had to happen.
       voidedAfterMismatch: voidedAfter.has(o.id) && mismatchOrders.has(o.id) ? 1 : 0,
     };
@@ -391,6 +392,9 @@ export async function loadVerifiedDelivery(scopeUserId: string): Promise<Verifie
       capturedCents: sum(orderRows, 'capturedCents'),
       voidedCents: sum(orderRows, 'voidedCents'),
       refundedCents: sum(orderRows, 'refundedCents'),
+      notPaidCents: sum(orderRows, 'notPaidCents'),
+      noPayPalOrders: sum(orderRows, 'noPayPalOrder'),
+      heldForCheck: sum(orderRows, 'heldForCheck'),
       casesAvoided: sum(orderRows, 'voidedAfterMismatch'),
       openCases: caseRows.filter((c) => c.open).length,
       resolvedCases: resolvedHours.length,
@@ -441,9 +445,13 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
     },
     {
       id: 'money',
-      label: 'Money held, captured and voided',
-      value: `${usd(s.heldCents)} held`,
-      detail: `${usd(s.capturedCents)} captured, ${usd(s.voidedCents)} voided, ${usd(s.refundedCents)} refunded.`,
+      label: 'Where the money is',
+      value: `${usd(s.heldCents)} on hold with PayPal`,
+      detail:
+        `${usd(s.capturedCents)} paid to Demo Store, ${usd(s.voidedCents)} released from a hold, ${usd(s.refundedCents)} refunded.` +
+        (s.noPayPalOrders
+          ? ` ${plural(s.noPayPalOrders, 'order')} (${usd(s.notPaidCents)}) ${s.noPayPalOrders === 1 ? 'has' : 'have'} no PayPal order, so nothing was charged for ${s.noPayPalOrders === 1 ? 'it' : 'them'}.`
+          : ''),
     },
     {
       id: 'avoided',
@@ -488,14 +496,23 @@ interface BarrierFile {
   };
 }
 
+/**
+ * Platform names as the crawl's own labels write them (PLATFORM_LABELS in evals/barrier/lib.mjs).
+ * "custom" means no known platform was detected, so it is "Custom or other", not "custom-built".
+ */
 const PLATFORM: Record<string, string> = {
   shopify: 'Shopify',
   woocommerce: 'WooCommerce',
-  magento: 'Magento',
+  magento: 'Magento / Adobe Commerce',
   bigcommerce: 'BigCommerce',
-  sfcc: 'Salesforce Commerce',
+  sfcc: 'Salesforce Commerce Cloud',
   custom: 'Custom or other',
 };
+
+/** A platform key from the results file as a name a person reads: "sfcc" -> "Salesforce Commerce Cloud". */
+export function platformName(key: string): string {
+  return PLATFORM[key] ?? key;
+}
 const KEYBOARD: Record<string, string> = {
   reached: 'Reached add to cart',
   'not-reached': 'Could not reach add to cart',
@@ -601,6 +618,9 @@ export async function loadBarrierIndex(): Promise<BarrierData | null> {
   };
 }
 
+/** Ends a rule's help text with a full stop, once. */
+export const sentence = (t: string) => (t.trim() ? t.trim().replace(/[.!?]?$/, (m) => m || '.') : '');
+
 const fig = (x: number | null) => (x === null ? 'no data' : Number.isInteger(x) ? String(x) : x.toFixed(1));
 
 export function barrierFigures(d: BarrierData): SpokenFigure[] {
@@ -636,7 +656,7 @@ export function barrierFigures(d: BarrierData): SpokenFigure[] {
       id: 'top-rule',
       label: 'Most common failing rule',
       value: s.topRule?.id ?? 'none',
-      detail: s.topRule ? `${s.topRule.help}. Found on ${plural(s.topRule.storesAffected, 'store')}.` : 'No rule data.',
+      detail: s.topRule ? `${sentence(s.topRule.help)} Found on ${plural(s.topRule.storesAffected, 'store')}.` : 'No rule data.',
     },
   ];
 }

@@ -120,6 +120,17 @@ export interface ReasonRow {
   text: string;
 }
 
+/**
+ * What one check found, for a table row that already names the check and has its own "How sure"
+ * column: the seller's sentence without the module name in front and without the confidence.
+ */
+function reasonCell(r: VerdictReason): string {
+  if (r.finding === 'unknown') return 'Could not be checked from the photos.';
+  const text = reasonForSeller({ ...r, confidence: 'sure' });
+  const prefix = `${MODULE_LABEL[r.module]}: `;
+  return text.startsWith(prefix) ? text.charAt(prefix.length).toUpperCase() + text.slice(prefix.length + 1) : text;
+}
+
 function reasonRows(v: Verdict): ReasonRow[] {
   return v.reasons.map((r) => ({
     module: r.module,
@@ -127,8 +138,18 @@ function reasonRows(v: Verdict): ReasonRow[] {
     finding: r.finding,
     result: FINDING[r.finding],
     confidence: CONFIDENCE_WORD[r.confidence] ?? r.confidence,
-    text: reasonForSeller(r),
+    text: reasonCell(r),
   }));
+}
+
+/**
+ * A case's status as the store sees it. The shared words are the buyer's ("Waiting for the store",
+ * "Offer to answer"); on the store's own console the same stages say whose move it is.
+ */
+function storeCaseStatus(stage: string | null | undefined, buyer: string): StatusWord {
+  if (stage === 'seller_contacted') return { word: 'Needs your reply', glyph: '!', tone: 'waiting' };
+  if (stage === 'offer_received') return { word: `Waiting for ${buyer}'s answer`, glyph: '…', tone: 'waiting' };
+  return caseStatus(stage);
 }
 
 /** One third-person sentence on what the buyer's check found, for the order panel. */
@@ -216,7 +237,7 @@ export interface MerchantOrderRow {
   why: { ship: string | null; deliver: string | null };
   /** When no demo action is possible: the one line shown instead of the controls. */
   blocked: string | null;
-  /** Pay-after-check order that still has no capture: tracking goes to PayPal after the capture. */
+  /** PayPal holds the money and may still capture it: tracking goes to PayPal after the capture. */
   awaitingCapture: boolean;
 }
 
@@ -331,11 +352,11 @@ export async function listMerchantOrders(scopeUserId?: string): Promise<Merchant
         deliveredAt: s?.deliveredAt ?? null,
       },
       verdict: { ...verdictStatus(v?.kind), kind: v?.kind ?? 'none', summary: verdictSummary(v) },
-      case: { ...caseStatus(visibleCase?.stage), id: visibleCase?.id ?? null, stage: visibleCase?.stage ?? null },
+      case: { ...storeCaseStatus(visibleCase?.stage, nameOf.get(o.userId) ?? 'the buyer'), id: visibleCase?.id ?? null, stage: visibleCase?.stage ?? null },
       can: { ship, deliver, sendTracking },
       why,
       blocked: ship || deliver || sendTracking ? null : (why.ship ?? why.deliver),
-      awaitingCapture: o.intent === 'AUTHORIZE' && !o.captureId,
+      awaitingCapture: holdAwaitingCapture(o),
     };
   });
 }
@@ -382,7 +403,12 @@ async function sendTracking(o: OrderRow, number: string, carrier: string): Promi
   }
 }
 
-function trackingSentence(sync: PayPalSync, awaitingCapture: boolean): string {
+/** PayPal holds this order's money and may still capture it, so tracking can go to PayPal later. */
+function holdAwaitingCapture(o: OrderRow): boolean {
+  return Boolean(o.paypalOrderId && o.authorizationId && !o.captureId);
+}
+
+function trackingSentence(sync: PayPalSync, awaitingCapture: boolean, hasPayPalOrder = true): string {
   switch (sync) {
     case 'sent':
       return 'Tracking added to the PayPal order.';
@@ -391,9 +417,10 @@ function trackingSentence(sync: PayPalSync, awaitingCapture: boolean): string {
     case 'failed':
       return 'PayPal did not accept the tracking just now. It is recorded here, and you can send it again.';
     default:
-      return awaitingCapture
-        ? "PayPal tracking is attached when the payment is captured after the buyer's check."
-        : 'This order has no PayPal capture, so the tracking is recorded here only.';
+      if (awaitingCapture) return "PayPal tracking is attached when the payment is captured after the buyer's check.";
+      return hasPayPalOrder
+        ? 'This order has no PayPal capture, so the tracking is recorded here only.'
+        : 'This order has no PayPal order, so the tracking is recorded here only.';
   }
 }
 
@@ -460,7 +487,7 @@ export async function shipOrder(orderId: string, variant: ShipChoice): Promise<M
         deliveredAt: null,
       },
     });
-  const awaitingCapture = o.intent === 'AUTHORIZE' && !o.captureId;
+  const awaitingCapture = holdAwaitingCapture(o);
   const t = await sendTracking(o, number, carrier);
   if (t.trackerId)
     await db()
@@ -477,7 +504,7 @@ export async function shipOrder(orderId: string, variant: ShipChoice): Promise<M
   return {
     ok: true,
     paypal: t.sync,
-    message: `Order ${ref} shipped with ${carrier}: ${VARIANT_WORD[variant]}. Tracking number ${number}. ${trackingSentence(t.sync, awaitingCapture)}`,
+    message: `Order ${ref} shipped with ${carrier}: ${VARIANT_WORD[variant]}. Tracking number ${number}. ${trackingSentence(t.sync, awaitingCapture, Boolean(o.paypalOrderId))}`,
   };
 }
 
@@ -495,7 +522,7 @@ export async function attachPendingTracking(orderId: string): Promise<MerchantRe
     return {
       ok: false,
       paypal: 'local-only',
-      message: trackingSentence('local-only', o.intent === 'AUTHORIZE'),
+      message: trackingSentence('local-only', holdAwaitingCapture(o), Boolean(o.paypalOrderId)),
     };
   const t = await sendTracking(o, s.trackingNumber, s.carrier ?? 'USPS');
   if (t.trackerId)
@@ -555,48 +582,64 @@ export async function markDelivered(orderId: string): Promise<MerchantResult> {
 // Cases
 
 export interface Suggestion {
-  action: 'refund' | 'photo' | 'tracking' | 'none';
+  /** Always one of the reply buttons, so the suggestion can be acted on as shown. */
+  action: CaseAction;
   title: string;
   why: string;
 }
 
 /**
- * The suggested fair response. Deterministic: a mismatch with at least one "sure" reason earns a
- * full refund; anything less certain asks for a daylight photo. Shown, never sent. Reasons are
- * told to the merchant in the third person, never in the buyer's own words.
+ * The suggested fair response. Deterministic, shown, never sent. It only suggests a reply that has
+ * a button on the cases desk, and it starts from Demo Store's own shipping record: what the store
+ * says it sent outweighs a check that is not sure. Reasons are told in the third person.
  */
 export function suggestResponse(
   v: Verdict | null,
   shippedVariant: string | null,
   amount: string,
+  opts: { reason?: string; refundPath: 'refund' | 'void' | 'none'; dispute: boolean } = { refundPath: 'refund', dispute: false },
 ): Suggestion {
+  const canRefund = opts.dispute || opts.refundPath !== 'none';
   const sure = v?.reasons.find((r) => r.finding === 'disagree' && r.confidence === 'sure');
-  if (v?.kind === 'mismatch' && sure)
+  const doubt = v?.reasons.find((r) => r.finding === 'disagree') ?? v?.reasons.find((r) => r.finding !== 'agree');
+  const check = !v
+    ? 'The buyer has not checked the parcel with the camera.'
+    : v.kind === 'match'
+      ? "The buyer's check matched the listing."
+      : v.kind === 'mismatch' && sure
+        ? `The buyer's check is sure. ${reasonForSeller(sure)}`
+        : `The buyer's check is not sure.${doubt ? ` ${reasonForSeller(doubt)}` : ''}`;
+  const sent = shippedVariant ? VARIANT_WORD[shippedVariant] : undefined;
+  const record =
+    shippedVariant === 'nothing' ? 'Your shipping record says nothing was shipped.' : sent ? `Your shipping record says you sent ${sent}.` : '';
+  const refund = (why: string): Suggestion =>
+    canRefund
+      ? {
+          action: 'refund',
+          title: opts.refundPath === 'void' && !opts.dispute ? `Release the ${amount} hold` : `Refund ${amount} in full`,
+          why,
+        }
+      : {
+          action: 'replacement',
+          title: 'Offer a replacement',
+          why: `${why} This order has no PayPal payment to refund, so a replacement is the fair reply.`,
+        };
+
+  // The store's own record says it got the order wrong: no need to wait for anything else.
+  if (shippedVariant === 'nothing') return refund(record);
+  if (shippedVariant && shippedVariant !== 'correct') return refund(`${record} ${check}`);
+  if (opts.reason === 'not_received')
     return {
-      action: 'refund',
-      title: `Refund ${amount} in full`,
-      why: `The buyer's check is sure. ${reasonForSeller(sure)}`,
+      action: 'replacement',
+      title: 'Offer a replacement',
+      why: `${record ? `${record} ` : ''}The buyer says it has not arrived. A replacement settles it without a refund.`,
     };
-  if (v && v.kind !== 'match') {
-    const doubt = v.reasons.find((r) => r.finding === 'disagree') ?? v.reasons.find((r) => r.finding !== 'agree');
-    return {
-      action: 'photo',
-      title: 'Ask for a photo in daylight',
-      why: `The buyer's check is not sure enough to settle it.${doubt ? ` ${reasonForSeller(doubt)}` : ''} A clear photo by a window settles it either way.`,
-    };
-  }
-  if (v?.kind === 'match')
-    return { action: 'none', title: 'No refund is due', why: "The buyer's check matched the listing." };
-  if (shippedVariant === 'nothing')
-    return {
-      action: 'refund',
-      title: `Refund ${amount} in full`,
-      why: "Demo Store's own records say this order was never shipped.",
-    };
+  // No record of a wrong item: a sure check is enough on its own; otherwise see the item first.
+  if (v?.kind === 'mismatch' && sure && !record) return refund(check);
   return {
-    action: 'tracking',
-    title: 'Check the tracking first',
-    why: 'The buyer has not checked the parcel yet. If the tracking shows no delivery, refund in full.',
+    action: 'return',
+    title: 'Ask for the item back first',
+    why: `${check}${record ? ` ${record}` : ''} Seeing the item settles it: you refund ${amount} when it is back.`,
   };
 }
 
@@ -753,7 +796,8 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
     const buyer = nameOf.get(o.userId) ?? 'Buyer';
     const item = snap?.title ?? o.title;
     const open = c.stage !== 'resolved';
-    const due = open ? dueWords(c.dueAt) : { words: null, overdue: false };
+    // "Reply by …" speaks to the store: once it has made an offer, the buyer's answer is awaited instead.
+    const due = open && c.stage !== 'offer_received' ? dueWords(c.dueAt) : { words: null, overdue: false };
     let dispute: MerchantCase['dispute'] = null;
     if (c.paypalDisputeId) {
       try {
@@ -793,7 +837,7 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
       size: snap?.attributes.size ?? null,
       amount,
       stage: c.stage,
-      status: caseStatus(c.stage),
+      status: storeCaseStatus(c.stage, buyer),
       open,
       reason: c.reason,
       title: caseTitle(c.reason, item, buyer, v),
@@ -810,7 +854,11 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
       refundPath: o.captureId ? 'refund' : o.authorizationId && o.status !== 'voided' ? 'void' : 'none',
       offers: (c.offers as CaseOffer[]) ?? [],
       outcome: outcomeWords(c.outcome, o.currency),
-      suggestion: suggestResponse(v, s?.shippedVariant ?? null, amount),
+      suggestion: suggestResponse(v, s?.shippedVariant ?? null, amount, {
+        reason: c.reason,
+        refundPath: o.captureId ? 'refund' : o.authorizationId && o.status !== 'voided' ? 'void' : 'none',
+        dispute: Boolean(c.paypalDisputeId),
+      }),
       dispute,
     });
   }

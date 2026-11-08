@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import { cue } from '@/lib/feedback';
@@ -13,9 +14,15 @@ interface Preview {
   amount: string;
 }
 
-/** Two steps: build and hear the evidence summary, then confirm before anything is sent. */
-export function MoneyBack({ orderId, canStart, done }: { orderId: string; canStart: boolean; done?: string | null }) {
+/**
+ * Two steps: build and hear the evidence summary, then confirm before anything is sent.
+ * After sending, the page refreshes so every folder shows the new state; this component stays
+ * mounted, so the result and focus on it survive the refresh. `sent` means a case went out before
+ * this page loaded: there is nothing left to start here.
+ */
+export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: string; canStart: boolean; sent?: boolean; done?: string | null }) {
   const { announce } = useAnnouncer();
+  const router = useRouter();
   const [preview, setPreview] = useState<Preview | null>(null);
   const [result, setResult] = useState<string | null>(done ?? null);
   const [busy, setBusy] = useState(false);
@@ -85,6 +92,7 @@ export function MoneyBack({ orderId, canStart, done }: { orderId: string; canSta
       cue('paid');
       // Focus moves to the result, which says the same thing: no live announcement on top of it.
       announce(said, { politeness: 'assertive', source: 'money back', live: false });
+      router.refresh();
     } catch (e) {
       fail(e);
     } finally {
@@ -98,6 +106,7 @@ export function MoneyBack({ orderId, canStart, done }: { orderId: string; canSta
         {result}
       </p>
     );
+  if (sent) return null;
 
   return (
     <div className="grid gap-4">
@@ -110,6 +119,7 @@ export function MoneyBack({ orderId, canStart, done }: { orderId: string; canSta
             type="button"
             className="btn btn-primary btn-xl"
             onClick={prepare}
+            data-focus-target=""
             aria-disabled={!canStart || busy || undefined}
           >
             {busy ? 'Building the evidence…' : 'Get my money back'}

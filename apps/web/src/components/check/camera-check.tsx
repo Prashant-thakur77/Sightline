@@ -50,12 +50,15 @@ export function CameraCheck({
   onSubmit,
   demoShots,
   busy,
+  focusOnMount = false,
 }: {
   itemName: string;
   onSubmit: (shots: CapturedShot[]) => void;
   /** Sample photos for the guided demo: clearly labelled, never used silently. */
   demoShots?: { kind: ShotKind; url: string }[];
   busy?: boolean;
+  /** Focus the heading on mount: used when the person comes back from a verdict ("Check again"). */
+  focusOnMount?: boolean;
 }) {
   const { announce } = useAnnouncer();
   const [phase, setPhase] = useState<Phase>('intro');
@@ -82,13 +85,13 @@ export function CameraCheck({
 
   useEffect(() => stopCamera, [stopCamera]);
 
-  const mounted = useRef(false);
+  // Move focus only when the step changes (and on mount when asked). Comparing step keys keeps
+  // this idempotent, so Strict Mode's second effect run never steals focus on first load.
+  const lastStep = useRef<string | null>(focusOnMount ? null : 'intro:0');
   useEffect(() => {
-    // Move focus only when the step changes, never on first load.
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
+    const step = `${phase}:${index}`;
+    if (lastStep.current === step) return;
+    lastStep.current = step;
     headingRef.current?.focus();
   }, [phase, index]);
 
@@ -177,7 +180,10 @@ export function CameraCheck({
       });
     } catch {
       setPhase('denied');
-      announce('I could not use the camera. You can upload photos instead.', { politeness: 'assertive', source: 'camera' });
+      announce('I couldn’t use the camera. You can allow it in the browser’s settings and try again, or add photos instead.', {
+        politeness: 'assertive',
+        source: 'camera',
+      });
     }
   }, [announce, index, loop]);
 
@@ -262,7 +268,14 @@ export function CameraCheck({
           >
             {busy ? 'Checking…' : 'Check it now'}
           </button>
-          <button type="button" className="btn btn-xl" onClick={restart} disabled={busy}>
+          <button
+            type="button"
+            className="btn btn-xl"
+            onClick={() => {
+              if (!busy) restart();
+            }}
+            aria-disabled={busy || undefined}
+          >
             Retake photos
           </button>
         </div>
@@ -306,7 +319,14 @@ export function CameraCheck({
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button type="button" className="btn btn-primary btn-xl" onClick={() => void captureFrame()} disabled={phase !== 'live'}>
+            <button
+              type="button"
+              className="btn btn-primary btn-xl"
+              onClick={() => {
+                if (phase === 'live') void captureFrame();
+              }}
+              aria-disabled={phase !== 'live' || undefined}
+            >
               Capture now
             </button>
             <button type="button" className="btn btn-xl" onClick={skip}>
@@ -324,6 +344,20 @@ export function CameraCheck({
               Stop
             </button>
           </div>
+        </div>
+      )}
+
+      {phase === 'denied' && (
+        <div className="grid gap-3 max-w-[var(--measure)]">
+          <p className="card-refusal">
+            I couldn’t use the camera. The browser may be blocking it: allow the camera for this site in the browser’s settings, then try again. Or
+            add the photos below instead.
+          </p>
+          <p>
+            <button type="button" className="btn btn-primary" onClick={start}>
+              Try the camera again
+            </button>
+          </p>
         </div>
       )}
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useAnnouncer } from '@/components/a11y/announcer';
 
 const SENTENCE: (string | { word: string; tag: string })[] = [
   'I need a ',
@@ -27,6 +28,13 @@ const LINES: [string, string][] = [
 
 const CELLS = 14;
 
+const NO_VOICE = "This browser couldn't read it aloud. The same words are written in this example.";
+
+/** Speech synthesis is a browser feature: off on the server, checked once in the browser. */
+const noSubscribe = () => () => {};
+const browserCanSpeak = () => 'speechSynthesis' in window && typeof window.SpeechSynthesisUtterance === 'function';
+const serverCanSpeak = () => false;
+
 /**
  * The signature moment: speech becomes a ticket. The animated layer is hidden from assistive
  * technology; the same content is present as plain text in the figure caption.
@@ -34,9 +42,41 @@ const CELLS = 14;
 export function ReadbackHero() {
   const [run, setRun] = useState(0);
   const [speaking, setSpeaking] = useState(false);
+  // Hidden where the browser has no speech; replaced by a plain note if speaking fails.
+  const canSpeak = useSyncExternalStore(noSubscribe, browserCanSpeak, serverCanSpeak);
+  const [failed, setFailed] = useState(false);
+  const { announce } = useAnnouncer();
+  const hearRef = useRef<HTMLButtonElement>(null);
+  const noteRef = useRef<HTMLSpanElement>(null);
+  const focusNote = useRef(false);
+  const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (startTimer.current) clearTimeout(startTimer.current);
+  }, []);
+
+  useEffect(() => {
+    if (failed && focusNote.current) {
+      focusNote.current = false;
+      noteRef.current?.focus();
+    }
+  }, [failed]);
+
+  const fail = () => {
+    if (startTimer.current) clearTimeout(startTimer.current);
+    window.speechSynthesis.cancel();
+    setSpeaking(false);
+    // The button goes away; if it had focus, focus moves to the note that replaces it, which is
+    // read from focus, so it is not also sent to a live region.
+    focusNote.current = document.activeElement === hearRef.current;
+    setFailed(true);
+    announce(NO_VOICE, { source: 'example', live: !focusNote.current });
+  };
+
   const hear = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (!canSpeak) return;
     if (speaking) {
+      if (startTimer.current) clearTimeout(startTimer.current);
       window.speechSynthesis.cancel();
       setSpeaking(false);
       return;
@@ -48,12 +88,24 @@ export function ReadbackHero() {
     );
     said.rate = 1;
     readback.rate = 1.05;
+    const started = () => {
+      if (startTimer.current) clearTimeout(startTimer.current);
+    };
+    const errored = (e: SpeechSynthesisErrorEvent) => {
+      // Stopping on purpose is not a failure.
+      if (e.error === 'interrupted' || e.error === 'canceled') return setSpeaking(false);
+      fail();
+    };
+    said.onstart = started;
+    said.onerror = errored;
     readback.onend = () => setSpeaking(false);
-    readback.onerror = () => setSpeaking(false);
+    readback.onerror = errored;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(said);
     window.speechSynthesis.speak(readback);
     setSpeaking(true);
+    // Some browsers have the feature but no voice installed, and then stay silent without an error.
+    startTimer.current = setTimeout(fail, 4000);
   };
   let tagIndex = 0;
   return (
@@ -119,9 +171,16 @@ export function ReadbackHero() {
           parcel. Arrives Tuesday 17 November. Free returns for 30 days. To pay, say confirm purchase.
         </span>
         <span className="rbh-buttons">
-          <button type="button" className="btn rbh-hear" onClick={hear} aria-pressed={speaking}>
-            <span aria-hidden="true">{speaking ? '■' : '▶'}</span> {speaking ? 'Stop' : 'Hear it'}
-          </button>
+          {canSpeak && !failed && (
+            <button ref={hearRef} type="button" className="btn rbh-hear" onClick={hear} aria-pressed={speaking}>
+              <span aria-hidden="true">{speaking ? '■' : '▶'}</span> {speaking ? 'Stop' : 'Hear it'}
+            </button>
+          )}
+          {failed && (
+            <span ref={noteRef} tabIndex={-1} className="rbh-note">
+              {NO_VOICE}
+            </span>
+          )}
           <button type="button" className="btn btn-quiet rbh-replay" onClick={() => setRun((r) => r + 1)}>
             Replay the animation
           </button>

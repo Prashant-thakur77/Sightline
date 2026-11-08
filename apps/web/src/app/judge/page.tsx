@@ -12,11 +12,14 @@ import { LifecycleRun } from './lifecycle-run';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'For judges' };
 
-const REPO = 'https://github.com/Prashant-thakur77/sightline-paypal';
+const REPO = 'https://github.com/Prashant-thakur77/Sightline';
 
 export default async function Judge() {
   const suites = await loadSuites();
   const featured = await featuredHeadlines(6);
+  // The same check the run button uses: the lede only promises a run this server can do.
+  const runReady = INTEGRATIONS.paypal && INTEGRATIONS.vision;
+  const runMissing = [!INTEGRATIONS.paypal && 'PayPal sandbox keys', !INTEGRATIONS.vision && 'the vision service'].filter(Boolean) as string[];
   const headlines = suites.flatMap((s) => s.headlines.map((h) => ({ ...h, suite: s.title, ranAt: h.ranAt ?? s.ranAt, gitSha: h.gitSha ?? s.gitSha })));
   const [receipt] = await db().select({ id: tables.receipts.id }).from(tables.receipts).where(eq(tables.receipts.kind, 'gate')).orderBy(desc(tables.receipts.createdAt)).limit(1);
   const live: [string, boolean, string][] = [
@@ -95,11 +98,18 @@ export default async function Judge() {
           <h2 id="run-all-h" className="lp-h2">
             Watch the whole lifecycle run
           </h2>
-          <p className="lp-lede">
-            One button runs every step for real on the PayPal sandbox: voice request, readback, two-key confirmation, PayPal hold, the wrong size shipped,
-            the camera check, and the money back. You hear what Maya hears.
-          </p>
-          <LifecycleRun ready={INTEGRATIONS.paypal && INTEGRATIONS.vision} missing={[!INTEGRATIONS.paypal && 'PayPal sandbox keys', !INTEGRATIONS.vision && 'the vision service'].filter(Boolean) as string[]} />
+          {runReady ? (
+            <p className="lp-lede">
+              One button runs every step for real on the PayPal sandbox: voice request, readback, two-key confirmation, PayPal hold, the wrong size
+              shipped, the camera check, and the money back. You hear what Maya hears.
+            </p>
+          ) : (
+            <p className="lp-lede">
+              On a server with PayPal sandbox keys, one button runs every step on the PayPal sandbox, from the voice request to the money back. It is
+              switched off here. You can still shop as Maya up to the payment check, open a signed receipt, and read every number below.
+            </p>
+          )}
+          <LifecycleRun ready={runReady} missing={runMissing} />
         </section>
 
         <section id="numbers" aria-labelledby="num-h" className="grid gap-4">
@@ -112,10 +122,13 @@ export default async function Judge() {
             <>
               <ul className="lp-mlist">
                 {featured.map((h) => (
-                  <li key={h.id}>
+                  <li key={h.id} data-negative={h.negative || undefined}>
+                    {/* Ink on the receipt card in every theme: the red tag colour is too light on it in dark mode. */}
+                    {h.negative && <p className="lp-mbase font-bold uppercase">Negative result</p>}
                     <p className="lp-mval">{h.value}</p>
                     <p>{h.label}</p>
                     {h.baseline && <p className="lp-mbase">Baseline: {h.baseline}</p>}
+                    {h.context && <p>{h.context}</p>}
                   </li>
                 ))}
               </ul>
@@ -208,9 +221,10 @@ export default async function Judge() {
             Sandbox access and running it yourself
           </h2>
           <p>
-            No sign-up is needed: “Shop as Maya” uses a seeded demo account. PayPal’s window, when it appears, uses a sandbox buyer account listed in the
-            README. To run locally: clone the repository, copy <span className="mono">.env.example</span> to <span className="mono">.env.local</span>, then
-            run <span className="mono">pnpm install && pnpm db:up && pnpm db:migrate && pnpm dev</span>.
+            No sign-up is needed: “Shop as Maya” uses a seeded demo account. If PayPal’s window appears, sign in with a PayPal sandbox buyer account of
+            your own, made in PayPal’s developer dashboard. We do not publish login details. To run locally: clone the repository, copy{' '}
+            <span className="mono">.env.example</span> to <span className="mono">.env.local</span>, then run{' '}
+            <span className="mono">pnpm install && pnpm db:up && pnpm db:migrate && pnpm dev</span>.
           </p>
         </section>
       </main>

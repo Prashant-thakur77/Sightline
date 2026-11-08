@@ -5,6 +5,9 @@ import { MomentsStrip } from '@/components/shell/moments';
 import { requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { existingBlobIds } from '@/server/blobs';
+import { eq } from 'drizzle-orm';
+import { tables } from '@sightline/db';
+import { db } from '@/server/runtime';
 
 export const metadata = { title: 'Check your parcel' };
 
@@ -14,6 +17,7 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
   const found = await orderForUser(orderId, user.id);
   if (!found || !found.snapshot) notFound();
   const s = found.snapshot;
+  const [helper] = await db().select({ name: tables.helpers.name }).from(tables.helpers).where(eq(tables.helpers.userId, user.id)).limit(1);
   const itemBlob = found.verification?.photos.find((p) => p.kind === 'item')?.blobId;
   const itemPhotoKept = itemBlob ? (await existingBlobIds([itemBlob])).has(itemBlob) : false;
   const shipped = found.shipment?.shippedVariant;
@@ -33,11 +37,13 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
   return (
     <div className="grid gap-6">
       <p>
-        <Link href={`/app/orders/${orderId}`}>Back to the order</Link>
+        <Link className="link-target" href={`/app/orders/${orderId}`}>
+          Back to the order
+        </Link>
       </p>
       <header className="grid gap-2">
         <MomentsStrip done={3} current="Checked" />
-        <p className="eyebrow">Order {found.order.id}</p>
+        <p className="eyebrow">Order {found.order.id.slice(-8).toUpperCase()}</p>
         <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title} you paid for?</h1>
         <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">
           You ordered {s.attributes.colour ?? 'the listed colour'}, size {s.attributes.size ?? 'as listed'}.{' '}
@@ -46,7 +52,8 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
       </header>
       <CheckFlow
         orderId={orderId}
-        itemName={s.title.toLowerCase()}
+        itemName={s.title}
+        helperName={helper?.name ?? null}
         ordered={{ title: s.title, imageUrl: s.images[0]?.url, colour: s.attributes.colour, size: s.attributes.size }}
         demoShots={demoShots}
         initial={

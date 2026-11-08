@@ -12,6 +12,7 @@ import {
   formatMoney,
   paymentStatus,
   shipmentStatus,
+  spokenDate,
   verdictStatus,
   type StatusWord,
 } from '@sightline/core';
@@ -20,6 +21,7 @@ import { orderForUser } from '@/server/orders-read';
 import { db } from '@/server/runtime';
 import { MoneyBack } from '@/components/orders/money-back';
 import { AskHelper } from '@/components/orders/ask-helper';
+import { FocusFromHash } from '@/components/orders/focus-from-hash';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +51,41 @@ function Section({ n, id, tab, state, children }: { n: number; id: string; tab: 
       <div className="folder-body case-body">{children}</div>
     </li>
   );
+}
+
+/** Times on this page are UTC and say so, so they never disagree with what was said aloud. */
+const when = (iso: string) => `${new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })} UTC`;
+
+/** Each audit action as a plain sentence; unknown ones fall back to their words. */
+const HAPPENED: Record<string, string> = {
+  'readback.spoken': 'I read the order back to you',
+  'readback.confirmed': 'You confirmed the purchase',
+  'gate.allowed': 'The payment check passed',
+  'gate.refused': 'The payment check stopped the payment',
+  'order.created': 'The order went to PayPal',
+  'order.outcome_unknown': 'PayPal had not answered yet',
+  'shipment.shipped': 'Demo Store shipped it',
+  'shipment.not_shipped': 'Demo Store marked it as not shipped',
+  'shipment.delivered': 'It was delivered',
+  'tracking.sent': 'Tracking was added to the PayPal order',
+  'check.photos_sent': 'You sent photos for the check',
+  'check.verdict': 'The camera check finished',
+  'payment.captured_after_check': 'PayPal paid Demo Store after the check matched',
+  'payment.voided_after_check': 'PayPal cancelled the payment hold',
+  'evidence.built': 'The evidence pack was signed',
+  'case.sent_to_seller': 'Your case went to Demo Store',
+  'case.offer_made': 'Demo Store made an offer',
+  'case.no_response': 'Demo Store did not reply in time',
+  'helper.asked': 'You asked your helper to look',
+  'helper.answered': 'Your helper answered',
+  'helper.revoked': 'You cancelled the helper link',
+  refund: 'Demo Store refunded the payment',
+};
+function happened(action: string): string {
+  if (HAPPENED[action]) return HAPPENED[action]!;
+  if (action.startsWith('webhook.')) return 'PayPal sent an update';
+  const words = action.replace(/[._]/g, ' ');
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function Technical({ step, rows }: { step: string; rows: [string, string | null | undefined][] }) {
@@ -95,6 +132,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="grid gap-8">
+      <FocusFromHash />
       <p>
         <Link className="link-target" href="/app/orders">
           All orders and money
@@ -111,8 +149,18 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       <ol className="folders">
         <Section n={1} id="asked" tab="Asked" state={asked}>
           <h3 className="folder-h">What you heard before paying</h3>
-          <p className="folder-said">{rb?.text}</p>
-          {rb?.confirmedAt && <p className="muted">Confirmed {new Date(rb.confirmedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}.</p>}
+          <p>
+            {s.title}
+            {s.attributes.colour ? `, ${s.attributes.colour}` : ''}
+            {s.attributes.size ? `, size ${s.attributes.size}` : ''}, {amount} with tax and shipping, from Demo Store.
+          </p>
+          {rb?.text && (
+            <details className="tech">
+              <summary>The full readback, word for word</summary>
+              <p className="folder-said">{rb.text}</p>
+            </details>
+          )}
+          {rb?.confirmedAt && <p className="muted">Confirmed {when(rb.confirmedAt)}.</p>}
           <Technical step="Asked" rows={[['Readback fingerprint', rb?.textHash]]} />
         </Section>
 
@@ -142,7 +190,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <Section n={3} id="arrived" tab="Arrived" state={arrived}>
           <h3 className="folder-h">
             {shipment?.deliveredAt
-              ? `Delivered ${new Date(shipment.deliveredAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.`
+              ? `Delivered ${spokenDate(shipment.deliveredAt)}.`
               : shipment?.trackingNumber
                 ? `On its way with ${shipment.carrier}.`
                 : 'Not shipped yet. I’ll tell you when it ships.'}
@@ -166,7 +214,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                     <strong>
                       {MODULE_LABEL[r.module]}: {FINDING[r.finding].word}.
                     </strong>{' '}
-                    {r.sentence} <span className="muted">({CONFIDENCE_WORD[r.confidence].toLowerCase()})</span>
+                    {r.sentence}
+                    {/* Most sentences already say how sure the check is; add it only when one doesn't. */}
+                    {!/\bsure\b/i.test(r.sentence) && <span className="muted"> ({CONFIDENCE_WORD[r.confidence].toLowerCase()})</span>}
                   </span>
                 </li>
               ))}
@@ -181,6 +231,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                   ? 'it is different'
                   : 'they could not tell'}
               .
+              {(verification.helperAnswer as { note?: string }).note
+                ? ` They said: “${(verification.helperAnswer as { note: string }).note.replace(/[.!?]+$/, '')}.”`
+                : ''}
             </p>
           ) : verdict?.kind === 'unsure' && helper ? (
             <AskHelper orderId={o.id} helperName={helper.name} />
@@ -204,7 +257,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </h3>
           {caseSent && kase!.stage === 'seller_contacted' && kase!.dueAt && (
             <p>
-              Demo Store has until {new Date(kase!.dueAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} to reply. If they
+              Demo Store has until {spokenDate(kase!.dueAt)} to reply. If they
               don’t, I’ll ask PayPal to step in. I’ll tell you when anything changes.
             </p>
           )}
@@ -215,7 +268,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               </Link>
             </p>
           )}
-          {canMoneyBack && <MoneyBack orderId={o.id} canStart={canMoneyBack} done={null} />}
+          {(canMoneyBack || caseSent) && <MoneyBack orderId={o.id} canStart={canMoneyBack} sent={caseSent} done={null} />}
         </Section>
       </ol>
 
@@ -223,13 +276,17 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <h2 id="hist-h" className="text-[length:var(--step-2)]">
           Everything that happened
         </h2>
-        <ol className="history">
-          {history.map((h) => (
-            <li key={h.seq}>
-              {new Date(h.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}: {h.action.replace(/[._]/g, ' ')}, by {h.actor}
-            </li>
-          ))}
-        </ol>
+        {history.length ? (
+          <ol className="history">
+            {history.map((h) => (
+              <li key={h.seq}>
+                {when(h.createdAt)}: {happened(h.action)}.
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>Nothing recorded for this order yet.</p>
+        )}
         <p className="muted">Each line is chained to the one before it with a hash, so the history cannot be edited quietly.</p>
       </section>
     </div>

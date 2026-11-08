@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import { setFeedback } from '@/lib/feedback';
 import { saveSettings, type SaveState } from './actions';
@@ -32,8 +32,20 @@ function Radio({ name, value, label, hint, checked }: { name: string; value: str
   );
 }
 
+type Answer = NonNullable<SaveState>;
+const OFFLINE: Answer = { ok: false, message: "You're offline, so nothing was saved. Your changes are still here. Press Save again when you're back online." };
+const FAILED: Answer = { ok: false, message: 'Something went wrong on our side, so nothing was saved. Your changes are still here. Press Save to try again.' };
+
 export function SettingsForm({ initial, helperName }: { initial: Initial; helperName: string | null }) {
-  const [state, action, pending] = useActionState<SaveState, FormData>(saveSettings, null);
+  // Without JavaScript the form posts to the server action and the page shows its answer. With
+  // JavaScript, saving goes through onSubmit instead: React then does not reset the form after the
+  // action, so a "Not saved" answer keeps every edit, and a dropped connection is caught here
+  // instead of replacing the page.
+  const [serverState, formAction, formPending] = useActionState<SaveState, FormData>(saveSettings, null);
+  const [clientState, setClientState] = useState<SaveState>(null);
+  const [saving, startSaving] = useTransition();
+  const state = clientState ?? serverState;
+  const pending = saving || formPending;
   const { announce, setOwnVoice } = useAnnouncer();
   const statusRef = useRef<HTMLParagraphElement>(null);
   const [sounds, setSounds] = useState(true);
@@ -61,8 +73,7 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
 
   const invalid = (name: string) => (state && !state.ok && state.field === name ? { 'aria-invalid': true as const, 'aria-errormessage': 'settings-status' } : {});
 
-  const applyLocal = (form: HTMLFormElement) => {
-    const fd = new FormData(form);
+  const applyLocal = (fd: FormData) => {
     const mode = String(fd.get('voiceMode'));
     const rate = Number(fd.get('speechRate') ?? 100) / 100;
     setOwnVoice({ enabled: mode !== 'screen-reader', rate });
@@ -88,13 +99,28 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
     setFeedback({ sounds: fd.get('sounds') === 'on', haptics: fd.get('haptics') === 'on' });
   };
 
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (pending) return;
+    const fd = new FormData(e.currentTarget);
+    if (!navigator.onLine) {
+      setClientState({ ...OFFLINE });
+      return;
+    }
+    startSaving(async () => {
+      try {
+        const result = await saveSettings(null, fd);
+        // Local preferences (text size, theme, voice, sounds) change only once the save worked.
+        if (result?.ok) applyLocal(fd);
+        setClientState(result);
+      } catch {
+        setClientState({ ...(navigator.onLine ? FAILED : OFFLINE) });
+      }
+    });
+  };
+
   return (
-    <form
-      action={action}
-      className="settings"
-      onSubmit={(e) => applyLocal(e.currentTarget)}
-      aria-describedby="settings-status"
-    >
+    <form action={formAction} className="settings" onSubmit={submit} aria-describedby="settings-status">
       <fieldset>
         <legend>How should I talk?</legend>
         <Radio name="verbosity" value="brief" label="Brief" hint="Just the facts. Colour, size, price and total are always included." checked={initial.verbosity === 'brief'} />

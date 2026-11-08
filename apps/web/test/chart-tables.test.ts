@@ -10,7 +10,7 @@ const check = (id: string, mismatchType: string, verdict: StudioCheckRow['verdic
 
 describe('verifiedDeliveryChartTables', () => {
   const data = {
-    orders: [order('a', 'Captured', 3672), order('b', 'Held', 3672), order('c', 'Captured', 2999), order('d', 'Voided', 4100)],
+    orders: [order('a', 'Paid', 3672), order('b', 'On hold', 3672), order('c', 'Paid', 2999), order('d', 'Hold released', 4100)],
     checks: [check('1', 'No mismatch', 'Match'), check('2', 'Wrong size', 'Mismatch'), check('3', 'No mismatch', 'Match'), check('4', 'Unclear: colour', 'Not sure')],
   } as VerifiedDeliveryData;
   const [verdicts, money] = verifiedDeliveryChartTables(data);
@@ -28,9 +28,9 @@ describe('verifiedDeliveryChartTables', () => {
   it('sums order value by payment state in dollars, largest first', () => {
     expect(money!.title).toBe('Where the money is');
     expect(money!.rows.map((r) => r.cells)).toEqual([
-      ['Captured', '$66.71'],
-      ['Voided', '$41.00'],
-      ['Held', '$36.72'],
+      ['Paid', '$66.71'],
+      ['Hold released', '$41.00'],
+      ['On hold', '$36.72'],
     ]);
   });
 

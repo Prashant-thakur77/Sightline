@@ -136,8 +136,10 @@ const index: AgPageState = {
     'kpi-median': kpi('Median failures', { id: 'medianProductFailures' }, 'Rules failed per product page'),
     'kpi-keyboard': kpi('Keyboard reach', { id: 'keyboardReach' }, 'Add to cart by Tab alone'),
     'kpi-unnamed': kpi('Unnamed buttons', { id: 'unnamedButtonRate' }, 'Stores with at least one'),
+    // Horizontal bars: platform names such as "Salesforce Commerce Cloud" sit level on the axis
+    // instead of being turned on their side and cut off.
     platforms: {
-      type: 'column-chart-grouped',
+      type: 'bar-chart-grouped',
       dataMapping: {
         categoryKey: [{ id: 'stores.platform' }],
         valueKey: [{ id: 'productPageMedian' }, { id: 'homePageMedian' }],
@@ -188,11 +190,12 @@ const index: AgPageState = {
     'kpi-median': at(6, 0, 6, 9),
     'kpi-keyboard': at(12, 0, 6, 9),
     'kpi-unnamed': at(18, 0, 6, 9),
-    platforms: at(0, 9, 10, 18),
-    keyboard: at(10, 9, 14, 18),
-    rules: at(0, 27, 24, 22),
-    'rules-grid': at(0, 49, 24, 30),
-    stores: at(0, 79, 24, 24),
+    // Full width, so the long platform and outcome names fit beside their bars.
+    platforms: at(0, 9, 24, 20),
+    keyboard: at(0, 29, 24, 18),
+    rules: at(0, 47, 24, 22),
+    'rules-grid': at(0, 69, 24, 30),
+    stores: at(0, 99, 24, 24),
   },
 };
 

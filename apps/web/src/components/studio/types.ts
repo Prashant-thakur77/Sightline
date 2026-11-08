@@ -4,7 +4,8 @@
  * Studio sums are 1 or 0.
  */
 
-export type MoneyState = 'Held' | 'Captured' | 'Voided' | 'Refunded' | 'Awaiting approval' | 'Not placed' | 'Pending';
+/** Where an order's money is, in the shared payment words (paymentStatus in @sightline/core): "On hold", "Paid", "Not paid"… */
+export type MoneyState = string;
 
 export interface StudioOrderRow {
   id: string;
@@ -22,10 +23,15 @@ export interface StudioOrderRow {
   capturedCents: number;
   voidedCents: number;
   refundedCents: number;
+  /** The amount when no PayPal order exists for this order, so nothing was charged. */
+  notPaidCents: number;
+  noPayPalOrder: number;
   shipped: string;
   delivered: number;
   checked: number;
   verifiedDelivery: number;
+  /** Checked by the buyer while PayPal held the money (pay after check with a PayPal authorization). */
+  heldForCheck: number;
   voidedAfterMismatch: number;
 }
 
@@ -99,6 +105,9 @@ export interface VerifiedDeliverySummary {
   capturedCents: number;
   voidedCents: number;
   refundedCents: number;
+  notPaidCents: number;
+  noPayPalOrders: number;
+  heldForCheck: number;
   casesAvoided: number;
   openCases: number;
   resolvedCases: number;

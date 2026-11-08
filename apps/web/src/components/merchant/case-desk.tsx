@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
+import { utcWhen } from '@/lib/when';
 import type { CaseAction, MerchantCase, MerchantResult } from '@/server/merchant';
 import { StatusChip } from './status-chip';
 
@@ -23,7 +24,6 @@ const ACTIONS: { action: CaseAction; label: string }[] = [
   { action: 'no_response', label: "Don't respond (let it escalate)" },
 ];
 
-const SUGGESTED_ACTION: Record<string, CaseAction | undefined> = { refund: 'refund' };
 
 function confirmCopy(c: MerchantCase, a: CaseAction): { title: string; body: string; yes: string } {
   switch (a) {
@@ -177,13 +177,33 @@ function CaseCard({
 }) {
   const [pending, setPending] = useState<CaseAction | null>(null);
   const confirmRef = useRef<HTMLHeadingElement>(null);
+  const confirmBoxRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLParagraphElement>(null);
   const triggerRefs = useRef<Partial<Record<CaseAction, HTMLButtonElement | null>>>({});
   const h = `case-${c.id}-h`;
-  const suggested = SUGGESTED_ACTION[c.suggestion.action];
+  const suggested = c.suggestion.action;
 
   useEffect(() => {
     if (pending) confirmRef.current?.focus();
+  }, [pending]);
+
+  // Escape inside the question closes it and puts focus back on the button that opened it.
+  const cancelRef = useRef<() => void>(() => undefined);
+  const busyRef = useRef(busy);
+  useEffect(() => {
+    busyRef.current = busy;
+  });
+  useEffect(() => {
+    const box = confirmBoxRef.current;
+    if (!pending || !box) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || busyRef.current) return;
+      e.preventDefault();
+      e.stopPropagation();
+      cancelRef.current();
+    };
+    box.addEventListener('keydown', onKey);
+    return () => box.removeEventListener('keydown', onKey);
   }, [pending]);
 
   useEffect(() => {
@@ -198,6 +218,9 @@ function CaseCard({
     setPending(null);
     if (a) requestAnimationFrame(() => triggerRefs.current[a]?.focus());
   };
+  useEffect(() => {
+    cancelRef.current = cancel;
+  });
 
   const confirm = pending ? confirmCopy(c, pending) : null;
   const refundBlocked = !c.dispute && c.refundPath === 'none';
@@ -360,12 +383,7 @@ function CaseCard({
                   <ul className="mx-history">
                     {c.offers.map((o) => (
                       <li key={o.id}>
-                        <span className="mono">
-                          {new Date(o.at).toLocaleString('en-US', {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                          })}
-                        </span>{' '}
+                        <span className="mono">{utcWhen(o.at)}</span>{' '}
                         · {OFFER_WORDS[o.type] ?? o.type} offered
                         {o.via === 'paypal' ? ' through PayPal' : ''}. {o.note}
                       </li>
@@ -431,7 +449,7 @@ function CaseCard({
                   </div>
 
                   {confirm && pending && (
-                    <div className="mx-confirm" role="group" aria-labelledby={`${h}-confirm`}>
+                    <div ref={confirmBoxRef} className="mx-confirm" role="group" aria-labelledby={`${h}-confirm`}>
                       <h5 id={`${h}-confirm`} ref={confirmRef} tabIndex={-1} className="mx-confirm-h">
                         {confirm.title}
                       </h5>

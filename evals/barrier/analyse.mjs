@@ -285,12 +285,12 @@ async function main() {
 
   const finished = recs.map((r) => r.finishedAt).filter(Boolean).sort();
   const started = recs.map((r) => r.startedAt).filter(Boolean).sort();
-  // Same rule as evals/lib/results.ts gitSha(): a commit is named only when evals/ and packages/
-  // match it; otherwise the result says "uncommitted", so it never points at code it didn't run.
+  // Same rule as evals/lib/results.ts gitSha(): a commit is named only when the code in evals/ and
+  // packages/ (not the result files) matches it; otherwise "uncommitted", so it never points at code it didn't run.
   let gitSha = 'uncommitted';
   try {
     const head = execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim();
-    const dirty = execSync('git status --porcelain -- evals packages', { cwd: ROOT }).toString().trim();
+    const dirty = execSync("git status --porcelain -- evals packages ':(exclude)evals/results' ':(exclude)evals/RESULTS.md'", { cwd: ROOT }).toString().trim();
     if (head && !dirty) gitSha = head;
   } catch {}
 

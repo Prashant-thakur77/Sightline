@@ -57,17 +57,23 @@ function git(args: string[]): string | null {
  * numbers (evals/ or packages/) differs from HEAD, so a SHA is never shown for code it does not
  * contain.
  */
+/**
+ * The code a result depends on: evals and packages, but not the result files themselves, which
+ * every run rewrites (otherwise the first suite of a run would make every later one "uncommitted").
+ */
+export const CODE_PATHS = ['evals', 'packages', ':(exclude)evals/results', ':(exclude)evals/RESULTS.md'];
+
 export function gitSha(): string {
   const sha = git(['rev-parse', '--short', 'HEAD']);
   if (!sha) return 'uncommitted';
-  const dirty = git(['status', '--porcelain', '--', 'evals', 'packages']);
+  const dirty = git(['status', '--porcelain', '--', ...CODE_PATHS]);
   if (dirty === null || dirty.length > 0) return 'uncommitted';
   return sha;
 }
 
 export function sourceState(): { head: string | null; dirtyPaths: string[] } {
   const head = git(['rev-parse', '--short', 'HEAD']);
-  const status = git(['status', '--porcelain', '--', 'evals', 'packages']) ?? '';
+  const status = git(['status', '--porcelain', '--', ...CODE_PATHS]) ?? '';
   return {
     head,
     dirtyPaths: status

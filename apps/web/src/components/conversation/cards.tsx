@@ -124,7 +124,8 @@ export function CardView({
           <h2 id="card-h" tabIndex={-1} className="card-h">
             {card.heading}
           </h2>
-          <div className="table-wrap">
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}
+          <div className="table-wrap" tabIndex={0} role="region" aria-label="Comparison table, scrolls sideways">
             <table className="compare">
               <thead>
                 <tr>
@@ -167,6 +168,11 @@ export function CardView({
                 </div>
               ))}
             </dl>
+            {/* The KEEP stub of the ticket design: the word is the motif, the sentence is the point. */}
+            <p className="receipt-stub">
+              <span aria-hidden="true">Keep</span>
+              <span>This is your proof.</span>
+            </p>
             <div className="receipt-edge receipt-edge-bottom" aria-hidden="true" />
           </div>
           {card.held && <p className="receipt-note">Holding. Take your time. Nothing happens until you confirm.</p>}

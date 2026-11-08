@@ -62,6 +62,9 @@ const FILE = [
 
 export const revalidate = 300;
 
+/** "0 of 266" never breaks between its words; anything after it, like "(82.7%)", still can. */
+const keepCountTogether = (value: string) => value.replace(/(\d) of (\d)/g, '$1\u00a0of\u00a0$2');
+
 export default async function Landing() {
   const measured = await featuredHeadlines(4);
   return (
@@ -159,7 +162,7 @@ export default async function Landing() {
             <ul className="lp-mlist">
               {measured.map((h) => (
                 <li key={h.id}>
-                  <p className="lp-mval">{h.value}</p>
+                  <p className="lp-mval">{keepCountTogether(h.value)}</p>
                   <p>{h.label}</p>
                   {h.baseline && <p className="lp-mbase">Baseline: {h.baseline}</p>}
                 </li>
@@ -192,11 +195,15 @@ export default async function Landing() {
               <span>You check the parcel with your camera.</span>
             </li>
             <li data-ok="">
-              <span className="flow-k">✓ Matches</span>
+              <span className="flow-k">
+                <span aria-hidden="true">✓</span> Matches
+              </span>
               <span>PayPal captures the payment. The store is paid.</span>
             </li>
             <li data-bad="">
-              <span className="flow-k">✕ Wrong item</span>
+              <span className="flow-k">
+                <span aria-hidden="true">✕</span> Wrong item
+              </span>
               <span>PayPal voids the hold. Your money never moved.</span>
             </li>
           </ol>

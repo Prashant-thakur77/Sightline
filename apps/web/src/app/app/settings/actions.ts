@@ -44,11 +44,11 @@ export async function saveSettings(_prev: SaveState, form: FormData): Promise<Sa
   const parsed = Schema.safeParse(Object.fromEntries(form.entries()));
   if (!parsed.success) {
     const field = String(parsed.error.issues[0]?.path[0] ?? '');
-    return { ok: false, field, message: `Not saved. Please check ${LABELS[field] ?? 'the form'}.` };
+    return { ok: false, field, message: `Not saved. Please check ${LABELS[field] ?? 'the form'}, then press Save again. Your other changes are still here.` };
   }
   const v = parsed.data;
   if (v.dailyCap < v.perOrderCap)
-    return { ok: false, field: 'dailyCap', message: 'Not saved. The most in one day must be at least the most for one order.' };
+    return { ok: false, field: 'dailyCap', message: 'Not saved. The most in one day must be at least the most for one order. Change one of them, then press Save again.' };
   const sizes: Record<string, string> = {};
   if (v.tops) sizes.tops = v.tops.toUpperCase();
   if (v.bottoms) sizes.bottoms = v.bottoms;

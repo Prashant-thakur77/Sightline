@@ -180,7 +180,11 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
     const down = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         stopSpeaking();
-        if (speech.listening) speech.cancel();
+        if (speech.listening) {
+          speech.cancel();
+          setToggleTalk(false);
+          announce('Stopped listening. Nothing was sent.', { source: 'microphone' });
+        }
         setShowKeys(false);
         return;
       }

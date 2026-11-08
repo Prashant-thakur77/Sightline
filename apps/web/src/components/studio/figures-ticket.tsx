@@ -24,10 +24,16 @@ export function FiguresTicket({
 }) {
   return (
     <section className="sx-receipt" aria-labelledby={headingId}>
-      <h2 id={headingId} className="sx-receipt-h">
-        <span>{heading}</span>
-        <span>{asOf}</span>
-      </h2>
+      {/* The date is shown beside the heading but kept out of its name: "The figures", then "As of …". */}
+      <div className="sx-receipt-h">
+        <h2 id={headingId} className="sx-receipt-title">
+          {heading}
+        </h2>
+        <p className="sx-receipt-asof">
+          <span className="sr-only">As of </span>
+          {asOf}
+        </p>
+      </div>
       <dl className="sx-figures">
         {figures.map((f) => (
           <div key={f.id} className="sx-figure">

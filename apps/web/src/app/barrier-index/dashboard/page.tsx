@@ -5,6 +5,7 @@ import { BARRIER_TITLE, barrierChartTables } from '@/components/studio/barrier-r
 import { ChartTables } from '@/components/studio/chart-tables';
 import { FiguresTicket } from '@/components/studio/figures-ticket';
 import { barrierFigures, loadBarrierIndex, studioAgentStatus, studioLicenceKey } from '@/server/studio';
+import { utcWhen } from '@/lib/when';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Barrier Index dashboard' };
@@ -16,8 +17,6 @@ const METHOD = [
   { term: 'Stores', text: 'Named only by a hash of their domain and grouped by platform. Per-platform groups are small, so treat them as indicative.' },
 ];
 
-const day = (iso: string) =>
-  iso ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }) : 'date unknown';
 
 export default async function BarrierDashboard() {
   const data = await loadBarrierIndex();
@@ -38,7 +37,7 @@ export default async function BarrierDashboard() {
               </p>
               <p className="muted sx-small">
                 <Link href="/barrier-index">Read the write-up and its limits</Link>.
-                {data && ` Measured ${day(data.ranAt)}, build ${data.gitSha}. Read from the results file the analysis script writes; nothing is typed in by hand.`}
+                {data && ` Measured ${utcWhen(data.ranAt)}, build ${data.gitSha}. Read from the results file the analysis script writes; nothing is typed in by hand.`}
               </p>
               <section className="sx-defs-wrap" aria-labelledby="bi-defs-h">
                 <h2 id="bi-defs-h" className="sx-defs-h">
@@ -58,7 +57,7 @@ export default async function BarrierDashboard() {
               <FiguresTicket
                 headingId="bi-figures-h"
                 heading="The figures"
-                asOf={day(data.ranAt)}
+                asOf={utcWhen(data.ranAt)}
                 figures={barrierFigures(data)}
                 stub={`${data.summary.crawled} stores · ${data.platforms.length} ${data.platforms.length === 1 ? 'platform' : 'platforms'} · ${data.rules.length} rules`}
               />

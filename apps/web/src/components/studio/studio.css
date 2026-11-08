@@ -94,6 +94,13 @@
   border-color: var(--ink);
   box-shadow: none;
 }
+.sx-receipt-title,
+.sx-receipt-asof {
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
 .sx-receipt-h {
   margin: 0;
   display: flex;

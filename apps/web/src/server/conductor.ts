@@ -767,7 +767,8 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
         const updates = unread.length
           ? ` ${unread.length === 1 ? 'One update' : `${unread.length} updates`}. ${unread.map((n) => n.text).join(' ')}`
           : '';
-        const greet = `Hi ${ctx.firstName}.${updates} ${en.general.welcome()}`;
+        // Updates come first; the first-visit welcome would sound odd after them.
+        const greet = updates ? `Hi ${ctx.firstName}.${updates} Say 'help' any time.` : `Hi ${ctx.firstName}. ${en.general.welcome()}`;
         const alreadyTold = unread.some((n) => n.kind === 'delivery');
         reply = pending && !alreadyTold
           ? {

@@ -1,7 +1,8 @@
 import 'server-only';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import type { ProductSnapshot, Verdict } from '@sightline/core';
+import type { ProductSnapshot, Verdict, VerdictKind } from '@sightline/core';
+import { MONEY_ACTIONS, type TimelineCase, type TimelineEntry } from '@/lib/money-timeline';
 import { db } from './runtime';
 
 export async function orderForUser(orderId: string, userId: string) {
@@ -31,4 +32,38 @@ export async function orderForUser(orderId: string, userId: string) {
 
 export async function ordersForUser(userId: string) {
   return db().select().from(tables.orders).where(eq(tables.orders.userId, userId)).orderBy(desc(tables.orders.createdAt)).limit(50);
+}
+
+/**
+ * Everything the orders list shows: each order with its latest check and case, and the recorded
+ * money events (audit entries about these orders) for the money timeline.
+ */
+export async function ordersPageData(userId: string) {
+  const orders = await ordersForUser(userId);
+  const verdictOf = new Map<string, VerdictKind | null>();
+  const caseOf = new Map<string, TimelineCase>();
+  if (!orders.length) return { orders, verdictOf, caseOf, cases: [] as TimelineCase[], entries: [] as TimelineEntry[] };
+  const ids = orders.map((o) => o.id);
+  const [vers, kases, entries] = await Promise.all([
+    db()
+      .select({ orderId: tables.verifications.orderId, verdict: tables.verifications.verdict })
+      .from(tables.verifications)
+      .where(inArray(tables.verifications.orderId, ids))
+      .orderBy(desc(tables.verifications.createdAt)),
+    db()
+      .select({ orderId: tables.cases.orderId, stage: tables.cases.stage, status: tables.cases.status, dueAt: tables.cases.dueAt })
+      .from(tables.cases)
+      .where(inArray(tables.cases.orderId, ids))
+      .orderBy(desc(tables.cases.createdAt)),
+    db()
+      .select({ seq: tables.auditLog.seq, action: tables.auditLog.action, subjectId: tables.auditLog.subjectId, payload: tables.auditLog.payload, createdAt: tables.auditLog.createdAt })
+      .from(tables.auditLog)
+      .where(and(inArray(tables.auditLog.subjectId, ids), inArray(tables.auditLog.action, [...MONEY_ACTIONS])))
+      .orderBy(desc(tables.auditLog.seq))
+      .limit(300),
+  ]);
+  // Newest first, so the first one seen per order is its latest, as on the order page.
+  for (const v of vers) if (!verdictOf.has(v.orderId)) verdictOf.set(v.orderId, (v.verdict as Verdict | null)?.kind ?? null);
+  for (const c of kases) if (!caseOf.has(c.orderId)) caseOf.set(c.orderId, c);
+  return { orders, verdictOf, caseOf, cases: [...caseOf.values()], entries: entries as TimelineEntry[] };
 }

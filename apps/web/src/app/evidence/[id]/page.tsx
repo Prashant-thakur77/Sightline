@@ -2,13 +2,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import { formatMoney, type ProductSnapshot, type Verdict } from '@sightline/core';
+import { formatMoney, reasonForSeller, verdictStatus, type ProductSnapshot, type Verdict } from '@sightline/core';
 import { hashManifest, verifyHashSignature } from '@sightline/evidence';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { db } from '@/server/runtime';
 import { receiptKeyPair } from '@/server/keys';
 import { currentUser } from '@/server/session';
 import { existingBlobIds } from '@/server/blobs';
+import { utcWhen } from '@/lib/when';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Evidence pack' };
@@ -75,11 +76,17 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
         </h2>
         <p>
           {m.snapshot.title}: {m.snapshot.attributes.colour ?? 'colour not listed'}, size {m.snapshot.attributes.size ?? 'not listed'},{' '}
-          {formatMoney(m.order.amount)} from {m.snapshot.seller.name}, on {new Date(m.order.placedAt).toLocaleString('en-US')}.
+          {formatMoney(m.order.amount)} from {m.snapshot.seller.name}, on {utcWhen(m.order.placedAt)}.
         </p>
         <p className="muted">
-          Listing frozen at {new Date(m.snapshot.capturedAt).toLocaleString('en-US')}, fingerprint <span className="mono">{m.snapshot.hash.slice(0, 16)}…</span>. PayPal order{' '}
-          <span className="mono">{m.order.paypalOrderId ?? 'n/a'}</span>.
+          Listing frozen at {utcWhen(m.snapshot.capturedAt)}. Its fingerprint starts <span className="mono">{m.snapshot.hash.slice(0, 16)}</span>.{' '}
+          {m.order.paypalOrderId ? (
+            <>
+              PayPal order <span className="mono">{m.order.paypalOrderId}</span>.
+            </>
+          ) : (
+            'No PayPal order exists for this order, so nothing was charged through PayPal.'
+          )}
         </p>
       </section>
 
@@ -100,12 +107,11 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
         </h2>
         {v ? (
           <>
-            <p className="text-[length:var(--step-1)]">{v.headline}</p>
+            {/* Told in the third person: the pack is read by the seller, not the buyer. */}
+            <p className="text-[length:var(--step-1)]">The check&apos;s verdict: {verdictStatus(v.kind).word}.</p>
             <ul>
               {v.reasons.map((r, i) => (
-                <li key={i}>
-                  {r.sentence} ({r.confidence.replace('_', ' ')})
-                </li>
+                <li key={i}>{reasonForSeller(r)}</li>
               ))}
             </ul>
           </>
@@ -113,6 +119,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
           <p>No photo check was run.</p>
         )}
         <h3>Photos</h3>
+        {!isOwner && <p>The photos are shown only to the buyer. Their fingerprints are listed here, and the signed pack covers them.</p>}
         {isOwner && ver && (
           <ul className="ev-thumbs">
             {ver.photos.map((p) => (
@@ -129,7 +136,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
         <ul>
           {m.files.map((f) => (
             <li key={f.hash}>
-              {f.name}, fingerprint <span className="mono">{f.hash.slice(0, 16)}…</span>. Location data removed.
+              {f.name}. Fingerprint starts <span className="mono">{f.hash.slice(0, 16)}</span>. Location data removed.
             </li>
           ))}
         </ul>
@@ -145,8 +152,11 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
         <h2 id="verify-h" className="text-[length:var(--step-2)]">
           Check it yourself
         </h2>
-        <p>Download the pack and run the verifier from the repository. It needs no access to our server.</p>
-        <pre className="code">{`node scripts/verify-receipt.mjs evidence-${pack.id}.json`}</pre>
+        <p>
+          Download the pack, save it in the repository&apos;s top folder, and run this command there. It needs no access to our server. The last
+          part is this server&apos;s public key, so a pack signed with any other key fails.
+        </p>
+        <pre className="code">{`node scripts/verify-receipt.mjs evidence-${pack.id}.json ${receiptKeyPair().publicKeyHex}`}</pre>
         <p className="flex flex-wrap gap-3">
           <a className="btn" href={`/api/evidence/${pack.id}`} download>
             Download the evidence pack
