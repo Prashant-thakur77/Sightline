@@ -27,10 +27,15 @@ function reasonFromVerdict(v: Verdict | null): CaseReasonCode {
 /** Template narrative used when no model is available, and as the facts given to the model. */
 function templateNarrative(title: string, v: Verdict | null, amount: string): { summary: string; seller: string } {
   const findings = (v?.reasons ?? []).filter((r) => r.finding === 'disagree').map((r) => r.sentence);
-  const what = findings.length ? findings.join(' ') : 'The item that arrived does not match the listing.';
+  const what = findings.length ? findings.join(' ') : 'The item that arrived does not look like the listing.';
+  const sure = v?.kind === 'mismatch';
   return {
-    summary: `The ${title} that arrived does not match what you ordered. ${what} I'll ask Demo Store for your ${amount} back.`,
-    seller: `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${what} The buyer checked the parcel with photos and a size-tag reading, and the evidence pack is attached with its signature. Please refund ${amount}; the buyer can return the item.`,
+    summary: sure
+      ? `The ${title} that arrived does not match what you ordered. ${what} I'll ask Demo Store for your ${amount} back.`
+      : `The ${title} that arrived may not be what you ordered. ${what} I'll ask Demo Store to look at the evidence and refund your ${amount} if it's wrong.`,
+    seller: sure
+      ? `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${what} The buyer checked the parcel with photos and a size-tag reading, and the evidence pack is attached with its signature. Please refund ${amount}; the buyer can return the item.`
+      : `Hello. The buyer of this ${title} is not sure the delivered item matches the listing. ${what} The photos and the check are attached with a signature. Please look at the evidence and let the buyer know; if it is the wrong item, please refund ${amount}.`,
   };
 }
 

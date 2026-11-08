@@ -14,9 +14,11 @@ import { computeTotals, createDemoStore, snapshotOf } from '@sightline/catalog';
 import { composeReadback } from '@sightline/agent';
 
 if (process.env.NODE_ENV === 'production') throw new Error('dev-seed-order refuses to run in production');
-const [status = 'delivered', shipped = 'wrong_size'] = process.argv.slice(2);
+const [status = 'delivered', shipped = 'wrong_size', forUser] = process.argv.slice(2);
 const db = getDb(process.env.DATABASE_URL);
-const [maya] = await db.select().from(tables.users).where(eq(tables.users.email, 'maya@demo.sightline.app')).limit(1);
+const [maya] = forUser
+  ? await db.select().from(tables.users).where(eq(tables.users.id, forUser)).limit(1)
+  : await db.select().from(tables.users).where(eq(tables.users.email, 'maya@demo.sightline.app')).limit(1);
 if (!maya) throw new Error('Start a Maya session once first (POST /api/demo/start)');
 const product = (await createDemoStore().get('demo:harbor-knit-crew', { Colour: 'navy', Size: 'M' }))!;
 const snap = snapshotOf(product, { name: 'Demo Store', merchantId: process.env.PAYPAL_MERCHANT_ID || 'DEMO-STORE-UNCONFIGURED' }, new Date(), process.env.APP_URL);

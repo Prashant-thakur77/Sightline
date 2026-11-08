@@ -15,8 +15,9 @@ const browser = await chromium.launch();
 const summary = [];
 for (const width of widths) {
   const ctx = await browser.newContext({ viewport: { width, height: width < 600 ? 812 : 900 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
+  if (opts.session) await ctx.addCookies([{ name: 'sl_session', value: opts.session, url: base }]);
   const page = await ctx.newPage();
-  if (opts.persona) {
+  if (opts.persona && !opts.session) {
     await page.goto(`${base}/start`);
     await page.getByRole('button', { name: new RegExp(`Shop as ${opts.persona}`, 'i') }).click();
     await page.waitForURL(/\/app/);

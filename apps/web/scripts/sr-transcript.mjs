@@ -14,8 +14,9 @@ await fs.mkdir(outDir, { recursive: true });
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+if (opts.session) await ctx.addCookies([{ name: 'sl_session', value: opts.session, url: base }]);
 const page = await ctx.newPage();
-if (opts.persona) await page.request.post(`${base}/api/demo/start`, { data: { persona: opts.persona } });
+if (opts.persona && !opts.session) await page.request.post(`${base}/api/demo/start`, { data: { persona: opts.persona } });
 
 for (const route of routesArg.split(',')) {
   await page.goto(`${base}${route}`, { waitUntil: 'load', timeout: 120000 });
