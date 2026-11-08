@@ -45,7 +45,17 @@ export function SiteFooter() {
       <Wordmark size={20} />
       <p>Built for the PayPal AI Hackathon. PayPal sandbox only. No real money moves.</p>
       <p>
-        <Link href="/judge">Judges start here</Link> · <Link href="/barrier-index">Checkout Barrier Index</Link> · <Link href="/merchant">Demo Store console</Link>
+        <Link className="link-target" href="/judge">
+          Judges start here
+        </Link>{' '}
+        ·{' '}
+        <Link className="link-target" href="/barrier-index">
+          Checkout Barrier Index
+        </Link>{' '}
+        ·{' '}
+        <Link className="link-target" href="/merchant">
+          Demo Store console
+        </Link>
       </p>
     </footer>
   );

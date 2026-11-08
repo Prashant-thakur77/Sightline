@@ -88,6 +88,9 @@ export const en = {
     quantityEach: (word: string, each: Money): string => `Quantity: ${word}, ${mFull(each)} each.`,
     soldBy: (seller: string): string => `Sold by ${seller}.`,
     moneyBrief: (total: Money, payment: string): string => `Total ${mFull(total)} with shipping and tax, paid with ${payment}.`,
+    /** Pay after check: the payment is only authorized at purchase and captured after the parcel is checked. */
+    payAfterCheck: (seller: string): string => `PayPal holds the money, and ${seller} is paid after you check the parcel.`,
+    payAfterCheckValue: 'After you check the parcel',
     money: (itemLabel: string, items: Money, shipping: Money, tax: Money, total: Money, payment: string): string =>
       `${itemLabel} ${mFull(items)}, shipping ${shipping.cents === 0 ? 'free' : mFull(shipping)}, tax ${mFull(tax)}, total ${mFull(total)}, paid with ${payment}.`,
     today: (date: string): string => `today, ${date}`,
@@ -116,6 +119,7 @@ export const en = {
       tax: 'Tax',
       total: 'Total',
       paymentSource: 'Paid with',
+      payAfterCheck: 'When the store is paid',
       delivery: 'Delivery',
       free: 'Free',
       notGivenYet: 'Not given yet',

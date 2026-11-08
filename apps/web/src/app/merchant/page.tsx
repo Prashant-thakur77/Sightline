@@ -3,7 +3,7 @@ import { OrdersConsole } from '@/components/merchant/orders-console';
 import { listMerchantOrders, paypalConfigured } from '@/server/merchant';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Orders' };
+export const metadata = { title: 'Orders · Demo Store' };
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 

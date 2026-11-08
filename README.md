@@ -56,6 +56,10 @@ Model output never moves money. Amounts, payees and confirmations come from froz
 
 Built screen-reader first: one announcer for every live update (no duplicates), focus moves to what changed, full keyboard map (`?` shows it), voice optional everywhere, high-contrast low-vision mode with text scaling, and no colour-only status (every verdict has a word and a shape). Every page is checked with axe in Playwright on desktop and phone. The Speech Viewer shows sighted people what a screen reader says.
 
+## Privacy
+
+Parcel photos are taken inside people's homes, so they are treated as the most private thing the app stores. Location data is removed before a photo is stored or sent anywhere. Photos are deleted after 30 days, or straight away from Settings ("Delete my photos" or "Delete everything"), unless a money-back case that is still open needs them. Signed receipts and evidence packs keep each photo's SHA-256 fingerprint, not the photo, so they still verify afterwards. Payment records and the audit chain are kept, because refunds depend on them.
+
 ## Agentic commerce
 
 `apps/mcp` is an MCP server (stdio and Streamable HTTP) so any shopping agent can use the accessible readback, the confirmation phrase check, delivery verification and signed evidence packs:

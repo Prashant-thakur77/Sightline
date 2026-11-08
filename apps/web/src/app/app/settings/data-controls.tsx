@@ -26,7 +26,8 @@ function DeleteControl({ action, label, question, confirmLabel }: { action: Acti
   useEffect(() => {
     if (!state) return;
     setAsking(false);
-    announce(state.message, { politeness: state.ok ? 'polite' : 'assertive', source: 'settings' });
+    // Focus goes to the result, which is read from focus, so it is not also sent live.
+    announce(state.message, { politeness: state.ok ? 'polite' : 'assertive', source: 'settings', live: false });
     resultRef.current?.focus();
   }, [state, announce]);
 

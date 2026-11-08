@@ -13,7 +13,7 @@ import { audit } from './audit';
 
 export type PayOutcome =
   | { kind: 'refused'; say: string; code: string; receiptId?: string }
-  | { kind: 'needs-approval'; paypalOrderId: string; orderId: string; receiptId?: string }
+  | { kind: 'needs-approval'; paypalOrderId: string; orderId: string; intent: 'CAPTURE' | 'AUTHORIZE'; receiptId?: string }
   | { kind: 'paid'; orderId: string; status: 'captured' | 'authorized'; amount: Money; receiptId?: string }
   | { kind: 'declined'; say: string }
   | { kind: 'error'; say: string }
@@ -52,11 +52,6 @@ async function vaultIdFor(userId: string): Promise<string | null> {
     .where(and(eq(tables.vaultTokens.userId, userId), eq(tables.vaultTokens.status, 'ACTIVE')))
     .limit(1);
   return v?.vaultId ?? null;
-}
-
-async function prefsFor(userId: string) {
-  const [p] = await db().select().from(tables.preferences).where(eq(tables.preferences.userId, userId)).limit(1);
-  return p;
 }
 
 function orderBody(cart: Cart, readbackBinding: string, orderId: string, intent: 'CAPTURE' | 'AUTHORIZE') {
@@ -108,8 +103,10 @@ export async function payForReadback(input: { userId: string; readbackId: string
         say: "I'm still checking with PayPal whether your earlier order for this item went through, so I didn't charge you again. I'll tell you as soon as PayPal answers.",
       };
   }
-  const prefs = await prefsFor(input.userId);
-  const intent: 'CAPTURE' | 'AUTHORIZE' = prefs?.payAfterCheck ? 'AUTHORIZE' : 'CAPTURE';
+  // The readback is the contract: if it told the buyer PayPal holds the money until the check,
+  // the payment is an authorization, whatever the settings say now.
+  const saidHold = (rb.fields as { key: string }[]).some((f) => f.key === 'payAfterCheck');
+  const intent: 'CAPTURE' | 'AUTHORIZE' = saidHold ? 'AUTHORIZE' : 'CAPTURE';
   const vaultId = input.mode === 'auto' ? await vaultIdFor(input.userId) : null;
   const readback: ConfirmedReadback = {
     id: rb.id,
@@ -210,7 +207,7 @@ export async function payForReadback(input: { userId: string; readbackId: string
     });
     await db().update(tables.orders).set({ paypalOrderId: created.id, status: 'approval_pending', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, orderId));
     await audit({ userId: input.userId, actor: 'paypal', action: 'order.created', subjectId: orderId, payload: { paypalOrderId: created.id, intent, requestId: decision.requestId } });
-    return { kind: 'needs-approval', paypalOrderId: created.id, orderId, receiptId };
+    return { kind: 'needs-approval', intent, paypalOrderId: created.id, orderId, receiptId };
   } catch (e) {
     // A popup order cannot charge until the buyer approves it in PayPal, so an unanswered create is
     // not a money risk there; only saved-PayPal (vault) orders can be charged without the buyer.

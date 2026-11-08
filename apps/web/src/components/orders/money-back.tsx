@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import { cue } from '@/lib/feedback';
 
@@ -21,8 +21,35 @@ export function MoneyBack({ orderId, canStart, done }: { orderId: string; canSta
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const headRef = useRef<HTMLHeadingElement>(null);
+  const startRef = useRef<HTMLButtonElement>(null);
+  const resultRef = useRef<HTMLParagraphElement>(null);
+  // Where focus goes once the control that had it is replaced.
+  const focusNext = useRef<'preview' | 'start' | 'result' | null>(null);
+
+  useEffect(() => {
+    const next = focusNext.current;
+    if (next === 'preview' && preview) headRef.current?.focus();
+    else if (next === 'start' && !preview) startRef.current?.focus();
+    else if (next === 'result' && result) resultRef.current?.focus();
+    else return;
+    focusNext.current = null;
+  }, [preview, result]);
+
+  const fail = (e: unknown) => {
+    // A server refusal carries its own words; a network failure or an unreadable reply does not.
+    const msg =
+      e instanceof TypeError
+        ? 'Could not reach the server. Nothing was sent. Try again.'
+        : e instanceof Error && e.name === 'Error' && e.message
+          ? e.message
+          : 'Something went wrong. Nothing was sent. Try again.';
+    setError(msg);
+    cue('error');
+    announce(msg, { politeness: 'assertive', source: 'money back' });
+  };
 
   const prepare = async () => {
+    if (!canStart || busy) return;
     setBusy(true);
     setError(null);
     announce('Building the evidence. Nothing is sent yet.', { source: 'money back' });
@@ -30,37 +57,36 @@ export function MoneyBack({ orderId, canStart, done }: { orderId: string; canSta
       const res = await fetch(`/api/orders/${orderId}/money-back`, { method: 'POST' });
       const data = (await res.json()) as Preview & { error?: string };
       if (!res.ok) throw new Error(data.error);
+      focusNext.current = 'preview';
       setPreview(data);
       cue('attention');
       announce(
         `${data.summary} ${data.path === 'void' ? `To cancel the payment hold of ${data.amount}, press Send it.` : 'To send this to Demo Store, press Send it.'}`,
         { source: 'money back' },
       );
-      requestAnimationFrame(() => headRef.current?.focus());
     } catch (e) {
-      setError((e as Error).message || 'Something went wrong. Nothing was sent.');
-      cue('error');
+      fail(e);
     } finally {
       setBusy(false);
     }
   };
 
   const send = async () => {
-    if (!preview) return;
+    if (!preview || busy) return;
     setBusy(true);
     setError(null);
     try {
       const res = await fetch(`/api/cases/${preview.caseId}/send`, { method: 'POST' });
       const data = (await res.json()) as { say?: string; error?: string };
       if (!res.ok) throw new Error(data.error);
-      setResult(data.say ?? 'Sent.');
+      const said = data.say ?? 'Sent.';
+      focusNext.current = 'result';
+      setResult(said);
       cue('paid');
-      announce(data.say ?? 'Sent.', { politeness: 'assertive', source: 'money back' });
+      // Focus moves to the result, which says the same thing: no live announcement on top of it.
+      announce(said, { politeness: 'assertive', source: 'money back', live: false });
     } catch (e) {
-      const msg = (e as Error).message || 'Something went wrong. Nothing was sent.';
-      setError(msg);
-      cue('error');
-      announce(msg, { politeness: 'assertive', source: 'money back' });
+      fail(e);
     } finally {
       setBusy(false);
     }
@@ -68,22 +94,24 @@ export function MoneyBack({ orderId, canStart, done }: { orderId: string; canSta
 
   if (result)
     return (
-      <p className="mb-result" role="status">
+      <p ref={resultRef} tabIndex={-1} className="mb-result">
         {result}
       </p>
     );
 
   return (
     <div className="grid gap-4">
-      {error && (
-        <p className="card-refusal" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <p className="card-refusal">{error}</p>}
       {!preview ? (
         <div className="grid gap-3">
           <p>I build a signed evidence pack first: your order, the readback you heard, the listing as it was, your photos and the check. Nothing is sent until you say so.</p>
-          <button type="button" className="btn btn-primary btn-xl" onClick={prepare} disabled={!canStart || busy}>
+          <button
+            ref={startRef}
+            type="button"
+            className="btn btn-primary btn-xl"
+            onClick={prepare}
+            aria-disabled={!canStart || busy || undefined}
+          >
             {busy ? 'Building the evidence…' : 'Get my money back'}
           </button>
         </div>
@@ -94,20 +122,24 @@ export function MoneyBack({ orderId, canStart, done }: { orderId: string; canSta
           </h3>
           <p className="text-[length:var(--step-1)]">{preview.summary}</p>
           <p>
-            <Link href={`/evidence/${preview.evidencePackId}`}>Read the evidence pack</Link>
+            <Link className="link-target" href={`/evidence/${preview.evidencePackId}`}>
+              Read the evidence pack
+            </Link>
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button type="button" className="btn btn-primary btn-xl" onClick={send} disabled={busy}>
+            <button type="button" className="btn btn-primary btn-xl" onClick={send} aria-disabled={busy || undefined}>
               {busy ? 'Sending…' : preview.path === 'void' ? `Send it: cancel the ${preview.amount} hold` : 'Send it to Demo Store'}
             </button>
             <button
               type="button"
               className="btn btn-xl"
               onClick={() => {
+                if (busy) return;
+                focusNext.current = 'start';
                 setPreview(null);
                 announce('Not sent.', { source: 'money back' });
               }}
-              disabled={busy}
+              aria-disabled={busy || undefined}
             >
               Not now
             </button>

@@ -1,13 +1,23 @@
+import type { Metadata } from 'next';
+import { cache } from 'react';
 import { Wordmark } from '@/components/shell/mark';
 import { resolveHelperToken } from '@/server/helper';
 import { HelperAnswer } from './helper-answer';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Can you take a look?', robots: { index: false } };
+
+/** One read per request: the title and the page share it. */
+const resolve = cache(resolveHelperToken);
+
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const r = await resolve(decodeURIComponent(token));
+  return { title: r ? 'Can you take a look?' : 'Link expired', robots: { index: false } };
+}
 
 export default async function HelperPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const r = await resolveHelperToken(decodeURIComponent(token));
+  const r = await resolve(decodeURIComponent(token));
   return (
     <main id="main" tabIndex={-1} className="w-full max-w-[880px] mx-auto px-[clamp(1rem,3vw,2.5rem)] py-[var(--space-7)] grid gap-7">
       <Wordmark size={24} />

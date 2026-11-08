@@ -41,7 +41,9 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
     <main id="main" tabIndex={-1} className="w-full max-w-[960px] mx-auto px-[clamp(1rem,3vw,2.5rem)] py-[var(--space-7)] grid gap-8">
       {isOwner && (
         <p>
-          <Link href={`/app/orders/${m.order.id}`}>Back to your order</Link>
+          <Link className="link-target" href={`/app/orders/${m.order.id}`}>
+            Back to your order
+          </Link>
         </p>
       )}
       <header className="grid gap-3">

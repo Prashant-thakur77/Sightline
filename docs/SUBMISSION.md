@@ -40,7 +40,7 @@ We wanted the whole money lifecycle to be something a blind person can do alone,
 
 ## Accessibility is the product
 
-One announcer for every live update, focus that moves only when it should, full keyboard control with shortcuts that can't clash with a screen reader, a high-contrast low-vision mode with text scaling, no colour-only status, and no time limits. Every page is checked with axe in light, dark and high-contrast themes at phone and desktop widths. The Speech Viewer shows sighted judges what a screen reader says.
+One announcer for every live update, focus that moves only when it should, full keyboard control with shortcuts that can't clash with a screen reader, a high-contrast low-vision mode with text scaling, no colour-only status, and no deadline to decide: say "wait" and the order stays open, and a yes that comes much later just hears the order read again. Every page is checked with axe in light, dark and high-contrast themes at phone and desktop widths. The Speech Viewer shows sighted judges what a screen reader says.
 
 ## Numbers (from scripts in the repo, with baselines)
 

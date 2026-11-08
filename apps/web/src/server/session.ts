@@ -7,7 +7,14 @@ import { newId } from '@sightline/core';
 import { db, ENV } from './runtime';
 
 const COOKIE = 'sl_session';
-const TTL_MS = 1000 * 60 * 60 * 12;
+/**
+ * Sessions slide: each visit pushes the end 24 hours out (over the 20 hours WCAG 2.2.1 allows
+ * without a warning), so nobody is signed out mid-task. The database row decides; the cookie only
+ * outlives it so a page render, which cannot set cookies, never has to refresh it.
+ */
+const IDLE_MS = 1000 * 60 * 60 * 24;
+const COOKIE_MS = 1000 * 60 * 60 * 24 * 30;
+const REFRESH_AFTER_MS = 1000 * 60 * 60;
 
 function secret(): string {
   if (!ENV.SESSION_SECRET) throw new Error('SESSION_SECRET is not set');
@@ -32,7 +39,7 @@ function unsign(value: string | undefined): string | null {
 
 export async function createSession(userId: string): Promise<void> {
   const id = newId('ses') + randomBytes(8).toString('hex');
-  const expiresAt = new Date(Date.now() + TTL_MS).toISOString();
+  const expiresAt = new Date(Date.now() + IDLE_MS).toISOString();
   await db().insert(tables.sessions).values({ id, userId, expiresAt });
   const jar = await cookies();
   jar.set(COOKIE, sign(id), {
@@ -40,7 +47,7 @@ export async function createSession(userId: string): Promise<void> {
     sameSite: 'lax',
     secure: ENV.APP_URL.startsWith('https://'),
     path: '/',
-    expires: new Date(expiresAt),
+    expires: new Date(Date.now() + COOKIE_MS),
   });
 }
 
@@ -62,13 +69,26 @@ export async function currentUser(): Promise<SessionUser | null> {
   const jar = await cookies();
   const id = unsign(jar.get(COOKIE)?.value);
   if (!id) return null;
+  const now = Date.now();
   const rows = await db()
-    .select({ id: tables.users.id, email: tables.users.email, displayName: tables.users.displayName, isDemo: tables.users.isDemo })
+    .select({
+      id: tables.users.id,
+      email: tables.users.email,
+      displayName: tables.users.displayName,
+      isDemo: tables.users.isDemo,
+      expiresAt: tables.sessions.expiresAt,
+    })
     .from(tables.sessions)
     .innerJoin(tables.users, eq(tables.users.id, tables.sessions.userId))
-    .where(and(eq(tables.sessions.id, id), gt(tables.sessions.expiresAt, new Date().toISOString())))
+    .where(and(eq(tables.sessions.id, id), gt(tables.sessions.expiresAt, new Date(now).toISOString())))
     .limit(1);
-  return rows[0] ?? null;
+  const row = rows[0];
+  if (!row) return null;
+  // Slide the end forward, at most once an hour.
+  if (Date.parse(row.expiresAt) - now < IDLE_MS - REFRESH_AFTER_MS)
+    await db().update(tables.sessions).set({ expiresAt: new Date(now + IDLE_MS).toISOString() }).where(eq(tables.sessions.id, id));
+  const { expiresAt: _end, ...user } = row;
+  return user;
 }
 
 export async function requireUser(): Promise<SessionUser> {

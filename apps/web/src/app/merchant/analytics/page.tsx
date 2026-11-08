@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { FiguresTicket } from '@/components/studio/figures-ticket';
 import { VerifiedDeliveryStudio } from '@/components/studio/verified-delivery-studio';
-import { VERIFIED_DELIVERY_TITLE } from '@/components/studio/verified-delivery-report';
+import { ChartTables } from '@/components/studio/chart-tables';
+import { VERIFIED_DELIVERY_TITLE, verifiedDeliveryChartTables } from '@/components/studio/verified-delivery-report';
 import { currentUser } from '@/server/session';
 import { loadVerifiedDelivery, studioAgentStatus, studioLicenceKey, verifiedDeliveryFigures } from '@/server/studio';
 
@@ -87,6 +88,7 @@ export default async function MerchantAnalytics() {
           </div>
         )}
         <VerifiedDeliveryStudio data={data} licenseKey={studioLicenceKey()} agent={studioAgentStatus()} />
+        <ChartTables id="vd" tables={verifiedDeliveryChartTables(data)} />
       </section>
     </div>
   );

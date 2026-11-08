@@ -53,7 +53,9 @@ export default async function Orders() {
             {orders.map((o) => (
               <tr key={o.id}>
                 <th scope="row">
-                  <Link href={`/app/orders/${o.id}`}>{o.title}</Link>
+                  <Link className="link-target" href={`/app/orders/${o.id}`}>
+                    {o.title}
+                  </Link>
                 </th>
                 <td>{formatMoney({ cents: o.amountCents, currency: o.currency })}</td>
                 <td>{MONEY[o.status]?.word ?? o.status}</td>

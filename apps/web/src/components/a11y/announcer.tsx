@@ -11,6 +11,8 @@ export interface Announcement {
   at: number;
   /** Where it came from, shown in the Speech Viewer. */
   source?: string;
+  /** False when it was not written to a live region (focus moved to the same text instead). */
+  live?: boolean;
 }
 
 interface AnnounceOptions {
@@ -18,6 +20,12 @@ interface AnnounceOptions {
   /** Also speak with the app's own voice when the user turned it on. Defaults to true. */
   speak?: boolean;
   source?: string;
+  /**
+   * Write to a live region. Defaults to true. Pass false when focus moves to an element that
+   * shows this same text: the screen reader reads it on focus, so a live announcement would
+   * say it twice. It still reaches the Speech Viewer and the app's own voice.
+   */
+  live?: boolean;
 }
 
 interface AnnouncerApi {
@@ -86,11 +94,12 @@ export function AnnouncerProvider({ children }: { children: React.ReactNode }) {
       politeness: opts.politeness ?? 'polite',
       at: now,
       source: opts.source,
+      live: opts.live !== false,
     };
     log.current = [...log.current.slice(-199), a];
     // Read by end-to-end tests to check that each update is announced exactly once.
     (window as unknown as { __announcements?: string[] }).__announcements = log.current.map((x) => x.text);
-    setItems((prev) => [...prev.filter((p) => now - p.at < KEEP_MS), a]);
+    if (opts.live !== false) setItems((prev) => [...prev.filter((p) => now - p.at < KEEP_MS), a]);
     for (const fn of listeners.current) fn(a);
     const v = ownVoiceRef.current;
     if (v.enabled && opts.speak !== false && typeof window !== 'undefined' && 'speechSynthesis' in window) {

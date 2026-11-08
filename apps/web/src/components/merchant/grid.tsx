@@ -124,7 +124,8 @@ export function DataGrid<T extends { id: string }>({
       defaultColDef: {
         cellDataType: false,
         sortable: true,
-        resizable: true,
+        // Resizing works only by dragging (WCAG 2.5.7); text wraps, so columns never need it.
+        resizable: false,
         suppressMovable: true,
         wrapText: true,
         wrapHeaderText: true,

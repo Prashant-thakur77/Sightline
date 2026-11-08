@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { BarrierStudio } from '@/components/studio/barrier-studio';
-import { BARRIER_TITLE } from '@/components/studio/barrier-report';
+import { BARRIER_TITLE, barrierChartTables } from '@/components/studio/barrier-report';
+import { ChartTables } from '@/components/studio/chart-tables';
 import { FiguresTicket } from '@/components/studio/figures-ticket';
 import { barrierFigures, loadBarrierIndex, studioAgentStatus, studioLicenceKey } from '@/server/studio';
 
@@ -74,7 +75,10 @@ export default async function BarrierDashboard() {
               </p>
             </div>
             {data ? (
-              <BarrierStudio data={data} licenseKey={studioLicenceKey()} agent={studioAgentStatus()} />
+              <>
+                <BarrierStudio data={data} licenseKey={studioLicenceKey()} agent={studioAgentStatus()} />
+                <ChartTables id="bi" tables={barrierChartTables(data)} />
+              </>
             ) : (
               <div className="sx-empty">
                 <p className="sx-empty-h">The crawl has not been run on this build yet</p>

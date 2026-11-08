@@ -252,7 +252,14 @@ export function CameraCheck({
           ))}
         </ul>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button type="button" className="btn btn-primary btn-xl" onClick={() => onSubmit(shots)} disabled={busy || shots.length === 0}>
+          <button
+            type="button"
+            className="btn btn-primary btn-xl"
+            onClick={() => {
+              if (!busy && shots.length > 0) onSubmit(shots);
+            }}
+            aria-disabled={busy || shots.length === 0 || undefined}
+          >
             {busy ? 'Checking…' : 'Check it now'}
           </button>
           <button type="button" className="btn btn-xl" onClick={restart} disabled={busy}>

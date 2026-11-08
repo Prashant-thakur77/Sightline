@@ -129,6 +129,12 @@ export function OrdersConsole({ rows, paypalReady }: { rows: MerchantOrderRow[];
     if (outcome) resultRef.current?.focus();
   }, [outcome]);
 
+  // Which order the panel shows when a run finishes: its result is focused only if it is still shown.
+  const shownId = useRef<string | null>(null);
+  useEffect(() => {
+    shownId.current = selected?.id ?? null;
+  });
+
   const select = useCallback(
     (id: string) => {
       const row = rows.find((r) => r.id === id);
@@ -157,12 +163,13 @@ export function OrdersConsole({ rows, paypalReady }: { rows: MerchantOrderRow[];
       const message = data?.message ?? 'Something went wrong. Nothing changed.';
       const ok = res.ok && Boolean(data?.ok);
       setOutcome({ ok, message, orderId });
-      announce(message, { politeness: ok ? 'polite' : 'assertive', source: 'Demo Store' });
+      // Focus moves to the result, which says the same thing: no live announcement on top of it.
+      announce(message, { politeness: ok ? 'polite' : 'assertive', source: 'Demo Store', live: shownId.current !== orderId });
       router.refresh();
     } catch {
       const message = 'The console could not reach the server. Nothing changed. Try again.';
       setOutcome({ ok: false, message, orderId });
-      announce(message, { politeness: 'assertive', source: 'Demo Store' });
+      announce(message, { politeness: 'assertive', source: 'Demo Store', live: shownId.current !== orderId });
     } finally {
       setBusy(null);
     }

@@ -377,3 +377,50 @@
 .sx-small a {
   font-weight: 700;
 }
+
+/* ---------- The charts as tables, under each dashboard ---------- */
+.sx-data {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 70ch;
+}
+.sx-data-h {
+  font-size: var(--step-1);
+  margin: 0;
+}
+.sx-data-item {
+  border: 2px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 0 var(--space-4);
+}
+.sx-data-item summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-height: var(--target);
+  padding-block: var(--space-2);
+}
+.sx-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 var(--space-4);
+}
+.sx-data-table caption {
+  text-align: left;
+  color: var(--muted);
+  padding-bottom: var(--space-2);
+}
+.sx-data-table th,
+.sx-data-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 2px solid var(--hairline);
+  overflow-wrap: break-word;
+}
+.sx-data-table thead th {
+  font-size: var(--step--1);
+  border-bottom: 3px solid var(--line);
+}
+.sx-data-empty {
+  margin: 0 0 var(--space-4);
+}

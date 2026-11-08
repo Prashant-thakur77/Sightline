@@ -343,6 +343,7 @@ async function startReadback(ctx: Ctx, index: number | undefined, changes?: { si
     locale: 'en-US',
     verbosity: ctx.prefs.verbosity as Verbosity,
     now: new Date(),
+    payAfterCheck: ctx.prefs.payAfterCheck,
   });
   // Contradictions inside the listing are spoken as part of the readback, before "To pay".
   const warnings = listingWarnings(snap);
@@ -443,7 +444,7 @@ function payReply(ctx: Ctx, outcome: PayOutcome, cart: Cart): Reply {
           readbackId: ctx.state.readbackId!,
           total: formatMoney(cart.totals.total),
           clientId: ENV.PAYPAL_CLIENT_ID ?? '',
-          orderIntent: ctx.prefs.payAfterCheck ? 'AUTHORIZE' : 'CAPTURE',
+          orderIntent: outcome.intent,
         },
         suggestions: [{ label: 'Cancel', utterance: 'cancel' }],
       };
@@ -468,6 +469,23 @@ function payReply(ctx: Ctx, outcome: PayOutcome, cart: Cart): Reply {
       return { say: outcome.say, politeness: 'assertive', cue: 'error', card: { kind: 'refusal', heading: 'Nothing was charged', reason: outcome.say, code: outcome.kind }, suggestions: suggestionsFor('browsing', true) };
   }
 }
+
+/** Gate refusals whose wording promises to read the order again. */
+const REREAD_AFTER = new Set([
+  'CART_TAMPERED',
+  'CONFIRMATION_OUT_OF_ORDER',
+  'CONFIRMATION_EXPIRED',
+  'INVALID_QUANTITY',
+  'CURRENCY_MISMATCH',
+  'AMOUNT_INVALID',
+  'TOTALS_MISMATCH',
+  'AMOUNT_MISMATCH',
+  'PAYEE_MISMATCH',
+  'SNAPSHOT_STALE',
+  'SNAPSHOT_TIME_INVALID',
+  'PRICE_CHANGED',
+  'LISTING_CHANGED',
+]);
 
 async function confirmStep(ctx: Ctx, opts: { phrase?: string; button: boolean }): Promise<Reply> {
   const readbackId = ctx.state.readbackId;
@@ -505,6 +523,19 @@ async function confirmStep(ctx: Ctx, opts: { phrase?: string; button: boolean })
         .where(eq(tables.readbacks.id, rb.id));
       await audit({ userId: ctx.userId, actor: 'user', action: 'readback.confirmed', subjectId: rb.id, payload: { key1: ev.key1.source, key2: ev.key2.source } });
       const outcome = await payForReadback({ userId: ctx.userId, readbackId: rb.id, mode: 'auto' });
+      // These refusals promise "I'll read it again": keep that promise with a fresh readback (new
+      // price check, same item, size, colour and quantity), so a late or stale yes costs nothing.
+      if (outcome.kind === 'refused' && REREAD_AFTER.has(outcome.code) && ctx.state.focus) {
+        await db().update(tables.readbacks).set({ invalidatedAt: new Date().toISOString() }).where(eq(tables.readbacks.id, rb.id));
+        const line = cart.lines[0]!;
+        const again = await startReadback(ctx, ctx.state.focus, {
+          size: line.snapshot.attributes.size,
+          colour: line.snapshot.attributes.colour,
+          quantity: line.quantity,
+        });
+        if (again.card?.kind === 'readback') return { ...again, say: `${outcome.say} ${again.say}`, politeness: 'assertive', cue: 'error' };
+        return { ...again, say: `${outcome.say} ${again.say}` };
+      }
       return payReply(ctx, outcome, cart);
     }
     case 'awaiting_second_press':

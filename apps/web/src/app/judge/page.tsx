@@ -50,7 +50,7 @@ export default async function Judge() {
               <span className="jpath-n" aria-hidden="true">1</span>
               <div>
                 <h3>Try it with the Speech Viewer on</h3>
-                <p>Shop as Maya. The black panel shows, word for word, what a screen reader says on every screen.</p>
+                <p>Shop as Maya. The Speech Viewer panel shows, word for word, what a screen reader says on every screen.</p>
                 <JudgeStart />
               </div>
             </li>

@@ -235,3 +235,25 @@ describe('composeReadback: refuses carts it cannot describe truthfully', () => {
     expect(() => composeReadback(input({ cart: c }))).toThrow(/currency_mismatch/);
   });
 });
+
+describe('composeReadback: pay after check', () => {
+  it('says who holds the money and when the seller is paid, right after the total', () => {
+    const r = composeReadback(input({ payAfterCheck: true }));
+    expect(r.text).toContain('paid with your saved PayPal. PayPal holds the money, and Demo Store is paid after you check the parcel. Arrives by');
+    expect(r.fields).toContainEqual({ key: 'payAfterCheck', label: 'When the store is paid', value: 'After you check the parcel' });
+  });
+
+  it('keeps the sentence at brief verbosity, because it changes what happens to the money', () => {
+    expect(composeReadback(input({ payAfterCheck: true, verbosity: 'brief' })).text).toContain('Demo Store is paid after you check the parcel.');
+  });
+
+  it('says nothing about holding when the store is paid at once', () => {
+    const r = composeReadback(input());
+    expect(r.text).not.toContain('holds the money');
+    expect(r.fields.find((f) => f.key === 'payAfterCheck')).toBeUndefined();
+  });
+
+  it('binds the sentence into the text hash, so a readback with and without it never match', () => {
+    expect(composeReadback(input({ payAfterCheck: true })).textHash).not.toBe(composeReadback(input()).textHash);
+  });
+});

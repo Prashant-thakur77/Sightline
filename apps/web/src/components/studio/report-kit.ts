@@ -97,3 +97,26 @@ export const kpi = (text: string, value: AgWidgetFieldReference, caption: string
 });
 
 export const outlined = { custom: { seriesStroke: { enabled: true, strokeWidth: 2 } } };
+
+/* Helpers for writing a chart's rows out as a table (see ChartTables). */
+
+/** Rows grouped by a key, in the order each key first appears. */
+export function groupRows<T>(rows: T[], key: (r: T) => string): [string, T[]][] {
+  const groups = new Map<string, T[]>();
+  for (const r of rows) {
+    const k = key(r);
+    groups.set(k, [...(groups.get(k) ?? []), r]);
+  }
+  return [...groups];
+}
+
+/** The median of the numbers given, ignoring blanks; null when there are none. */
+export function median(values: (number | null)[]): number | null {
+  const xs = values.filter((x): x is number => x !== null && Number.isFinite(x)).sort((a, b) => a - b);
+  if (!xs.length) return null;
+  const mid = Math.floor(xs.length / 2);
+  return xs.length % 2 ? xs[mid]! : (xs[mid - 1]! + xs[mid]!) / 2;
+}
+
+/** Largest first, as the charts sort; ties by name so the order is the same on every load. */
+export const largestFirst = <T extends { name: string; value: number }>(a: T, b: T) => b.value - a.value || a.name.localeCompare(b.name);

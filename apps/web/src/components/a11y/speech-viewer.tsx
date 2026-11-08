@@ -31,7 +31,7 @@ export function SpeechViewer({ rootId = 'app-root', defaultOpen = false }: { roo
   const seen = useRef(0);
   const nextId = useRef(1);
   const readingRef = useRef(false);
-  const listRef = useRef<HTMLOListElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -82,12 +82,33 @@ export function SpeechViewer({ rootId = 'app-root', defaultOpen = false }: { roo
   // Live announcements come straight from the announcer: exactly what screen readers hear.
   useEffect(() => {
     if (!open) return;
-    return subscribe((a) => push(`${a.politeness === 'assertive' ? 'Alert' : 'Announced'}: ${a.text}`, 'live'));
+    // Not-live messages are read from focus instead, which the virtual screen reader already shows.
+    return subscribe((a) => {
+      if (a.live !== false) push(`${a.politeness === 'assertive' ? 'Alert' : 'Announced'}: ${a.text}`, 'live');
+    });
   }, [open, push, subscribe]);
 
   useEffect(() => {
-    listRef.current?.lastElementChild?.scrollIntoView({ block: 'end' });
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [lines]);
+
+  // Escape closes the panel when focus is in it; focus stays where it is.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (!(e.target instanceof Node) || !document.querySelector('.speech-viewer')?.contains(e.target)) return;
+      setOpen(false);
+      try {
+        localStorage.setItem(STORAGE_KEY, '0');
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
 
   const toggle = () => {
     const next = !open;
@@ -151,14 +172,19 @@ export function SpeechViewer({ rootId = 'app-root', defaultOpen = false }: { roo
               </button>
             </div>
           </div>
-          <ol ref={listRef} className="sv-lines" aria-hidden="true">
-            {lines.length === 0 && <li className="sv-empty">Move around the page with Tab, or press Read this page.</li>}
-            {lines.map((l) => (
-              <li key={l.id} data-kind={l.kind}>
-                {l.text}
-              </li>
-            ))}
-          </ol>
+          {/* The scroller is a named, focusable region so keyboard users can scroll it; the copy inside
+              is hidden from screen readers, who already hear the real thing. */}
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}
+          <div ref={scrollRef} className="sv-scroll" tabIndex={0} role="region" aria-label="Speech Viewer transcript, a visual copy of what your screen reader says">
+            <ol className="sv-lines" aria-hidden="true">
+              {lines.length === 0 && <li className="sv-empty">Move around the page with Tab, or press Read this page.</li>}
+              {lines.map((l) => (
+                <li key={l.id} data-kind={l.kind}>
+                  {l.text}
+                </li>
+              ))}
+            </ol>
+          </div>
         </aside>
       )}
     </div>

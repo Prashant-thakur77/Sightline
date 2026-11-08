@@ -26,16 +26,12 @@ export function VerdictView({
   focusOnMount?: boolean;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const first = useRef(true);
+  // Focus moves to a new verdict, not to one that was already there when the page loaded. Comparing
+  // against the first verdict (not a "first run" flag) stays right when Strict Mode runs this twice.
+  const initial = useRef(focusOnMount ? null : verdict);
   useEffect(() => {
-    // Focus moves to a new verdict, not to one that was already there when the page loaded.
-    if (first.current && !focusOnMount) {
-      first.current = false;
-      return;
-    }
-    first.current = false;
-    headingRef.current?.focus();
-  }, [verdict, focusOnMount]);
+    if (verdict !== initial.current) headingRef.current?.focus();
+  }, [verdict]);
 
   return (
     <section aria-labelledby="verdict-h" className="verdict" data-kind={verdict.kind}>

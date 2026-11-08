@@ -52,9 +52,10 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
 
   useEffect(() => {
     if (!state) return;
-    announce(state.message, { politeness: state.ok ? 'polite' : 'assertive', source: 'settings' });
-    const bad = state.field ? document.getElementById(state.field) : null;
-    if (!state.ok && bad) bad.focus();
+    const bad = !state.ok && state.field ? document.getElementById(state.field) : null;
+    // When focus lands on the message itself it is read from focus, so it is not also sent live.
+    announce(state.message, { politeness: state.ok ? 'polite' : 'assertive', source: 'settings', live: Boolean(bad) });
+    if (bad) bad.focus();
     else statusRef.current?.focus();
   }, [state, announce]);
 

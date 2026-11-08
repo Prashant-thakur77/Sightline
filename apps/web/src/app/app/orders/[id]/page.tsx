@@ -1,5 +1,7 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import { desc, eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import {
@@ -13,14 +15,26 @@ import {
   verdictStatus,
   type StatusWord,
 } from '@sightline/core';
-import { requireUser } from '@/server/session';
+import { currentUser, requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { db } from '@/server/runtime';
 import { MoneyBack } from '@/components/orders/money-back';
 import { AskHelper } from '@/components/orders/ask-helper';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Order' };
+
+/** One read per request: the title and the page share it. */
+const loadOrder = cache(orderForUser);
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const user = await currentUser();
+  // Without a session the layout sends the person to /start, so this title is never seen.
+  if (!user) return { title: 'Order' };
+  const found = await loadOrder(id, user.id);
+  if (!found?.snapshot) notFound();
+  return { title: `${found.snapshot.title}, order` };
+}
 
 function Section({ n, id, tab, state, children }: { n: number; id: string; tab: string; state: StatusWord; children: React.ReactNode }) {
   return (
@@ -37,12 +51,12 @@ function Section({ n, id, tab, state, children }: { n: number; id: string; tab: 
   );
 }
 
-function Technical({ rows }: { rows: [string, string | null | undefined][] }) {
+function Technical({ step, rows }: { step: string; rows: [string, string | null | undefined][] }) {
   const shown = rows.filter((r): r is [string, string] => Boolean(r[1]));
   if (!shown.length) return null;
   return (
     <details className="tech">
-      <summary>Technical details</summary>
+      <summary>Technical details: {step}</summary>
       <dl className="hashes">
         {shown.map(([k, v]) => (
           <div key={k}>
@@ -58,7 +72,7 @@ function Technical({ rows }: { rows: [string, string | null | undefined][] }) {
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
-  const found = await orderForUser(id, user.id);
+  const found = await loadOrder(id, user.id);
   if (!found || !found.snapshot) notFound();
   const { order: o, snapshot: s, shipment, verification, kase } = found;
   const [rb] = await db().select().from(tables.readbacks).where(eq(tables.readbacks.id, o.readbackId)).limit(1);
@@ -82,7 +96,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="grid gap-8">
       <p>
-        <Link href="/app/orders">All orders and money</Link>
+        <Link className="link-target" href="/app/orders">
+          All orders and money
+        </Link>
       </p>
       <header className="grid gap-2">
         <p className="eyebrow">Order {o.id.slice(-8).toUpperCase()}</p>
@@ -97,7 +113,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <h3 className="folder-h">What you heard before paying</h3>
           <p className="folder-said">{rb?.text}</p>
           {rb?.confirmedAt && <p className="muted">Confirmed {new Date(rb.confirmedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}.</p>}
-          <Technical rows={[['Readback fingerprint', rb?.textHash]]} />
+          <Technical step="Asked" rows={[['Readback fingerprint', rb?.textHash]]} />
         </Section>
 
         <Section n={2} id="paid" tab="Paid" state={paid}>
@@ -107,10 +123,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <p>Amount: {amount}.</p>
           {o.receiptId && (
             <p>
-              <Link href={`/receipts/${o.receiptId}`}>See the signed payment receipt</Link>
+              <Link className="link-target" href={`/receipts/${o.receiptId}`}>
+                See the signed payment receipt
+              </Link>
             </p>
           )}
           <Technical
+            step="Paid"
             rows={[
               ['PayPal order', o.paypalOrderId],
               ['PayPal request id (stops double charges)', o.paypalRequestId],
@@ -131,7 +150,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           {shipment?.trackingNumber && (
             <p>{shipment.trackerId ? 'Tracking is on the PayPal order.' : 'Tracking is recorded by Demo Store; it is added to PayPal when the payment is captured.'}</p>
           )}
-          <Technical rows={[['Tracking number', shipment?.trackingNumber]]} />
+          <Technical step="Arrived" rows={[['Tracking number', shipment?.trackingNumber]]} />
         </Section>
 
         <Section n={4} id="checked" tab="Checked" state={checked}>
@@ -191,7 +210,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           )}
           {pack && (
             <p>
-              <Link href={`/evidence/${pack.id}`}>Read the signed evidence pack</Link>
+              <Link className="link-target" href={`/evidence/${pack.id}`}>
+                Read the signed evidence pack
+              </Link>
             </p>
           )}
           {canMoneyBack && <MoneyBack orderId={o.id} canStart={canMoneyBack} done={null} />}

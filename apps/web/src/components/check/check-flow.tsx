@@ -97,7 +97,7 @@ export function CheckFlow({
   return (
     <div className="grid gap-6">
       {error && (
-        <p className="card-refusal" role="alert">
+        <p className="card-refusal">
           {error}
         </p>
       )}

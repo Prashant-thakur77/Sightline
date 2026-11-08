@@ -1,7 +1,7 @@
 import type { AgDataSourcesDefinition, AgPageState, AgReportState } from 'ag-studio';
-import { hoursText, msText } from './formats';
-import { at, count, field, flag, kpi, manyToOne, money, outlined, rate, sum, title, type Spec } from './report-kit';
-import type { VerifiedDeliveryData } from './types';
+import { centsText, hoursText, msText } from './formats';
+import { at, count, field, flag, groupRows, kpi, largestFirst, manyToOne, money, outlined, rate, sum, title, type Spec } from './report-kit';
+import type { ChartTable, VerifiedDeliveryData } from './types';
 
 /*
  * The "Demo Store · Verified delivery" report: the data sources Studio reads (orders, checks, the
@@ -10,6 +10,12 @@ import type { VerifiedDeliveryData } from './types';
  */
 
 export const VERIFIED_DELIVERY_TITLE = 'Demo Store · Verified delivery';
+
+/** Each chart's title and subtitle: shared by the chart and the table written out under the dashboard. */
+const CHARTS = {
+  verdicts: { title: 'Verdicts by mismatch type', caption: 'Number of checks' },
+  money: { title: 'Where the money is', caption: 'Order value by payment state, in dollars' },
+} as const;
 
 export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourcesDefinition {
   return {
@@ -244,7 +250,7 @@ const overview: AgPageState = {
       },
       sort: [{ field: count('checks.id'), direction: 'desc' }],
       format: {
-        ...title('Verdicts by mismatch type', 'Number of checks'),
+        ...title(CHARTS.verdicts.title, CHARTS.verdicts.caption),
         style: { theme: { common: { legend: { enabled: true, position: 'bottom' } } }, ...outlined },
       },
     },
@@ -255,7 +261,7 @@ const overview: AgPageState = {
         valueKey: [{ id: 'orderValueDollars' }],
       },
       sort: [{ field: { id: 'orderValueDollars' }, direction: 'desc' }],
-      format: { ...title('Where the money is', 'Order value by payment state, in dollars'), style: outlined },
+      format: { ...title(CHARTS.money.title, CHARTS.money.caption), style: outlined },
     },
     'recent-checks': {
       type: 'grid',
@@ -309,3 +315,37 @@ export const verifiedDeliveryReport: AgReportState = {
   panels: { data: { collapsed: true } },
 };
 
+
+/** The rows behind each chart above, grouped and summed the same way the chart does. */
+export function verifiedDeliveryChartTables(data: VerifiedDeliveryData): ChartTable[] {
+  // One bar per mismatch type, stacked by verdict: written out as one row per type and verdict.
+  const verdicts = groupRows(data.checks, (c) => c.mismatchType)
+    .map(([name, rows]) => ({
+      name,
+      value: rows.length,
+      parts: groupRows(rows, (c) => c.verdict)
+        .map(([verdict, vs]) => ({ name: verdict, value: vs.length }))
+        .sort(largestFirst),
+    }))
+    .sort(largestFirst)
+    .flatMap((t) => t.parts.map((p) => ({ key: `${t.name}|${p.name}`, cells: [t.name, p.name, String(p.value)] })));
+  const money = groupRows(data.orders, (o) => o.moneyState)
+    .map(([name, rows]) => ({ name, value: rows.reduce((a, o) => a + o.amountCents, 0) }))
+    .sort(largestFirst);
+  return [
+    {
+      id: 'verdicts',
+      ...CHARTS.verdicts,
+      columns: ['Mismatch type', 'Verdict', 'Checks'],
+      rows: verdicts,
+      empty: 'No parcels have been checked yet.',
+    },
+    {
+      id: 'money',
+      ...CHARTS.money,
+      columns: ['Payment state', 'Order value'],
+      rows: money.map((m) => ({ key: m.name, cells: [m.name, centsText(m.value)] })),
+      empty: 'No orders yet.',
+    },
+  ];
+}

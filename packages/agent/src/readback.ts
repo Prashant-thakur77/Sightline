@@ -30,6 +30,8 @@ export interface ComposeReadbackInput {
   verbosity: Verbosity;
   /** Used for "tomorrow", for adding the year when it differs, and to ignore past estimates. */
   now: Date;
+  /** PayPal only authorizes now and the seller is paid after the parcel check. Said at every verbosity. */
+  payAfterCheck?: boolean;
 }
 
 export interface ComposedReadback {
@@ -211,6 +213,7 @@ export function composeReadback(input: ComposeReadbackInput): ComposedReadback {
     });
   }
   parts.push(moneySentence(cart, paymentSource, verbosity));
+  if (input.payAfterCheck) parts.push(en.readback.payAfterCheck(sellerOf(cart.lines[0]!)));
   parts.push(delivery ? en.readback.deliveryBy(delivery) : en.readback.deliveryUnknown);
   if (single) parts.push(returnsPhrase(cart.lines[0]!.snapshot.returnPolicy));
   parts.push(
@@ -223,6 +226,10 @@ export function composeReadback(input: ComposeReadbackInput): ComposedReadback {
 
   const text = parts.join(' ');
   const fields = buildFields(cart, paymentSource, delivery);
+  if (input.payAfterCheck) {
+    const at = fields.findIndex((f) => f.key === 'paymentSource');
+    fields.splice(at + 1, 0, { key: 'payAfterCheck', label: L.payAfterCheck, value: en.readback.payAfterCheckValue });
+  }
   const textHash = hashReadbackText(text);
   return { text, fields, textHash };
 }

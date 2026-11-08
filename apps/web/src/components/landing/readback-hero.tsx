@@ -20,6 +20,7 @@ const LINES: [string, string][] = [
   ['Size', 'M'],
   ['Seller', 'Demo Store'],
   ['Total', '$36.72 with tax'],
+  ['Store is paid', 'After your check'],
   ['Arrives', 'Tuesday 17 November'],
   ['Returns', 'Free for 30 days'],
 ];
@@ -43,7 +44,7 @@ export function ReadbackHero() {
     setRun((r) => r + 1);
     const said = new SpeechSynthesisUtterance('I need a navy crew-neck sweater, medium, under forty dollars.');
     const readback = new SpeechSynthesisUtterance(
-      "Here's what you're buying. Harbor knit crew-neck sweater. Colour: navy. Size: M. Sold by Demo Store. Total $36.72 with tax. Arrives Tuesday 17 November. Free returns within 30 days. To pay, say confirm purchase.",
+      "Here's what you're buying. Harbor knit crew-neck sweater. Colour: navy. Size: M. Sold by Demo Store. Total $36.72 with tax. PayPal holds the money, and Demo Store is paid after you check the parcel. Arrives Tuesday 17 November. Free returns within 30 days. To pay, say confirm purchase.",
     );
     said.rate = 1;
     readback.rate = 1.05;
@@ -114,8 +115,8 @@ export function ReadbackHero() {
       <figcaption className="rbh-cap">
         <span className="sr-only">
           Example. You say: I need a navy crew-neck sweater, medium, under forty dollars. Before anything is paid, {''}
-          the app reads back: Harbor knit crew-neck sweater. Colour navy. Size M. Seller Demo Store. Total $36.72 with tax. Arrives Tuesday 17
-          November. Free returns for 30 days. To pay, say confirm purchase.
+          the app reads back: Harbor knit crew-neck sweater. Colour navy. Size M. Seller Demo Store. Total $36.72 with tax. PayPal holds the money, and Demo Store is paid after you check the
+          parcel. Arrives Tuesday 17 November. Free returns for 30 days. To pay, say confirm purchase.
         </span>
         <span className="rbh-buttons">
           <button type="button" className="btn rbh-hear" onClick={hear} aria-pressed={speaking}>

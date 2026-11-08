@@ -77,8 +77,20 @@ export function CaseDesk({ cases }: { cases: MerchantCase[] }) {
   const [results, setResults] = useState<Record<string, Result>>({});
   const [focusId, setFocusId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const refocus = useRef<string | null>(null);
   const open = cases.filter((c) => c.open);
   const closed = cases.filter((c) => !c.open);
+
+  // A refreshed case can move from Open to Closed, which rebuilds its card and drops focus.
+  // When that happens, put focus back on the same result.
+  useEffect(() => {
+    const id = refocus.current;
+    if (!id) return;
+    refocus.current = null;
+    const active = document.activeElement;
+    if (active && active !== document.body) return;
+    document.getElementById(`case-${id}-result`)?.focus();
+  }, [cases]);
 
   const respond = async (c: MerchantCase, action: CaseAction) => {
     setBusy(c.id);
@@ -99,8 +111,10 @@ export function CaseDesk({ cases }: { cases: MerchantCase[] }) {
     }
     setResults((m) => ({ ...m, [c.id]: r }));
     setFocusId(c.id);
-    announce(r.message, { politeness: r.ok ? 'polite' : 'assertive', source: 'Demo Store' });
+    // Focus moves to the result, which says the same thing: no live announcement on top of it.
+    announce(r.message, { politeness: r.ok ? 'polite' : 'assertive', source: 'Demo Store', live: false });
     setBusy(null);
+    refocus.current = c.id;
     router.refresh();
   };
 
@@ -452,7 +466,13 @@ function CaseCard({
               )}
 
               {result && (
-                <p ref={resultRef} tabIndex={-1} className="mx-result" data-ok={String(result.ok)}>
+                <p
+                  id={`case-${c.id}-result`}
+                  ref={resultRef}
+                  tabIndex={-1}
+                  className="mx-result"
+                  data-ok={String(result.ok)}
+                >
                   <span className="mx-glyph" aria-hidden="true">
                     {result.ok ? '✓' : '✕'}
                   </span>

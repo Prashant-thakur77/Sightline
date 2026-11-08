@@ -182,3 +182,19 @@ export interface StudioAgentStatus {
   enabled: boolean;
   model: string | null;
 }
+
+/**
+ * The rows behind one dashboard chart, written out as a table for anyone who cannot see the chart.
+ * The first cell of each row is its row header.
+ */
+export interface ChartTable {
+  id: string;
+  /** The chart's title, exactly as the chart shows it. */
+  title: string;
+  /** The chart's subtitle, exactly as the chart shows it. */
+  caption: string;
+  columns: string[];
+  rows: { key: string; cells: string[] }[];
+  /** Said instead of a table when the chart has no data yet. */
+  empty: string;
+}

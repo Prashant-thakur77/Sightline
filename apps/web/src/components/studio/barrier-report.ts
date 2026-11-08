@@ -1,7 +1,7 @@
 import type { AgDataSourcesDefinition, AgPageState, AgReportState } from 'ag-studio';
 import { percentText } from './formats';
-import { at, count, field, flag, kpi, outlined, rate, sum, title, type Spec } from './report-kit';
-import type { BarrierData } from './types';
+import { at, count, field, flag, groupRows, kpi, largestFirst, median, outlined, rate, sum, title, type Spec } from './report-kit';
+import type { BarrierData, ChartTable } from './types';
 
 /*
  * The Checkout Barrier Index as an AG Studio report: one row per sampled store (named only by a hash
@@ -10,6 +10,13 @@ import type { BarrierData } from './types';
  */
 
 export const BARRIER_TITLE = 'Checkout Barrier Index';
+
+/** Each chart's title and subtitle: shared by the chart and the table written out under the dashboard. */
+const CHARTS = {
+  platforms: { title: 'Failures by platform', caption: 'Median rules failed, product and home page' },
+  keyboard: { title: 'Keyboard walk to add to cart', caption: 'Stores, by what happened' },
+  rules: { title: 'Top failing rules', caption: 'Stores failing each rule' },
+} as const;
 
 const count1 = (id: string, name: string, description: string): Spec => ({ id, name, format: 'integerFormat', description });
 
@@ -136,7 +143,7 @@ const index: AgPageState = {
         valueKey: [{ id: 'productPageMedian' }, { id: 'homePageMedian' }],
       },
       format: {
-        ...title('Failures by platform', 'Median rules failed, product and home page'),
+        ...title(CHARTS.platforms.title, CHARTS.platforms.caption),
         style: { theme: { common: { legend: { enabled: true, position: 'bottom' } } }, ...outlined },
       },
     },
@@ -144,13 +151,13 @@ const index: AgPageState = {
       type: 'bar-chart-grouped',
       dataMapping: { categoryKey: [{ id: 'stores.keyboardOutcome' }], valueKey: [count('stores.id')] },
       sort: [{ field: count('stores.id'), direction: 'desc' }],
-      format: { ...title('Keyboard walk to add to cart', 'Stores, by what happened'), style: outlined },
+      format: { ...title(CHARTS.keyboard.title, CHARTS.keyboard.caption), style: outlined },
     },
     rules: {
       type: 'bar-chart-grouped',
       dataMapping: { categoryKey: [{ id: 'rules.id' }], valueKey: [sum('rules.storesAffected')] },
       sort: [{ field: sum('rules.storesAffected'), direction: 'desc' }],
-      format: { ...title('Top failing rules', 'Stores failing each rule'), style: outlined },
+      format: { ...title(CHARTS.rules.title, CHARTS.rules.caption), style: outlined },
     },
     'rules-grid': {
       type: 'grid',
@@ -190,3 +197,43 @@ const index: AgPageState = {
 };
 
 export const barrierReport: AgReportState = { selectedPageId: index.id, pages: [index], panels: { data: { collapsed: true } } };
+
+const oneDecimal = (x: number | null) => (x === null ? 'Not audited' : Number.isInteger(x) ? String(x) : x.toFixed(1));
+
+/** The rows behind each chart above, grouped and measured the same way the chart does. */
+export function barrierChartTables(data: BarrierData): ChartTable[] {
+  const outcomes = groupRows(data.stores, (s) => s.keyboardOutcome)
+    .map(([name, rows]) => ({ name, value: rows.length }))
+    .sort(largestFirst);
+  const rules = data.rules.map((r) => ({ name: r.id, value: r.storesAffected })).sort(largestFirst);
+  return [
+    {
+      id: 'platforms',
+      ...CHARTS.platforms,
+      columns: ['Store platform', 'Product page', 'Home page'],
+      rows: groupRows(data.stores, (s) => s.platform).map(([platform, rows]) => ({
+        key: platform,
+        cells: [
+          platform,
+          oneDecimal(median(rows.map((r) => r.productViolations))),
+          oneDecimal(median(rows.map((r) => r.homeViolations))),
+        ],
+      })),
+      empty: 'No stores were sampled.',
+    },
+    {
+      id: 'keyboard',
+      ...CHARTS.keyboard,
+      columns: ['What happened', 'Stores'],
+      rows: outcomes.map((o) => ({ key: o.name, cells: [o.name, String(o.value)] })),
+      empty: 'No stores were sampled.',
+    },
+    {
+      id: 'rules',
+      ...CHARTS.rules,
+      columns: ['Rule', 'Stores failing'],
+      rows: rules.map((r) => ({ key: r.name, cells: [r.name, String(r.value)] })),
+      empty: 'No rule failed on any store.',
+    },
+  ];
+}

@@ -33,7 +33,7 @@ function isTyping(el: EventTarget | null): boolean {
 }
 
 export function Conversation({ firstName, initial }: { firstName: string; initial?: TurnResponse | null }) {
-  const { announce, stop: stopSpeaking } = useAnnouncer();
+  const { announce, stop: stopSpeaking, ownVoice } = useAnnouncer();
   const [messages, setMessages] = useState<ChatMessage[]>(initial?.messages ?? []);
   const [card, setCard] = useState<Card | null>(initial?.card ?? null);
   const [suggestions, setSuggestions] = useState(initial?.suggestions ?? []);
@@ -46,6 +46,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
   const [online, setOnline] = useState(true);
   const lastSay = useRef(initial?.say ?? '');
   const cardRef = useRef<HTMLDivElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const spaceDown = useRef(false);
 
@@ -67,6 +68,10 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       const focusWasInCard =
         !('action' in req && req.action === 'start') &&
         (Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body);
+      // Suggestion buttons are replaced too; if focus was on one, it must not fall to the page.
+      const focusWasInSuggestions = Boolean(suggestionsRef.current?.contains(document.activeElement));
+      // If the reply takes a while, say so once; the visible status line already says "Thinking…".
+      const slow = setTimeout(() => announce('Working on it.', { source: 'assistant', speak: false }), 1500);
       if ('text' in req) setMessages((m) => [...m, { id: `local-${Date.now()}`, role: 'user', text: req.text }]);
       try {
         const res = await fetch('/api/turn', {
@@ -85,9 +90,19 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         announce(data.say, { politeness: data.politeness, source: 'assistant' });
         if (data.cue) cue(data.cue);
         else cue('done');
-        if (focusWasInCard)
-          requestAnimationFrame(() => (cardRef.current?.querySelector<HTMLElement>('.card-h') ?? inputRef.current)?.focus({ preventScroll: false }));
+        clearTimeout(slow);
+        if (focusWasInCard || focusWasInSuggestions)
+          requestAnimationFrame(() => {
+            const active = document.activeElement;
+            if (!focusWasInCard && active && active !== document.body && suggestionsRef.current?.contains(active)) return;
+            const target =
+              cardRef.current?.querySelector<HTMLElement>('.card-h') ??
+              (focusWasInSuggestions ? suggestionsRef.current?.querySelector<HTMLElement>('button') : null) ??
+              inputRef.current;
+            target?.focus({ preventScroll: false });
+          });
       } catch {
+        clearTimeout(slow);
         const msg = 'Something went wrong on my side. Nothing was charged. Please try that again.';
         setError(msg);
         cue('error');
@@ -147,6 +162,20 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
     void speech.start();
   }, [announce, speech, stopSpeaking]);
 
+  /** Press once to start, again to send. Used by keyboard, click-only assistive tech and quick taps. */
+  const toggleListening = useCallback(() => {
+    if (speech.listening) {
+      speech.stop();
+      setToggleTalk(false);
+    } else {
+      setToggleTalk(true);
+      startListening();
+    }
+  }, [speech, startListening]);
+  /** The pointer press in progress on Talk: when it began, and whether it started listening. */
+  const press = useRef<{ at: number; started: boolean } | null>(null);
+  const lastKeyPress = useRef(0);
+
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -175,13 +204,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       const k = e.altKey ? e.code.replace(/^Key|^Digit/, '').toLowerCase() : e.key.toLowerCase();
       if (k === 't') {
         e.preventDefault();
-        if (speech.listening) {
-          speech.stop();
-          setToggleTalk(false);
-        } else {
-          setToggleTalk(true);
-          startListening();
-        }
+        toggleListening();
       } else if (k === 'r') {
         e.preventDefault();
         if (lastSay.current) announce(lastSay.current, { source: 'assistant (repeat)' });
@@ -217,7 +240,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
     };
-  }, [announce, card, send, singleKeys, speech, startListening, stopSpeaking]);
+  }, [announce, card, send, singleKeys, speech, startListening, stopSpeaking, toggleListening]);
 
   const started = useRef(false);
   useEffect(() => {
@@ -268,22 +291,51 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
             type="button"
             className="talk"
             aria-pressed={speech.listening}
+            aria-describedby="talk-hint"
             onPointerDown={(e) => {
-              if (toggleTalk) return;
+              if (e.button !== 0) return;
               e.preventDefault();
+              if (speech.listening) {
+                press.current = { at: performance.now(), started: false };
+                return;
+              }
+              press.current = { at: performance.now(), started: true };
+              setToggleTalk(false);
               startListening();
             }}
-            onPointerUp={() => !toggleTalk && speech.stop()}
-            onPointerLeave={() => !toggleTalk && speech.listening && speech.stop()}
+            onPointerUp={() => {
+              const p = press.current;
+              press.current = null;
+              if (!p) return;
+              if (!p.started) {
+                // A second press while listening sends.
+                speech.stop();
+                setToggleTalk(false);
+              } else if (performance.now() - p.at < 350) {
+                // A quick tap (and touch screen readers' double tap) starts listening and keeps it on.
+                setToggleTalk(true);
+              } else {
+                // Held, then released: send.
+                speech.stop();
+              }
+            }}
+            onPointerLeave={() => {
+              if (press.current?.started && !toggleTalk) {
+                press.current = null;
+                speech.stop();
+              }
+            }}
             onKeyDown={(e) => {
               if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
                 e.preventDefault();
-                if (speech.listening) speech.stop();
-                else {
-                  setToggleTalk(true);
-                  startListening();
-                }
+                lastKeyPress.current = performance.now();
+                toggleListening();
               }
+            }}
+            onClick={(e) => {
+              // Assistive tech that sends only a click (no pointer or key events) has detail 0.
+              if (e.detail !== 0 || performance.now() - lastKeyPress.current < 500) return;
+              toggleListening();
             }}
           >
             <span className="talk-dots" aria-hidden="true">
@@ -291,10 +343,19 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               <span />
               <span />
             </span>
-            <span>{speech.listening ? 'Listening… release or press again to send' : 'Hold to talk'}</span>
+            <span>{speech.listening ? (toggleTalk ? 'Listening… press again to send' : 'Listening… let go to send') : 'Talk'}</span>
           </button>
+          {/* Read as the Talk button's description; hidden here so browse mode doesn't read it twice. */}
+          <p id="talk-hint" className="hint talk-hint" aria-hidden="true">
+            Hold to talk, or press once to start and again to send.
+          </p>
+          {ownVoice.enabled && (
+            <button type="button" className="btn" onClick={() => stopSpeaking()}>
+              Stop speaking
+            </button>
+          )}
           <div className="composer-type">
-            <label htmlFor="say" className="sr-only">
+            <label htmlFor="say" className="composer-label">
               Or type what you need
             </label>
             <input
@@ -302,7 +363,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               id="say"
               type="text"
               autoComplete="off"
-              placeholder="Or type: navy crew-neck sweater, medium, under $40"
+              placeholder="For example: navy crew-neck sweater, medium, under $40"
               value={text}
               onChange={(e) => setText(e.target.value)}
               readOnly={busy}
@@ -323,7 +384,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         </form>
 
         {suggestions.length > 0 && (
-          <div className="suggestions">
+          <div className="suggestions" ref={suggestionsRef}>
             <h2 className="sr-only">Things you can say</h2>
             <ul>
               {suggestions.map((s) => (

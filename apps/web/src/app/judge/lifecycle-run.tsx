@@ -24,7 +24,13 @@ export function LifecycleRun({ ready, missing }: { ready: boolean; missing: stri
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLOListElement>(null);
 
+  const fail = (msg: string) => {
+    setError(msg);
+    announce(msg, { politeness: 'assertive', source: 'judge run' });
+  };
+
   const run = async () => {
+    if (busy) return;
     setBusy(true);
     setError(null);
     setSteps([]);
@@ -33,13 +39,13 @@ export function LifecycleRun({ ready, missing }: { ready: boolean; missing: stri
     try {
       res = await fetch('/api/judge/run', { method: 'POST' });
     } catch {
-      setError('The server could not be reached. Nothing ran.');
+      fail('The server could not be reached. Nothing ran.');
       setBusy(false);
       return;
     }
     if (!res.ok || !res.body) {
       const j = (await res.json().catch(() => ({}))) as { error?: string };
-      setError(j.error ?? 'The run could not start.');
+      fail(j.error ?? 'The run could not start.');
       setBusy(false);
       return;
     }
@@ -65,7 +71,7 @@ export function LifecycleRun({ ready, missing }: { ready: boolean; missing: stri
       }
     }
     } catch {
-      setError('The connection dropped during the run. Steps above show how far it got.');
+      fail('The connection dropped during the run. The steps listed so far show how far it got.');
     }
     setBusy(false);
   };
@@ -73,17 +79,13 @@ export function LifecycleRun({ ready, missing }: { ready: boolean; missing: stri
   return (
     <div className="grid gap-4">
       {ready ? (
-        <button type="button" className="btn btn-primary btn-xl" onClick={run} disabled={busy}>
+        <button type="button" className="btn btn-primary btn-xl" onClick={run} aria-disabled={busy || undefined}>
           {busy ? 'Running…' : 'Run the whole lifecycle (about 90 seconds)'}
         </button>
       ) : (
         <p className="card-refusal">This server is missing {missing.join(' and ')}, so the run is switched off rather than faked.</p>
       )}
-      {error && (
-        <p role="alert" className="card-refusal">
-          {error}
-        </p>
-      )}
+      {error && <p className="card-refusal">{error}</p>}
       {steps.length > 0 && (
         <ol ref={listRef} className="run-steps" aria-label="Lifecycle run steps">
           {steps.map((s) => (

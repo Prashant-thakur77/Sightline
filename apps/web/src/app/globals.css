@@ -8,7 +8,7 @@
   --paper: #fbfbf8;
   --paper-2: #f1f1ec;
   --ink: #0b0b0c;
-  --muted: #4a4a4e;
+  --muted: #3f3f43;
   --line: #0b0b0c;
   --hairline: #c9c9c2;
   --yellow: #ffd60a;
@@ -151,8 +151,11 @@ p {
   text-wrap: pretty;
 }
 
+/* Links are underlined, so they never depend on colour alone (WCAG 1.4.1). Links styled as
+   buttons or navigation opt out in the components layer. */
 a {
   color: inherit;
+  text-decoration-line: underline;
   text-decoration-thickness: 0.09em;
   text-underline-offset: 0.18em;
 }
@@ -264,6 +267,7 @@ a {
 /* ---------- Components ---------- */
 @layer components {
   .btn {
+    text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -574,11 +578,32 @@ a {
     padding: var(--space-2) var(--space-3);
     font-size: var(--step--1);
   }
+  .sv-scroll {
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .sv-scroll:focus-visible {
+    outline-offset: -4px;
+  }
+  /* While the panel is open it must never cover what has focus (WCAG 2.4.11). Wide screens get a
+     reserved column; narrower ones scroll focused controls clear of the panel. */
+  @media (min-width: 1100px) {
+    #app-root:has(.speech-viewer[data-open='true']) {
+      padding-right: calc(440px + 2rem);
+    }
+  }
+  @media (max-width: 1099.98px) {
+    html:has(.speech-viewer[data-open='true']) {
+      scroll-padding-bottom: calc(min(56vh, 520px) + 6rem);
+    }
+    #app-root:has(.speech-viewer[data-open='true']) {
+      padding-bottom: calc(min(56vh, 520px) + 6rem);
+    }
+  }
   .sv-lines {
     list-style: none;
     margin: 0;
     padding: var(--space-3) var(--space-4) var(--space-5);
-    overflow-y: auto;
     font-family: var(--font-mono);
     font-size: var(--step--1);
     display: grid;
@@ -1088,6 +1113,13 @@ a {
     grid-template-columns: 1fr auto;
     gap: var(--space-2);
   }
+  .composer-label {
+    grid-column: 1 / -1;
+    font-weight: 700;
+  }
+  .talk-hint {
+    margin: 0;
+  }
   .interim {
     font-size: var(--step-1);
     font-weight: 700;
@@ -1270,6 +1302,11 @@ a {
     align-items: center;
     min-height: var(--target);
     padding: 0 var(--space-2);
+    text-decoration-line: none;
+  }
+  .lp-nav a:not(.btn):hover,
+  .lp-nav a[aria-current='page'] {
+    text-decoration-line: underline;
   }
   .lp-hero {
     display: grid;
@@ -1349,6 +1386,7 @@ a {
   }
   .rbh-stage {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-4);
     width: 100%;
     max-width: 520px;
@@ -1407,7 +1445,9 @@ a {
   }
   .rbh-head {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
+    row-gap: 6px;
     padding: var(--space-2) 0;
   }
   .rbh-cell {
@@ -1448,7 +1488,9 @@ a {
   }
   .rbh-ticket-h {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: var(--space-1) var(--space-3);
     margin: 0 0 var(--space-3);
     font-weight: 700;
     text-transform: uppercase;
@@ -1776,13 +1818,13 @@ a {
   .rbh-say {
     opacity: 0;
     animation: rbh-pop var(--dur-base) var(--ease-out) forwards;
-    animation-delay: 4400ms;
+    animation-delay: 4000ms;
   }
   .rbh-stub {
     opacity: 0;
     transform: translateY(12px);
     animation: rbh-pop var(--dur-slow) var(--ease-out) forwards;
-    animation-delay: 4700ms;
+    animation-delay: 4200ms;
   }
 }
 
@@ -2509,5 +2551,20 @@ a {
   .jcard-meta dd {
     display: inline;
     margin: 0;
+  }
+}
+
+/* ---------- Audit fixes: pages ---------- */
+@layer components {
+  /* Standalone text links get a 44px target (WCAG 2.5.5) without looking like buttons. */
+  .link-target {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  /* Commands wrap instead of scrolling, so nothing needs a keyboard to scroll into view. */
+  .code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 }
