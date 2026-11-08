@@ -1,0 +1,2461 @@
+{
+  "suite": "grounding",
+  "title": "Grounded answers",
+  "ranAt": "2026-11-08T20:05:22.865Z",
+  "gitSha": "uncommitted",
+  "headlines": [
+    {
+      "id": "catch-rate",
+      "label": "Answers with one invented claim that the grounding guard catches",
+      "value": "62 of 75 (82.7%)",
+      "baseline": "no guard: 0 of 75",
+      "interval": "95% Wilson 72.6%–89.6%",
+      "n": 75,
+      "script": "evals/grounding/run.ts",
+      "note": "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. Invented size, material, price, return window, delivery date or quote."
+    },
+    {
+      "id": "false-block",
+      "label": "Fully supported answers the guard wrongly blocks",
+      "value": "0 of 75",
+      "baseline": "no guard: 0 of 75",
+      "interval": "95% Wilson 0.0%–4.9%",
+      "n": 75,
+      "script": "evals/grounding/run.ts",
+      "note": "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY."
+    },
+    {
+      "id": "f1",
+      "label": "F1 of the guard as a detector of unsupported answers",
+      "value": "0.91",
+      "baseline": "no guard: 0.00",
+      "interval": "95% bootstrap 0.85–0.95",
+      "n": 150,
+      "script": "evals/grounding/run.ts"
+    },
+    {
+      "id": "worst-category",
+      "label": "Weakest category: invented delivery date",
+      "value": "8 of 12 caught",
+      "baseline": "no guard: 0 of 12",
+      "interval": "95% Wilson 39.1%–86.2%",
+      "n": 12,
+      "script": "evals/grounding/run.ts",
+      "negative": true,
+      "note": "Missed, e.g. \"It arrives tomorrow.\""
+    },
+    {
+      "id": "negation",
+      "label": "False statements made by negating a listed fact that pass the guard",
+      "value": "10 of 10",
+      "interval": "95% Wilson 72.2%–100.0%",
+      "n": 10,
+      "script": "evals/grounding/run.ts",
+      "negative": true,
+      "note": "e.g. \"It doesn't come in navy.\" on harbor knit crew (the variant is navy). The guard checks tokens, not polarity."
+    }
+  ],
+  "limitations": [
+    "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. No model wrote these answers; real model answers will differ in wording and in which fields they cite.",
+    "Answers and phrasings were written by the author of this harness before the guard was run on them; they are not a blind or third-party set.",
+    "The guard is a token-level check. It does not judge polarity (negation), and phrasings without a product token (\"half price\", \"tomorrow\", \"never pills\") carry nothing for it to check.",
+    "Delivery dates are checked against the store's own estimate with \"today\" fixed at 2026-11-09."
+  ],
+  "details": {
+    "label": "scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY",
+    "guard": "checkGrounding in packages/agent/src/grounding.ts; a segment is unsupported when any product token in it is not backed by a valid claim",
+    "totals": {
+      "answers": 150,
+      "unsupported": {
+        "n": 75,
+        "caught": 62,
+        "caughtOnTheRightSegment": 62,
+        "interval": "95% Wilson 72.6%–89.6%"
+      },
+      "supported": {
+        "n": 75,
+        "blocked": 0,
+        "interval": "95% Wilson 0.0%–4.9%"
+      },
+      "f1": {
+        "value": 0.9051,
+        "bootstrap95": [
+          0.8472,
+          0.9504
+        ],
+        "seed": 20261109,
+        "resamples": 5000
+      }
+    },
+    "byCategory": [
+      {
+        "category": "size",
+        "n": 13,
+        "caught": 11,
+        "interval": "95% Wilson 57.8%–95.7%",
+        "missed": [
+          {
+            "id": "size-2",
+            "product": "tidewater-merino-crew",
+            "invented": "There's an extra extra large too."
+          },
+          {
+            "id": "size-12",
+            "product": "tidewater-merino-crew",
+            "invented": "There's an extra extra large too."
+          }
+        ]
+      },
+      {
+        "category": "material",
+        "n": 13,
+        "caught": 12,
+        "interval": "95% Wilson 66.7%–98.6%",
+        "missed": [
+          {
+            "id": "material-13",
+            "product": "trail-runner-2",
+            "invented": "It's made from soft premium yarn."
+          }
+        ]
+      },
+      {
+        "category": "price",
+        "n": 13,
+        "caught": 11,
+        "interval": "95% Wilson 57.8%–95.7%",
+        "missed": [
+          {
+            "id": "price-5",
+            "product": "harbor-knit-crew",
+            "invented": "It's half price this week."
+          },
+          {
+            "id": "price-11",
+            "product": "stoneware-mug",
+            "invented": "It's half price this week."
+          }
+        ]
+      },
+      {
+        "category": "return_window",
+        "n": 12,
+        "caught": 10,
+        "interval": "95% Wilson 55.2%–95.3%",
+        "missed": [
+          {
+            "id": "return_window-3",
+            "product": "tidewater-merino-crew",
+            "invented": "You have a full year to return it."
+          },
+          {
+            "id": "return_window-9",
+            "product": "braided-usb-c-cable",
+            "invented": "You have a full year to return it."
+          }
+        ]
+      },
+      {
+        "category": "delivery_date",
+        "n": 12,
+        "caught": 8,
+        "interval": "95% Wilson 39.1%–86.2%",
+        "missed": [
+          {
+            "id": "delivery_date-2",
+            "product": "harbor-knit-vneck",
+            "invented": "It arrives tomorrow."
+          },
+          {
+            "id": "delivery_date-5",
+            "product": "stoneware-mug",
+            "invented": "You'll have it next week."
+          },
+          {
+            "id": "delivery_date-8",
+            "product": "canvas-tote",
+            "invented": "It arrives tomorrow."
+          },
+          {
+            "id": "delivery_date-11",
+            "product": "everyday-cable-crew",
+            "invented": "You'll have it next week."
+          }
+        ]
+      },
+      {
+        "category": "fake_quote",
+        "n": 12,
+        "caught": 10,
+        "interval": "95% Wilson 55.2%–95.3%",
+        "missed": [
+          {
+            "id": "fake_quote-3",
+            "product": "braided-usb-c-cable",
+            "invented": "Reviewers say it never pills."
+          },
+          {
+            "id": "fake_quote-9",
+            "product": "harbor-knit-vneck",
+            "invented": "Reviewers say it never pills."
+          }
+        ]
+      }
+    ],
+    "misses": [
+      {
+        "id": "size-2",
+        "category": "size",
+        "product": "tidewater-merino-crew",
+        "invented": "There's an extra extra large too."
+      },
+      {
+        "id": "size-12",
+        "category": "size",
+        "product": "tidewater-merino-crew",
+        "invented": "There's an extra extra large too."
+      },
+      {
+        "id": "material-13",
+        "category": "material",
+        "product": "trail-runner-2",
+        "invented": "It's made from soft premium yarn."
+      },
+      {
+        "id": "price-5",
+        "category": "price",
+        "product": "harbor-knit-crew",
+        "invented": "It's half price this week."
+      },
+      {
+        "id": "price-11",
+        "category": "price",
+        "product": "stoneware-mug",
+        "invented": "It's half price this week."
+      },
+      {
+        "id": "return_window-3",
+        "category": "return_window",
+        "product": "tidewater-merino-crew",
+        "invented": "You have a full year to return it."
+      },
+      {
+        "id": "return_window-9",
+        "category": "return_window",
+        "product": "braided-usb-c-cable",
+        "invented": "You have a full year to return it."
+      },
+      {
+        "id": "delivery_date-2",
+        "category": "delivery_date",
+        "product": "harbor-knit-vneck",
+        "invented": "It arrives tomorrow."
+      },
+      {
+        "id": "delivery_date-5",
+        "category": "delivery_date",
+        "product": "stoneware-mug",
+        "invented": "You'll have it next week."
+      },
+      {
+        "id": "delivery_date-8",
+        "category": "delivery_date",
+        "product": "canvas-tote",
+        "invented": "It arrives tomorrow."
+      },
+      {
+        "id": "delivery_date-11",
+        "category": "delivery_date",
+        "product": "everyday-cable-crew",
+        "invented": "You'll have it next week."
+      },
+      {
+        "id": "fake_quote-3",
+        "category": "fake_quote",
+        "product": "braided-usb-c-cable",
+        "invented": "Reviewers say it never pills."
+      },
+      {
+        "id": "fake_quote-9",
+        "category": "fake_quote",
+        "product": "harbor-knit-vneck",
+        "invented": "Reviewers say it never pills."
+      }
+    ],
+    "falseBlocks": [],
+    "negationProbe": [
+      {
+        "id": "neg-1",
+        "product": "harbor-knit-crew",
+        "said": "It doesn't come in navy.",
+        "truth": "The variant is navy.",
+        "passed": true
+      },
+      {
+        "id": "neg-2",
+        "product": "harbor-knit-crew",
+        "said": "It isn't cotton.",
+        "truth": "It is 70% cotton.",
+        "passed": true
+      },
+      {
+        "id": "neg-3",
+        "product": "tidewater-merino-crew",
+        "said": "It's not merino wool.",
+        "truth": "It is 100% merino wool.",
+        "passed": true
+      },
+      {
+        "id": "neg-4",
+        "product": "mill-cotton-tee",
+        "said": "It doesn't come in size M.",
+        "truth": "Size M is the selected size.",
+        "passed": true
+      },
+      {
+        "id": "neg-5",
+        "product": "trail-runner-2",
+        "said": "Returns are not free.",
+        "truth": "Returns are free within 60 days.",
+        "passed": true
+      },
+      {
+        "id": "neg-6",
+        "product": "stoneware-mug",
+        "said": "It doesn't hold 12 ounces.",
+        "truth": "It holds 12 oz.",
+        "passed": true
+      },
+      {
+        "id": "neg-7",
+        "product": "braided-usb-c-cable",
+        "said": "It isn't 2 metres long.",
+        "truth": "It is 2 m long.",
+        "passed": true
+      },
+      {
+        "id": "neg-8",
+        "product": "wall-charger-30w",
+        "said": "It is not 30 watts.",
+        "truth": "It is 30 W.",
+        "passed": true
+      },
+      {
+        "id": "neg-9",
+        "product": "canvas-tote",
+        "said": "It doesn't come in navy.",
+        "truth": "The variant is navy.",
+        "passed": true
+      },
+      {
+        "id": "neg-10",
+        "product": "harbor-knit-vneck",
+        "said": "You can't return it within 30 days.",
+        "truth": "Free returns within 30 days.",
+        "passed": true
+      }
+    ],
+    "answers": [
+      {
+        "id": "supported-1",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's navy. It costs $34.",
+        "invented": null,
+        "spoken": "It's navy. It costs $34.",
+        "reasons": []
+      },
+      {
+        "id": "supported-2",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It costs $39. You can return it within 14 days.",
+        "invented": null,
+        "spoken": "It costs $39. You can return it within 14 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-3",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 3.9 out of 5 from 41 reviews. It should arrive by Thursday 12 November.",
+        "invented": null,
+        "spoken": "It's rated 3.9 out of 5 from 41 reviews. It should arrive by Thursday 12 November.",
+        "reasons": []
+      },
+      {
+        "id": "supported-4",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of 70% cotton and 30% recycled polyester. It's rated 4.3 out of 5 from 120 reviews.",
+        "invented": null,
+        "spoken": "It's made of 70% cotton and 30% recycled polyester. It's rated 4.3 out of 5 from 120 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-5",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 4.7 out of 5 from 902 reviews. It should arrive by Thursday 12 November.",
+        "invented": null,
+        "spoken": "It's rated 4.7 out of 5 from 902 reviews. It should arrive by Thursday 12 November.",
+        "reasons": []
+      },
+      {
+        "id": "supported-6",
+        "category": "supported",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. Size 9 is in stock.",
+        "invented": null,
+        "spoken": "It should arrive by Thursday 12 November. Size 9 is in stock.",
+        "reasons": []
+      },
+      {
+        "id": "supported-7",
+        "category": "supported",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It holds 12 ounces. It's cream.",
+        "invented": null,
+        "spoken": "It holds 12 ounces. It's cream.",
+        "reasons": []
+      },
+      {
+        "id": "supported-8",
+        "category": "supported",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It costs $12. Returns are free within 30 days.",
+        "invented": null,
+        "spoken": "It costs $12. Returns are free within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-9",
+        "category": "supported",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Returns are free within 30 days. It's rated 4.5 out of 5 from 610 reviews.",
+        "invented": null,
+        "spoken": "Returns are free within 30 days. It's rated 4.5 out of 5 from 610 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-10",
+        "category": "supported",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of 100% cotton canvas. It's rated 4.6 out of 5 from 75 reviews.",
+        "invented": null,
+        "spoken": "It's made of 100% cotton canvas. It's rated 4.6 out of 5 from 75 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-11",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "You can return it within 30 days. It has 4.4 stars from 312 reviews.",
+        "invented": null,
+        "spoken": "You can return it within 30 days. It has 4.4 stars from 312 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-12",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "burgundy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of 100% merino wool. Expected delivery is Thursday.",
+        "invented": null,
+        "spoken": "It's made of 100% merino wool. Expected delivery is Thursday.",
+        "reasons": []
+      },
+      {
+        "id": "supported-13",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It has 3.9 stars from 41 reviews. Size M is in stock.",
+        "invented": null,
+        "spoken": "It has 3.9 stars from 41 reviews. Size M is in stock.",
+        "reasons": []
+      },
+      {
+        "id": "supported-14",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Size M is in stock. The price is $36.",
+        "invented": null,
+        "spoken": "Size M is in stock. The price is $36.",
+        "reasons": []
+      },
+      {
+        "id": "supported-15",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "One reviewer wrote \"Boxy and a little short, I sized up for length.\" The colour is black.",
+        "invented": null,
+        "spoken": "One reviewer wrote \"Boxy and a little short, I sized up for length.\" The colour is black.",
+        "reasons": []
+      },
+      {
+        "id": "supported-16",
+        "category": "supported",
+        "product": "trail-runner-2",
+        "colour": "royal blue",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The price is $72. It's made of Engineered mesh upper and Rubber outsole.",
+        "invented": null,
+        "spoken": "The price is $72. It's made of Engineered mesh upper and Rubber outsole.",
+        "reasons": []
+      },
+      {
+        "id": "supported-17",
+        "category": "supported",
+        "product": "stoneware-mug",
+        "colour": "teal",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The return window is 30 days. It has 4.8 stars from 57 reviews.",
+        "invented": null,
+        "spoken": "The return window is 30 days. It has 4.8 stars from 57 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-18",
+        "category": "supported",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's 2 metres long. The price is $12.",
+        "invented": null,
+        "spoken": "It's 2 metres long. The price is $12.",
+        "reasons": []
+      },
+      {
+        "id": "supported-19",
+        "category": "supported",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The colour is white. You can return it within 30 days.",
+        "invented": null,
+        "spoken": "The colour is white. You can return it within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-20",
+        "category": "supported",
+        "product": "canvas-tote",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The price is $22. It's made of 100% cotton canvas.",
+        "invented": null,
+        "spoken": "The price is $22. It's made of 100% cotton canvas.",
+        "reasons": []
+      },
+      {
+        "id": "supported-21",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "heather grey",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 4.4 out of 5 from 312 reviews. Size M is in stock.",
+        "invented": null,
+        "spoken": "It's rated 4.4 out of 5 from 312 reviews. Size M is in stock.",
+        "reasons": []
+      },
+      {
+        "id": "supported-22",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "charcoal",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. This one is charcoal.",
+        "invented": null,
+        "spoken": "It should arrive by Thursday 12 November. This one is charcoal.",
+        "reasons": []
+      },
+      {
+        "id": "supported-23",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 3.9 out of 5 from 41 reviews. This one is navy.",
+        "invented": null,
+        "spoken": "It's rated 3.9 out of 5 from 41 reviews. This one is navy.",
+        "reasons": []
+      },
+      {
+        "id": "supported-24",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Returns are free within 30 days. It should arrive by Thursday 12 November.",
+        "invented": null,
+        "spoken": "Returns are free within 30 days. It should arrive by Thursday 12 November.",
+        "reasons": []
+      },
+      {
+        "id": "supported-25",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "This one is navy. It's made of 100% organic cotton.",
+        "invented": null,
+        "spoken": "This one is navy. It's made of 100% organic cotton.",
+        "reasons": []
+      },
+      {
+        "id": "supported-26",
+        "category": "supported",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 4.5 out of 5 from 233 reviews. This one is black.",
+        "invented": null,
+        "spoken": "It's rated 4.5 out of 5 from 233 reviews. This one is black.",
+        "reasons": []
+      },
+      {
+        "id": "supported-27",
+        "category": "supported",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. It's sixteen dollars.",
+        "invented": null,
+        "spoken": "It should arrive by Thursday 12 November. It's sixteen dollars.",
+        "reasons": []
+      },
+      {
+        "id": "supported-28",
+        "category": "supported",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 4.2 out of 5 from 1430 reviews. This one is black.",
+        "invented": null,
+        "spoken": "It's rated 4.2 out of 5 from 1430 reviews. This one is black.",
+        "reasons": []
+      },
+      {
+        "id": "supported-29",
+        "category": "supported",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. It's nineteen dollars.",
+        "invented": null,
+        "spoken": "It should arrive by Thursday 12 November. It's nineteen dollars.",
+        "reasons": []
+      },
+      {
+        "id": "supported-30",
+        "category": "supported",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. Returns are free within 30 days.",
+        "invented": null,
+        "spoken": "It should arrive by Thursday 12 November. Returns are free within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-31",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "One reviewer wrote \"Runs true to size. I am usually a medium and the medium fits well.\" You can return it within 30 days.",
+        "invented": null,
+        "spoken": "One reviewer wrote \"Runs true to size. I am usually a medium and the medium fits well.\" You can return it within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-32",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Size M is in stock. It's made of 100% merino wool.",
+        "invented": null,
+        "spoken": "Size M is in stock. It's made of 100% merino wool.",
+        "reasons": []
+      },
+      {
+        "id": "supported-33",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It has 3.9 stars from 41 reviews. The price is $29.50.",
+        "invented": null,
+        "spoken": "It has 3.9 stars from 41 reviews. The price is $29.50.",
+        "reasons": []
+      },
+      {
+        "id": "supported-34",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Expected delivery is Thursday. You can return it within 30 days.",
+        "invented": null,
+        "spoken": "Expected delivery is Thursday. You can return it within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-35",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "forest green",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "You can return it within 30 days. One reviewer wrote \"Boxy and a little short, I sized up for length.\"",
+        "invented": null,
+        "spoken": "You can return it within 30 days. One reviewer wrote \"Boxy and a little short, I sized up for length.\"",
+        "reasons": []
+      },
+      {
+        "id": "supported-36",
+        "category": "supported",
+        "product": "trail-runner-2",
+        "colour": "royal blue",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's royal blue. It has 4.5 stars from 233 reviews.",
+        "invented": null,
+        "spoken": "It's royal blue. It has 4.5 stars from 233 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-37",
+        "category": "supported",
+        "product": "stoneware-mug",
+        "colour": "teal",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It costs $16. Expected delivery is Thursday.",
+        "invented": null,
+        "spoken": "It costs $16. Expected delivery is Thursday.",
+        "reasons": []
+      },
+      {
+        "id": "supported-38",
+        "category": "supported",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It costs $12. It's 2 metres long.",
+        "invented": null,
+        "spoken": "It costs $12. It's 2 metres long.",
+        "reasons": []
+      },
+      {
+        "id": "supported-39",
+        "category": "supported",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "You can return it within 30 days. It's white.",
+        "invented": null,
+        "spoken": "You can return it within 30 days. It's white.",
+        "reasons": []
+      },
+      {
+        "id": "supported-40",
+        "category": "supported",
+        "product": "canvas-tote",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of 100% cotton canvas. It costs $22.",
+        "invented": null,
+        "spoken": "It's made of 100% cotton canvas. It costs $22.",
+        "reasons": []
+      },
+      {
+        "id": "supported-41",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The colour is black. It should arrive by Thursday 12 November.",
+        "invented": null,
+        "spoken": "The colour is black. It should arrive by Thursday 12 November.",
+        "reasons": []
+      },
+      {
+        "id": "supported-42",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "burgundy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The price is $39. One reviewer wrote \"Slim through the body, size up if you are between sizes.\"",
+        "invented": null,
+        "spoken": "The price is $39. One reviewer wrote \"Slim through the body, size up if you are between sizes.\"",
+        "reasons": []
+      },
+      {
+        "id": "supported-43",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 3.9 out of 5 from 41 reviews. Size M is in stock.",
+        "invented": null,
+        "spoken": "It's rated 3.9 out of 5 from 41 reviews. Size M is in stock.",
+        "reasons": []
+      },
+      {
+        "id": "supported-44",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The price is $36. Size M is in stock.",
+        "invented": null,
+        "spoken": "The price is $36. Size M is in stock.",
+        "reasons": []
+      },
+      {
+        "id": "supported-45",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 4.7 out of 5 from 902 reviews. The price is $18.",
+        "invented": null,
+        "spoken": "It's rated 4.7 out of 5 from 902 reviews. The price is $18.",
+        "reasons": []
+      },
+      {
+        "id": "supported-46",
+        "category": "supported",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of Engineered mesh upper and Rubber outsole. The price is $72.",
+        "invented": null,
+        "spoken": "It's made of Engineered mesh upper and Rubber outsole. The price is $72.",
+        "reasons": []
+      },
+      {
+        "id": "supported-47",
+        "category": "supported",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 4.8 out of 5 from 57 reviews. You can return it within 30 days.",
+        "invented": null,
+        "spoken": "It's rated 4.8 out of 5 from 57 reviews. You can return it within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-48",
+        "category": "supported",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's 2 metres long. It should arrive by Thursday 12 November.",
+        "invented": null,
+        "spoken": "It's 2 metres long. It should arrive by Thursday 12 November.",
+        "reasons": []
+      },
+      {
+        "id": "supported-49",
+        "category": "supported",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The colour is white. It's a 30 watt charger.",
+        "invented": null,
+        "spoken": "The colour is white. It's a 30 watt charger.",
+        "reasons": []
+      },
+      {
+        "id": "supported-50",
+        "category": "supported",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "The price is $22. The colour is natural.",
+        "invented": null,
+        "spoken": "The price is $22. The colour is natural.",
+        "reasons": []
+      },
+      {
+        "id": "supported-51",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "heather grey",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "You can return it within 30 days. This one is heather grey.",
+        "invented": null,
+        "spoken": "You can return it within 30 days. This one is heather grey.",
+        "reasons": []
+      },
+      {
+        "id": "supported-52",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "charcoal",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of 100% merino wool. It's thirty-nine dollars.",
+        "invented": null,
+        "spoken": "It's made of 100% merino wool. It's thirty-nine dollars.",
+        "reasons": []
+      },
+      {
+        "id": "supported-53",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It has 3.9 stars from 41 reviews. Expected delivery is Thursday.",
+        "invented": null,
+        "spoken": "It has 3.9 stars from 41 reviews. Expected delivery is Thursday.",
+        "reasons": []
+      },
+      {
+        "id": "supported-54",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It has 4.3 stars from 120 reviews. It's made of 70% cotton and 30% recycled polyester.",
+        "invented": null,
+        "spoken": "It has 4.3 stars from 120 reviews. It's made of 70% cotton and 30% recycled polyester.",
+        "reasons": []
+      },
+      {
+        "id": "supported-55",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "One reviewer wrote \"Boxy and a little short, I sized up for length.\" It has 4.7 stars from 902 reviews.",
+        "invented": null,
+        "spoken": "One reviewer wrote \"Boxy and a little short, I sized up for length.\" It has 4.7 stars from 902 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-56",
+        "category": "supported",
+        "product": "trail-runner-2",
+        "colour": "royal blue",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Size 9 is in stock. Expected delivery is Thursday.",
+        "invented": null,
+        "spoken": "Size 9 is in stock. Expected delivery is Thursday.",
+        "reasons": []
+      },
+      {
+        "id": "supported-57",
+        "category": "supported",
+        "product": "stoneware-mug",
+        "colour": "teal",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "This one is teal. It holds 12 ounces.",
+        "invented": null,
+        "spoken": "This one is teal. It holds 12 ounces.",
+        "reasons": []
+      },
+      {
+        "id": "supported-58",
+        "category": "supported",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It has 4.2 stars from 1430 reviews. It's 2 metres long.",
+        "invented": null,
+        "spoken": "It has 4.2 stars from 1430 reviews. It's 2 metres long.",
+        "reasons": []
+      },
+      {
+        "id": "supported-59",
+        "category": "supported",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Expected delivery is Thursday. This one is white.",
+        "invented": null,
+        "spoken": "Expected delivery is Thursday. This one is white.",
+        "reasons": []
+      },
+      {
+        "id": "supported-60",
+        "category": "supported",
+        "product": "canvas-tote",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Expected delivery is Thursday. It's twenty-two dollars.",
+        "invented": null,
+        "spoken": "Expected delivery is Thursday. It's twenty-two dollars.",
+        "reasons": []
+      },
+      {
+        "id": "supported-61",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 4.4 out of 5 from 312 reviews. It's made of 70% cotton and 30% recycled polyester.",
+        "invented": null,
+        "spoken": "It's rated 4.4 out of 5 from 312 reviews. It's made of 70% cotton and 30% recycled polyester.",
+        "reasons": []
+      },
+      {
+        "id": "supported-62",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. It's rated 4.6 out of 5 from 88 reviews.",
+        "invented": null,
+        "spoken": "It should arrive by Thursday 12 November. It's rated 4.6 out of 5 from 88 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-63",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's rated 3.9 out of 5 from 41 reviews. Size M is in stock.",
+        "invented": null,
+        "spoken": "It's rated 3.9 out of 5 from 41 reviews. Size M is in stock.",
+        "reasons": []
+      },
+      {
+        "id": "supported-64",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's navy. Returns are free within 30 days.",
+        "invented": null,
+        "spoken": "It's navy. Returns are free within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-65",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "navy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's navy. Size M is in stock.",
+        "invented": null,
+        "spoken": "It's navy. Size M is in stock.",
+        "reasons": []
+      },
+      {
+        "id": "supported-66",
+        "category": "supported",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Returns are free within 60 days. It's rated 4.5 out of 5 from 233 reviews.",
+        "invented": null,
+        "spoken": "Returns are free within 60 days. It's rated 4.5 out of 5 from 233 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-67",
+        "category": "supported",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of Stoneware. It should arrive by Thursday 12 November.",
+        "invented": null,
+        "spoken": "It's made of Stoneware. It should arrive by Thursday 12 November.",
+        "reasons": []
+      },
+      {
+        "id": "supported-68",
+        "category": "supported",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It costs $12. Returns are free within 30 days.",
+        "invented": null,
+        "spoken": "It costs $12. Returns are free within 30 days.",
+        "reasons": []
+      },
+      {
+        "id": "supported-69",
+        "category": "supported",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Returns are free within 30 days. It's rated 4.5 out of 5 from 610 reviews.",
+        "invented": null,
+        "spoken": "Returns are free within 30 days. It's rated 4.5 out of 5 from 610 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-70",
+        "category": "supported",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of 100% cotton canvas. It's rated 4.6 out of 5 from 75 reviews.",
+        "invented": null,
+        "spoken": "It's made of 100% cotton canvas. It's rated 4.6 out of 5 from 75 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-71",
+        "category": "supported",
+        "product": "harbor-knit-crew",
+        "colour": "black",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "One reviewer wrote \"Soft and not itchy at all.\" The colour is black.",
+        "invented": null,
+        "spoken": "One reviewer wrote \"Soft and not itchy at all.\" The colour is black.",
+        "reasons": []
+      },
+      {
+        "id": "supported-72",
+        "category": "supported",
+        "product": "tidewater-merino-crew",
+        "colour": "burgundy",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "Size M is in stock. The price is $39.",
+        "invented": null,
+        "spoken": "Size M is in stock. The price is $39.",
+        "reasons": []
+      },
+      {
+        "id": "supported-73",
+        "category": "supported",
+        "product": "everyday-cable-crew",
+        "colour": "cream",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It has 3.9 stars from 41 reviews. The colour is cream.",
+        "invented": null,
+        "spoken": "It has 3.9 stars from 41 reviews. The colour is cream.",
+        "reasons": []
+      },
+      {
+        "id": "supported-74",
+        "category": "supported",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "It's made of 70% cotton and 30% recycled polyester. It has 4.3 stars from 120 reviews.",
+        "invented": null,
+        "spoken": "It's made of 70% cotton and 30% recycled polyester. It has 4.3 stars from 120 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "supported-75",
+        "category": "supported",
+        "product": "mill-cotton-tee",
+        "colour": "forest green",
+        "hasUnsupported": false,
+        "flagged": false,
+        "rightSegment": true,
+        "text": "You can return it within 30 days. It has 4.7 stars from 902 reviews.",
+        "invented": null,
+        "spoken": "You can return it within 30 days. It has 4.7 stars from 902 reviews.",
+        "reasons": []
+      },
+      {
+        "id": "size-1",
+        "category": "size",
+        "product": "harbor-knit-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's navy. It also comes in size XXL.",
+        "invented": "It also comes in size XXL.",
+        "spoken": "It's navy. The listing doesn't say.",
+        "reasons": [
+          "\"size xxl\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-2",
+        "category": "size",
+        "product": "tidewater-merino-crew",
+        "colour": "burgundy",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "There's an extra extra large too. The price is $39.",
+        "invented": "There's an extra extra large too.",
+        "spoken": "There's an extra extra large too. The price is $39.",
+        "reasons": []
+      },
+      {
+        "id": "size-3",
+        "category": "size",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's rated 3.9 out of 5 from 41 reviews. It fits up to a 3XL.",
+        "invented": "It fits up to a 3XL.",
+        "spoken": "It's rated 3.9 out of 5 from 41 reviews. The listing doesn't say.",
+        "reasons": [
+          "\"3XL\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-4",
+        "category": "size",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Sizes run from XS to XXL. It's made of 70% cotton and 30% recycled polyester.",
+        "invented": "Sizes run from XS to XXL.",
+        "spoken": "The listing doesn't say. It's made of 70% cotton and 30% recycled polyester.",
+        "reasons": [
+          "\"XS\" (size) is not backed by a claim",
+          "\"XXL\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-5",
+        "category": "size",
+        "product": "mill-cotton-tee",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's rated 4.7 out of 5 from 902 reviews. It runs a size small.",
+        "invented": "It runs a size small.",
+        "spoken": "It's rated 4.7 out of 5 from 902 reviews. The listing doesn't say.",
+        "reasons": [
+          "\"size small\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-6",
+        "category": "size",
+        "product": "trail-runner-2",
+        "colour": "royal blue",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It also comes in size 13. Expected delivery is Thursday.",
+        "invented": "It also comes in size 13.",
+        "spoken": "The listing doesn't say. Expected delivery is Thursday.",
+        "reasons": [
+          "\"size 13\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-7",
+        "category": "size",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It holds 12 ounces. There's an extra extra large too.",
+        "invented": "There's an extra extra large too.",
+        "spoken": "It holds 12 ounces. The listing doesn't say.",
+        "reasons": [
+          "the listing has no attributes.size"
+        ]
+      },
+      {
+        "id": "size-8",
+        "category": "size",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It fits up to a 3XL. The price is $12.",
+        "invented": "It fits up to a 3XL.",
+        "spoken": "The listing doesn't say. The price is $12.",
+        "reasons": [
+          "the listing has no attributes.size",
+          "\"3XL\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-9",
+        "category": "size",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Returns are free within 30 days. Sizes run from XS to XXL.",
+        "invented": "Sizes run from XS to XXL.",
+        "spoken": "Returns are free within 30 days. The listing doesn't say.",
+        "reasons": [
+          "the listing has no attributes.size",
+          "\"XS\" (size) is not backed by a claim",
+          "\"XXL\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-10",
+        "category": "size",
+        "product": "canvas-tote",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It runs a size small. It's made of 100% cotton canvas.",
+        "invented": "It runs a size small.",
+        "spoken": "The listing doesn't say. It's made of 100% cotton canvas.",
+        "reasons": [
+          "the listing has no attributes.size",
+          "\"size small\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-11",
+        "category": "size",
+        "product": "harbor-knit-crew",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Returns are free within 30 days. It also comes in size XXL.",
+        "invented": "It also comes in size XXL.",
+        "spoken": "Returns are free within 30 days. The listing doesn't say.",
+        "reasons": [
+          "\"size xxl\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "size-12",
+        "category": "size",
+        "product": "tidewater-merino-crew",
+        "colour": "charcoal",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "There's an extra extra large too. It's made of 100% merino wool.",
+        "invented": "There's an extra extra large too.",
+        "spoken": "There's an extra extra large too. It's made of 100% merino wool.",
+        "reasons": []
+      },
+      {
+        "id": "size-13",
+        "category": "size",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's rated 3.9 out of 5 from 41 reviews. It fits up to a 3XL.",
+        "invented": "It fits up to a 3XL.",
+        "spoken": "It's rated 3.9 out of 5 from 41 reviews. The listing doesn't say.",
+        "reasons": [
+          "\"3XL\" (size) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-1",
+        "category": "material",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It costs $36. It's made of cashmere.",
+        "invented": "It's made of cashmere.",
+        "spoken": "It costs $36. The listing doesn't say.",
+        "reasons": [
+          "\"cashmere\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-2",
+        "category": "material",
+        "product": "mill-cotton-tee",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's pure silk. You can return it within 30 days.",
+        "invented": "It's pure silk.",
+        "spoken": "The listing doesn't say. You can return it within 30 days.",
+        "reasons": [
+          "\"silk\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-3",
+        "category": "material",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's made of Engineered mesh upper and Rubber outsole. It's 100% wool.",
+        "invented": "It's 100% wool.",
+        "spoken": "It's made of Engineered mesh upper and Rubber outsole. The listing doesn't say.",
+        "reasons": [
+          "\"100\" (number) is not backed by a claim",
+          "\"wool\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-4",
+        "category": "material",
+        "product": "stoneware-mug",
+        "colour": "teal",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "The lining is fleece. It has 4.8 stars from 57 reviews.",
+        "invented": "The lining is fleece.",
+        "spoken": "The listing doesn't say. It has 4.8 stars from 57 reviews.",
+        "reasons": [
+          "\"fleece\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-5",
+        "category": "material",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's 2 metres long. It's a bamboo blend.",
+        "invented": "It's a bamboo blend.",
+        "spoken": "It's 2 metres long. The listing doesn't say.",
+        "reasons": [
+          "the listing has no attributes.material",
+          "\"bamboo\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-6",
+        "category": "material",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's made from soft premium yarn. This one is white.",
+        "invented": "It's made from soft premium yarn.",
+        "spoken": "The listing doesn't say. This one is white.",
+        "reasons": [
+          "the listing has no attributes.material"
+        ]
+      },
+      {
+        "id": "material-7",
+        "category": "material",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It costs $22. The trim is genuine leather.",
+        "invented": "The trim is genuine leather.",
+        "spoken": "It costs $22. The listing doesn't say.",
+        "reasons": [
+          "\"leather\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-8",
+        "category": "material",
+        "product": "harbor-knit-crew",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's made of cashmere. The colour is black.",
+        "invented": "It's made of cashmere.",
+        "spoken": "The listing doesn't say. The colour is black.",
+        "reasons": [
+          "\"cashmere\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-9",
+        "category": "material",
+        "product": "tidewater-merino-crew",
+        "colour": "charcoal",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's thirty-nine dollars. It's pure silk.",
+        "invented": "It's pure silk.",
+        "spoken": "It's thirty-nine dollars. The listing doesn't say.",
+        "reasons": [
+          "\"silk\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-10",
+        "category": "material",
+        "product": "everyday-cable-crew",
+        "colour": "cream",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's 100% wool. It's cream.",
+        "invented": "It's 100% wool.",
+        "spoken": "The listing doesn't say. It's cream.",
+        "reasons": [
+          "the listing has no attributes.material",
+          "\"100\" (number) is not backed by a claim",
+          "\"wool\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-11",
+        "category": "material",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's rated 4.3 out of 5 from 120 reviews. The lining is fleece.",
+        "invented": "The lining is fleece.",
+        "spoken": "It's rated 4.3 out of 5 from 120 reviews. The listing doesn't say.",
+        "reasons": [
+          "\"fleece\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-12",
+        "category": "material",
+        "product": "mill-cotton-tee",
+        "colour": "forest green",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's a bamboo blend. It has 4.7 stars from 902 reviews.",
+        "invented": "It's a bamboo blend.",
+        "spoken": "The listing doesn't say. It has 4.7 stars from 902 reviews.",
+        "reasons": [
+          "\"bamboo\" (material) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "material-13",
+        "category": "material",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "Size 9 is in stock. It's made from soft premium yarn.",
+        "invented": "It's made from soft premium yarn.",
+        "spoken": "Size 9 is in stock. It's made from soft premium yarn.",
+        "reasons": []
+      },
+      {
+        "id": "price-1",
+        "category": "price",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "You can return it within 30 days. It's $11 today.",
+        "invented": "It's $11 today.",
+        "spoken": "You can return it within 30 days. The listing doesn't say.",
+        "reasons": [
+          "\"$ 11\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-2",
+        "category": "price",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It costs twenty-two dollars. It has 4.2 stars from 1430 reviews.",
+        "invented": "It costs twenty-two dollars.",
+        "spoken": "The listing doesn't say. It has 4.2 stars from 1430 reviews.",
+        "reasons": [
+          "\"twenty two dollars\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-3",
+        "category": "price",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. It's under ten bucks.",
+        "invented": "It's under ten bucks.",
+        "spoken": "It should arrive by Thursday 12 November. The listing doesn't say.",
+        "reasons": [
+          "\"ten bucks\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-4",
+        "category": "price",
+        "product": "canvas-tote",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's 20% off right now. Expected delivery is Thursday.",
+        "invented": "It's 20% off right now.",
+        "spoken": "The listing doesn't say. Expected delivery is Thursday.",
+        "reasons": [
+          "\"20\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-5",
+        "category": "price",
+        "product": "harbor-knit-crew",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "One reviewer wrote \"Soft and not itchy at all.\" It's half price this week.",
+        "invented": "It's half price this week.",
+        "spoken": "One reviewer wrote \"Soft and not itchy at all.\" It's half price this week.",
+        "reasons": []
+      },
+      {
+        "id": "price-6",
+        "category": "price",
+        "product": "tidewater-merino-crew",
+        "colour": "charcoal",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's $77 for two. Size M is in stock.",
+        "invented": "It's $77 for two.",
+        "spoken": "The listing doesn't say. Size M is in stock.",
+        "reasons": [
+          "\"$ 77\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-7",
+        "category": "price",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. It's $24.50 today.",
+        "invented": "It's $24.50 today.",
+        "spoken": "It should arrive by Thursday 12 November. The listing doesn't say.",
+        "reasons": [
+          "\"$ 24.50\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-8",
+        "category": "price",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It costs forty-six dollars. You can return it within 30 days.",
+        "invented": "It costs forty-six dollars.",
+        "spoken": "The listing doesn't say. You can return it within 30 days.",
+        "reasons": [
+          "\"forty six dollars\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-9",
+        "category": "price",
+        "product": "mill-cotton-tee",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Returns are free within 30 days. It's under ten bucks.",
+        "invented": "It's under ten bucks.",
+        "spoken": "Returns are free within 30 days. The listing doesn't say.",
+        "reasons": [
+          "\"ten bucks\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-10",
+        "category": "price",
+        "product": "trail-runner-2",
+        "colour": "royal blue",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's 20% off right now. It has 4.5 stars from 233 reviews.",
+        "invented": "It's 20% off right now.",
+        "spoken": "The listing doesn't say. It has 4.5 stars from 233 reviews.",
+        "reasons": [
+          "\"20\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-11",
+        "category": "price",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "It should arrive by Thursday 12 November. It's half price this week.",
+        "invented": "It's half price this week.",
+        "spoken": "It should arrive by Thursday 12 November. It's half price this week.",
+        "reasons": []
+      },
+      {
+        "id": "price-12",
+        "category": "price",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's $23 for two. It's twelve dollars.",
+        "invented": "It's $23 for two.",
+        "spoken": "The listing doesn't say. It's twelve dollars.",
+        "reasons": [
+          "\"$ 23\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "price-13",
+        "category": "price",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Returns are free within 30 days. It's $14 today.",
+        "invented": "It's $14 today.",
+        "spoken": "Returns are free within 30 days. The listing doesn't say.",
+        "reasons": [
+          "\"$ 14\" (money) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-1",
+        "category": "return_window",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's made of 100% cotton canvas. You can return it within 90 days.",
+        "invented": "You can return it within 90 days.",
+        "spoken": "It's made of 100% cotton canvas. The listing doesn't say.",
+        "reasons": [
+          "\"90\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-2",
+        "category": "return_window",
+        "product": "harbor-knit-crew",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Returns are free within 45 days. It has 4.4 stars from 312 reviews.",
+        "invented": "Returns are free within 45 days.",
+        "spoken": "The listing doesn't say. It has 4.4 stars from 312 reviews.",
+        "reasons": [
+          "\"45\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-3",
+        "category": "return_window",
+        "product": "tidewater-merino-crew",
+        "colour": "charcoal",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "It should arrive by Thursday 12 November. You have a full year to return it.",
+        "invented": "You have a full year to return it.",
+        "spoken": "It should arrive by Thursday 12 November. You have a full year to return it.",
+        "reasons": []
+      },
+      {
+        "id": "return_window-4",
+        "category": "return_window",
+        "product": "everyday-cable-crew",
+        "colour": "cream",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It has a 60-day return window. The price is $29.50.",
+        "invented": "It has a 60-day return window.",
+        "spoken": "The listing doesn't say. The price is $29.50.",
+        "reasons": [
+          "the listing has no returnPolicy",
+          "\"60\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-5",
+        "category": "return_window",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "The colour is navy. Returns are accepted for two months.",
+        "invented": "Returns are accepted for two months.",
+        "spoken": "The colour is navy. The listing doesn't say.",
+        "reasons": [
+          "\"two\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-6",
+        "category": "return_window",
+        "product": "mill-cotton-tee",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Exchanges are free. This one is black.",
+        "invented": "Exchanges are free.",
+        "spoken": "The listing doesn't say. This one is black.",
+        "reasons": [
+          "\"exchanges are free\" (policy) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-7",
+        "category": "return_window",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Returns are free within 60 days. You can return it within 90 days.",
+        "invented": "You can return it within 90 days.",
+        "spoken": "Returns are free within 60 days. The listing doesn't say.",
+        "reasons": [
+          "\"90\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-8",
+        "category": "return_window",
+        "product": "stoneware-mug",
+        "colour": "teal",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Returns are free. It's made of Stoneware.",
+        "invented": "Returns are free.",
+        "spoken": "The listing doesn't say. It's made of Stoneware.",
+        "reasons": [
+          "\"returns are free\" (policy) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-9",
+        "category": "return_window",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "It's 2 metres long. You have a full year to return it.",
+        "invented": "You have a full year to return it.",
+        "spoken": "It's 2 metres long. You have a full year to return it.",
+        "reasons": []
+      },
+      {
+        "id": "return_window-10",
+        "category": "return_window",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It has a 60-day return window. It's white.",
+        "invented": "It has a 60-day return window.",
+        "spoken": "The listing doesn't say. It's white.",
+        "reasons": [
+          "\"60\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-11",
+        "category": "return_window",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "The price is $22. Returns are accepted for two months.",
+        "invented": "Returns are accepted for two months.",
+        "spoken": "The price is $22. The listing doesn't say.",
+        "reasons": [
+          "\"two\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "return_window-12",
+        "category": "return_window",
+        "product": "harbor-knit-crew",
+        "colour": "heather grey",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Exchanges are free. One reviewer wrote \"The navy is quite dark, close to black indoors.\"",
+        "invented": "Exchanges are free.",
+        "spoken": "The listing doesn't say. One reviewer wrote \"The navy is quite dark, close to black indoors.\"",
+        "reasons": [
+          "\"exchanges are free\" (policy) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-1",
+        "category": "delivery_date",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Size M is in stock. It will arrive by Friday.",
+        "invented": "It will arrive by Friday.",
+        "spoken": "Size M is in stock. The listing doesn't say.",
+        "reasons": [
+          "\"friday\" (date) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-2",
+        "category": "delivery_date",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "It arrives tomorrow. Expected delivery is Thursday.",
+        "invented": "It arrives tomorrow.",
+        "spoken": "It arrives tomorrow. Expected delivery is Thursday.",
+        "reasons": []
+      },
+      {
+        "id": "delivery_date-3",
+        "category": "delivery_date",
+        "product": "mill-cotton-tee",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "One reviewer wrote \"Boxy and a little short, I sized up for length.\" Delivery is on 20 November.",
+        "invented": "Delivery is on 20 November.",
+        "spoken": "One reviewer wrote \"Boxy and a little short, I sized up for length.\" The listing doesn't say.",
+        "reasons": [
+          "\"20 november\" (date) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-4",
+        "category": "delivery_date",
+        "product": "trail-runner-2",
+        "colour": "royal blue",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It ships in two days. It's royal blue.",
+        "invented": "It ships in two days.",
+        "spoken": "The listing doesn't say. It's royal blue.",
+        "reasons": [
+          "\"two\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-5",
+        "category": "delivery_date",
+        "product": "stoneware-mug",
+        "colour": "cream",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "The price is $16. You'll have it next week.",
+        "invented": "You'll have it next week.",
+        "spoken": "The price is $16. You'll have it next week.",
+        "reasons": []
+      },
+      {
+        "id": "delivery_date-6",
+        "category": "delivery_date",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It arrives Thursday 19 November. It has 4.2 stars from 1430 reviews.",
+        "invented": "It arrives Thursday 19 November.",
+        "spoken": "The listing doesn't say. It has 4.2 stars from 1430 reviews.",
+        "reasons": [
+          "\"19 november\" (date) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-7",
+        "category": "delivery_date",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. It will arrive by Friday.",
+        "invented": "It will arrive by Friday.",
+        "spoken": "It should arrive by Thursday 12 November. The listing doesn't say.",
+        "reasons": [
+          "\"friday\" (date) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-8",
+        "category": "delivery_date",
+        "product": "canvas-tote",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "It arrives tomorrow. Expected delivery is Thursday.",
+        "invented": "It arrives tomorrow.",
+        "spoken": "It arrives tomorrow. Expected delivery is Thursday.",
+        "reasons": []
+      },
+      {
+        "id": "delivery_date-9",
+        "category": "delivery_date",
+        "product": "harbor-knit-crew",
+        "colour": "heather grey",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's rated 4.4 out of 5 from 312 reviews. Delivery is on 20 November.",
+        "invented": "Delivery is on 20 November.",
+        "spoken": "It's rated 4.4 out of 5 from 312 reviews. The listing doesn't say.",
+        "reasons": [
+          "\"20 november\" (date) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-10",
+        "category": "delivery_date",
+        "product": "tidewater-merino-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It ships in two days. Expected delivery is Thursday.",
+        "invented": "It ships in two days.",
+        "spoken": "The listing doesn't say. Expected delivery is Thursday.",
+        "reasons": [
+          "\"two\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "delivery_date-11",
+        "category": "delivery_date",
+        "product": "everyday-cable-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "Size M is in stock. You'll have it next week.",
+        "invented": "You'll have it next week.",
+        "spoken": "Size M is in stock. You'll have it next week.",
+        "reasons": []
+      },
+      {
+        "id": "delivery_date-12",
+        "category": "delivery_date",
+        "product": "harbor-knit-vneck",
+        "colour": "olive",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It arrives Thursday 19 November. It's thirty-six dollars.",
+        "invented": "It arrives Thursday 19 November.",
+        "spoken": "The listing doesn't say. It's thirty-six dollars.",
+        "reasons": [
+          "\"19 november\" (date) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-1",
+        "category": "fake_quote",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It should arrive by Thursday 12 November. One reviewer wrote \"Best purchase I have made all year.\"",
+        "invented": "One reviewer wrote \"Best purchase I have made all year.\"",
+        "spoken": "It should arrive by Thursday 12 November. The listing doesn't say.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Best purchase I have made all year.\"\" (quoted) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-2",
+        "category": "fake_quote",
+        "product": "stoneware-mug",
+        "colour": "teal",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "A reviewer said \"Runs a little large.\" It holds 12 ounces.",
+        "invented": "A reviewer said \"Runs a little large.\"",
+        "spoken": "The listing doesn't say. It holds 12 ounces.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Runs a little large.\"\" (quoted) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-3",
+        "category": "fake_quote",
+        "product": "braided-usb-c-cable",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "It's twelve dollars. Reviewers say it never pills.",
+        "invented": "Reviewers say it never pills.",
+        "spoken": "It's twelve dollars. Reviewers say it never pills.",
+        "reasons": []
+      },
+      {
+        "id": "fake_quote-4",
+        "category": "fake_quote",
+        "product": "wall-charger-30w",
+        "colour": "white",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Someone wrote that it \"kept its shape after fifty washes\". You can return it within 30 days.",
+        "invented": "Someone wrote that it \"kept its shape after fifty washes\".",
+        "spoken": "The listing doesn't say. You can return it within 30 days.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"kept its shape after fifty washes\"\" (quoted) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-5",
+        "category": "fake_quote",
+        "product": "canvas-tote",
+        "colour": "natural",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's made of 100% cotton canvas. A buyer wrote \"Five stars, would buy again.\"",
+        "invented": "A buyer wrote \"Five stars, would buy again.\"",
+        "spoken": "It's made of 100% cotton canvas. The listing doesn't say.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Five stars, would buy again.\"\" (quoted) is not backed by a claim",
+          "\"five\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-6",
+        "category": "fake_quote",
+        "product": "harbor-knit-crew",
+        "colour": "heather grey",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "\"Arrived in two days,\" one review says. You can return it within 30 days.",
+        "invented": "\"Arrived in two days,\" one review says.",
+        "spoken": "The listing doesn't say. You can return it within 30 days.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Arrived in two days,\"\" (quoted) is not backed by a claim",
+          "\"two\" (number) is not backed by a claim",
+          "\"one\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-7",
+        "category": "fake_quote",
+        "product": "tidewater-merino-crew",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "It's made of 100% merino wool. One reviewer wrote \"Best purchase I have made all year.\"",
+        "invented": "One reviewer wrote \"Best purchase I have made all year.\"",
+        "spoken": "It's made of 100% merino wool. The listing doesn't say.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Best purchase I have made all year.\"\" (quoted) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-8",
+        "category": "fake_quote",
+        "product": "everyday-cable-crew",
+        "colour": "cream",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "A reviewer said \"Runs a little large.\" It has 3.9 stars from 41 reviews.",
+        "invented": "A reviewer said \"Runs a little large.\"",
+        "spoken": "The listing doesn't say. It has 3.9 stars from 41 reviews.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Runs a little large.\"\" (quoted) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-9",
+        "category": "fake_quote",
+        "product": "harbor-knit-vneck",
+        "colour": "navy",
+        "hasUnsupported": true,
+        "flagged": false,
+        "rightSegment": false,
+        "text": "Size M is in stock. Reviewers say it never pills.",
+        "invented": "Reviewers say it never pills.",
+        "spoken": "Size M is in stock. Reviewers say it never pills.",
+        "reasons": []
+      },
+      {
+        "id": "fake_quote-10",
+        "category": "fake_quote",
+        "product": "mill-cotton-tee",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "Someone wrote that it \"kept its shape after fifty washes\". One reviewer wrote \"Boxy and a little short, I sized up for length.\"",
+        "invented": "Someone wrote that it \"kept its shape after fifty washes\".",
+        "spoken": "The listing doesn't say. One reviewer wrote \"Boxy and a little short, I sized up for length.\"",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"kept its shape after fifty washes\"\" (quoted) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-11",
+        "category": "fake_quote",
+        "product": "trail-runner-2",
+        "colour": "black",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "The price is $72. A buyer wrote \"Five stars, would buy again.\"",
+        "invented": "A buyer wrote \"Five stars, would buy again.\"",
+        "spoken": "The price is $72. The listing doesn't say.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Five stars, would buy again.\"\" (quoted) is not backed by a claim",
+          "\"five\" (number) is not backed by a claim"
+        ]
+      },
+      {
+        "id": "fake_quote-12",
+        "category": "fake_quote",
+        "product": "stoneware-mug",
+        "colour": "teal",
+        "hasUnsupported": true,
+        "flagged": true,
+        "rightSegment": true,
+        "text": "\"Arrived in two days,\" one review says. The return window is 30 days.",
+        "invented": "\"Arrived in two days,\" one review says.",
+        "spoken": "The listing doesn't say. The return window is 30 days.",
+        "reasons": [
+          "quote not found in listing-reviews",
+          "\"\"Arrived in two days,\"\" (quoted) is not backed by a claim",
+          "\"two\" (number) is not backed by a claim",
+          "\"one\" (number) is not backed by a claim"
+        ]
+      }
+    ]
+  }
+}

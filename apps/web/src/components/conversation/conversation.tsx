@@ -9,19 +9,23 @@ import { CardView } from './cards';
 import type { Card, ChatMessage, TurnRequest, TurnResponse } from './types';
 import { PayPalCheckout } from './paypal-checkout';
 
-const SHORTCUTS: [string, string][] = [
-  ['Hold Space', 'Talk (when not typing)'],
-  ['T', 'Turn talking on or off'],
-  ['R', 'Repeat the last thing I said'],
-  ['1, 2, 3', 'Choose an option'],
-  ['M', 'More details'],
-  ['C', 'Compare the options'],
-  ['Shift + Enter', 'Confirm, only while I read back a purchase'],
-  ['Escape', 'Stop speaking, or stop listening'],
-  ['H', 'Help'],
-  ['O', 'Orders and money'],
-  ['?', 'Show these shortcuts'],
-];
+/** Shortcut keys. Single-character keys are opt-in (WCAG 2.1.4); by default they need Alt (Option). */
+function shortcutRows(single: boolean): [string, string][] {
+  const k = (key: string) => (single ? key : `Alt + ${key}`);
+  return [
+    [single ? 'Hold Space' : 'Space or Enter on the Talk button', single ? 'Talk while held' : 'Start talking; press again to send'],
+    [k('T'), 'Turn talking on or off'],
+    [k('R'), 'Repeat the last thing I said'],
+    [k('1, 2, 3'), 'Choose an option'],
+    [k('M'), 'More details'],
+    [k('C'), 'Compare the options'],
+    ['Shift + Enter', 'Confirm, only while I read back a purchase'],
+    ['Escape', 'Stop speaking, or stop listening'],
+    [k('H'), 'Help'],
+    [k('O'), 'Orders and money'],
+    [k('?'), 'Show these shortcuts'],
+  ];
+}
 
 function isTyping(el: EventTarget | null): boolean {
   if (!(el instanceof HTMLElement)) return false;
@@ -37,15 +41,30 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
   const [text, setText] = useState('');
   const [toggleTalk, setToggleTalk] = useState(false);
   const [showKeys, setShowKeys] = useState(false);
+  const [singleKeys, setSingleKeys] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [online, setOnline] = useState(true);
   const lastSay = useRef(initial?.say ?? '');
   const cardRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const spaceDown = useRef(false);
 
+  const busyRef = useRef(false);
   const send = useCallback(
     async (req: TurnRequest) => {
+      if (busyRef.current) return;
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        const msg = "You're offline, so I can't do that right now. Nothing was sent or charged.";
+        setError(msg);
+        announce(msg, { politeness: 'assertive', source: 'network' });
+        return;
+      }
+      busyRef.current = true;
       setBusy(true);
+      setError(null);
       cue('thinking');
+      // Focus inside the card is about to disappear with the card; remember to move it.
+      const focusWasInCard = Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body;
       if ('text' in req) setMessages((m) => [...m, { id: `local-${Date.now()}`, role: 'user', text: req.text }]);
       try {
         const res = await fetch('/api/turn', {
@@ -59,19 +78,58 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         setCard(data.card);
         setSuggestions(data.suggestions);
         lastSay.current = data.say;
+        // One channel: the reply is announced; focus stays where the person is unless the
+        // control they used just went away, in which case it goes to the new card's heading.
         announce(data.say, { politeness: data.politeness, source: 'assistant' });
         if (data.cue) cue(data.cue);
         else cue('done');
-        if (data.card) requestAnimationFrame(() => cardRef.current?.querySelector<HTMLElement>('.card-h')?.focus());
+        if (focusWasInCard)
+          requestAnimationFrame(() => (cardRef.current?.querySelector<HTMLElement>('.card-h') ?? inputRef.current)?.focus({ preventScroll: false }));
       } catch {
+        const msg = 'Something went wrong on my side. Nothing was charged. Please try that again.';
+        setError(msg);
         cue('error');
-        announce("Something went wrong on my side. Nothing was charged. Please try that again.", { politeness: 'assertive', source: 'assistant' });
+        announce(msg, { politeness: 'assertive', source: 'assistant' });
       } finally {
+        busyRef.current = false;
         setBusy(false);
       }
     },
     [announce],
   );
+
+  useEffect(() => {
+    try {
+      setSingleKeys(localStorage.getItem('sl-single-keys') === '1');
+    } catch {
+      /* ignore */
+    }
+    const on = () => {
+      setOnline(true);
+      announce("You're back online.", { source: 'network' });
+    };
+    const off = () => {
+      setOnline(false);
+      announce("You're offline. Nothing will be sent until you're back online.", { politeness: 'assertive', source: 'network' });
+    };
+    setOnline(navigator.onLine);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
+  }, [announce]);
+
+  const toggleSingleKeys = (v: boolean) => {
+    setSingleKeys(v);
+    try {
+      localStorage.setItem('sl-single-keys', v ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+    announce(v ? 'Single-key shortcuts on.' : 'Single-key shortcuts off. Use Alt with the key.', { source: 'settings' });
+  };
 
   const speech = useSpeechInput(
     (heard) => {
@@ -100,14 +158,17 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         void send({ action: 'confirm-button', readbackId: card.readbackId });
         return;
       }
-      if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.code === 'Space' && !e.repeat && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLAnchorElement)) {
+      if (isTyping(e.target) || e.metaKey || e.ctrlKey) return;
+      // Single-character shortcuts only when switched on; otherwise they need Alt (Option).
+      if (singleKeys ? e.altKey : !e.altKey) return;
+      if (singleKeys && e.code === 'Space' && !e.repeat && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLAnchorElement)) {
         e.preventDefault();
         spaceDown.current = true;
         startListening();
         return;
       }
-      const k = e.key.toLowerCase();
+      // With Alt held, some layouts change e.key; use the physical key.
+      const k = e.altKey ? e.code.replace(/^Key|^Digit/, '').toLowerCase() : e.key.toLowerCase();
       if (k === 't') {
         e.preventDefault();
         if (speech.listening) {
@@ -135,7 +196,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       } else if (k === 'o') {
         e.preventDefault();
         window.location.href = '/app/orders';
-      } else if (e.key === '?') {
+      } else if (e.key === '?' || (e.altKey && e.code === 'Slash')) {
         e.preventDefault();
         setShowKeys((s) => !s);
       }
@@ -152,7 +213,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
     };
-  }, [announce, card, send, speech, startListening, stopSpeaking]);
+  }, [announce, card, send, singleKeys, speech, startListening, stopSpeaking]);
 
   const started = useRef(false);
   useEffect(() => {
@@ -174,7 +235,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       <div className="convo-main">
         <h1 className="convo-h">What do you need today, {firstName}?</h1>
 
-        <div ref={cardRef} className="convo-card" aria-busy={busy}>
+        <div ref={cardRef} className="convo-card" aria-busy={busy || undefined}>
           {card && (
             <CardView
               card={card}
@@ -240,9 +301,10 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               placeholder="Or type: navy crew-neck sweater, medium, under $40"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              disabled={busy}
+              readOnly={busy}
+              aria-describedby="convo-status"
             />
-            <button type="submit" className="btn btn-primary" disabled={busy || !text.trim()}>
+            <button type="submit" className="btn btn-primary" aria-disabled={busy || !text.trim() || undefined}>
               Send
             </button>
           </div>
@@ -251,6 +313,9 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               {speech.interim}
             </p>
           )}
+          <p id="convo-status" className="convo-status" data-state={!online ? 'offline' : error ? 'error' : busy ? 'busy' : 'idle'}>
+            {!online ? "You're offline. Nothing will be sent until you're back online." : error ? error : busy ? 'Thinking…' : ''}
+          </p>
         </form>
 
         {suggestions.length > 0 && (
@@ -259,7 +324,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
             <ul>
               {suggestions.map((s) => (
                 <li key={s.label}>
-                  <button type="button" className="btn" onClick={() => void send({ text: s.utterance, source: 'keyboard' })} disabled={busy}>
+                  <button type="button" className="btn" onClick={() => void send({ text: s.utterance, source: 'keyboard' })} aria-disabled={busy || undefined}>
                     {s.label}
                   </button>
                 </li>
@@ -273,10 +338,18 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
           </button>
         </p>
         {showKeys && (
+          <div className="grid gap-3">
+          <div className="choice">
+            <input type="checkbox" id="single-keys" checked={singleKeys} onChange={(e) => toggleSingleKeys(e.target.checked)} aria-describedby="single-keys-h" />
+            <label htmlFor="single-keys">Use single-key shortcuts</label>
+            <p id="single-keys-h" className="hint">
+              Off by default, so they never clash with your screen reader's own keys. When off, hold Alt (Option on a Mac) with the key.
+            </p>
+          </div>
           <table className="keys">
             <caption className="sr-only">Keyboard shortcuts</caption>
             <tbody>
-              {SHORTCUTS.map(([k, v]) => (
+              {shortcutRows(singleKeys).map(([k, v]) => (
                 <tr key={k}>
                   <th scope="row">
                     <kbd>{k}</kbd>
@@ -286,6 +359,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

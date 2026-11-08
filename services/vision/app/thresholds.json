@@ -1,0 +1,92 @@
+{
+  "version": "initial-unfitted",
+  "note": "Initial hand-set values. Refit on the SightBench dev split only; never on test.",
+  "quality": {
+    "dark_mean_luma": 0.15,
+    "dark_p99_luma": 0.3,
+    "blur_min_laplacian_var": 60.0,
+    "glare_max_ratio": 0.03,
+    "glare_min_channel": 252,
+    "clip_high_max": 0.4,
+    "clip_low_max": 0.6,
+    "background_delta_e": 12.0,
+    "centre_min_item_fraction": 0.1,
+    "border_fraction": 0.06,
+    "centre_fraction": 0.3,
+    "glare_region_fraction": 0.6,
+    "min_coverage": 0.12,
+    "max_coverage": 0.85,
+    "max_edge_touch": 0.35
+  },
+  "mask": {
+    "max_side": 400,
+    "iterations": 4,
+    "border_fraction": 0.05,
+    "centre_rect_fraction": 0.8,
+    "background_delta_e": 10.0,
+    "min_fraction": 0.03,
+    "max_fraction": 0.95
+  },
+  "colour": {
+    "kL": 2.0,
+    "k": 3,
+    "seed": 0,
+    "max_samples": 20000,
+    "merge_de": 6.0,
+    "erode_px": 3,
+    "background_margin_px": 6,
+    "match_max_de": 8.0,
+    "strong_match_de": 4.0,
+    "mismatch_min_de": 12.0,
+    "strong_mismatch_de": 25.0,
+    "reference_min_area": 0.04,
+    "reference_min_value": 0.5,
+    "reference_max_saturation": 0.3,
+    "reference_max_chroma_std": 0.02,
+    "reference_min_l": 75.0,
+    "reference_max_chroma": 12.0,
+    "reference_min_contrast_l": 8.0,
+    "reference_max_background_share": 0.6,
+    "reference_min_solidity": 0.85,
+    "reference_target_y": 0.8,
+    "exposure_gain_min": 0.5,
+    "exposure_gain_max": 2.0,
+    "background_exclude_de": 10.0,
+    "min_item_fraction_after_exclusion": 0.3,
+    "gray_world_min_background": 0.1,
+    "max_channel_gain": 2.0,
+    "poor_scene_luma": 0.06,
+    "poor_bright_luma": 0.15,
+    "dim_bright_luma": 0.45,
+    "cast_warn": 0.2,
+    "cast_max": 0.45,
+    "glare_max_fraction": 0.2,
+    "name_tolerance_default": 14.0,
+    "name_tolerance": {
+      "black": 9.0,
+      "navy": 10.0,
+      "charcoal": 9.0,
+      "midnight blue": 10.0,
+      "white": 8.0,
+      "off white": 8.0,
+      "ivory": 8.0,
+      "cream": 8.0,
+      "grey": 12.0,
+      "heather grey": 12.0
+    }
+  },
+  "label": {
+    "ocr_min_score": 0.6,
+    "crop_padding": 0.15
+  },
+  "fusion": {
+    "match_required_modules": ["colour", "size", "identity"],
+    "match_min_confidence": {
+      "colour": "fairly_sure",
+      "size": "sure",
+      "identity": "fairly_sure",
+      "damage": "fairly_sure"
+    },
+    "mismatch_min_confidence": "sure"
+  }
+}

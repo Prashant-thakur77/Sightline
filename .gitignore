@@ -45,3 +45,5 @@ tests/sr/logs/*.tmp
 .claude/settings.json
 .mcp.json
 tests/sr/logs/*.txt
+apps/web/AGENTS.md
+apps/web/CLAUDE.md

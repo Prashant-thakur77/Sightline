@@ -30,7 +30,6 @@ test.describe('shopping conversation', () => {
     const options = page.getByRole('list', { name: /options/ });
     await expect(options).toBeVisible();
     expect(await options.getByRole('listitem').count()).toBeLessThanOrEqual(3);
-    await expect(page.getByRole('heading', { level: 2, name: /options for/ })).toBeFocused();
     const said = await announcements(page);
     expect(said.filter((s) => s.startsWith('I found')).length).toBe(1);
     await expectNoAxeViolations(page);
@@ -49,14 +48,26 @@ test.describe('shopping conversation', () => {
     await expectNoAxeViolations(page);
   });
 
-  test('keyboard shortcuts: 1 opens the first option, ? shows the shortcut list', async ({ page }) => {
+  test('shortcuts need Alt by default (WCAG 2.1.4), and single keys can be switched on', async ({ page }) => {
     await say(page, 'navy crew-neck sweater');
     await expect(page.getByRole('list', { name: /options/ })).toBeVisible();
     await page.locator('body').click({ position: { x: 5, y: 5 } });
     await page.keyboard.press('1');
+    await expect(page.getByRole('heading', { level: 2, name: /^Option 1/ })).toHaveCount(0);
+    await page.keyboard.press('Alt+Digit1');
     await expect(page.getByRole('heading', { level: 2, name: /^Option 1/ })).toBeVisible();
-    await page.keyboard.press('?');
-    await expect(page.getByRole('table', { name: 'Keyboard shortcuts' })).toBeVisible();
+    await page.getByRole('button', { name: 'Keyboard shortcuts' }).click();
+    await expect(page.getByRole('table', { name: 'Keyboard shortcuts' })).toContainText('Alt + 1, 2, 3');
+    await page.getByLabel('Use single-key shortcuts').check();
+    await expect(page.getByRole('table', { name: 'Keyboard shortcuts' })).not.toContainText('Alt +');
+  });
+
+  test('a reply is announced once and focus stays in the text box', async ({ page }) => {
+    await say(page, 'navy crew-neck sweater');
+    await expect(page.getByRole('list', { name: /options/ })).toBeVisible();
+    await expect(page.getByLabel('Or type what you need')).toBeFocused();
+    const said = await announcements(page);
+    expect(said.filter((s) => s.startsWith('I found')).length).toBe(1);
   });
 });
 

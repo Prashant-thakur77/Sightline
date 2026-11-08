@@ -32,7 +32,7 @@ interface AnnouncerApi {
 const AnnouncerContext = createContext<AnnouncerApi | null>(null);
 
 const DEDUPE_MS = 1200;
-const KEEP_MS = 12000;
+const KEEP_MS = 5000;
 
 /**
  * The only component that writes to live regions. Messages are appended as new nodes (never
@@ -104,7 +104,7 @@ export function AnnouncerProvider({ children }: { children: React.ReactNode }) {
     const t = setInterval(() => {
       const now = Date.now();
       setItems((prev) => (prev.some((p) => now - p.at >= KEEP_MS) ? prev.filter((p) => now - p.at < KEEP_MS) : prev));
-    }, 4000);
+    }, 1000);
     return () => clearInterval(t);
   }, []);
 

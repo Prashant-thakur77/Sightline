@@ -141,7 +141,7 @@ export const en = {
     notSure: "I want to be sure before I pay. To pay, say 'confirm purchase'. To stop, say 'cancel'.",
     needPhrase: "To pay, say 'confirm purchase', or press the Confirm button. Nothing is paid yet.",
     classifierDown: (total: Money): string =>
-      `I couldn't double-check that. Say 'confirm purchase' again, or press Confirm twice to pay ${mFull(total)}.`,
+      `My second check isn't available right now, so saying it again won't pay. To pay ${mFull(total)}, press Confirm twice. Nothing is paid until then.`,
     otherLanguage: "For now I can only take payment confirmations in English. Say 'confirm purchase' to pay, or 'cancel' to stop.",
     question: "Nothing is paid yet. If you want to pay, say 'confirm purchase'. If not, say 'cancel'.",
     conditional: "I can't pay on a condition. Tell me what to check first, or say 'confirm purchase' to pay now.",

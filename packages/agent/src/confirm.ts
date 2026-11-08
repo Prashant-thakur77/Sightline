@@ -287,6 +287,7 @@ const OTHER_LANGUAGE = new Set([
 ]);
 
 const READBACK_CORES = [
+  'go ahead and pay',
   'confirm',
   'confirm it',
   'confirm that',
@@ -350,7 +351,23 @@ const OFFER_CORES = [
 ] as const;
 
 /** Units that may stand next to a core without changing its meaning. */
-const AFFIRMATIVE_UNITS = ['yes', 'yeah', 'yep', 'yup', 'sure', 'go ahead and', 'go ahead', 'yes yes'] as const;
+const AFFIRMATIVE_UNITS = [
+  'yes',
+  'yeah',
+  'yep',
+  'yup',
+  'sure',
+  'go ahead and',
+  'go ahead',
+  'yes yes',
+  // Explicit agreement or politeness around an allowed phrase ("that's right, buy it",
+  // "confirm purchase, thank you"). They never confirm on their own.
+  'that is right',
+  'that is correct',
+  'sounds good',
+  'thank you',
+  'thanks',
+] as const;
 const AFFIRMATIVE_ONLY = [
   'yes',
   'yeah',

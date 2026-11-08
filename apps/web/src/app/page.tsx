@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { PRODUCT_NAME } from '@sightline/core';
-import { Wordmark } from '@/components/shell/mark';
+import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { ReadbackHero } from '@/components/landing/readback-hero';
 
 export const metadata = { title: { absolute: `${PRODUCT_NAME}: is this the one I paid for?` } };
@@ -8,15 +8,15 @@ export const metadata = { title: { absolute: `${PRODUCT_NAME}: is this the one I
 const NUMBERS = [
   {
     figure: '95.9%',
-    text: 'of the top million home pages have accessibility failures a machine can detect. Store platforms average about 75 errors a page.',
+    text: 'of the top million home pages have accessibility failures a machine can detect. Shopify and Magento home pages average about 75 errors each.',
     source: 'WebAIM Million, 2026',
-    href: 'https://prioritypixels.co.uk/insights/web-accessibility-is-getting-worse-according-to-the-2026-webaim-million-report/',
+    href: 'https://webaim.org/projects/million/',
   },
   {
     figure: '49%',
-    text: 'of disabled shoppers who needed to return something had problems doing it. 14% could not use the return method at all.',
-    source: 'Which? with RIDC',
-    href: 'https://uk.finance.yahoo.com/news/retailers-returns-services-failing-disabled-consumers-000114090.html',
+    text: 'of disabled shoppers who needed to return something had problems doing it. One in seven of them could not use the retailer’s return method.',
+    source: 'Which? with RIDC, 844 disabled consumers',
+    href: 'https://www.which.co.uk/policy-and-insight/article/retailers-and-returns-services-potentially-breaking-law-on-returns-for-disabled-consumers-which-finds-ac8dn1v6s5K7',
   },
   {
     figure: '27%',
@@ -62,29 +62,7 @@ const FILE = [
 export default function Landing() {
   return (
     <div className="landing">
-      <header className="lp-header">
-        <Link href="/" className="no-underline" aria-label={`${PRODUCT_NAME}, home`}>
-          <Wordmark size={24} />
-        </Link>
-        <nav aria-label="Main">
-          <ul className="lp-nav">
-            <li>
-              <a href="#how">How it works</a>
-            </li>
-            <li>
-              <a href="#money">Pay after you check</a>
-            </li>
-            <li>
-              <Link href="/judge">For judges</Link>
-            </li>
-            <li>
-              <Link href="/start" className="btn btn-primary">
-                Try it
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      </header>
+      <SiteHeader current="home" />
 
       <main id="main" tabIndex={-1}>
         <section className="lp-hero" aria-labelledby="hero-h">
@@ -112,7 +90,7 @@ export default function Landing() {
 
         <section className="lp-problem" aria-labelledby="problem-h">
           <h2 id="problem-h" className="lp-h2">
-            Tools help blind people find products. Nothing helps them check what arrived, or get their money back.
+            Today’s tools help blind people find products. Checking what arrived, and getting the money back, is still left to them.
           </h2>
           <ul className="lp-numbers">
             {NUMBERS.map((n) => (
@@ -148,12 +126,16 @@ export default function Landing() {
           <ol className="folders">
             {FILE.map((f, i) => (
               <li key={f.tab} id={`moment-${i + 1}`} className="folder" style={{ ['--k' as string]: i }}>
-                <p className="folder-tab">
-                  <span className="sr-only">Moment {i + 1}: </span>
+                <p className="folder-tab" aria-hidden="true">
                   {f.tab}
                 </p>
                 <div className="folder-body">
-                  <h3 className="folder-h">{f.title}</h3>
+                  <h3 className="folder-h">
+                    <span className="sr-only">
+                      Moment {i + 1}, {f.tab}:{' '}
+                    </span>
+                    {f.title}
+                  </h3>
                   <p>{f.body}</p>
                   <p className="folder-said">
                     <span className="sr-only">For example: </span>
@@ -209,13 +191,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="lp-footer">
-        <Wordmark size={20} />
-        <p>Built for the PayPal AI Hackathon. PayPal sandbox only. No real money moves.</p>
-        <p>
-          <Link href="/judge">Judges start here</Link> · <Link href="/barrier-index">Checkout Barrier Index</Link>
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

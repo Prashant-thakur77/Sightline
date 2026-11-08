@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { desc, eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { PRODUCT_NAME } from '@sightline/core';
-import { Wordmark } from '@/components/shell/mark';
+import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { loadSuites } from '@/server/stats';
 import { db, INTEGRATIONS } from '@/server/runtime';
 import { JudgeStart } from './judge-start';
@@ -27,12 +27,7 @@ export default async function Judge() {
   ];
   return (
     <div className="judge">
-      <header className="lp-header">
-        <Link href="/" className="no-underline" aria-label={`${PRODUCT_NAME}, home`}>
-          <Wordmark size={24} />
-        </Link>
-        <p className="eyebrow">For judges</p>
-      </header>
+      <SiteHeader current="judge" />
       <main id="main" tabIndex={-1} className="judge-main">
         <section aria-labelledby="j-h" className="grid gap-4">
           <h1 id="j-h" className="lp-h1 judge-h1">
@@ -102,7 +97,7 @@ export default async function Judge() {
             One button runs every step for real on the PayPal sandbox: voice request, readback, two-key confirmation, PayPal hold, the wrong size shipped,
             the camera check, and the money back. You hear what Maya hears.
           </p>
-          <LifecycleRun />
+          <LifecycleRun ready={INTEGRATIONS.paypal && INTEGRATIONS.vision} missing={[!INTEGRATIONS.paypal && 'PayPal sandbox keys', !INTEGRATIONS.vision && 'the vision service'].filter(Boolean) as string[]} />
         </section>
 
         <section id="numbers" aria-labelledby="num-h" className="grid gap-4">
@@ -130,9 +125,11 @@ export default async function Judge() {
                       <th scope="row">
                         {h.label}
                         {h.negative && <span className="neg-tag"> · negative result</span>}
-                        {h.note && <span className="muted block font-normal">{h.note}</span>}
                       </th>
-                      <td className="jnum">{h.value}</td>
+                      <td className="jnum">
+                        {h.value}
+                        {h.note && <span className="jnote">{h.note}</span>}
+                      </td>
                       <td>{h.baseline ?? '—'}</td>
                       <td>{h.interval ?? '—'}{h.n ? `, n = ${h.n}` : ''}</td>
                       <td>
@@ -193,6 +190,7 @@ export default async function Judge() {
           </p>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

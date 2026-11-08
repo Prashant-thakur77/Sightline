@@ -1,5 +1,4 @@
 import 'server-only';
-import { eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { newId } from '@sightline/core';
 import { db } from './runtime';
@@ -45,19 +44,26 @@ export const PERSONAS: Record<PersonaKey, Persona> = {
   },
 };
 
-/** Idempotently create a demo persona with preferences and (for Maya) a trusted helper. */
+/**
+ * Create a fresh, isolated demo shopper for each visit, with the persona's preferences and
+ * helper, so visitors never see each other's orders. When DEMO_VAULT_ID is configured (a sandbox
+ * buyer's saved PayPal, created once with the vault spike), it is attached so the visitor can pay
+ * by voice without a PayPal popup.
+ */
 export async function ensurePersona(key: PersonaKey): Promise<string> {
   const p = PERSONAS[key];
-  const existing = await db().select({ id: tables.users.id }).from(tables.users).where(eq(tables.users.email, p.email)).limit(1);
-  if (existing[0]) return existing[0].id;
   const userId = newId('usr');
+  const email = p.email.replace('@', `+${userId.slice(4, 14)}@`);
   await db().transaction(async (tx) => {
-    await tx.insert(tables.users).values({ id: userId, email: p.email, displayName: p.displayName, isDemo: true });
+    await tx.insert(tables.users).values({ id: userId, email, displayName: p.displayName, isDemo: true });
     await tx.insert(tables.preferences).values({ userId, ...p.prefs, onboardedAt: new Date().toISOString() });
     if (p.helper)
       await tx
         .insert(tables.helpers)
         .values({ id: newId('hlp'), userId, name: p.helper.name, contact: p.helper.contact, verifiedAt: new Date().toISOString() });
+    const vaultId = process.env.DEMO_VAULT_ID?.trim();
+    if (vaultId)
+      await tx.insert(tables.vaultTokens).values({ id: newId('vlt'), userId, vaultId, status: 'ACTIVE', label: 'your saved PayPal (sandbox demo buyer)' });
   });
   return userId;
 }

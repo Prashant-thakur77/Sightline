@@ -4,7 +4,7 @@
 
 Sightline is a voice-first shopping agent for blind and low-vision people. It shops by voice, reads back exactly what you will pay before any money moves, checks the parcel that arrives with your phone camera, and gets your money back through PayPal when the item is wrong.
 
-Tools exist that help blind people find products. Nothing helps them confirm what they are paying for, check what arrived, and get their money back. That last part is where shopping independence breaks today: 49% of disabled shoppers who needed to return something had problems doing it, and 14% could not use the return method at all ([Which? with RIDC](https://uk.finance.yahoo.com/news/retailers-returns-services-failing-disabled-consumers-000114090.html)).
+Tools exist that help blind people find products. Checking what arrived and getting money back is still left to them. That last part is where shopping independence breaks today: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven of those could not use the retailer's return method ([Which? with RIDC](https://www.which.co.uk/policy-and-insight/article/retailers-and-returns-services-potentially-breaking-law-on-returns-for-disabled-consumers-which-finds-ac8dn1v6s5K7)).
 
 All payments run on the **PayPal sandbox**. The app refuses to start if it is pointed anywhere else.
 

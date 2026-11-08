@@ -386,7 +386,7 @@ function readbackReply(
     cue: 'attention',
     card: {
       kind: 'readback',
-      heading: 'Here’s what you’re buying',
+      heading: 'Readback: check before you pay',
       readbackId,
       fields,
       text,
@@ -736,14 +736,22 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
           ? ` ${unread.length === 1 ? 'One update' : `${unread.length} updates`}. ${unread.map((n) => n.text).join(' ')}`
           : '';
         const greet = `Hi ${ctx.firstName}.${updates} ${en.general.welcome()}`;
-        reply = pending
+        const alreadyTold = unread.some((n) => n.kind === 'delivery');
+        reply = pending && !alreadyTold
           ? {
               say: `${greet} Your parcel from Demo Store was delivered. Want to check it now?`,
               politeness: 'polite',
               card: { kind: 'link', heading: 'Your parcel arrived', text: `The ${pending.title} from Demo Store was delivered.`, href: `/app/check/${pending.id}`, label: 'Check it now' },
               suggestions: suggestionsFor('browsing', false),
             }
-          : { say: `${greet} What do you need today?`, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
+          : {
+              say: `${greet} What do you need today?`,
+              politeness: 'polite',
+              card: pending
+                ? { kind: 'link', heading: 'Your parcel arrived', text: `The ${pending.title} from Demo Store was delivered.`, href: `/app/check/${pending.id}`, label: 'Check it now' }
+                : null,
+              suggestions: suggestionsFor('browsing', false),
+            };
         ctx.state = { phase: 'browsing' };
         break;
       }

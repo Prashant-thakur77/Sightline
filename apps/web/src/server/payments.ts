@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, ne } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { formatMoney, newId, type Cart, type Money } from '@sightline/core';
 import { runGate, type ConfirmedReadback, type GateDecision } from '@sightline/gate';
@@ -96,7 +96,8 @@ export async function payForReadback(input: { userId: string; readbackId: string
   const unknown = await db()
     .select({ id: tables.orders.id, snapshotId: tables.orders.snapshotId })
     .from(tables.orders)
-    .where(and(eq(tables.orders.userId, input.userId), eq(tables.orders.status, 'confirmed')));
+    // The same readback is handled by the idempotent request id (a double press), not as unknown.
+    .where(and(eq(tables.orders.userId, input.userId), eq(tables.orders.status, 'confirmed'), ne(tables.orders.readbackId, rb.id)));
   if (unknown.length) {
     const snaps = await db().select({ id: tables.productSnapshots.id, productId: tables.productSnapshots.productId, variantId: tables.productSnapshots.variantId }).from(tables.productSnapshots).where(inArray(tables.productSnapshots.id, unknown.map((u) => u.snapshotId)));
     const same = snaps.find((x) => x.productId === line0.productId && x.variantId === line0.variantId);
@@ -211,7 +212,9 @@ export async function payForReadback(input: { userId: string; readbackId: string
     await audit({ userId: input.userId, actor: 'paypal', action: 'order.created', subjectId: orderId, payload: { paypalOrderId: created.id, intent, requestId: decision.requestId } });
     return { kind: 'needs-approval', paypalOrderId: created.id, orderId, receiptId };
   } catch (e) {
-    if (isAmbiguous(e)) {
+    // A popup order cannot charge until the buyer approves it in PayPal, so an unanswered create is
+    // not a money risk there; only saved-PayPal (vault) orders can be charged without the buyer.
+    if (isAmbiguous(e) && vaultId) {
       // Keep the budget hold and the order row: retrying with the same PayPal-Request-Id later
       // returns the original order if PayPal did create it.
       await db().update(tables.orders).set({ status: 'confirmed', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, orderId));

@@ -17,7 +17,7 @@ const MARK: Record<StepEvent['status'], string> = { running: '…', done: '✓',
 const WORD: Record<StepEvent['status'], string> = { running: 'In progress', done: 'Done', failed: 'Stopped', skipped: 'Skipped' };
 
 /** Runs the whole lifecycle against the sandbox and shows each step with what was spoken. */
-export function LifecycleRun() {
+export function LifecycleRun({ ready, missing }: { ready: boolean; missing: string[] }) {
   const { announce } = useAnnouncer();
   const [steps, setSteps] = useState<StepEvent[]>([]);
   const [busy, setBusy] = useState(false);
@@ -29,13 +29,21 @@ export function LifecycleRun() {
     setError(null);
     setSteps([]);
     announce('Running the whole lifecycle against the PayPal sandbox. Each step will be read out.', { source: 'judge run' });
-    const res = await fetch('/api/judge/run', { method: 'POST' });
+    let res: Response;
+    try {
+      res = await fetch('/api/judge/run', { method: 'POST' });
+    } catch {
+      setError('The server could not be reached. Nothing ran.');
+      setBusy(false);
+      return;
+    }
     if (!res.ok || !res.body) {
       const j = (await res.json().catch(() => ({}))) as { error?: string };
       setError(j.error ?? 'The run could not start.');
       setBusy(false);
       return;
     }
+    try {
     const reader = res.body.getReader();
     const dec = new TextDecoder();
     let buf = '';
@@ -56,14 +64,21 @@ export function LifecycleRun() {
         if (ev.status !== 'running' || ev.spoken) announce(`${ev.title}. ${WORD[ev.status]}. ${ev.spoken ?? ev.detail ?? ''}`, { source: 'judge run' });
       }
     }
+    } catch {
+      setError('The connection dropped during the run. Steps above show how far it got.');
+    }
     setBusy(false);
   };
 
   return (
     <div className="grid gap-4">
-      <button type="button" className="btn btn-primary btn-xl" onClick={run} disabled={busy}>
-        {busy ? 'Running…' : 'Run the whole lifecycle (about 90 seconds)'}
-      </button>
+      {ready ? (
+        <button type="button" className="btn btn-primary btn-xl" onClick={run} disabled={busy}>
+          {busy ? 'Running…' : 'Run the whole lifecycle (about 90 seconds)'}
+        </button>
+      ) : (
+        <p className="card-refusal">This server is missing {missing.join(' and ')}, so the run is switched off rather than faked.</p>
+      )}
       {error && (
         <p role="alert" className="card-refusal">
           {error}

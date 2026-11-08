@@ -1,0 +1,49 @@
+[project]
+name = "sightline-vision"
+version = "0.1.0"
+description = "Checks a delivered item against the listing it was bought from."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "anthropic==2.3.0",
+    "fastapi==0.161.1",
+    "httpx==0.28.1",
+    "numpy==2.5.4",
+    "opencv-python-headless==4.14.0.94",
+    "pillow==13.0.0",
+    "python-multipart==0.0.32",
+    "rapidocr-onnxruntime==1.4.4",
+    "uvicorn==0.54.0",
+]
+
+[project.optional-dependencies]
+# Neural item mask (u2netp). Not installed by default: it adds a model download and memory.
+rembg = ["rembg==2.0.87"]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.15.0",
+]
+
+[tool.uv]
+package = false
+# rapidocr-onnxruntime asks for the GUI build of OpenCV; the headless build provides the same cv2 module
+# without X11/GL system libraries, so the GUI build is dropped from resolution.
+override-dependencies = ["opencv-python; sys_platform == 'never'"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B", "UP", "SIM", "I"]
+ignore = ["SIM108"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+known-local-folder = ["synth", "fakes"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

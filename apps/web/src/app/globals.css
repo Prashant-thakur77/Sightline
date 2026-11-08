@@ -2067,3 +2067,117 @@ a {
     align-items: center;
   }
 }
+
+/* ---------- Review fixes (round 1) ---------- */
+:root {
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --band-bg: #0b0b0c;
+  --band-ink: #fbfbf8;
+  --band-accent: #ffd60a;
+  --band-muted: #c9cbd1;
+}
+:root[data-theme='contrast'] {
+  --band-bg: #000000;
+  --band-ink: #ffd60a;
+  --band-accent: #ffffff;
+  --band-muted: #ffe45c;
+}
+@layer components {
+  .lp-problem {
+    background: var(--band-bg);
+    color: var(--band-ink);
+  }
+  .lp-problem a {
+    color: var(--band-accent);
+  }
+  .lp-numbers li {
+    border-top-color: var(--band-accent);
+  }
+  .lp-figure {
+    color: var(--band-accent);
+  }
+  .lp-source {
+    color: var(--band-muted);
+  }
+  .rbh-tag {
+    background: #0b0b0c;
+    color: #ffd60a;
+  }
+  .rbh-num {
+    color: inherit;
+    opacity: 1;
+  }
+  .rbh-ticket li[data-key='total'] {
+    font-size: inherit;
+  }
+  .rbh-ticket li[data-key='total'] .rbh-v {
+    font-size: var(--step-1);
+  }
+  .lp-nav select {
+    min-height: 44px;
+  }
+
+  .judge-h1 {
+    font-size: clamp(2.4rem, 1.2rem + 6vw, 7rem);
+    overflow-wrap: anywhere;
+  }
+  .jpath {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  }
+  .jpath > li {
+    grid-template-columns: 1fr;
+  }
+  .jnum {
+    white-space: normal;
+  }
+  @media (min-width: 560px) {
+    .jnum {
+      white-space: nowrap;
+    }
+  }
+  .jnote {
+    display: block;
+    font-weight: 400;
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+
+  @media (max-width: 640px) {
+    .speech-viewer {
+      position: static;
+      justify-items: stretch;
+      padding: 0 var(--gutter) var(--space-5);
+    }
+    .speech-viewer-panel {
+      width: 100%;
+    }
+    #app-root {
+      padding-bottom: 0;
+    }
+  }
+}
+
+@layer components {
+  .convo-status {
+    min-height: 1.6em;
+    margin: 0;
+    font-weight: 700;
+  }
+  .convo-status[data-state='busy'] {
+    color: var(--muted);
+  }
+  .convo-status[data-state='error'],
+  .convo-status[data-state='offline'] {
+    color: var(--mismatch);
+  }
+  .convo-status[data-state='busy']::before {
+    content: '';
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.5em;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 900ms var(--ease-in-out) infinite;
+  }
+}

@@ -259,7 +259,7 @@ export function CardView({
             {card.heading}
           </h2>
           <p>{card.text}</p>
-          <Link className="btn btn-primary btn-xl" href={card.href}>
+          <Link className="btn btn-xl" href={card.href}>
             {card.label}
           </Link>
         </section>

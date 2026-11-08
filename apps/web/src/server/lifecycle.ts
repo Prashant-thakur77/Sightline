@@ -31,6 +31,8 @@ async function judgeUser(): Promise<string> {
   await db().insert(tables.users).values({ id, email: JUDGE_EMAIL, displayName: 'Maya', isDemo: true });
   await db().insert(tables.preferences).values({ userId: id, verbosity: 'standard', sizes: { tops: 'M' }, payAfterCheck: true, onboardedAt: new Date().toISOString() });
   await db().insert(tables.helpers).values({ id: newId('hlp'), userId: id, name: 'Asha', contact: 'asha@demo.sightline.app', verifiedAt: new Date().toISOString() });
+  if (process.env.DEMO_VAULT_ID)
+    await db().insert(tables.vaultTokens).values({ id: newId('vlt'), userId: id, vaultId: process.env.DEMO_VAULT_ID, status: 'ACTIVE', label: 'your saved PayPal (sandbox demo buyer)' });
   return id;
 }
 

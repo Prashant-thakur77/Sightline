@@ -1,6 +1,5 @@
-import Link from 'next/link';
 import { PRODUCT_NAME } from '@sightline/core';
-import { Wordmark } from '@/components/shell/mark';
+import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { loadSuites } from '@/server/stats';
 
 export const dynamic = 'force-dynamic';
@@ -24,12 +23,7 @@ export default async function BarrierIndex() {
   const details = suite?.details;
   return (
     <div>
-      <header className="lp-header">
-        <Link href="/" className="no-underline" aria-label={`${PRODUCT_NAME}, home`}>
-          <Wordmark size={24} />
-        </Link>
-        <p className="eyebrow">Research</p>
-      </header>
+      <SiteHeader current="barrier" />
       <main id="main" tabIndex={-1} className="judge-main">
         <section aria-labelledby="bi-h" className="grid gap-4">
           <h1 id="bi-h" className="lp-h1 judge-h1">
@@ -143,6 +137,7 @@ export default async function BarrierIndex() {
           </ul>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

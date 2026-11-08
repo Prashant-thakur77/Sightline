@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAnnouncer } from './announcer';
 
 type Line = { id: number; text: string; kind: 'focus' | 'live' | 'read' };
 
@@ -23,6 +24,7 @@ const STORAGE_KEY = 'sl-speech-viewer';
  */
 export function SpeechViewer({ rootId = 'app-root', defaultOpen = false }: { rootId?: string; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
+  const { subscribe } = useAnnouncer();
   const [lines, setLines] = useState<Line[]>([]);
   const [reading, setReading] = useState(false);
   const vRef = useRef<Virtual | null>(null);
@@ -61,7 +63,7 @@ export function SpeechViewer({ rootId = 'app-root', defaultOpen = false }: { roo
         const log = await v.spokenPhraseLog();
         if (log.length > seen.current) {
           for (const text of log.slice(seen.current)) {
-            if (!text || text === 'document') continue;
+            if (!text || text === 'document' || /^(polite|assertive):/.test(text)) continue;
             push(text, readingRef.current ? 'read' : /^(polite|assertive):/.test(text) ? 'live' : 'focus');
           }
           seen.current = log.length;
@@ -76,6 +78,12 @@ export function SpeechViewer({ rootId = 'app-root', defaultOpen = false }: { roo
       vRef.current = null;
     };
   }, [open, push, rootId]);
+
+  // Live announcements come straight from the announcer: exactly what screen readers hear.
+  useEffect(() => {
+    if (!open) return;
+    return subscribe((a) => push(`${a.politeness === 'assertive' ? 'Alert' : 'Announced'}: ${a.text}`, 'live'));
+  }, [open, push, subscribe]);
 
   useEffect(() => {
     listRef.current?.lastElementChild?.scrollIntoView({ block: 'end' });

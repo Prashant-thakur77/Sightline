@@ -1,0 +1,30 @@
+{
+  "name": "@sightline/evals",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "all": "tsx all.ts",
+    "report": "tsx report.ts",
+    "confirmation": "tsx confirmation/run.ts",
+    "redteam": "tsx redteam/run.ts",
+    "duplicates": "tsx duplicates/run.ts",
+    "grounding": "tsx grounding/run.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo ok"
+  },
+  "dependencies": {
+    "@sightline/agent": "workspace:*",
+    "@sightline/catalog": "workspace:*",
+    "@sightline/core": "workspace:*",
+    "@sightline/evidence": "workspace:*",
+    "@sightline/gate": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
