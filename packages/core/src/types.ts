@@ -52,6 +52,8 @@ export interface ProductSnapshot {
   seller: Seller;
   retailerUrl?: string;
   rating?: { average: number; count: number };
+  /** Review lines quoted verbatim from the listing; spoken only as quotes. */
+  reviews?: { quote: string; rating?: number }[];
   capturedAt: string;
   /** Domain-separated SHA-256 of the canonical snapshot body. */
   hash: string;

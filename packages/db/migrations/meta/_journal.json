@@ -29,6 +29,13 @@
       "when": 1794165294468,
       "tag": "0003_blob_owner",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794166045521,
+      "tag": "0004_updated_at",
+      "breakpoints": true
     }
   ]
 }

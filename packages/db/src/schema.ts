@@ -19,6 +19,7 @@ const bytea = customType<{ data: Buffer; driverData: Buffer }>({
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'string' });
 const created = () => ts('created_at').notNull().defaultNow();
+const updated = () => ts('updated_at').notNull().defaultNow();
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -89,7 +90,7 @@ export const conversations = pgTable('conversations', {
   /** Agent working state: last options shown, active cart/readback, etc. */
   state: jsonb('state').$type<Record<string, unknown>>().notNull().default({}),
   createdAt: created(),
-  updatedAt: created(),
+  updatedAt: updated(),
 });
 
 export const messages = pgTable(
@@ -174,7 +175,7 @@ export const orders = pgTable(
     receiptId: text('receipt_id'),
     title: text('title').notNull(),
     createdAt: created(),
-    updatedAt: created(),
+    updatedAt: updated(),
   },
   (t) => [index('orders_user_idx').on(t.userId, t.createdAt)],
 );
@@ -214,7 +215,7 @@ export const verifications = pgTable('verifications', {
   verdict: jsonb('verdict'),
   helperAnswer: jsonb('helper_answer'),
   createdAt: created(),
-  updatedAt: created(),
+  updatedAt: updated(),
 });
 
 export const evidencePacks = pgTable('evidence_packs', {
@@ -247,7 +248,7 @@ export const cases = pgTable('cases', {
   outcome: jsonb('outcome'),
   evidencePackId: text('evidence_pack_id'),
   createdAt: created(),
-  updatedAt: created(),
+  updatedAt: updated(),
 });
 
 export const webhookEvents = pgTable('webhook_events', {

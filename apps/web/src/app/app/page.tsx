@@ -1,3 +1,9 @@
-export default function Shop() {
-  return <h1 className="text-[length:var(--step-3)]">What do you need today?</h1>;
+import { Conversation } from '@/components/conversation/conversation';
+import { requireUser } from '@/server/session';
+
+export const metadata = { title: 'Shop' };
+
+export default async function Shop() {
+  const user = await requireUser();
+  return <Conversation firstName={user.displayName} />;
 }

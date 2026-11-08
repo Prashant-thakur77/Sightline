@@ -1758,3 +1758,132 @@ a {
     animation-delay: 4700ms;
   }
 }
+
+@layer components {
+  .case-folder .folder-tab {
+    font-size: var(--step-1);
+    margin-bottom: -3px;
+  }
+  .case-body {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .case-state {
+    margin-left: var(--space-2);
+  }
+  .history {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+    border-left: 4px solid var(--line);
+    padding-left: var(--space-4);
+  }
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .orders-table th,
+  .orders-table td {
+    text-align: left;
+    padding: var(--space-3);
+    border-bottom: 2px solid var(--hairline);
+  }
+  .orders-table thead th {
+    border-bottom: 3px solid var(--line);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  @media (max-width: 640px) {
+    .orders-table thead {
+      display: none;
+    }
+    .orders-table tr {
+      display: grid;
+      gap: var(--space-1);
+      padding: var(--space-3) 0;
+      border-bottom: 2px solid var(--hairline);
+    }
+    .orders-table th,
+    .orders-table td {
+      border: 0;
+      padding: 0;
+    }
+  }
+  .mb-result {
+    font-size: var(--step-1);
+    font-weight: 700;
+    border-left: 8px solid var(--match);
+    padding-left: var(--space-4);
+  }
+}
+
+@layer components {
+  .judge-main {
+    display: grid;
+    gap: var(--space-8);
+    padding: var(--space-6) clamp(1rem, 4vw, 3.5rem) var(--space-9);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .judge-h1 {
+    max-width: 14ch;
+    font-size: var(--step-5);
+  }
+  .jpath {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .jpath > li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border: 3px solid var(--line);
+    border-radius: var(--radius-l);
+    align-items: start;
+  }
+  .jpath > li > div {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+  }
+  .jpath h3 {
+    font-size: var(--step-1);
+    margin: 0;
+  }
+  .jpath p {
+    margin: 0;
+  }
+  .jpath-n {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--yellow-ink);
+    border: 3px solid var(--yellow-ink);
+    font-weight: 800;
+    font-size: var(--step-1);
+  }
+  .jnum {
+    font-weight: 800;
+    font-size: var(--step-1);
+    white-space: nowrap;
+  }
+  .neg-tag {
+    color: var(--mismatch);
+  }
+  .claims {
+    margin: 0;
+    padding-left: 1.2em;
+    display: grid;
+    gap: var(--space-2);
+    max-width: 75ch;
+  }
+}

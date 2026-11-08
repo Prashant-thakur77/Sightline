@@ -30,6 +30,7 @@ export function snapshotOf(product: CatalogProduct, seller: Seller, now = new Da
     seller,
     retailerUrl: product.retailerUrl,
     rating: product.rating,
+    reviews: product.reviews,
     capturedAt: now.toISOString(),
   };
   // Drop undefined keys so the canonical body is stable.

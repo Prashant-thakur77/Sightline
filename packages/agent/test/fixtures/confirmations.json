@@ -1,0 +1,1202 @@
+[
+ {
+  "utterance": "confirm purchase",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "Confirm purchase.",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "CONFIRM PURCHASE",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "confirm",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "Confirm.",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "confirm it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "confirm the purchase",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "confirm my order",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "confirm payment",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yes, buy it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yes buy it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "Yes! Buy it!",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "buy it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "buy it now",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "Buy now.",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "pay now",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "pay for it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yes confirm",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yes, confirm purchase",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yeah, confirm",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yep, buy it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "sure, buy it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "I confirm",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "Confirmed.",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "place the order",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "complete the purchase",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "go ahead and buy it",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yes, go ahead and pay now",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "confirm purchase please",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "confirm purchase, confirm purchase",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "Confirm. Confirm purchase.",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "I confirm the purchase",
+  "category": "clear_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "um, confirm purchase",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "uh confirm",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "okay, confirm",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "OK confirm purchase",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "um, yes, buy it",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "uh, pay now",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "erm confirm the purchase",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "so, confirm",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "alright, confirm purchase",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "uh... confirm purchase",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "just buy it",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "Umm. Yes. Confirm.",
+  "category": "filler_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "I'd like to buy it",
+  "category": "indirect_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "I want to buy it",
+  "category": "indirect_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "I'll take it",
+  "category": "indirect_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "let's buy it",
+  "category": "indirect_confirm",
+  "intent": "confirm",
+  "expected": "confirm"
+ },
+ {
+  "utterance": "yes",
+  "category": "affirmative_only",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "yes please",
+  "category": "affirmative_only",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "go ahead",
+  "category": "affirmative_only",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "do it",
+  "category": "affirmative_only",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "go for it",
+  "category": "affirmative_only",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "absolutely",
+  "category": "affirmative_only",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "yeah",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "sure",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "okay",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "sounds good",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "that's right",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "correct",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "uh-huh",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "of course",
+  "category": "affirmative_only",
+  "intent": "ambiguous",
+  "expected": "none"
+ },
+ {
+  "utterance": "get it for me",
+  "category": "indirect_confirm",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "take my money",
+  "category": "indirect_confirm",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "checkout",
+  "category": "indirect_confirm",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "can you confirm the purchase",
+  "category": "polite_question",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "could you buy it for me",
+  "category": "polite_question",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "would you place the order please",
+  "category": "polite_question",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "don't confirm",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "do not confirm",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "don't buy it",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "no",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "No.",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "nope",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "nah",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "no, don't buy it",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "yeah no",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "yes no",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "I don't want it",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "don't pay",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "no no no",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "I said no",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "definitely not",
+  "category": "negation",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "cancel",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "Cancel it.",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "stop",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "never mind",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "forget it",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "no thanks",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "abort",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "I changed my mind",
+  "category": "cancel",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "wait",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "Wait!",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "hold on",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "hang on",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "wait a second",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "one moment",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "give me a minute",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "not yet",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "let me think",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "not now",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "maybe",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "I'm not sure",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "I don't know",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "I'll pay later",
+  "category": "hold",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "confirm... wait",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "confirm, no wait",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "yes, no, hold on",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "buy it - wait, what's the total?",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "pay now... actually, hold on",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "confirm purchase, um, wait",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "buy it, actually no",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "confirm purchase, no, cancel",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "wait, cancel that",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "buy it, no, stop",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "confirm, I mean, change the size",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "yes buy it, oh wait, wrong colour",
+  "category": "self_correction",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "no wait, yes, confirm",
+  "category": "self_correction",
+  "intent": "ambiguous",
+  "expected": "hold"
+ },
+ {
+  "utterance": "hold on, no, confirm",
+  "category": "self_correction",
+  "intent": "ambiguous",
+  "expected": "hold"
+ },
+ {
+  "utterance": "cancel, no wait, confirm",
+  "category": "self_correction",
+  "intent": "ambiguous",
+  "expected": "hold"
+ },
+ {
+  "utterance": "change the size to large",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "make it two",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "can I get it in black",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "actually I want the medium",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "different colour please",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "switch to the blue one",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "remove it",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "I want the large instead",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "the size is wrong",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "can I change the colour?",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "no, the other one",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "in navy",
+  "category": "change",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "should I confirm?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "should I confirm",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "what happens if I confirm?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "do I say confirm purchase?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "can I return it?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "what's the total?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "when does it arrive?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirm purchase?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "buy it?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "did you say thirty six seventy two?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "is this the right one",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "is it navy?",
+  "category": "question",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirm if it's cheaper",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "buy it if it arrives by Friday",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirm only if returns are free",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "pay now unless there's a fee",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirm once it's in stock",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "buy it when it goes on sale",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "yes but check the returns first",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "buy it after payday",
+  "category": "conditional",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "he said confirm",
+  "category": "reported_speech",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "she told me to buy it",
+  "category": "reported_speech",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "my friend says buy it",
+  "category": "reported_speech",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "the TV said confirm purchase",
+  "category": "reported_speech",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "I heard someone say pay now",
+  "category": "reported_speech",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "my wife wants me to confirm",
+  "category": "reported_speech",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "to pay, say confirm purchase",
+  "category": "reported_speech",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirm your subscription today",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "call now to confirm your appointment",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "press one to confirm",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "buy now and save fifty percent",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "order now while supplies last",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirm your email address",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "buy one get one free",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "tap to confirm your order",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirm your purchase",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "click buy now",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "your order has been placed",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "visit our store to buy it today",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "don't miss out, buy it now",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "this offer won't last, pay now",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "cancel"
+ },
+ {
+  "utterance": "buy now pay later",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "hold"
+ },
+ {
+  "utterance": "get the red one today",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "now in large sizes",
+  "category": "background_tv",
+  "intent": "not_confirm",
+  "expected": "change"
+ },
+ {
+  "utterance": "sí",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "oui",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "ja",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "haan",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "haan ji",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "theek hai",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "sim",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "sí, compra",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "ja, bitte",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "confirmar compra",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "haan, confirm",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "हाँ",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "はい",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "是的",
+  "category": "other_language",
+  "intent": "confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "nahi",
+  "category": "other_language",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "nein",
+  "category": "other_language",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "...",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "hmm",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "the",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "background music",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "purchase",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "pay",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ },
+ {
+  "utterance": "buy",
+  "category": "noise",
+  "intent": "not_confirm",
+  "expected": "none"
+ }
+]
