@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { CheckFlow } from '@/components/check/check-flow';
+import { MomentsStrip } from '@/components/shell/moments';
 import { requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 
@@ -32,6 +33,7 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
         <Link href={`/app/orders/${orderId}`}>Back to the order</Link>
       </p>
       <header className="grid gap-2">
+        <MomentsStrip done={3} current="Checked" />
         <p className="eyebrow">Order {found.order.id}</p>
         <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title} you paid for?</h1>
         <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">

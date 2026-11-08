@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { Card, OptionItem } from './types';
+import { MomentsStrip } from '@/components/shell/moments';
 
 function OptionCard({ item, onChoose, onBuy }: { item: OptionItem; onChoose: (i: number) => void; onBuy: (i: number) => void }) {
   const id = `opt-${item.index}`;
@@ -155,6 +156,7 @@ export function CardView({
           <h2 id="card-h" tabIndex={-1} className="card-h">
             {card.heading}
           </h2>
+          <MomentsStrip done={1} current="Paid" />
           <div className="receipt" role="group" aria-label="Readback">
             <div className="receipt-edge" aria-hidden="true" />
             <dl className="receipt-lines">
@@ -206,6 +208,7 @@ export function CardView({
           <h2 id="card-h" tabIndex={-1} className="card-h">
             {card.heading}
           </h2>
+          <MomentsStrip done={2} current="Arrived" />
           <p className="text-[length:var(--step-1)]">
             {card.payAfterCheck
               ? `${card.amount} is on hold with PayPal. ${card.merchant} only gets paid after you check the parcel.`

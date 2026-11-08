@@ -32,14 +32,12 @@ for (const width of widths) {
       await page.waitForTimeout(300);
       const name = `${route.replace(/\//g, '_') || '_root'}-${theme}-${width}.png`;
       await page.screenshot({ path: path.join(outDir, name), fullPage: true });
-      if (theme === themes[0]) {
-        const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze();
-        summary.push({ route, width, violations: axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target })) });
-      }
+      const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze();
+      summary.push({ route, width, theme, violations: axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target })) });
     }
   }
   await ctx.close();
 }
 await browser.close();
 await fs.writeFile(path.join(outDir, 'axe.json'), JSON.stringify(summary, null, 2));
-for (const s of summary) console.log(`${s.route} @${s.width}: ${s.violations.length} axe violations ${s.violations.map((v) => v.id).join(', ')}`);
+for (const s of summary) console.log(`${s.route} @${s.width} ${s.theme}: ${s.violations.length} axe violations ${s.violations.map((v) => v.id).join(', ')}`);

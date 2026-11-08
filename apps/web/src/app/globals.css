@@ -2181,3 +2181,55 @@ a {
     animation: pulse 900ms var(--ease-in-out) infinite;
   }
 }
+
+@layer components {
+  /* The last folder (Money back) stays yellow in light and dark themes. */
+  :root:not([data-theme='contrast']) .folders > .folder:last-child {
+    --tint: var(--yellow) !important;
+  }
+}
+
+@layer components {
+  .moments ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-2);
+  }
+  .moments li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+    border: 2px solid var(--hairline);
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  .moments li[data-done] {
+    border-color: var(--line);
+    color: var(--ink);
+  }
+  .moments li[aria-current='step'] {
+    border-color: var(--yellow-ink);
+    background: var(--yellow);
+    color: var(--yellow-ink);
+  }
+  .moments-dot {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    font-size: 0.85em;
+  }
+  :root[data-theme='contrast'] .moments li[aria-current='step'] {
+    background: #000;
+    color: var(--yellow);
+    border-color: #fff;
+  }
+}
