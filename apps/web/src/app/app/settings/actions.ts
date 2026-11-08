@@ -23,17 +23,31 @@ const Schema = z.object({
   textScale: z.coerce.number().min(1).max(3),
 });
 
-export type SaveState = { ok: boolean; message: string } | null;
+export type SaveState = { ok: boolean; message: string; field?: string } | null;
+
+const LABELS: Record<string, string> = {
+  verbosity: 'how I should talk',
+  voiceMode: 'whose voice',
+  speechRate: 'speech rate (50 to 250)',
+  tops: 'tops size',
+  bottoms: 'bottoms size',
+  shoes: 'shoe size',
+  avoidColours: 'colours to avoid',
+  perOrderCap: 'most for one order (1 to 5,000 dollars)',
+  dailyCap: 'most in one day (1 to 10,000 dollars)',
+  textScale: 'text size',
+};
 
 export async function saveSettings(_prev: SaveState, form: FormData): Promise<SaveState> {
   const user = await requireUser();
   const parsed = Schema.safeParse(Object.fromEntries(form.entries()));
   if (!parsed.success) {
-    const first = parsed.error.issues[0];
-    return { ok: false, message: `Not saved. Please check ${first?.path.join(' ') ?? 'the form'}.` };
+    const field = String(parsed.error.issues[0]?.path[0] ?? '');
+    return { ok: false, field, message: `Not saved. Please check ${LABELS[field] ?? 'the form'}.` };
   }
   const v = parsed.data;
-  if (v.dailyCap < v.perOrderCap) return { ok: false, message: 'Not saved. The daily limit must be at least the limit for one order.' };
+  if (v.dailyCap < v.perOrderCap)
+    return { ok: false, field: 'dailyCap', message: 'Not saved. The most in one day must be at least the most for one order.' };
   const sizes: Record<string, string> = {};
   if (v.tops) sizes.tops = v.tops.toUpperCase();
   if (v.bottoms) sizes.bottoms = v.bottoms;

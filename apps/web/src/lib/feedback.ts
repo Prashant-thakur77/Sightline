@@ -9,6 +9,14 @@ export type Cue = 'listening' | 'thinking' | 'done' | 'attention' | 'capture' | 
 let ctx: AudioContext | null = null;
 let enabled = true;
 let hapticsEnabled = true;
+try {
+  if (typeof localStorage !== 'undefined') {
+    enabled = localStorage.getItem('sl-sounds') !== '0';
+    hapticsEnabled = localStorage.getItem('sl-haptics') !== '0';
+  }
+} catch {
+  /* storage blocked: defaults */
+}
 
 export function setFeedback(opts: { sounds?: boolean; haptics?: boolean }) {
   if (opts.sounds !== undefined) enabled = opts.sounds;

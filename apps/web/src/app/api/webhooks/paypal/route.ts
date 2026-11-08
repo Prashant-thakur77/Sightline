@@ -1,7 +1,7 @@
 import { after, NextResponse } from 'next/server';
 import { ENV } from '@/server/runtime';
 import { paypal } from '@/server/paypal';
-import { processWebhookEvent, recordWebhook } from '@/server/webhooks';
+import { processWebhookEvent, recordWebhook, retryFailedWebhooks } from '@/server/webhooks';
 
 export const runtime = 'nodejs';
 
@@ -28,8 +28,9 @@ export async function POST(req: Request) {
       try {
         await processWebhookEvent(rec.id);
       } catch (e) {
-        console.error('[webhook] processing failed; will retry from the replay tool', e);
+        console.error('[webhook] processing failed; it will be retried with backoff', e);
       }
+      await retryFailedWebhooks().catch(() => undefined);
     });
   return NextResponse.json({ ok: true, duplicate: rec.duplicate });
 }

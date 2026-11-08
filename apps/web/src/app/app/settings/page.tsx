@@ -3,6 +3,8 @@ import { tables } from '@sightline/db';
 import { requireUser } from '@/server/session';
 import { db } from '@/server/runtime';
 import { SettingsForm } from './settings-form';
+import { PushOptIn } from '@/components/a11y/push-optin';
+import { vapidPublicKey } from '@/server/push';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Settings' };
@@ -31,6 +33,13 @@ export default async function Settings() {
         }}
         helperName={helper?.name ?? null}
       />
+      <section aria-labelledby="notify-h" className="settings">
+        <fieldset>
+          <legend id="notify-h">Notifications</legend>
+          <p className="hint">Parcel arrived, refund landed, helper answered. Short and plain. You can stop them any time.</p>
+          <PushOptIn vapidKey={vapidPublicKey()} />
+        </fieldset>
+      </section>
     </div>
   );
 }

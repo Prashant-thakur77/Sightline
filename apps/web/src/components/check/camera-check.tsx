@@ -28,7 +28,7 @@ export const SHOTS: Shot[] = [
   {
     kind: 'damage',
     title: 'Any damage',
-    prompt: 'If you feel a tear, a stain or a broken part, show it now. If not, say skip or press Skip this shot.',
+    prompt: 'If you feel a tear, a stain or a broken part, show it now. If not, press Skip this shot.',
     optional: true,
   },
 ];
@@ -205,14 +205,19 @@ export function CameraCheck({
   const useDemo = async () => {
     if (!demoShots) return;
     stopCamera();
-    const loaded: CapturedShot[] = [];
-    for (const d of demoShots) {
-      const blob = await (await fetch(d.url)).blob();
-      loaded.push({ kind: d.kind, blob, url: d.url, source: 'demo' });
+    try {
+      const loaded: CapturedShot[] = [];
+      for (const d of demoShots) {
+        const res = await fetch(d.url);
+        if (!res.ok) throw new Error();
+        loaded.push({ kind: d.kind, blob: await res.blob(), url: d.url, source: 'demo' });
+      }
+      setShots(loaded);
+      setPhase('review');
+      announce('Loaded the demo parcel photos. Review what will be sent, then check it.', { source: 'camera' });
+    } catch {
+      announce('The demo photos could not load. You can start the camera or upload photos instead.', { politeness: 'assertive', source: 'camera' });
     }
-    setShots(loaded);
-    setPhase('review');
-    announce('Loaded the demo parcel photos. Review what will be sent, then check it.', { source: 'camera' });
   };
 
   const restart = () => {
@@ -247,10 +252,10 @@ export function CameraCheck({
           ))}
         </ul>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button type="button" className="btn btn-primary" onClick={() => onSubmit(shots)} disabled={busy || shots.length === 0}>
+          <button type="button" className="btn btn-primary btn-xl" onClick={() => onSubmit(shots)} disabled={busy || shots.length === 0}>
             {busy ? 'Checking…' : 'Check it now'}
           </button>
-          <button type="button" className="btn" onClick={restart} disabled={busy}>
+          <button type="button" className="btn btn-xl" onClick={restart} disabled={busy}>
             Retake photos
           </button>
         </div>
@@ -315,10 +320,10 @@ export function CameraCheck({
         </div>
       )}
 
-      {(phase === 'live' || phase === 'denied' || phase === 'intro') && shot && phase !== 'intro' && (
+      {(phase === 'live' || phase === 'denied' || phase === 'intro') && shot && (
         <div className="grid gap-2">
           <label htmlFor="upload" className="font-bold">
-            Or take or choose a photo of {shot.title.toLowerCase()}
+            {phase === 'intro' ? `Or use your phone's camera app: photo of ${shot.title.toLowerCase()}` : `Or take or choose a photo of ${shot.title.toLowerCase()}`}
           </label>
           <input id="upload" type="file" accept="image/*" capture="environment" onChange={onUpload} className="file-input" />
           {phase === 'denied' && demoShots && (

@@ -1,35 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { Verdict, VerdictReason } from '@sightline/core';
-
-const MODULE_LABEL: Record<VerdictReason['module'], string> = {
-  colour: 'Colour',
-  size: 'Size',
-  identity: 'Same product',
-  damage: 'Damage',
-  quality: 'Photo quality',
-};
-
-const CONFIDENCE_WORD: Record<VerdictReason['confidence'], string> = {
-  sure: 'Sure',
-  fairly_sure: 'Fairly sure',
-  not_sure: 'Not sure',
-};
-
-const KIND_LABEL: Record<Verdict['kind'], string> = {
-  match: 'Matches your order',
-  mismatch: 'Does not match your order',
-  unsure: 'Not sure yet',
-};
+import { CONFIDENCE_WORD, FINDING, MODULE_LABEL, verdictStatus, type Verdict, type VerdictReason } from '@sightline/core';
 
 function Mark({ finding }: { finding: VerdictReason['finding'] }) {
-  const glyph = finding === 'agree' ? '✓' : finding === 'disagree' ? '✕' : '?';
-  const word = finding === 'agree' ? 'Matches' : finding === 'disagree' ? 'Different' : 'Unknown';
   return (
     <span className="verdict-mark" data-finding={finding}>
-      <span aria-hidden="true">{glyph}</span>
-      <span className="sr-only">{word}</span>
+      <span aria-hidden="true">{FINDING[finding].glyph}</span>
+      <span className="sr-only">{FINDING[finding].word}</span>
     </span>
   );
 }
@@ -39,24 +17,33 @@ export function VerdictView({
   ordered,
   arrivedPhotoUrl,
   actions,
+  focusOnMount = true,
 }: {
   verdict: Verdict;
   ordered: { title: string; imageUrl?: string; colour?: string; size?: string };
   arrivedPhotoUrl?: string;
   actions?: React.ReactNode;
+  focusOnMount?: boolean;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const first = useRef(true);
   useEffect(() => {
+    // Focus moves to a new verdict, not to one that was already there when the page loaded.
+    if (first.current && !focusOnMount) {
+      first.current = false;
+      return;
+    }
+    first.current = false;
     headingRef.current?.focus();
-  }, [verdict]);
+  }, [verdict, focusOnMount]);
 
   return (
     <section aria-labelledby="verdict-h" className="verdict" data-kind={verdict.kind}>
       <p className="verdict-kind">
         <span aria-hidden="true" className="verdict-kind-glyph">
-          {verdict.kind === 'match' ? '✓' : verdict.kind === 'mismatch' ? '✕' : '?'}
+          {verdictStatus(verdict.kind).glyph}
         </span>
-        {KIND_LABEL[verdict.kind]}
+        {verdictStatus(verdict.kind).word}
       </p>
       <h2 id="verdict-h" ref={headingRef} tabIndex={-1} className="verdict-headline">
         {verdict.headline}

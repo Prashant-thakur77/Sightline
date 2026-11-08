@@ -11,9 +11,9 @@ export async function startAs(page: Page, persona: 'maya' | 'raj' = 'maya') {
   expect(res.ok()).toBeTruthy();
 }
 
-/** Text announced through the app's live regions, in order. */
+/** Everything announced through the app's announcer since the page loaded, in order. */
 export async function announcements(page: Page): Promise<string[]> {
-  return page.locator('[data-announcer] p').allTextContents();
+  return page.evaluate(() => (window as unknown as { __announcements?: string[] }).__announcements ?? []);
 }
 
 export async function say(page: Page, text: string) {

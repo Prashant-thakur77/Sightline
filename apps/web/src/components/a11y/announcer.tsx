@@ -88,6 +88,8 @@ export function AnnouncerProvider({ children }: { children: React.ReactNode }) {
       source: opts.source,
     };
     log.current = [...log.current.slice(-199), a];
+    // Read by end-to-end tests to check that each update is announced exactly once.
+    (window as unknown as { __announcements?: string[] }).__announcements = log.current.map((x) => x.text);
     setItems((prev) => [...prev.filter((p) => now - p.at < KEEP_MS), a]);
     for (const fn of listeners.current) fn(a);
     const v = ownVoiceRef.current;

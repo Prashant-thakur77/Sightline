@@ -4,6 +4,7 @@ import { tables } from '@sightline/db';
 import { PRODUCT_NAME } from '@sightline/core';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { loadSuites } from '@/server/stats';
+import { featuredHeadlines } from '@/server/headlines';
 import { db, INTEGRATIONS } from '@/server/runtime';
 import { JudgeStart } from './judge-start';
 import { LifecycleRun } from './lifecycle-run';
@@ -15,6 +16,7 @@ const REPO = 'https://github.com/Prashant-thakur77/sightline-paypal';
 
 export default async function Judge() {
   const suites = await loadSuites();
+  const featured = await featuredHeadlines(6);
   const headlines = suites.flatMap((s) => s.headlines.map((h) => ({ ...h, suite: s.title, ranAt: h.ranAt ?? s.ranAt, gitSha: h.gitSha ?? s.gitSha })));
   const [receipt] = await db().select({ id: tables.receipts.id }).from(tables.receipts).where(eq(tables.receipts.kind, 'gate')).orderBy(desc(tables.receipts.createdAt)).limit(1);
   const live: [string, boolean, string][] = [
@@ -107,41 +109,63 @@ export default async function Judge() {
           {headlines.length === 0 ? (
             <p className="text-[length:var(--step-1)]">No evaluation has been run on this build yet. Nothing on this page is typed in by hand, so this stays empty until the scripts run.</p>
           ) : (
-            <div className="table-wrap">
-              <table className="verdict-table jnums">
-                <caption className="sr-only">Headline results with baselines, intervals and the script that produced each</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">What</th>
-                    <th scope="col">Result</th>
-                    <th scope="col">Baseline</th>
-                    <th scope="col">Interval</th>
-                    <th scope="col">Script</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <>
+              <ul className="lp-mlist">
+                {featured.map((h) => (
+                  <li key={h.id}>
+                    <p className="lp-mval">{h.value}</p>
+                    <p>{h.label}</p>
+                    {h.baseline && <p className="lp-mbase">Baseline: {h.baseline}</p>}
+                  </li>
+                ))}
+              </ul>
+              <details className="jall">
+                <summary className="btn">All {headlines.length} results, with intervals, scripts and negative results</summary>
+                <ol className="jcards">
                   {headlines.map((h) => (
-                    <tr key={`${h.suite}-${h.id}`} data-negative={h.negative || undefined}>
-                      <th scope="row">
-                        {h.label}
+                    <li key={`${h.suite}-${h.id}`} data-negative={h.negative || undefined}>
+                      <p className="jcard-suite">
+                        {h.suite}
                         {h.negative && <span className="neg-tag"> · negative result</span>}
-                      </th>
-                      <td className="jnum">
-                        {h.value}
-                        {h.note && <span className="jnote">{h.note}</span>}
-                      </td>
-                      <td>{h.baseline ?? '—'}</td>
-                      <td>{h.interval ?? '—'}{h.n ? `, n = ${h.n}` : ''}</td>
-                      <td>
-                        <a href={`${REPO}/blob/main/${h.script}`} className="mono">
-                          {h.script}
-                        </a>
-                      </td>
-                    </tr>
+                      </p>
+                      <p className="jcard-label">{h.label}</p>
+                      <p className="jcard-value">{h.value}</p>
+                      <dl className="jcard-meta">
+                        {h.baseline && (
+                          <div>
+                            <dt>Baseline</dt>
+                            <dd>{h.baseline}</dd>
+                          </div>
+                        )}
+                        {h.interval && (
+                          <div>
+                            <dt>Interval</dt>
+                            <dd>
+                              {h.interval}
+                              {h.n ? `, n = ${h.n}` : ''}
+                            </dd>
+                          </div>
+                        )}
+                        {h.note && (
+                          <div>
+                            <dt>Note</dt>
+                            <dd>{h.note}</dd>
+                          </div>
+                        )}
+                        <div>
+                          <dt>Script</dt>
+                          <dd>
+                            <a href={`${REPO}/blob/main/${h.script}`} className="mono">
+                              {h.script}
+                            </a>
+                          </dd>
+                        </div>
+                      </dl>
+                    </li>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </ol>
+              </details>
+            </>
           )}
         </section>
 

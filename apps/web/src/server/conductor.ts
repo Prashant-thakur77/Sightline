@@ -16,6 +16,7 @@ import {
   presentComparison,
   presentDetails,
   presentNone,
+  describeQuery,
   presentOptions,
   presentPaid,
   presentWhy,
@@ -192,7 +193,7 @@ async function search(ctx: Ctx, query: ShoppingQuery, offset = 0): Promise<Reply
     politeness: 'polite',
     card: {
       kind: 'options',
-      heading: `${ranked.options.length === 1 ? 'One option' : `${ranked.options.length} options`} for ${query.text || 'you'}`,
+      heading: `${ranked.options.length === 1 ? 'One option' : `${ranked.options.length} options`}: ${describeQuery(query)}`,
       items: ranked.options.map((o, i) => optionItem(i + 1, o.snapshot, o.why, o.sizeInStock !== false)),
     },
     suggestions: suggestionsFor('browsing', true),

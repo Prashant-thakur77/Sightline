@@ -9,7 +9,7 @@ const opts = Object.fromEntries(rest.map((a) => a.replace(/^--/, '').split('='))
 const base = process.env.BASE_URL ?? 'http://localhost:3100';
 const routes = routesArg.split(',');
 const themes = (opts.themes ?? 'light,dark,contrast').split(',');
-const widths = (opts.widths ?? '375,1280').split(',').map(Number);
+const widths = (opts.widths ?? '320,375,1280').split(',').map(Number);
 await fs.mkdir(outDir, { recursive: true });
 const browser = await chromium.launch();
 const summary = [];
@@ -33,12 +33,13 @@ for (const width of widths) {
       await page.waitForTimeout(300);
       const name = `${route.replace(/\//g, '_') || '_root'}-${theme}-${width}.png`;
       await page.screenshot({ path: path.join(outDir, name), fullPage: true });
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze();
-      summary.push({ route, width, theme, violations: axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target })) });
+      summary.push({ route, width, theme, overflow, violations: axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0]?.target })) });
     }
   }
   await ctx.close();
 }
 await browser.close();
 await fs.writeFile(path.join(outDir, 'axe.json'), JSON.stringify(summary, null, 2));
-for (const s of summary) console.log(`${s.route} @${s.width} ${s.theme}: ${s.violations.length} axe violations ${s.violations.map((v) => v.id).join(', ')}`);
+for (const s of summary) console.log(`${s.route} @${s.width} ${s.theme}: ${s.violations.length} axe violations ${s.violations.map((v) => v.id).join(', ')}${s.overflow > 0 ? ` | OVERFLOW ${s.overflow}px` : ''}`);

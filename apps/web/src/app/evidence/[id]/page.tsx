@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { formatMoney, type ProductSnapshot, type Verdict } from '@sightline/core';
 import { hashManifest, verifyHashSignature } from '@sightline/evidence';
-import { Wordmark } from '@/components/shell/mark';
+import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { db } from '@/server/runtime';
 import { receiptKeyPair } from '@/server/keys';
 import { currentUser } from '@/server/session';
@@ -17,6 +17,9 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
   const [pack] = await db().select().from(tables.evidencePacks).where(eq(tables.evidencePacks.id, id)).limit(1);
   if (!pack) notFound();
   const user = await currentUser();
+  const [ver] = pack.verificationId ? await db().select().from(tables.verifications).where(eq(tables.verifications.id, pack.verificationId)).limit(1) : [];
+  const [owner] = await db().select({ userId: tables.orders.userId }).from(tables.orders).where(eq(tables.orders.id, pack.orderId)).limit(1);
+  const isOwner = Boolean(user && owner && owner.userId === user.id);
   const { ed25519, ...manifest } = pack.manifest as Record<string, unknown> & { ed25519?: string };
   const recomputed = hashManifest(manifest as never);
   const hashOk = recomputed === pack.manifestHash;
@@ -31,10 +34,14 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
   };
   const v = 'reasons' in m.verification ? m.verification : null;
   return (
+    <>
+    <SiteHeader />
     <main id="main" tabIndex={-1} className="w-full max-w-[960px] mx-auto px-[clamp(1rem,3vw,2.5rem)] py-[var(--space-7)] grid gap-8">
-      <Link href={user ? `/app/orders/${m.order.id}` : '/'} className="no-underline">
-        <Wordmark size={24} />
-      </Link>
+      {isOwner && (
+        <p>
+          <Link href={`/app/orders/${m.order.id}`}>Back to your order</Link>
+        </p>
+      )}
       <header className="grid gap-3">
         <p className="eyebrow">Evidence pack {pack.id}</p>
         <h1 className="text-[length:var(--step-4)] max-w-[22ch]">What was ordered, what arrived, and how we know</h1>
@@ -76,9 +83,11 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
         <h2 id="rb-h" className="text-[length:var(--step-2)]">
           2. What the buyer heard before paying
         </h2>
-        <blockquote className="quote">
-          <p>{m.readback.text}</p>
-        </blockquote>
+        <div className="receipt evidence-ticket">
+          <div className="receipt-edge" aria-hidden="true" />
+          <p className="mono">{m.readback.text}</p>
+          <div className="receipt-edge receipt-edge-bottom" aria-hidden="true" />
+        </div>
       </section>
 
       <section aria-labelledby="ver-h" className="grid gap-3">
@@ -100,6 +109,15 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
           <p>No photo check was run.</p>
         )}
         <h3>Photos</h3>
+        {isOwner && ver && (
+          <ul className="ev-thumbs">
+            {ver.photos.map((p) => (
+              <li key={p.blobId}>
+                <img src={`/api/blobs/${p.blobId}`} alt={`What arrived: ${p.kind === 'label' ? 'the size tag' : p.kind === 'item' ? 'the item' : 'the damage'}.`} />
+              </li>
+            ))}
+          </ul>
+        )}
         <ul>
           {m.files.map((f) => (
             <li key={f.hash}>
@@ -132,5 +150,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
       </section>
       <p className="muted mono">Manifest hash {pack.manifestHash}</p>
     </main>
+    <SiteFooter />
+    </>
   );
 }

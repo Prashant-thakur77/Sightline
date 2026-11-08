@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import { setFeedback } from '@/lib/feedback';
 import { saveSettings, type SaveState } from './actions';
@@ -36,12 +36,29 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
   const [state, action, pending] = useActionState<SaveState, FormData>(saveSettings, null);
   const { announce, setOwnVoice } = useAnnouncer();
   const statusRef = useRef<HTMLParagraphElement>(null);
+  const [sounds, setSounds] = useState(true);
+  const [haptics, setHaptics] = useState(true);
+  const [singleKeys, setSingleKeys] = useState(false);
+
+  useEffect(() => {
+    try {
+      setSounds(localStorage.getItem('sl-sounds') !== '0');
+      setHaptics(localStorage.getItem('sl-haptics') !== '0');
+      setSingleKeys(localStorage.getItem('sl-single-keys') === '1');
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     if (!state) return;
     announce(state.message, { politeness: state.ok ? 'polite' : 'assertive', source: 'settings' });
-    statusRef.current?.focus();
+    const bad = state.field ? document.getElementById(state.field) : null;
+    if (!state.ok && bad) bad.focus();
+    else statusRef.current?.focus();
   }, [state, announce]);
+
+  const invalid = (name: string) => (state && !state.ok && state.field === name ? { 'aria-invalid': true as const, 'aria-errormessage': 'settings-status' } : {});
 
   const applyLocal = (form: HTMLFormElement) => {
     const fd = new FormData(form);
@@ -51,12 +68,19 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
     const scale = Number(fd.get('textScale') ?? 1);
     const low = fd.get('lowVision') === 'on';
     try {
-      localStorage.setItem('sl-text-scale', String(low ? scale : 1));
-      document.documentElement.style.setProperty('--text-scale', String(low ? scale : 1));
+      // Text size is its own setting; low-vision mode adds the high-contrast theme.
+      localStorage.setItem('sl-text-scale', String(scale));
+      document.documentElement.style.setProperty('--text-scale', String(scale));
       if (low) {
         localStorage.setItem('sl-theme', 'contrast');
         document.documentElement.dataset.theme = 'contrast';
+      } else if (localStorage.getItem('sl-theme') === 'contrast') {
+        localStorage.removeItem('sl-theme');
+        delete document.documentElement.dataset.theme;
       }
+      localStorage.setItem('sl-sounds', fd.get('sounds') === 'on' ? '1' : '0');
+      localStorage.setItem('sl-haptics', fd.get('haptics') === 'on' ? '1' : '0');
+      localStorage.setItem('sl-single-keys', fd.get('singleKeys') === 'on' ? '1' : '0');
     } catch {
       /* ignore */
     }
@@ -84,7 +108,7 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
         <Radio name="voiceMode" value="both" label="Both" checked={initial.voiceMode === 'both'} />
         <div className="field">
           <label htmlFor="speechRate">Speech rate for the app's own voice, in percent</label>
-          <input id="speechRate" name="speechRate" type="number" min={50} max={250} step={10} defaultValue={initial.speechRate} inputMode="numeric" />
+          <input id="speechRate" name="speechRate" {...invalid('speechRate')} type="number" min={50} max={250} step={10} defaultValue={initial.speechRate} inputMode="numeric" />
         </div>
       </fieldset>
 
@@ -94,20 +118,20 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
         <div className="field-row">
           <div className="field">
             <label htmlFor="tops">Tops</label>
-            <input id="tops" name="tops" type="text" defaultValue={initial.sizes.tops ?? ''} autoComplete="off" />
+            <input id="tops" name="tops" {...invalid('tops')} type="text" defaultValue={initial.sizes.tops ?? ''} autoComplete="off" />
           </div>
           <div className="field">
             <label htmlFor="bottoms">Bottoms</label>
-            <input id="bottoms" name="bottoms" type="text" defaultValue={initial.sizes.bottoms ?? ''} autoComplete="off" />
+            <input id="bottoms" name="bottoms" {...invalid('bottoms')} type="text" defaultValue={initial.sizes.bottoms ?? ''} autoComplete="off" />
           </div>
           <div className="field">
             <label htmlFor="shoes">Shoes</label>
-            <input id="shoes" name="shoes" type="text" defaultValue={initial.sizes.shoes ?? ''} autoComplete="off" />
+            <input id="shoes" name="shoes" {...invalid('shoes')} type="text" defaultValue={initial.sizes.shoes ?? ''} autoComplete="off" />
           </div>
         </div>
         <div className="field">
           <label htmlFor="avoidColours">Colours to avoid, separated by commas</label>
-          <input id="avoidColours" name="avoidColours" type="text" defaultValue={initial.avoidColours} autoComplete="off" />
+          <input id="avoidColours" name="avoidColours" {...invalid('avoidColours')} type="text" defaultValue={initial.avoidColours} autoComplete="off" />
         </div>
       </fieldset>
 
@@ -117,11 +141,11 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
         <div className="field-row">
           <div className="field">
             <label htmlFor="perOrderCap">Most for one order</label>
-            <input id="perOrderCap" name="perOrderCap" type="number" min={1} step={1} defaultValue={initial.perOrderCap} inputMode="decimal" />
+            <input id="perOrderCap" name="perOrderCap" {...invalid('perOrderCap')} type="number" min={1} step={1} defaultValue={initial.perOrderCap} inputMode="decimal" />
           </div>
           <div className="field">
             <label htmlFor="dailyCap">Most in one day</label>
-            <input id="dailyCap" name="dailyCap" type="number" min={1} step={1} defaultValue={initial.dailyCap} inputMode="decimal" />
+            <input id="dailyCap" name="dailyCap" {...invalid('dailyCap')} type="number" min={1} step={1} defaultValue={initial.dailyCap} inputMode="decimal" />
           </div>
         </div>
         <div className="choice">
@@ -143,7 +167,7 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
           </p>
         </div>
         <div className="field">
-          <label htmlFor="textScale">Text size</label>
+          <label htmlFor="textScale">Text size (works with or without low-vision mode)</label>
           <select id="textScale" name="textScale" defaultValue={String(initial.lowVision.textScale)}>
             <option value="1">Normal</option>
             <option value="1.25">Large</option>
@@ -156,12 +180,23 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
       <fieldset>
         <legend>Sounds and vibration</legend>
         <div className="choice">
-          <input type="checkbox" id="sounds" name="sounds" defaultChecked />
+          <input type="checkbox" id="sounds" name="sounds" checked={sounds} onChange={(e) => setSounds(e.target.checked)} />
           <label htmlFor="sounds">Short sounds for listening, done and attention</label>
         </div>
         <div className="choice">
-          <input type="checkbox" id="haptics" name="haptics" defaultChecked />
+          <input type="checkbox" id="haptics" name="haptics" checked={haptics} onChange={(e) => setHaptics(e.target.checked)} />
           <label htmlFor="haptics">Vibration on phones that support it</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Keyboard</legend>
+        <div className="choice">
+          <input type="checkbox" id="singleKeys" name="singleKeys" checked={singleKeys} onChange={(e) => setSingleKeys(e.target.checked)} aria-describedby="sk-h" />
+          <label htmlFor="singleKeys">Single-key shortcuts</label>
+          <p id="sk-h" className="hint">
+            Off by default so they never clash with your screen reader. When off, hold Alt and Shift (Option and Shift on a Mac) with the key.
+          </p>
         </div>
       </fieldset>
 

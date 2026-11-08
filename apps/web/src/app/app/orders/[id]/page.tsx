@@ -2,7 +2,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { desc, eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import { formatMoney } from '@sightline/core';
+import {
+  CONFIDENCE_WORD,
+  FINDING,
+  MODULE_LABEL,
+  caseStatus,
+  formatMoney,
+  paymentStatus,
+  shipmentStatus,
+  verdictStatus,
+  type StatusWord,
+} from '@sightline/core';
 import { requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { db } from '@/server/runtime';
@@ -12,28 +22,36 @@ import { AskHelper } from '@/components/orders/ask-helper';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Order' };
 
-const PAID_WORDS: Record<string, string> = {
-  authorized: 'On hold with PayPal. Demo Store is paid only after your check matches.',
-  captured: 'Paid to Demo Store.',
-  verified_match: 'Paid to Demo Store after your check matched.',
-  voided: 'Hold cancelled. Demo Store was never paid.',
-  approval_pending: 'Waiting for your approval in PayPal.',
-  failed: 'Not placed. Nothing was charged.',
-};
-
-function Section({ n, id, tab, done, children }: { n: number; id: string; tab: string; done: boolean; children: React.ReactNode }) {
+function Section({ n, id, tab, state, children }: { n: number; id: string; tab: string; state: StatusWord; children: React.ReactNode }) {
   return (
-    <li id={id} className="folder case-folder" data-done={done || undefined} style={{ ['--k' as string]: n - 1 }}>
+    <li id={id} className="folder case-folder" data-tone={state.tone} style={{ ['--k' as string]: n - 1 }}>
       <h2 className="folder-tab">
-        <span className="sr-only">Step {n}: </span>
+        <span className="case-glyph" aria-hidden="true">
+          {state.glyph}
+        </span>{' '}
         {tab}
-        <span className="case-state">
-          <span aria-hidden="true">{done ? ' ✓' : ''}</span>
-          <span className="sr-only">{done ? ', done' : ', not yet'}</span>
-        </span>
+        <span className="sr-only">, {state.word}</span>
       </h2>
       <div className="folder-body case-body">{children}</div>
     </li>
+  );
+}
+
+function Technical({ rows }: { rows: [string, string | null | undefined][] }) {
+  const shown = rows.filter((r): r is [string, string] => Boolean(r[1]));
+  if (!shown.length) return null;
+  return (
+    <details className="tech">
+      <summary>Technical details</summary>
+      <dl className="hashes">
+        {shown.map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd className="mono">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
   );
 }
 
@@ -50,9 +68,16 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const [helper] = await db().select({ name: tables.helpers.name }).from(tables.helpers).where(eq(tables.helpers.userId, user.id)).limit(1);
   const history = await db().select().from(tables.auditLog).where(eq(tables.auditLog.subjectId, o.id)).orderBy(desc(tables.auditLog.seq)).limit(20);
   const amount = formatMoney({ cents: o.amountCents, currency: o.currency });
-  const verdict = verification?.verdict;
+  const verdict = verification?.verdict ?? null;
+
+  const asked: StatusWord = rb?.confirmedAt ? { word: 'Confirmed', glyph: '✓', tone: 'good' } : { word: 'Not confirmed', glyph: '…', tone: 'waiting' };
+  const paid = paymentStatus(o);
+  const arrived = shipmentStatus(shipment);
+  const checked = verdictStatus(verdict?.kind);
+  const caseState = caseStatus(kase?.stage);
+  const moneyBack: StatusWord = verdict?.kind === 'match' && !kase ? { word: 'Nothing to do', glyph: '–', tone: 'neutral' } : caseState;
   const canMoneyBack = Boolean(verdict && verdict.kind !== 'match') && (!kase || kase.stage === 'evidence_built' || kase.stage === 'draft');
-  const caseDone = kase && kase.stage !== 'draft' && kase.stage !== 'evidence_built';
+  const caseSent = Boolean(kase && kase.stage !== 'draft' && kase.stage !== 'evidence_built');
 
   return (
     <div className="grid gap-8">
@@ -60,7 +85,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <Link href="/app/orders">All orders and money</Link>
       </p>
       <header className="grid gap-2">
-        <p className="eyebrow">Order {o.id}</p>
+        <p className="eyebrow">Order {o.id.slice(-8).toUpperCase()}</p>
         <h1 className="text-[length:var(--step-4)] max-w-[20ch]">{s.title}</h1>
         <p className="text-[length:var(--step-1)]">
           {[s.attributes.colour, s.attributes.size && `size ${s.attributes.size}`].filter(Boolean).join(', ')} · {amount} · Demo Store
@@ -68,49 +93,34 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </header>
 
       <ol className="folders">
-        <Section n={1} id="asked" tab="Asked" done>
+        <Section n={1} id="asked" tab="Asked" state={asked}>
           <h3 className="folder-h">What you heard before paying</h3>
           <p className="folder-said">{rb?.text}</p>
-          <p className="muted">
-            Readback fingerprint <span className="mono">{rb?.textHash.slice(0, 16)}…</span>
-            {rb?.confirmedAt && ` · confirmed ${new Date(rb.confirmedAt).toLocaleString('en-US')}`}
-          </p>
+          {rb?.confirmedAt && <p className="muted">Confirmed {new Date(rb.confirmedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}.</p>}
+          <Technical rows={[['Readback fingerprint', rb?.textHash]]} />
         </Section>
 
-        <Section n={2} id="paid" tab="Paid" done={['authorized', 'captured', 'verified_match', 'voided', 'case_open', 'shipped', 'delivered'].includes(o.status)}>
+        <Section n={2} id="paid" tab="Paid" state={paid}>
           <h3 className="folder-h">
-            {o.status === 'voided' || o.status === 'failed' || o.status === 'approval_pending'
-              ? PAID_WORDS[o.status]
-              : o.intent === 'AUTHORIZE' && !o.captureId
-                ? PAID_WORDS.authorized
-                : o.captureId
-                  ? o.intent === 'AUTHORIZE'
-                    ? PAID_WORDS.verified_match
-                    : PAID_WORDS.captured
-                  : `${amount} through PayPal.`}
+            {paid.word}. {paid.detail}
           </h3>
-          <dl className="details-facts">
-            <div>
-              <dt>Amount</dt>
-              <dd>{amount}</dd>
-            </div>
-            <div>
-              <dt>PayPal order</dt>
-              <dd className="mono">{o.paypalOrderId ?? 'Not created'}</dd>
-            </div>
-            <div>
-              <dt>Request id (stops double charges)</dt>
-              <dd className="mono">{o.paypalRequestId}</dd>
-            </div>
-          </dl>
+          <p>Amount: {amount}.</p>
           {o.receiptId && (
             <p>
               <Link href={`/receipts/${o.receiptId}`}>See the signed payment receipt</Link>
             </p>
           )}
+          <Technical
+            rows={[
+              ['PayPal order', o.paypalOrderId],
+              ['PayPal request id (stops double charges)', o.paypalRequestId],
+              ['Authorization', o.authorizationId],
+              ['Capture', o.captureId],
+            ]}
+          />
         </Section>
 
-        <Section n={3} id="arrived" tab="Arrived" done={Boolean(shipment?.deliveredAt)}>
+        <Section n={3} id="arrived" tab="Arrived" state={arrived}>
           <h3 className="folder-h">
             {shipment?.deliveredAt
               ? `Delivered ${new Date(shipment.deliveredAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.`
@@ -119,45 +129,72 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 : 'Not shipped yet. I’ll tell you when it ships.'}
           </h3>
           {shipment?.trackingNumber && (
-            <p>
-              Tracking number <span className="mono">{shipment.trackingNumber}</span>
-              {shipment.trackerId ? ', added to the PayPal order.' : ', recorded by Demo Store. PayPal tracking is attached when the payment is captured.'}
-            </p>
+            <p>{shipment.trackerId ? 'Tracking is on the PayPal order.' : 'Tracking is recorded by Demo Store; it is added to PayPal when the payment is captured.'}</p>
           )}
+          <Technical rows={[['Tracking number', shipment?.trackingNumber]]} />
         </Section>
 
-        <Section n={4} id="checked" tab="Checked" done={Boolean(verdict)}>
+        <Section n={4} id="checked" tab="Checked" state={checked}>
           <h3 className="folder-h">{verdict ? verdict.headline : 'Not checked yet.'}</h3>
+          {verdict && (
+            <ul className="reason-list">
+              {verdict.reasons.map((r, i) => (
+                <li key={`${r.module}-${i}`} data-tone={FINDING[r.finding].tone}>
+                  <span className="reason-glyph" aria-hidden="true">
+                    {FINDING[r.finding].glyph}
+                  </span>
+                  <span>
+                    <strong>
+                      {MODULE_LABEL[r.module]}: {FINDING[r.finding].word}.
+                    </strong>{' '}
+                    {r.sentence} <span className="muted">({CONFIDENCE_WORD[r.confidence].toLowerCase()})</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
           {verification?.helperAnswer ? (
             <p className="mb-result">
-              {helper?.name ?? 'Your helper'} answered: {(verification.helperAnswer as { answer: string }).answer === 'matches' ? 'it matches' : (verification.helperAnswer as { answer: string }).answer === 'different' ? 'it is different' : 'could not tell'}.
+              {helper?.name ?? 'Your helper'} answered:{' '}
+              {(verification.helperAnswer as { answer: string }).answer === 'matches'
+                ? 'it matches'
+                : (verification.helperAnswer as { answer: string }).answer === 'different'
+                  ? 'it is different'
+                  : 'they could not tell'}
+              .
             </p>
           ) : verdict?.kind === 'unsure' && helper ? (
             <AskHelper orderId={o.id} helperName={helper.name} />
           ) : null}
           <p>
-            <Link className="btn btn-primary" href={`/app/check/${o.id}`}>
+            <Link className={verdict ? 'btn' : 'btn btn-primary'} href={`/app/check/${o.id}`}>
               {verdict ? 'Check again' : 'Check the parcel with your camera'}
             </Link>
           </p>
         </Section>
 
-        <Section n={5} id="money-back" tab="Money back" done={Boolean(caseDone)}>
+        <Section n={5} id="money-back" tab="Money back" state={moneyBack}>
           <h3 className="folder-h">
-            {kase?.stage === 'resolved'
-              ? 'Resolved.'
-              : kase?.stage === 'seller_contacted'
-                ? 'Sent to Demo Store. Waiting for their reply.'
-                : verdict && verdict.kind !== 'match'
-                  ? 'Get your money back'
-                  : 'Nothing to do here unless something is wrong.'}
+            {caseSent
+              ? kase!.stage === 'resolved'
+                ? 'Resolved.'
+                : `${caseState.word}.`
+              : verdict && verdict.kind !== 'match'
+                ? 'Get your money back'
+                : 'Nothing to do here unless something is wrong.'}
           </h3>
-          {pack && (
+          {caseSent && kase!.stage === 'seller_contacted' && kase!.dueAt && (
             <p>
-              <Link href={`/evidence/${pack.id}`}>Evidence pack</Link> · fingerprint <span className="mono">{pack.manifestHash.slice(0, 16)}…</span>
+              Demo Store has until {new Date(kase!.dueAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} to reply. If they
+              don’t, I’ll ask PayPal to step in. I’ll tell you when anything changes.
             </p>
           )}
-          {(canMoneyBack || caseDone) && <MoneyBack orderId={o.id} canStart={canMoneyBack} done={null} />}
+          {pack && (
+            <p>
+              <Link href={`/evidence/${pack.id}`}>Read the signed evidence pack</Link>
+            </p>
+          )}
+          {canMoneyBack && <MoneyBack orderId={o.id} canStart={canMoneyBack} done={null} />}
         </Section>
       </ol>
 
@@ -168,7 +205,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <ol className="history">
           {history.map((h) => (
             <li key={h.seq}>
-              <span className="mono">{new Date(h.createdAt).toLocaleString('en-US')}</span> · {h.action.replace(/[._]/g, ' ')} · by {h.actor}
+              {new Date(h.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}: {h.action.replace(/[._]/g, ' ')}, by {h.actor}
             </li>
           ))}
         </ol>

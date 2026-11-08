@@ -22,9 +22,15 @@ type WireReason = {
 };
 
 function fromWire(v: { kind: Verdict['kind']; reasons: WireReason[]; headline: string; next_steps?: string[]; nextSteps?: string[] }): Verdict {
+  // "Not sure" with real differences found should say so plainly, not sound like nothing was found.
+  const differences = v.reasons.filter((r) => r.finding === 'disagree').length;
+  const headline =
+    v.kind === 'unsure' && differences > 0
+      ? `This probably isn't what you ordered, but I'm not completely sure. ${differences === 1 ? 'One thing looks' : 'Two things look'} different.`
+      : v.headline;
   return {
     kind: v.kind,
-    headline: v.headline,
+    headline,
     nextSteps: v.next_steps ?? v.nextSteps ?? [],
     reasons: v.reasons.map((r) => ({
       module: r.module,

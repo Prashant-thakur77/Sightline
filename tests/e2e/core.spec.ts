@@ -54,10 +54,10 @@ test.describe('shopping conversation', () => {
     await page.locator('body').click({ position: { x: 5, y: 5 } });
     await page.keyboard.press('1');
     await expect(page.getByRole('heading', { level: 2, name: /^Option 1/ })).toHaveCount(0);
-    await page.keyboard.press('Alt+Digit1');
+    await page.keyboard.press('Alt+Shift+Digit1');
     await expect(page.getByRole('heading', { level: 2, name: /^Option 1/ })).toBeVisible();
     await page.getByRole('button', { name: 'Keyboard shortcuts' }).click();
-    await expect(page.getByRole('table', { name: 'Keyboard shortcuts' })).toContainText('Alt + 1, 2, 3');
+    await expect(page.getByRole('table', { name: 'Keyboard shortcuts' })).toContainText('Alt + Shift + 1, 2, 3');
     await page.getByLabel('Use single-key shortcuts').check();
     await expect(page.getByRole('table', { name: 'Keyboard shortcuts' })).not.toContainText('Alt +');
   });

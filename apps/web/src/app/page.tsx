@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { PRODUCT_NAME } from '@sightline/core';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { ReadbackHero } from '@/components/landing/readback-hero';
-import { loadSuites } from '@/server/stats';
+import { featuredHeadlines } from '@/server/headlines';
 
 export const metadata = { title: { absolute: `${PRODUCT_NAME}: is this the one I paid for?` } };
 
@@ -62,29 +62,8 @@ const FILE = [
 
 export const revalidate = 300;
 
-/** Short labels for the landing; values and baselines are read from the eval result files. */
-const PICKS: { suite: string; id: string; label: string; baselineLabel: string; baselineFrom?: string }[] = [
-  { suite: 'redteam', id: 'breaches-sightline', label: 'payments that went wrong across 60 poisoned listings', baselineLabel: 'An agent without the gate' },
-  { suite: 'confirmation', id: 'combined-false-confirm', label: 'times it took a non-confirmation as “yes”, out of 266 phrases', baselineLabel: 'A keyword matcher' },
-  {
-    suite: 'duplicates',
-    id: 'duplicate-scenarios',
-    label: 'double-charge scenarios that ended with two orders',
-    baselineLabel: 'Before we fixed lost PayPal answers',
-    baselineFrom: 'duplicate-scenarios-before-fix',
-  },
-  { suite: 'grounding', id: 'catch-rate', label: 'invented product claims caught before being spoken', baselineLabel: 'With no guard' },
-];
-
 export default async function Landing() {
-  const suites = await loadSuites();
-  const measured = PICKS.flatMap((p) => {
-    const suite = suites.find((s) => s.suite === p.suite);
-    const h = suite?.headlines.find((x) => x.id === p.id);
-    if (!h) return [];
-    const base = p.baselineFrom ? suite?.headlines.find((x) => x.id === p.baselineFrom)?.value : h.baseline?.split(':').pop()?.trim();
-    return [{ id: p.id, value: h.value, label: p.label, baseline: base ? `${p.baselineLabel}: ${base}` : undefined }];
-  });
+  const measured = await featuredHeadlines(4);
   return (
     <div className="landing">
       <SiteHeader current="home" />
@@ -157,8 +136,8 @@ export default async function Landing() {
                 <div className="folder-body">
                   <h3 className="folder-h">
                     <span className="sr-only">
-                      Moment {i + 1}, {f.tab}:{' '}
-                    </span>
+                      Moment {i + 1}, {f.tab}:
+                    </span>{' '}
                     {f.title}
                   </h3>
                   <p>{f.body}</p>

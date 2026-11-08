@@ -11,7 +11,7 @@ import { PayPalCheckout } from './paypal-checkout';
 
 /** Shortcut keys. Single-character keys are opt-in (WCAG 2.1.4); by default they need Alt (Option). */
 function shortcutRows(single: boolean): [string, string][] {
-  const k = (key: string) => (single ? key : `Alt + ${key}`);
+  const k = (key: string) => (single ? key : `Alt + Shift + ${key}`);
   return [
     [single ? 'Hold Space' : 'Space or Enter on the Talk button', single ? 'Talk while held' : 'Start talking; press again to send'],
     [k('T'), 'Turn talking on or off'],
@@ -19,7 +19,7 @@ function shortcutRows(single: boolean): [string, string][] {
     [k('1, 2, 3'), 'Choose an option'],
     [k('M'), 'More details'],
     [k('C'), 'Compare the options'],
-    ['Shift + Enter', 'Confirm, only while I read back a purchase'],
+    ['Shift + Enter', 'Confirm, only while I read back a purchase (not from the text box)'],
     ['Escape', 'Stop speaking, or stop listening'],
     [k('H'), 'Help'],
     [k('O'), 'Orders and money'],
@@ -130,7 +130,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
     } catch {
       /* ignore */
     }
-    announce(v ? 'Single-key shortcuts on.' : 'Single-key shortcuts off. Use Alt with the key.', { source: 'settings' });
+    announce(v ? 'Single-key shortcuts on.' : 'Single-key shortcuts off. Use Alt and Shift with the key.', { source: 'settings' });
   };
 
   const speech = useSpeechInput(
@@ -155,14 +155,16 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         setShowKeys(false);
         return;
       }
-      if (e.key === 'Enter' && e.shiftKey && card?.kind === 'readback') {
+      if (isTyping(e.target) || e.metaKey || e.ctrlKey) return;
+      // Confirming by keyboard never happens from inside the text box, so a stray key while typing can't pay.
+      if (e.key === 'Enter' && e.shiftKey && !e.altKey && card?.kind === 'readback') {
         e.preventDefault();
         void send({ action: 'confirm-button', readbackId: card.readbackId });
         return;
       }
-      if (isTyping(e.target) || e.metaKey || e.ctrlKey) return;
-      // Single-character shortcuts only when switched on; otherwise they need Alt (Option).
-      if (singleKeys ? e.altKey : !e.altKey) return;
+      // Single-character shortcuts only when switched on; otherwise Alt+Shift (Option+Shift), which
+      // browsers and screen readers leave free.
+      if (singleKeys ? e.altKey : !(e.altKey && e.shiftKey)) return;
       if (singleKeys && e.code === 'Space' && !e.repeat && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLAnchorElement)) {
         e.preventDefault();
         spaceDown.current = true;
@@ -198,7 +200,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       } else if (k === 'o') {
         e.preventDefault();
         window.location.href = '/app/orders';
-      } else if (e.key === '?' || (e.altKey && e.code === 'Slash')) {
+      } else if (e.key === '?' || k === 'slash' || (e.altKey && e.code === 'Slash')) {
         e.preventDefault();
         setShowKeys((s) => !s);
       }
@@ -345,7 +347,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
             <input type="checkbox" id="single-keys" checked={singleKeys} onChange={(e) => toggleSingleKeys(e.target.checked)} aria-describedby="single-keys-h" />
             <label htmlFor="single-keys">Use single-key shortcuts</label>
             <p id="single-keys-h" className="hint">
-              Off by default, so they never clash with your screen reader's own keys. When off, hold Alt (Option on a Mac) with the key.
+              Off by default, so they never clash with your screen reader's own keys. When off, hold Alt and Shift (Option and Shift on a Mac) with the key.
             </p>
           </div>
           <table className="keys">

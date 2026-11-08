@@ -46,7 +46,16 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
         itemName={s.title.toLowerCase()}
         ordered={{ title: s.title, imageUrl: s.images[0]?.url, colour: s.attributes.colour, size: s.attributes.size }}
         demoShots={demoShots}
-        initial={found.verification?.verdict ? { verdict: found.verification.verdict } : null}
+        initial={
+          found.verification?.verdict
+            ? {
+                verdict: found.verification.verdict,
+                itemPhoto: found.verification.photos.find((p) => p.kind === 'item')
+                  ? `/api/blobs/${found.verification.photos.find((p) => p.kind === 'item')!.blobId}`
+                  : undefined,
+              }
+            : null
+        }
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import 'server-only';
 import { and, desc, eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import { addBusinessDays, formatMoney, newId, type OrderStatus, type Readback, type Verdict } from '@sightline/core';
+import { addBusinessDays, formatMoney, newId, reasonForSeller, type OrderStatus, type Readback, type Verdict } from '@sightline/core';
 import { buildManifest, paypalRequestId, signHash, type EvidenceManifest } from '@sightline/evidence';
 import { db } from './runtime';
 import { getBlob } from './blobs';
@@ -12,6 +12,7 @@ import { audit } from './audit';
 import { writeCaseNarrative } from './ai';
 import { extractTokens } from '@sightline/agent';
 import { isHeld } from './after-check';
+import { sendPush } from './push';
 
 export type CaseReasonCode = 'wrong_colour' | 'wrong_size' | 'wrong_item' | 'damaged' | 'not_received';
 
@@ -26,16 +27,17 @@ function reasonFromVerdict(v: Verdict | null): CaseReasonCode {
 
 /** Template narrative used when no model is available, and as the facts given to the model. */
 function templateNarrative(title: string, v: Verdict | null, amount: string): { summary: string; seller: string } {
-  const findings = (v?.reasons ?? []).filter((r) => r.finding === 'disagree').map((r) => r.sentence);
-  const what = findings.length ? findings.join(' ') : 'The item that arrived does not look like the listing.';
+  const disagreements = (v?.reasons ?? []).filter((r) => r.finding === 'disagree');
+  const what = disagreements.length ? disagreements.map((r) => r.sentence).join(' ') : 'The item that arrived does not look like the listing.';
+  const forSeller = disagreements.length ? disagreements.map(reasonForSeller).join(' ') : 'The delivered item does not look like the listing.';
   const sure = v?.kind === 'mismatch';
   return {
     summary: sure
       ? `The ${title} that arrived does not match what you ordered. ${what} I'll ask Demo Store for your ${amount} back.`
       : `The ${title} that arrived may not be what you ordered. ${what} I'll ask Demo Store to look at the evidence and refund your ${amount} if it's wrong.`,
     seller: sure
-      ? `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${what} The buyer checked the parcel with photos and a size-tag reading, and the evidence pack is attached with its signature. Please refund ${amount}; the buyer can return the item.`
-      : `Hello. The buyer of this ${title} is not sure the delivered item matches the listing. ${what} The photos and the check are attached with a signature. Please look at the evidence and let the buyer know; if it is the wrong item, please refund ${amount}.`,
+      ? `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${forSeller} The buyer checked the parcel with photos and a size-tag reading; the evidence pack is attached with its signature. Please refund ${amount}; the buyer can return the item.`
+      : `Hello. The ${title} delivered for this order may not match the listing. ${forSeller} The photos and the check are attached with a signature. Please look at the evidence and reply to the buyer; if it is the wrong item, please refund ${amount}.`,
   };
 }
 
@@ -201,6 +203,7 @@ export async function sendMoneyBack(userId: string, caseId: string): Promise<Mon
 
 export async function notify(userId: string, kind: string, text: string, link?: string) {
   await db().insert(tables.notifications).values({ id: newId('ntf'), userId, kind, text, link: link ?? null });
+  await sendPush(userId, text, link).catch(() => undefined);
 }
 
 export type { EvidenceManifest };

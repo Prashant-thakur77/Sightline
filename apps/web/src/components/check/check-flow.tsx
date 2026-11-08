@@ -30,7 +30,7 @@ export function CheckFlow({
 }) {
   const { announce } = useAnnouncer();
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ verdict: Verdict; next?: Next; itemPhoto?: string } | null>(initial ?? null);
+  const [result, setResult] = useState<{ verdict: Verdict; next?: Next; itemPhoto?: string; fresh?: boolean } | null>(initial ?? null);
   const [error, setError] = useState<string | null>(null);
 
   const submit = async (shots: CapturedShot[]) => {
@@ -44,7 +44,7 @@ export function CheckFlow({
       const res = await fetch(`/api/orders/${orderId}/check`, { method: 'POST', body: form });
       const data = (await res.json()) as { verdict?: Verdict; next?: Next; itemPhoto?: string; error?: string };
       if (!res.ok || !data.verdict) throw new Error(data.error ?? 'The check did not finish.');
-      setResult({ verdict: data.verdict, next: data.next, itemPhoto: data.itemPhoto });
+      setResult({ verdict: data.verdict, next: data.next, itemPhoto: data.itemPhoto, fresh: true });
       cue(data.verdict.kind === 'match' ? 'done' : 'attention');
       announce(data.next?.say ?? data.verdict.headline, { politeness: 'assertive', source: 'check' });
     } catch (e) {
@@ -61,6 +61,7 @@ export function CheckFlow({
     const v = result.verdict;
     return (
       <VerdictView
+        focusOnMount={Boolean(result.fresh)}
         verdict={v}
         ordered={ordered}
         arrivedPhotoUrl={result.itemPhoto}

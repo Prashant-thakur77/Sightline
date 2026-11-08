@@ -1,5 +1,5 @@
 import 'server-only';
-import { eq, or } from 'drizzle-orm';
+import { and, eq, isNull, lt, or } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { formatMoney, newId } from '@sightline/core';
 import { parseWebhookEvent } from '@sightline/paypal';
@@ -126,4 +126,28 @@ export async function recordWebhook(raw: string, signatureOk: boolean): Promise<
     return { id: existing!.id, duplicate: true };
   }
   return { id, duplicate: false };
+}
+
+/**
+ * Retry events that failed processing, with backoff by attempt count, giving up (dead letter)
+ * after 8 attempts. Runs opportunistically after each new webhook and on demand.
+ */
+export async function retryFailedWebhooks(limit = 5): Promise<number> {
+  const rows = await db()
+    .select()
+    .from(tables.webhookEvents)
+    .where(and(isNull(tables.webhookEvents.processedAt), eq(tables.webhookEvents.signatureOk, true), lt(tables.webhookEvents.attempts, 8)))
+    .limit(limit);
+  let done = 0;
+  for (const r of rows) {
+    const backoffMs = Math.min(2 ** r.attempts * 15_000, 60 * 60_000);
+    if (r.attempts > 0 && Date.now() - Date.parse(r.receivedAt) < backoffMs) continue;
+    try {
+      await processWebhookEvent(r.id);
+      done++;
+    } catch {
+      /* attempts already incremented */
+    }
+  }
+  return done;
 }
