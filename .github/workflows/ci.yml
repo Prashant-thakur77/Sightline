@@ -46,6 +46,7 @@ jobs:
           echo "SESSION_SECRET=$(openssl rand -hex 32)" >> apps/web/.env.local
           echo "RECEIPT_SIGNING_KEY=$(openssl rand -hex 32)" >> apps/web/.env.local
           echo "HELPER_LINK_SECRET=$(openssl rand -hex 32)" >> apps/web/.env.local
+          echo "RATE_LIMITS=off" >> apps/web/.env.local
           pnpm db:migrate
           pnpm --filter @sightline/e2e exec playwright install --with-deps chromium
           pnpm --filter @sightline/web build

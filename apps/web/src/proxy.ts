@@ -8,7 +8,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 /** Per-IP request budgets for routes that cost money (model calls, PayPal) or create state. */
 const LIMITS: [RegExp, number][] = [
   [/^\/api\/judge\/run/, 4],
-  [/^\/api\/demo\/start/, 12],
+  [/^\/api\/demo\/start/, 30],
   [/^\/api\/orders\/[^/]+\/(check|money-back|helper)/, 12],
   [/^\/api\/cases\//, 12],
   [/^\/api\/studio\//, 20],
@@ -19,6 +19,7 @@ const WINDOW_MS = 60_000;
 const hits = new Map<string, number[]>();
 
 function rateLimited(ip: string, path: string): boolean {
+  if (process.env.RATE_LIMITS === 'off') return false;
   const rule = LIMITS.find(([re]) => re.test(path));
   if (!rule) return false;
   const key = `${ip}|${rule[0].source}`;
