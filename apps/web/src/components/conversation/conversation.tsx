@@ -154,9 +154,12 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
     };
   }, [announce, card, send, speech, startListening, stopSpeaking]);
 
+  const started = useRef(false);
   useEffect(() => {
-    if (!initial) void send({ action: 'start' });
-  }, []);
+    if (started.current || initial) return;
+    started.current = true;
+    void send({ action: 'start' });
+  }, [initial, send]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -286,7 +289,8 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         )}
       </div>
 
-      <section className="transcript" aria-labelledby="transcript-h">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}
+      <section className="transcript" aria-labelledby="transcript-h" tabIndex={0}>
         <h2 id="transcript-h" className="transcript-h">
           Conversation
         </h2>

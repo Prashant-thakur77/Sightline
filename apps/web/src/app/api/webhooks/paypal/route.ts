@@ -12,13 +12,10 @@ export const runtime = 'nodejs';
 export async function POST(req: Request) {
   const raw = await req.text();
   if (!ENV.PAYPAL_WEBHOOK_ID) return NextResponse.json({ error: 'webhook not configured' }, { status: 503 });
-  let verified = false;
-  try {
-    const result = await paypal().webhooks.verifySignature({ rawBody: raw, headers: req.headers, webhookId: ENV.PAYPAL_WEBHOOK_ID });
-    verified = result.verified;
-  } catch {
-    verified = false;
-  }
+  const verified = await paypal()
+    .webhooks.verifySignature({ rawBody: raw, headers: req.headers, webhookId: ENV.PAYPAL_WEBHOOK_ID })
+    .then((r) => r.verified)
+    .catch(() => false);
   if (!verified) return NextResponse.json({ error: 'signature not verified' }, { status: 400 });
   let rec;
   try {

@@ -7,6 +7,7 @@ import { requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { db } from '@/server/runtime';
 import { MoneyBack } from '@/components/orders/money-back';
+import { AskHelper } from '@/components/orders/ask-helper';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Order' };
@@ -46,6 +47,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const [pack] = kase?.evidencePackId
     ? await db().select().from(tables.evidencePacks).where(eq(tables.evidencePacks.id, kase.evidencePackId)).limit(1)
     : [];
+  const [helper] = await db().select({ name: tables.helpers.name }).from(tables.helpers).where(eq(tables.helpers.userId, user.id)).limit(1);
   const history = await db().select().from(tables.auditLog).where(eq(tables.auditLog.subjectId, o.id)).orderBy(desc(tables.auditLog.seq)).limit(20);
   const amount = formatMoney({ cents: o.amountCents, currency: o.currency });
   const verdict = verification?.verdict;
@@ -115,6 +117,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
         <Section n={4} id="checked" tab="Checked" done={Boolean(verdict)}>
           <h3 className="folder-h">{verdict ? verdict.headline : 'Not checked yet.'}</h3>
+          {verification?.helperAnswer ? (
+            <p className="mb-result">
+              {helper?.name ?? 'Your helper'} answered: {(verification.helperAnswer as { answer: string }).answer === 'matches' ? 'it matches' : (verification.helperAnswer as { answer: string }).answer === 'different' ? 'it is different' : 'could not tell'}.
+            </p>
+          ) : verdict?.kind === 'unsure' && helper ? (
+            <AskHelper orderId={o.id} helperName={helper.name} />
+          ) : null}
           <p>
             <Link className="btn btn-primary" href={`/app/check/${o.id}`}>
               {verdict ? 'Check again' : 'Check the parcel with your camera'}

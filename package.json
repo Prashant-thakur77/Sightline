@@ -13,7 +13,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "check": "turbo run typecheck lint test",
-    "check:full": "pnpm check && pnpm --filter @sightline/e2e test",
+    "check:full": "pnpm check && pnpm --filter @sightline/e2e e2e",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @sightline/db migrate",

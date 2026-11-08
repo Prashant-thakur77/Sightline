@@ -23,7 +23,8 @@ for (const width of widths) {
   }
   for (const route of routes) {
     for (const theme of themes) {
-      await page.goto(`${base}${route}`, { waitUntil: 'networkidle' });
+      await page.goto(`${base}${route}`, { waitUntil: 'load', timeout: 120000 });
+      await page.waitForTimeout(1500);
       await page.evaluate((t) => {
         if (t === 'light') document.documentElement.dataset.theme = 'light';
         else document.documentElement.dataset.theme = t;

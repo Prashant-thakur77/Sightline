@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "playwright test",
+    "e2e": "playwright test",
     "shots": "node shots.mjs",
     "typecheck": "echo ok",
-    "lint": "echo ok"
+    "lint": "echo ok",
+    "test": "echo \"e2e runs with pnpm check:full\""
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

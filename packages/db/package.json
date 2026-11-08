@@ -6,7 +6,7 @@
   "exports": { ".": "./src/index.ts", "./schema": "./src/schema.ts" },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "lint": "echo ok",
     "generate": "drizzle-kit generate",
     "migrate": "tsx src/migrate.ts",

@@ -34,12 +34,9 @@ function resultsDir(): string {
 
 export async function loadSuites(): Promise<SuiteResult[]> {
   const dir = resultsDir();
-  let files: string[] = [];
-  try {
-    files = (await readdir(dir)).filter((f) => f.endsWith('.json'));
-  } catch {
-    return [];
-  }
+  const files = await readdir(dir)
+    .then((all) => all.filter((f) => f.endsWith('.json')))
+    .catch(() => [] as string[]);
   const out: SuiteResult[] = [];
   for (const f of files.sort()) {
     try {

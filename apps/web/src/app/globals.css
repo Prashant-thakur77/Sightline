@@ -1887,3 +1887,79 @@ a {
     max-width: 75ch;
   }
 }
+
+@layer components {
+  .settings {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .settings fieldset {
+    border: 3px solid var(--line);
+    border-radius: var(--radius-l);
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+  }
+  .settings legend {
+    font-weight: 800;
+    font-size: var(--step-1);
+    padding: 0 var(--space-2);
+  }
+  .choice {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--space-3);
+    align-items: center;
+  }
+  .choice input {
+    width: 28px;
+    height: 28px;
+    accent-color: var(--ink);
+  }
+  .choice label {
+    font-weight: 700;
+    min-height: var(--target);
+    display: flex;
+    align-items: center;
+  }
+  .choice .hint {
+    grid-column: 2;
+  }
+  .hint {
+    color: var(--muted);
+    margin: 0;
+    font-size: var(--step--1);
+  }
+  .field {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .field label {
+    font-weight: 700;
+  }
+  .field-row {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@layer base {
+  ::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+}
+
+@layer components {
+  /* Keep the floating Speech Viewer toggle from covering the last controls on the page. */
+  #app-root {
+    padding-bottom: 96px;
+  }
+  @media (max-width: 640px) {
+    .speech-viewer-panel {
+      max-height: 45vh;
+    }
+  }
+}

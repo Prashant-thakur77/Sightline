@@ -179,6 +179,40 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  apps/mcp:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: 1.32.2
+        version: 1.32.2(zod@4.6.7)
+      '@sightline/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
+      '@sightline/catalog':
+        specifier: workspace:*
+        version: link:../../packages/catalog
+      '@sightline/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@sightline/evidence':
+        specifier: workspace:*
+        version: link:../../packages/evidence
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@opentelemetry/api@1.9.0)(@types/node@22.20.5)(jsdom@31.0.0)(vite@8.3.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   apps/web:
     dependencies:
       '@anthropic-ai/sdk':
@@ -293,6 +327,37 @@ importers:
       typescript-eslint:
         specifier: 8.72.1
         version: 8.72.1(eslint@10.14.0(jiti@2.7.0))(typescript@6.0.3)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@opentelemetry/api@1.9.0)(@types/node@22.20.5)(jsdom@31.0.0)(vite@8.3.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  evals:
+    dependencies:
+      '@sightline/agent':
+        specifier: workspace:*
+        version: link:../packages/agent
+      '@sightline/catalog':
+        specifier: workspace:*
+        version: link:../packages/catalog
+      '@sightline/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@sightline/evidence':
+        specifier: workspace:*
+        version: link:../packages/evidence
+      '@sightline/gate':
+        specifier: workspace:*
+        version: link:../packages/gate
+    devDependencies:
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
       vitest:
         specifier: 5.1.0
         version: 5.1.0(@opentelemetry/api@1.9.0)(@types/node@22.20.5)(jsdom@31.0.0)(vite@8.3.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -4724,6 +4789,28 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@modelcontextprotocol/sdk@1.32.2(zod@4.6.7)':
+    dependencies:
+      '@hono/node-server': 2.1.6(hono@4.13.17)
+      ajv: 8.20.0
+      ajv-formats: 3.0.1
+      content-type: 1.0.5
+      cors: 2.8.6
+      cross-spawn: 7.0.6
+      eventsource: 3.0.7
+      eventsource-parser: 3.1.1
+      express: 5.3.0
+      express-rate-limit: 8.7.3(express@5.3.0)
+      hono: 4.13.17
+      jose: 6.2.15
+      json-schema-typed: 8.0.2
+      pkce-challenge: 5.0.1
+      raw-body: 3.0.2
+      zod: 4.6.7
+      zod-to-json-schema: 3.25.2(zod@4.6.7)
+    transitivePeerDependencies:
+      - supports-color
+
   '@next/env@16.4.5': {}
 
   '@next/swc-darwin-arm64@16.4.5':
@@ -7462,6 +7549,10 @@ snapshots:
   zod-to-json-schema@3.25.2(zod@3.25.76):
     dependencies:
       zod: 3.25.76
+
+  zod-to-json-schema@3.25.2(zod@4.6.7):
+    dependencies:
+      zod: 4.6.7
 
   zod@3.25.76: {}
 
