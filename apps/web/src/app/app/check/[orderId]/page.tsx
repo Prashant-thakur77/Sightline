@@ -33,7 +33,7 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
       </p>
       <header className="grid gap-2">
         <p className="eyebrow">Order {found.order.id}</p>
-        <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title.toLowerCase()} you paid for?</h1>
+        <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title} you paid for?</h1>
         <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">
           You ordered {s.attributes.colour ?? 'the listed colour'}, size {s.attributes.size ?? 'as listed'}.{' '}
           {found.order.status === 'authorized' ? 'Your payment is on hold. Demo Store is paid only if this matches.' : ''}

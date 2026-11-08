@@ -78,7 +78,17 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </Section>
 
         <Section n={2} id="paid" tab="Paid" done={['authorized', 'captured', 'verified_match', 'voided', 'case_open', 'shipped', 'delivered'].includes(o.status)}>
-          <h3 className="folder-h">{PAID_WORDS[o.status] ?? `${amount} through PayPal.`}</h3>
+          <h3 className="folder-h">
+            {o.status === 'voided' || o.status === 'failed' || o.status === 'approval_pending'
+              ? PAID_WORDS[o.status]
+              : o.intent === 'AUTHORIZE' && !o.captureId
+                ? PAID_WORDS.authorized
+                : o.captureId
+                  ? o.intent === 'AUTHORIZE'
+                    ? PAID_WORDS.verified_match
+                    : PAID_WORDS.captured
+                  : `${amount} through PayPal.`}
+          </h3>
           <dl className="details-facts">
             <div>
               <dt>Amount</dt>
@@ -110,7 +120,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </h3>
           {shipment?.trackingNumber && (
             <p>
-              Tracking number <span className="mono">{shipment.trackingNumber}</span>, added to the PayPal order.
+              Tracking number <span className="mono">{shipment.trackingNumber}</span>
+              {shipment.trackerId ? ', added to the PayPal order.' : ', recorded by Demo Store. PayPal tracking is attached when the payment is captured.'}
             </p>
           )}
         </Section>
@@ -146,7 +157,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <Link href={`/evidence/${pack.id}`}>Evidence pack</Link> · fingerprint <span className="mono">{pack.manifestHash.slice(0, 16)}…</span>
             </p>
           )}
-          <MoneyBack orderId={o.id} canStart={canMoneyBack} done={caseDone ? null : null} />
+          {(canMoneyBack || caseDone) && <MoneyBack orderId={o.id} canStart={canMoneyBack} done={null} />}
         </Section>
       </ol>
 

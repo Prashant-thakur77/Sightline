@@ -34,7 +34,7 @@ export function ReadbackHero() {
   const [run, setRun] = useState(0);
   let tagIndex = 0;
   return (
-    <figure className="rbh" aria-labelledby="rbh-cap">
+    <figure className="rbh" aria-label="Example: what you say, and the readback you hear before paying">
       <div className="rbh-stage" key={run} aria-hidden="true">
         <p className="rbh-said">
           <span className="rbh-who">You say</span>
@@ -89,7 +89,7 @@ export function ReadbackHero() {
           </div>
         </div>
       </div>
-      <figcaption id="rbh-cap" className="rbh-cap">
+      <figcaption className="rbh-cap">
         <span className="sr-only">
           Example. You say: I need a navy crew-neck sweater, medium, under forty dollars. Before anything is paid, {''}
           the app reads back: Harbor knit crew-neck sweater. Colour navy. Size M. Seller Demo Store. Total $36.72 with tax. Arrives Tuesday 17

@@ -392,15 +392,18 @@ importers:
 
   packages/browser:
     dependencies:
+      '@onkernel/sdk':
+        specifier: 0.143.0
+        version: 0.143.0
       '@sightline/core':
         specifier: workspace:*
         version: link:../core
       axe-core:
         specifier: 4.11.1
         version: 4.11.1
-      playwright-core:
-        specifier: 1.65.0
-        version: 1.65.0
+      robots-parser:
+        specifier: 3.0.1
+        version: 3.0.1
     devDependencies:
       '@types/node':
         specifier: 22.20.5
@@ -1478,6 +1481,9 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
+
+  '@onkernel/sdk@0.143.0':
+    resolution: {integrity: sha512-M+H+yZ8huuMrynP1YbIOJ8Jl6m6/K2JHlI905g0j3RTtRePDdy2VMv5SW4jm9l4brdpqpx/O2s5NhwVNKoYMPg==}
 
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
@@ -3580,6 +3586,10 @@ packages:
     resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
     engines: {node: '>= 4'}
 
+  robots-parser@3.0.1:
+    resolution: {integrity: sha512-s+pyvQeIKIZ0dx5iJiQk1tPLJAWln39+MI5jtM8wnyws+G5azk+dMnMX0qfbqNetKKNgcWWOdi0sfm+FbQbgdQ==}
+    engines: {node: '>=10.0.0'}
+
   rolldown@1.2.16:
     resolution: {integrity: sha512-bWvlMpFKiTfDKfnK7FC2MPgPeWCf/Kpwsq49ApdW+FQaBZb6O6dZ4MAPbPUjp7hYQrw/RobqCzn64BRrQecGHw==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -4836,6 +4846,8 @@ snapshots:
 
   '@next/swc-win32-x64-msvc@16.4.5':
     optional: true
+
+  '@onkernel/sdk@0.143.0': {}
 
   '@opentelemetry/api@1.9.0': {}
 
@@ -6979,6 +6991,8 @@ snapshots:
   resolve-pkg-maps@1.0.0: {}
 
   retry@0.13.1: {}
+
+  robots-parser@3.0.1: {}
 
   rolldown@1.2.16:
     dependencies:

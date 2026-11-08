@@ -82,7 +82,13 @@ export function CameraCheck({
 
   useEffect(() => stopCamera, [stopCamera]);
 
+  const mounted = useRef(false);
   useEffect(() => {
+    // Move focus only when the step changes, never on first load.
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     headingRef.current?.focus();
   }, [phase, index]);
 

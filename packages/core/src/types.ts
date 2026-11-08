@@ -40,7 +40,7 @@ export interface ProductSnapshot {
   id: string;
   productId: string;
   variantId: string;
-  source: 'channel3' | 'demo-store';
+  source: 'channel3' | 'demo-store' | 'caller';
   title: string;
   brand?: string;
   category?: string;
