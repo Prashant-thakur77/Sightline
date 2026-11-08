@@ -10,6 +10,7 @@ import { paypal } from './paypal';
 import { dbReservations } from './gate-ports';
 import { audit } from './audit';
 import { writeCaseNarrative } from './ai';
+import { isHeld } from './after-check';
 
 export type CaseReasonCode = 'wrong_colour' | 'wrong_size' | 'wrong_item' | 'damaged' | 'not_received';
 
@@ -54,7 +55,7 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
   const [existing] = await db().select().from(tables.cases).where(eq(tables.cases.orderId, orderId)).orderBy(desc(tables.cases.createdAt)).limit(1);
   const amount = formatMoney({ cents: o.amountCents, currency: o.currency });
   if (existing && existing.stage !== 'draft') {
-    return { caseId: existing.id, evidencePackId: existing.evidencePackId ?? '', summary: 'This case is already open.', path: o.status === 'authorized' ? 'void' : 'refund-request', amount };
+    return { caseId: existing.id, evidencePackId: existing.evidencePackId ?? '', summary: 'This case is already open.', path: isHeld(o) ? 'void' : 'refund-request', amount };
   }
   const [snapRow] = await db().select().from(tables.productSnapshots).where(eq(tables.productSnapshots.id, o.snapshotId)).limit(1);
   const [rb] = await db().select().from(tables.readbacks).where(eq(tables.readbacks.id, o.readbackId)).limit(1);
@@ -116,7 +117,7 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
         id: caseId,
         orderId,
         userId,
-        kind: o.status === 'authorized' ? 'void' : 'inquiry',
+        kind: isHeld(o) ? 'void' : 'inquiry',
         stage: 'evidence_built',
         status: 'draft',
         reason: reasonFromVerdict(verdict),
@@ -124,7 +125,7 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
       });
   else await db().update(tables.cases).set({ stage: 'evidence_built', evidencePackId, updatedAt: new Date().toISOString() }).where(eq(tables.cases.id, caseId));
   await audit({ userId, actor: 'agent', action: 'evidence.built', subjectId: orderId, payload: { evidencePackId, manifestHash: built.manifestHash } });
-  return { caseId, evidencePackId, summary: narrative.summary, path: o.status === 'authorized' ? 'void' : 'refund-request', amount };
+  return { caseId, evidencePackId, summary: narrative.summary, path: isHeld(o) ? 'void' : 'refund-request', amount };
 }
 
 export interface MoneyBackResult {
@@ -144,7 +145,7 @@ export async function sendMoneyBack(userId: string, caseId: string): Promise<Mon
   const amount = formatMoney({ cents: o!.amountCents, currency: o!.currency });
   const now = new Date();
 
-  if (o!.status === 'authorized' || (o!.intent === 'AUTHORIZE' && o!.authorizationId && !o!.captureId)) {
+  if (isHeld(o!)) {
     await paypal().payments.voidAuthorization(o!.authorizationId!, { requestId: paypalRequestId('void', o!.authorizationId!) });
     await db().update(tables.orders).set({ status: 'voided', updatedAt: now.toISOString() }).where(eq(tables.orders.id, o!.id));
     await db()

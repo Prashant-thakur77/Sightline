@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { formatMoney } from '@sightline/core';
 import { requireUser } from '@/server/session';
 import { ordersForUser } from '@/server/orders-read';
+import { isHeld } from '@/server/after-check';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Orders and money' };
@@ -18,12 +19,14 @@ const MONEY: Record<string, { word: string; where: string }> = {
   resolved_refund: { word: 'Refunded', where: 'Back with you' },
   failed: { word: 'Not placed', where: 'Never charged' },
   confirmed: { word: 'Being placed', where: 'Not charged yet' },
+  shipped: { word: 'On its way', where: 'With Demo Store' },
+  delivered: { word: 'Delivered, ready to check', where: 'With Demo Store' },
 };
 
 export default async function Orders() {
   const user = await requireUser();
   const orders = await ordersForUser(user.id);
-  const held = orders.filter((o) => o.status === 'authorized').reduce((a, o) => a + o.amountCents, 0);
+  const held = orders.filter((o) => isHeld(o)).reduce((a, o) => a + o.amountCents, 0);
   return (
     <div className="grid gap-8">
       <header className="grid gap-3">
@@ -54,7 +57,7 @@ export default async function Orders() {
                 </th>
                 <td>{formatMoney({ cents: o.amountCents, currency: o.currency })}</td>
                 <td>{MONEY[o.status]?.word ?? o.status}</td>
-                <td>{MONEY[o.status]?.where ?? ''}</td>
+                <td>{isHeld(o) ? 'Held by PayPal until you check it' : (MONEY[o.status]?.where ?? '')}</td>
                 <td>{new Date(o.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
               </tr>
             ))}

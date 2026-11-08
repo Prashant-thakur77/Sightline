@@ -4,7 +4,7 @@ import { tables } from '@sightline/db';
 import { formatMoney, newId, type Cart, type Money } from '@sightline/core';
 import { runGate, type ConfirmedReadback, type GateDecision } from '@sightline/gate';
 import { paypalRequestId, hashReadbackBinding } from '@sightline/evidence';
-import { authorizationFromOrder, captureFromOrder, vaultFromOrder, isInstrumentDeclined, type PayPalClient } from '@sightline/paypal';
+import { authorizationFromOrder, captureFromOrder, vaultFromOrder, isInstrumentDeclined, PayPalApiError, PayPalNetworkError, type PayPalClient } from '@sightline/paypal';
 import { db, ENV, appUrl } from './runtime';
 import { gatePorts, dbReservations } from './gate-ports';
 import { signingSecret } from './keys';
@@ -16,7 +16,17 @@ export type PayOutcome =
   | { kind: 'needs-approval'; paypalOrderId: string; orderId: string; receiptId?: string }
   | { kind: 'paid'; orderId: string; status: 'captured' | 'authorized'; amount: Money; receiptId?: string }
   | { kind: 'declined'; say: string }
-  | { kind: 'error'; say: string };
+  | { kind: 'error'; say: string }
+  /** PayPal may or may not have taken the payment (timeout, network, 5xx). The hold stays. */
+  | { kind: 'unknown'; say: string; orderId: string };
+
+/** Errors after which PayPal may still have created the order. Never tell the buyer "nothing was charged" then. */
+export function isAmbiguous(e: unknown): boolean {
+  return e instanceof PayPalNetworkError || (e instanceof PayPalApiError && e.status >= 500);
+}
+
+export const UNKNOWN_SAY =
+  "PayPal didn't answer in time, so I can't tell yet whether that payment went through. I've paused this purchase so you can't be charged twice, and I'll check with PayPal before anything else happens.";
 
 async function loadReadback(readbackId: string, userId: string) {
   const [rb] = await db().select().from(tables.readbacks).where(eq(tables.readbacks.id, readbackId)).limit(1);
@@ -185,6 +195,13 @@ export async function payForReadback(input: { userId: string; readbackId: string
     await audit({ userId: input.userId, actor: 'paypal', action: 'order.created', subjectId: orderId, payload: { paypalOrderId: created.id, intent, requestId: decision.requestId } });
     return { kind: 'needs-approval', paypalOrderId: created.id, orderId, receiptId };
   } catch (e) {
+    if (isAmbiguous(e)) {
+      // Keep the budget hold and the order row: retrying with the same PayPal-Request-Id later
+      // returns the original order if PayPal did create it.
+      await db().update(tables.orders).set({ status: 'confirmed', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, orderId));
+      await audit({ userId: input.userId, actor: 'paypal', action: 'order.outcome_unknown', subjectId: orderId, payload: { requestId: decision.requestId } });
+      return { kind: 'unknown', say: UNKNOWN_SAY, orderId };
+    }
     if (decision.reservation) await dbReservations.release(decision.reservation.id, 'paypal_error', new Date());
     await db().update(tables.orders).set({ status: 'failed', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, orderId));
     if (isInstrumentDeclined(e)) return { kind: 'declined', say: 'PayPal declined that payment method. Nothing was charged. You can choose another one in PayPal.' };
@@ -266,6 +283,7 @@ export async function completeApprovedOrder(input: { userId: string; paypalOrder
       reservationId: rsv?.id,
     });
   } catch (e) {
+    if (isAmbiguous(e)) return { kind: 'unknown', say: UNKNOWN_SAY, orderId: o.id };
     if (isInstrumentDeclined(e)) return { kind: 'declined', say: 'PayPal declined that payment method. Nothing was charged. Try again and pick another one.' };
     console.error('[pay] approval completion failed', e);
     return { kind: 'error', say: 'PayPal could not finish the payment. Nothing was charged.' };

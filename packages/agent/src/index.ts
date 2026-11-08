@@ -9,3 +9,4 @@ export * from './numbers';
 export * from './text';
 export * from './hash';
 export * from './copy/en';
+export * from './warnings';

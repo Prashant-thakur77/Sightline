@@ -7,6 +7,12 @@ import { db } from './runtime';
 import { paypal } from './paypal';
 import { dbReservations } from './gate-ports';
 import { audit } from './audit';
+import { attachPendingTracking } from './merchant';
+
+/** PayPal holds the money: authorized at purchase, not captured yet. Independent of delivery status. */
+export function isHeld(o: { intent: string; authorizationId: string | null; captureId: string | null; status: string }): boolean {
+  return o.intent === 'AUTHORIZE' && Boolean(o.authorizationId) && !o.captureId && o.status !== 'voided';
+}
 
 export type NextStep =
   | { kind: 'captured'; say: string }
@@ -28,7 +34,7 @@ export async function afterVerdict(a: { userId: string; orderId: string; verific
   const now = new Date().toISOString();
 
   if (a.verdict.kind === 'match') {
-    if (o.status === 'authorized' || (o.intent === 'AUTHORIZE' && o.authorizationId && !o.captureId)) {
+    if (isHeld(o)) {
       try {
         const cap = await paypal().payments.captureAuthorization(o.authorizationId!, {
           requestId: paypalRequestId('capture', o.authorizationId!),
@@ -40,6 +46,8 @@ export async function afterVerdict(a: { userId: string; orderId: string; verific
         const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o.paypalRequestId)).limit(1);
         if (rsv && rsv.status === 'reserved') await dbReservations.commit(rsv.id, new Date());
         await audit({ userId: a.userId, actor: 'paypal', action: 'payment.captured_after_check', subjectId: o.id, payload: { captureId: cap.id, verificationId: a.verificationId } });
+        // Tracking could not be attached to PayPal before there was a capture; attach it now.
+        await attachPendingTracking(o.id).catch(() => undefined);
         return { kind: 'captured', say: `${a.verdict.headline} I've told PayPal to complete the payment of ${amount} to Demo Store now.` };
       } catch (e) {
         console.error('[after-check] capture failed', e);
@@ -53,7 +61,7 @@ export async function afterVerdict(a: { userId: string; orderId: string; verific
 
   if (a.verdict.kind === 'mismatch') {
     await db().update(tables.orders).set({ status: 'verified_mismatch', updatedAt: now }).where(eq(tables.orders.id, o.id));
-    const held = o.status === 'authorized';
+    const held = isHeld(o);
     return {
       kind: 'money-back',
       payAfterCheck: held,

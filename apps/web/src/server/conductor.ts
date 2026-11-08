@@ -1,8 +1,8 @@
 import 'server-only';
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { formatMoney, formatMoneyShort, money, newId, type Cart, type ProductSnapshot, type Verbosity } from '@sightline/core';
-import { hashCart } from '@sightline/evidence';
+import { hashCart, hashReadbackText } from '@sightline/evidence';
 import { catalogFromEnv, computeTotals, deliveryEstimate, snapshotOf, type CatalogProduct } from '@sightline/catalog';
 import {
   checkGrounding,
@@ -10,6 +10,7 @@ import {
   decideConfirmation,
   en,
   initialConfirmationState,
+  listingWarnings,
   parseIntent,
   parseShoppingQuery,
   presentComparison,
@@ -334,7 +335,7 @@ async function startReadback(ctx: Ctx, index: number | undefined, changes?: { si
     .from(tables.vaultTokens)
     .where(and(eq(tables.vaultTokens.userId, ctx.userId), eq(tables.vaultTokens.status, 'ACTIVE')))
     .limit(1);
-  const composed = composeReadback({
+  const composedBase = composeReadback({
     cart,
     paymentSource: vault[0] ? { kind: 'vault', label: 'your saved PayPal' } : { kind: 'paypal-popup', label: 'PayPal' },
     deliveryEstimate: deliveryEstimate(new Date()),
@@ -342,6 +343,15 @@ async function startReadback(ctx: Ctx, index: number | undefined, changes?: { si
     verbosity: ctx.prefs.verbosity as Verbosity,
     now: new Date(),
   });
+  // Contradictions inside the listing are spoken as part of the readback, before "To pay".
+  const warnings = listingWarnings(snap);
+  const withWarnings = warnings.length ? composedBase.text.replace(/(To pay, say)/, `${warnings.join(' ')} $1`) : composedBase.text;
+  const composed = {
+    ...composedBase,
+    text: withWarnings,
+    textHash: hashReadbackText(withWarnings),
+    fields: warnings.length ? [...composedBase.fields, { key: 'warning', label: 'Note', value: warnings.join(' ') }] : composedBase.fields,
+  };
   const readbackId = newId('rdb');
   await db().insert(tables.readbacks).values({
     id: readbackId,
@@ -443,6 +453,14 @@ function payReply(ctx: Ctx, outcome: PayOutcome, cart: Cart): Reply {
         cue: 'error',
         card: { kind: 'refusal', heading: 'I didn’t pay', reason: outcome.say, code: outcome.code },
         suggestions: suggestionsFor('browsing', true),
+      };
+    case 'unknown':
+      return {
+        say: outcome.say,
+        politeness: 'assertive',
+        cue: 'attention',
+        card: { kind: 'link', heading: 'Checking with PayPal', text: outcome.say, href: `/app/orders/${outcome.orderId}`, label: 'See this order' },
+        suggestions: [{ label: "Where's my order?", utterance: "where's my order" }],
       };
     case 'declined':
     case 'error':
@@ -701,7 +719,21 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
     switch (req.action) {
       case 'start': {
         const pending = (await latestOrders(userId)).find((o) => o.status === 'delivered');
-        const greet = `Hi ${ctx.firstName}. ${en.general.welcome()}`;
+        const unread = await db()
+          .select()
+          .from(tables.notifications)
+          .where(and(eq(tables.notifications.userId, userId), isNull(tables.notifications.readAt)))
+          .orderBy(desc(tables.notifications.createdAt))
+          .limit(3);
+        if (unread.length)
+          await db()
+            .update(tables.notifications)
+            .set({ readAt: new Date().toISOString() })
+            .where(inArray(tables.notifications.id, unread.map((n) => n.id)));
+        const updates = unread.length
+          ? ` ${unread.length === 1 ? 'One update' : `${unread.length} updates`}. ${unread.map((n) => n.text).join(' ')}`
+          : '';
+        const greet = `Hi ${ctx.firstName}.${updates} ${en.general.welcome()}`;
         reply = pending
           ? {
               say: `${greet} Your parcel from Demo Store was delivered. Want to check it now?`,
