@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Offline receipt verifier. Needs only Node.js: no network, no access to the server.
-// Usage: node scripts/verify-receipt.mjs <receipt.json> [expected-public-key-hex]
+// Offline verifier for receipts and evidence packs. Needs only Node.js: no network, no server.
+// Usage: node scripts/verify-receipt.mjs <receipt.json | evidence.json> [expected-public-key-hex]
 import { createHash, createPublicKey, verify } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
@@ -36,12 +36,15 @@ function hashDomain(domain, data) {
 }
 
 const key = expectedKey ?? r.publicKey;
-const recomputed = hashDomain('receipt', canonical(r.body));
-const hashOk = recomputed === r.hash;
+// Evidence packs carry { manifest, manifestHash }; receipts carry { body, hash }.
+const isEvidence = r.manifest !== undefined;
+const hash = isEvidence ? r.manifestHash : r.hash;
+const recomputed = isEvidence ? hashDomain('evidence-manifest', canonical(r.manifest)) : hashDomain('receipt', canonical(r.body));
+const hashOk = recomputed === hash;
 let sigOk = false;
 try {
   const spki = Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(key, 'hex')]);
-  sigOk = verify(null, Buffer.from(r.hash, 'utf8'), createPublicKey({ key: spki, format: 'der', type: 'spki' }), Buffer.from(r.ed25519 ?? '', 'base64url'));
+  sigOk = verify(null, Buffer.from(hash, 'utf8'), createPublicKey({ key: spki, format: 'der', type: 'spki' }), Buffer.from(r.ed25519 ?? '', 'base64url'));
 } catch {
   sigOk = false;
 }
@@ -50,5 +53,6 @@ console.log(`hash recomputed from body: ${hashOk ? 'MATCHES' : 'DOES NOT MATCH'}
 console.log(`Ed25519 signature:         ${sigOk ? 'VALID' : 'INVALID'}`);
 if (expectedKey) console.log(`public key pinned:         ${keyOk ? 'MATCHES' : 'DIFFERENT KEY'}`);
 const ok = hashOk && sigOk && keyOk;
-console.log(ok ? 'Receipt is authentic and unchanged.' : 'Receipt failed verification.');
+const what = isEvidence ? 'Evidence pack' : 'Receipt';
+console.log(ok ? `${what} is authentic and unchanged.` : `${what} failed verification.`);
 process.exit(ok ? 0 : 1);

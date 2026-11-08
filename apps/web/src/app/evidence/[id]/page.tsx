@@ -115,6 +115,21 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
         </h2>
         <p>{m.narrative}</p>
       </section>
+      <section aria-labelledby="verify-h" className="grid gap-3">
+        <h2 id="verify-h" className="text-[length:var(--step-2)]">
+          Check it yourself
+        </h2>
+        <p>Download the pack and run the verifier from the repository. It needs no access to our server.</p>
+        <pre className="code">{`node scripts/verify-receipt.mjs evidence-${pack.id}.json`}</pre>
+        <p className="flex flex-wrap gap-3">
+          <a className="btn" href={`/api/evidence/${pack.id}`} download>
+            Download the evidence pack
+          </a>
+          <a className="btn" href="/.well-known/sightline-keys.json">
+            Public key
+          </a>
+        </p>
+      </section>
       <p className="muted mono">Manifest hash {pack.manifestHash}</p>
     </main>
   );
