@@ -1,0 +1,28 @@
+{
+  "name": "sightline",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "turbo run dev --filter=@sightline/web",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "check": "turbo run typecheck lint test",
+    "check:full": "pnpm check && pnpm --filter @sightline/e2e test",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @sightline/db migrate",
+    "db:seed": "pnpm --filter @sightline/db seed",
+    "evals:all": "pnpm --filter @sightline/evals all",
+    "evals:report": "pnpm --filter @sightline/evals report",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "3.9.10",
+    "turbo": "2.11.10",
+    "typescript": "6.0.3"
+  }
+}

@@ -1,0 +1,25 @@
+# Local services. Memory limits keep the laptop responsive; run one heavy service at a time.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: sightline-pg
+    environment:
+      POSTGRES_USER: sightline
+      POSTGRES_PASSWORD: sightline
+      POSTGRES_DB: sightline
+    ports: ["5442:5432"]
+    volumes: [sightline-pg:/var/lib/postgresql/data]
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sightline"]
+      interval: 5s
+      retries: 10
+  vision:
+    build: ./services/vision
+    container_name: sightline-vision
+    env_file: [.env.local]
+    ports: ["8011:8011"]
+    mem_limit: 1536m
+    profiles: [vision]
+volumes:
+  sightline-pg: {}

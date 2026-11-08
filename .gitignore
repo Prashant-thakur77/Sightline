@@ -1,0 +1,46 @@
+# planning and private files (never committed)
+PLAN.md
+LOOP_PROMPT.md
+.loop/
+.reference/
+.private/
+
+# env
+.env*
+!.env.example
+
+# local tool settings
+.claude/settings.local.json
+
+# build output
+node_modules/
+.turbo/
+.next/
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+next-env.d.ts
+
+# python
+__pycache__/
+.venv/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# eval raw data
+evals/data/raw/
+
+# test output
+test-results/
+playwright-report/
+tests/sr/logs/*.tmp
+.DS_Store
+
+# design scouting (local only)
+.design-refs/
+.design/brief.md
+.design/taste.md
+.claude/settings.json
+.mcp.json
