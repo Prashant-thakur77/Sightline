@@ -742,6 +742,51 @@ function parseSearch(s: string, ctx: GrammarContext): ParsedIntent | null {
   return null;
 }
 
+const YES = new Set([
+  'yes',
+  'yeah',
+  'yep',
+  'yup',
+  'sure',
+  'ok',
+  'okay',
+  'alright',
+  'all right',
+  'please do',
+  'do it',
+  'go ahead',
+  'go for it',
+  'sure thing',
+  'why not',
+  'sounds good',
+  'let us do that',
+  'let us do it',
+  'that would be great',
+  'definitely',
+  'absolutely',
+  'of course',
+  'yes do it',
+  'yes go ahead',
+  'yes do that',
+]);
+const NO = new Set(['no', 'nope', 'nah', 'no thanks', 'no thank you', 'not now', 'not really', 'no need', 'skip it', 'leave it', 'no do not']);
+
+/**
+ * A plain "yes" or "no" to a question the assistant just asked ("Want me to try up to $45?").
+ * Anything longer or hedged is not an answer here and goes through the normal grammar. This is
+ * never used to confirm a purchase: the readback has its own two-key confirmation.
+ */
+export function parseYesNo(utterance: string): 'yes' | 'no' | null {
+  let ws = expandContractions(words(utterance));
+  while (ws.length > 0 && ['um', 'umm', 'uh', 'er', 'erm', 'oh', 'well', 'hmm'].includes(ws[0]!)) ws = ws.slice(1);
+  while (ws.length > 0 && ['please', 'thanks', 'then'].includes(ws[ws.length - 1]!)) ws = ws.slice(0, -1);
+  if (ws.length >= 2 && ws[ws.length - 2] === 'thank' && ws[ws.length - 1] === 'you' && ws[0] !== 'no') ws = ws.slice(0, -2);
+  const s = ws.join(' ');
+  if (YES.has(s) || /^(yes|yeah|sure|okay|ok) (please|yes)$/.test(s)) return 'yes';
+  if (NO.has(s) || /^no (no|thanks|thank you)$/.test(s)) return 'no';
+  return null;
+}
+
 /**
  * Parse one utterance. Order matters: phase-specific decisions first, then commands that are
  * whole-utterance matches, then keyword rules, then search, then freeform.

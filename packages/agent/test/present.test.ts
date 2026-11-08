@@ -116,11 +116,65 @@ describe('presentNone and presentWhy', () => {
     expect(describeQuery(parseShoppingQuery('orange anorak with free returns'))).toBe('anything orange with free returns');
   });
 
-  it('explains up to two reasons and one caveat per option', () => {
+  it('says shared reasons once, then what sets each option apart', () => {
     const r = rankProducts({ candidates: [harbor, lark], query: q });
     expect(presentWhy(r.options).text).toBe(
-      "Here's why I picked these. One: Size M is in stock. Navy, as you asked. Two: Size M is listed. Navy, as you asked. The listing doesn't give a return policy.",
+      "Here's why I picked these. Both: Navy, as you asked. The listing gives colour, size and photos, so I can check it when it arrives. " +
+        'One: $34, under your $40 budget. Size M is in stock. ' +
+        "Two: $38.50, under your $40 budget. Size M is listed. The listing doesn't give a return policy.",
     );
+  });
+
+  it('never reads the same reason for every option', () => {
+    // Three listings that match in every way except price and rating.
+    const twin = (id: string, cents: number, rating: { average: number; count: number }): Candidate => ({
+      snapshot: snapshot({ id, productId: `p_${id}`, variantId: `v_${id}`, title: `${id} crew-neck sweater`, price: usd(cents), rating }),
+    });
+    const noBudget = { ...q, maxPrice: undefined };
+    const r = rankProducts({
+      candidates: [twin('Alder', 3400, { average: 4.6, count: 212 }), twin('Birch', 2900, { average: 4.6, count: 212 }), twin('Cedar', 3800, { average: 4.9, count: 30 })],
+      query: noBudget,
+    });
+    const text = presentWhy(r.options).text;
+    expect(text).toMatch(/^Here's why I picked these\. All three: Size M is listed\. Navy, as you asked\./);
+    expect(text.match(/Navy, as you asked/g)).toHaveLength(1);
+    expect(text).toContain('One: $29, the cheapest.');
+    expect(text).toContain('Rated 4.9 out of 5 from 30 reviews.');
+    // Each option's part differs from the others'.
+    const parts = text.split(/(?:One|Two|Three): /).slice(1);
+    expect(new Set(parts).size).toBe(3);
+  });
+
+  it('says plainly when the store has nothing of that kind', () => {
+    const jeans = parseShoppingQuery('black jeans size 32');
+    const tee = { snapshot: snapshot({ id: 't', title: 'Mill heavyweight cotton T-shirt', category: 't-shirts', attributes: { colour: 'Black', size: 'M' } }) };
+    const r = rankProducts({ candidates: [tee], query: jeans });
+    expect(r.options).toEqual([]);
+    const none = presentNone(jeans, r, { store: 'Demo Store' });
+    expect(none.text).toBe("I couldn't find jeans in Demo Store. Want me to look for something else?");
+    expect(none.categoryMissing).toBe(true);
+    expect(none.suggestions.map((x) => x.kind)).toEqual(['something_else']);
+    // With nothing returned and no price filter, the same.
+    expect(presentNone(jeans, { excluded: [] }, { store: 'Demo Store' }).text).toBe("I couldn't find jeans in Demo Store. Want me to look for something else?");
+  });
+
+  it('keeps the budget message when a price filter may have hidden matches', () => {
+    const cheap = parseShoppingQuery('sweater under five dollars');
+    const mug = { snapshot: snapshot({ id: 'm', title: 'Stoneware mug', category: 'mugs', price: usd(400) }) };
+    // The store's own price filter can leave only other things; that is not "no sweaters".
+    expect(presentNone(cheap, rankProducts({ candidates: [mug], query: cheap }), { store: 'Demo Store' }).categoryMissing).toBe(false);
+    const none = presentNone(cheap, { excluded: [] }, { store: 'Demo Store' });
+    expect(none.categoryMissing).toBe(false);
+    expect(none.text).toBe("I couldn't find a sweater under $5. Want me to try up to $10?");
+    expect(none.suggestions).toEqual([{ kind: 'max_price', amount: usd(1000), said: 'up to $10' }]);
+  });
+
+  it('returns what each offered suggestion means, in order', () => {
+    const r = rankProducts({ candidates: [{ snapshot: snapshot({ price: usd(4500) }) }], query: q });
+    expect(presentNone(q, r).suggestions).toEqual([
+      { kind: 'max_price', amount: usd(4500), said: 'up to $45' },
+      { kind: 'any_colour', said: 'any colour' },
+    ]);
   });
 });
 
@@ -155,13 +209,68 @@ describe('presentComparison', () => {
     { label: 3, snapshot: coast.snapshot },
   ];
 
-  it('compares field by field and says which is cheaper', () => {
+  it('leads with what differs and says once what is the same', () => {
     const c = presentComparison(items);
     expect(c.rows.map((r) => r.key)).toEqual(['price', 'colour', 'size', 'material', 'returns', 'rating']);
     expect(c.rows[0]!.values).toEqual(['$34', '$29']);
-    expect(c.text).toMatchInlineSnapshot(
-      `"Comparing one and three. Price: one is $34, three is $29. Colour: one is navy, three is navy. Size: one is M, three is M. Material: one is 100% merino wool, three is cotton. Returns: one has free returns for 30 days, three has returns for 14 days, not free. Rating: one is rated 4.6 out of 5 from 212 reviews, three is rated 4.2 out of 5 from 40 reviews. Three is cheaper by $5."`,
+    expect(c.text).toBe(
+      'Comparing one and three. Price: one is $34, three is $29. Three is cheaper by $5. ' +
+        'Material: one is 100% merino wool, three is cotton. ' +
+        'Returns: one has free returns for 30 days, three has returns for 14 days, not free. ' +
+        'Rating: one has 4.6 from 212 reviews, three has 4.2 from 40 reviews. ' +
+        'Both are navy, size M.',
     );
+  });
+
+  it('keeps three options under about 60 words, and detailed says more', () => {
+    const three = [...items, { label: 2, snapshot: lark.snapshot }];
+    const standard = presentComparison(three);
+    const words = (t: string) => t.split(/\s+/).length;
+    expect(words(standard.text)).toBeLessThanOrEqual(60);
+    expect(standard.text).toMatch(/^Comparing one, three and two\. Price: /);
+    expect(standard.text).toContain('All three are size M.');
+    expect(standard.text).not.toMatch(/Size: /);
+    const detailed = presentComparison(three, undefined, 'detailed');
+    expect(words(detailed.text)).toBeGreaterThan(words(standard.text));
+    expect(detailed.text).toContain('rated 4.6 out of 5 from 212 reviews');
+  });
+
+  it('collapses every row that is the same: "All three are navy, size M."', () => {
+    const same = (id: string, cents: number, material: string) =>
+      snapshot({ id, productId: `p_${id}`, variantId: `v_${id}`, price: usd(cents), attributes: { colour: 'Navy', size: 'M', material } });
+    const c = presentComparison([
+      { label: 1, snapshot: same('a', 3400, 'merino wool') },
+      { label: 2, snapshot: same('b', 3800, 'cotton') },
+      { label: 3, snapshot: same('c', 2900, 'cotton') },
+    ]);
+    expect(c.text).toBe(
+      'Comparing one, two and three. Price: one is $34, two is $38, three is $29. Three is the cheapest, at $29. ' +
+        'Material: one is merino wool, two and three are cotton. ' +
+        'All three are navy, size M, with free returns for 30 days and a rating of 4.6 from 212 reviews.',
+    );
+    expect(c.text.split(/\s+/).length).toBeLessThanOrEqual(60);
+  });
+
+  it('drops the least useful rows when it runs long, and says how to hear them', () => {
+    const long = (id: string, cents: number, colour: string, size: string, material: string, days: number, avg: number) =>
+      snapshot({
+        id,
+        productId: `p_${id}`,
+        variantId: `v_${id}`,
+        price: usd(cents),
+        attributes: { colour, size, material },
+        returnPolicy: { windowDays: days, free: days > 20 },
+        rating: { average: avg, count: 10 + days },
+      });
+    const c = presentComparison([
+      { label: 1, snapshot: long('a', 3400, 'Navy', 'M', 'merino wool', 30, 4.6) },
+      { label: 2, snapshot: long('b', 3800, 'Black', 'L', 'cotton', 14, 4.1) },
+      { label: 3, snapshot: long('c', 2900, 'Grey', 'S', 'lambswool', 60, 4.8) },
+    ]);
+    expect(c.text.split(/\s+/).length).toBeLessThanOrEqual(60);
+    expect(c.text).toMatch(/Colour: one is navy, two is black, three is grey\. Size: one is M, two is L, three is S\./);
+    expect(c.text).toMatch(/Say 'compare by material', 'compare by returns' or 'compare by ratings' for more\.$/);
+    expect(c.rows).toHaveLength(6);
   });
 
   it('answers a single aspect, and is honest about what it cannot feel', () => {

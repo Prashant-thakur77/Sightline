@@ -27,13 +27,29 @@ function shortcutRows(single: boolean): [string, string][] {
   ];
 }
 
+/**
+ * How long the microphone waits after "Listening." is announced, so a screen reader saying it is
+ * not transcribed as the request. Short and fixed: the earcon marks the moment it opens.
+ */
+const MIC_OPEN_DELAY_MS = 700;
+
+/** The optional "I heard: …" echo of recognised speech. On unless switched off in Settings. */
+export const HEARD_ECHO_KEY = 'sl-heard-echo';
+function heardEchoOn(): boolean {
+  try {
+    return localStorage.getItem(HEARD_ECHO_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
 function isTyping(el: EventTarget | null): boolean {
   if (!(el instanceof HTMLElement)) return false;
   return el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
 }
 
 export function Conversation({ firstName, initial }: { firstName: string; initial?: TurnResponse | null }) {
-  const { announce, stop: stopSpeaking, ownVoice } = useAnnouncer();
+  const { announce, stop: stopSpeaking, ownVoice, setOwnVoice } = useAnnouncer();
   const [messages, setMessages] = useState<ChatMessage[]>(initial?.messages ?? []);
   const [card, setCard] = useState<Card | null>(initial?.card ?? null);
   const [suggestions, setSuggestions] = useState(initial?.suggestions ?? []);
@@ -44,6 +60,8 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
   const [singleKeys, setSingleKeys] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [online, setOnline] = useState(true);
+  // After the first request the big greeting shrinks, so the active card stays above the fold.
+  const [compact, setCompact] = useState(() => Boolean(initial?.messages.some((m) => m.role === 'user')));
   const lastSay = useRef(initial?.say ?? '');
   const cardRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -64,10 +82,17 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       setBusy(true);
       setError(null);
       cue('thinking');
+      if (!('action' in req && req.action === 'start')) setCompact(true);
       // Focus inside the card is about to disappear with the card; remember to move it.
       const focusWasInCard =
         !('action' in req && req.action === 'start') &&
         (Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body);
+      // The card control that had focus (Confirm, Wait, Cancel), so the same control in the card
+      // that comes back keeps it, instead of sending a screen reader back to the heading.
+      const actionHadFocus =
+        document.activeElement instanceof HTMLElement && cardRef.current?.contains(document.activeElement)
+          ? document.activeElement.closest<HTMLElement>('[data-action]')?.dataset.action
+          : undefined;
       // Suggestion buttons are replaced too; if focus was on one, it must not fall to the page.
       const focusWasInSuggestions = Boolean(suggestionsRef.current?.contains(document.activeElement));
       // If the reply takes a while, say so once; the visible status line already says "Thinking…".
@@ -85,6 +110,8 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         setCard(data.card);
         setSuggestions(data.suggestions);
         lastSay.current = data.say;
+        // A speech rate changed by voice applies before the reply is spoken, so it is heard at once.
+        if (data.settings?.speechRate) setOwnVoice({ enabled: ownVoice.enabled, rate: data.settings.speechRate / 100 });
         // One channel: the reply is announced; focus stays where the person is unless the
         // control they used just went away, in which case it goes to the new card's heading.
         announce(data.say, { politeness: data.politeness, source: 'assistant' });
@@ -95,6 +122,14 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
           requestAnimationFrame(() => {
             const active = document.activeElement;
             if (!focusWasInCard && active && active !== document.body && suggestionsRef.current?.contains(active)) return;
+            const sameControl = actionHadFocus
+              ? cardRef.current?.querySelector<HTMLElement>(`[data-action="${CSS.escape(actionHadFocus)}"]`)
+              : null;
+            if (sameControl) {
+              // Usually the very same button, still focused: leave it be so nothing is read twice.
+              if (sameControl !== active) sameControl.focus({ preventScroll: false });
+              return;
+            }
             const target =
               cardRef.current?.querySelector<HTMLElement>('.card-h') ??
               (focusWasInSuggestions ? suggestionsRef.current?.querySelector<HTMLElement>('button') : null) ??
@@ -112,7 +147,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         setBusy(false);
       }
     },
-    [announce],
+    [announce, ownVoice.enabled, setOwnVoice],
   );
 
   useEffect(() => {
@@ -150,28 +185,60 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
 
   const speech = useSpeechInput(
     (heard) => {
+      // Said once, before the reply, so a misheard word is caught before it matters. The
+      // transcript already shows what was sent, so the echo is not added there.
+      if (heardEchoOn()) announce(`I heard: ${heard.trim().replace(/[.!?]+$/, '')}.`, { source: 'microphone' });
       void send({ text: heard, source: 'voice' });
     },
     (msg) => announce(msg, { politeness: 'assertive', source: 'microphone' }),
   );
 
+  /** The microphone is about to open: "Listening." has been announced and is being spoken. */
+  const [arming, setArming] = useState(false);
+  const micTimer = useRef<number | null>(null);
+  const cancelArming = useCallback((): boolean => {
+    if (micTimer.current === null) return false;
+    window.clearTimeout(micTimer.current);
+    micTimer.current = null;
+    setArming(false);
+    return true;
+  }, []);
+  useEffect(() => () => void cancelArming(), [cancelArming]);
+
   const startListening = useCallback(() => {
     stopSpeaking();
-    cue('listening');
-    announce('Listening.', { source: 'microphone', speak: false });
-    void speech.start();
-  }, [announce, speech, stopSpeaking]);
+    // Assertive, so it cuts in on anything the screen reader is still reading and is short.
+    announce('Listening.', { politeness: 'assertive', source: 'microphone', speak: false });
+    cancelArming();
+    setArming(true);
+    // The microphone opens only once "Listening." has had time to be spoken, so the screen
+    // reader's own voice is not transcribed. The listening sound marks the moment it opens.
+    micTimer.current = window.setTimeout(() => {
+      micTimer.current = null;
+      setArming(false);
+      cue('listening');
+      void speech.start();
+    }, MIC_OPEN_DELAY_MS);
+  }, [announce, cancelArming, speech, stopSpeaking]);
+
+  /** Stop and send what was heard; before the microphone opened, nothing was heard or sent. */
+  const stopListening = useCallback(() => {
+    if (cancelArming()) announce('Nothing was sent. Hold Talk a moment longer before you speak.', { source: 'microphone' });
+    else speech.stop();
+  }, [announce, cancelArming, speech]);
+
+  const micOn = speech.listening || arming;
 
   /** Press once to start, again to send. Used by keyboard, click-only assistive tech and quick taps. */
   const toggleListening = useCallback(() => {
-    if (speech.listening) {
-      speech.stop();
+    if (micOn) {
+      stopListening();
       setToggleTalk(false);
     } else {
       setToggleTalk(true);
       startListening();
     }
-  }, [speech, startListening]);
+  }, [micOn, startListening, stopListening]);
   /** The pointer press in progress on Talk: when it began, and whether it started listening. */
   const press = useRef<{ at: number; started: boolean } | null>(null);
   const lastKeyPress = useRef(0);
@@ -180,7 +247,8 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
     const down = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         stopSpeaking();
-        if (speech.listening) {
+        const wasArming = cancelArming();
+        if (speech.listening || wasArming) {
           speech.cancel();
           setToggleTalk(false);
           announce('Stopped listening. Nothing was sent.', { source: 'microphone' });
@@ -235,7 +303,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
     const up = (e: KeyboardEvent) => {
       if (e.code === 'Space' && spaceDown.current) {
         spaceDown.current = false;
-        speech.stop();
+        stopListening();
       }
     };
     window.addEventListener('keydown', down);
@@ -244,7 +312,7 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
     };
-  }, [announce, card, send, singleKeys, speech, startListening, stopSpeaking, toggleListening]);
+  }, [announce, cancelArming, card, send, singleKeys, speech, startListening, stopListening, stopSpeaking, toggleListening]);
 
   const started = useRef(false);
   useEffect(() => {
@@ -264,7 +332,10 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
   return (
     <div className="convo">
       <div className="convo-main">
-        <h1 className="convo-h">What do you need today, {firstName}?</h1>
+        {/* Same heading and text for screen readers; only its size changes after the first request. */}
+        <h1 className="convo-h" data-compact={compact || undefined}>
+          What do you need today, {firstName}?
+        </h1>
 
         <div ref={cardRef} className="convo-card" aria-busy={busy || undefined}>
           {card && (
@@ -293,12 +364,12 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
           <button
             type="button"
             className="talk"
-            aria-pressed={speech.listening}
+            aria-pressed={micOn}
             aria-describedby="talk-hint"
             onPointerDown={(e) => {
               if (e.button !== 0) return;
               e.preventDefault();
-              if (speech.listening) {
+              if (micOn) {
                 press.current = { at: performance.now(), started: false };
                 return;
               }
@@ -312,20 +383,20 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               if (!p) return;
               if (!p.started) {
                 // A second press while listening sends.
-                speech.stop();
+                stopListening();
                 setToggleTalk(false);
               } else if (performance.now() - p.at < 350) {
                 // A quick tap (and touch screen readers' double tap) starts listening and keeps it on.
                 setToggleTalk(true);
               } else {
                 // Held, then released: send.
-                speech.stop();
+                stopListening();
               }
             }}
             onPointerLeave={() => {
               if (press.current?.started && !toggleTalk) {
                 press.current = null;
-                speech.stop();
+                stopListening();
               }
             }}
             onKeyDown={(e) => {
@@ -346,7 +417,9 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               <span />
               <span />
             </span>
-            <span>{speech.listening ? (toggleTalk ? 'Listening… press again to send' : 'Listening… let go to send') : 'Talk'}</span>
+            <span>
+              {arming ? 'Getting ready…' : speech.listening ? (toggleTalk ? 'Listening… press again to send' : 'Listening… let go to send') : 'Talk'}
+            </span>
           </button>
           {/* Read as the Talk button's description; hidden here so browse mode doesn't read it twice. */}
           <p id="talk-hint" className="hint talk-hint" aria-hidden="true">

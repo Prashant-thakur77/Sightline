@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
-import { AutoCapture, frameStats, GUIDANCE_TEXT, GuidanceSpeaker, guidanceFor, type GuidanceCode } from '@/lib/quality';
+import { analyzeFrame, AutoCapture, GuidanceCoach, modeForShot, type GuidanceCode } from '@/lib/quality';
 import { cue } from '@/lib/feedback';
 
 export type ShotKind = 'item' | 'label' | 'damage';
@@ -42,8 +42,11 @@ export interface CapturedShot {
 
 type Phase = 'intro' | 'starting' | 'live' | 'review' | 'denied';
 
-const SAMPLE_W = 160;
-const SAMPLE_H = 120;
+/** Frames are analysed at this size (long side × short side), about five times a second. */
+const SAMPLE_LONG = 160;
+const SAMPLE_SHORT = 120;
+/** After a photo, a skip or the start, guidance and auto-capture wait while the next step is read out. */
+const QUIET_MS = 3000;
 
 export function CameraCheck({
   itemName,
@@ -60,27 +63,50 @@ export function CameraCheck({
   /** Focus the heading on mount: used when the person comes back from a verdict ("Check again"). */
   focusOnMount?: boolean;
 }) {
-  const { announce } = useAnnouncer();
+  const { announce, stop } = useAnnouncer();
   const [phase, setPhase] = useState<Phase>('intro');
   const [index, setIndex] = useState(0);
   const [shots, setShots] = useState<CapturedShot[]>([]);
   const [guidance, setGuidance] = useState<GuidanceCode | null>(null);
+  /** Edges the item is cut off at, for the visible edge marks. */
+  const [edges, setEdges] = useState('');
+  /** The last thing said, shown on the viewfinder. */
+  const [caption, setCaption] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const sampleRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
-  const speaker = useRef(new GuidanceSpeaker());
+  const coach = useRef(new GuidanceCoach());
   const auto = useRef(new AutoCapture());
   const lastTick = useRef(0);
+  const quietUntil = useRef(0);
+  const capturing = useRef(false);
+  /** Front camera: left and right are swapped in the spoken directions. */
+  const mirrored = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const shot = SHOTS[index];
+
+  /** A new step: say nothing and take nothing until it has been read out. */
+  const quiet = useCallback(() => {
+    quietUntil.current = performance.now() + QUIET_MS;
+    coach.current.reset();
+    auto.current.reset();
+    setCaption(null);
+    setProgress(0);
+  }, []);
 
   const stopCamera = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    coach.current = new GuidanceCoach();
+    auto.current.reset();
+    setGuidance(null);
+    setEdges('');
+    setCaption(null);
+    setProgress(0);
   }, []);
 
   useEffect(() => stopCamera, [stopCamera]);
@@ -104,60 +130,83 @@ export function CameraCheck({
         setPhase('review');
         announce('All photos taken. Review what will be sent, then check it.', { source: 'camera' });
       } else {
+        quiet();
         setIndex(next);
-        speaker.current.reset();
         announce(`Got it. Next: ${SHOTS[next]!.title}. ${SHOTS[next]!.prompt}`, { source: 'camera' });
       }
     },
-    [announce, index, stopCamera],
+    [announce, index, quiet, stopCamera],
   );
 
   const captureFrame = useCallback(async () => {
     const video = videoRef.current;
-    if (!video || !shot) return;
-    const scale = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(video.videoWidth * scale);
-    canvas.height = Math.round(video.videoHeight * scale);
-    canvas.getContext('2d')!.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
-    if (!blob) return;
-    cue('capture');
-    addShot({ kind: shot.kind, blob, url: URL.createObjectURL(blob), source: 'camera' });
+    if (!video || !shot || capturing.current) return;
+    capturing.current = true;
+    try {
+      const scale = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(video.videoWidth * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
+      canvas.getContext('2d')!.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
+      // Stopped while the photo was being made: keep nothing.
+      if (!blob || !streamRef.current) return;
+      cue('capture');
+      addShot({ kind: shot.kind, blob, url: URL.createObjectURL(blob), source: 'camera' });
+    } finally {
+      capturing.current = false;
+    }
   }, [addShot, shot]);
+
+  // The frame loop runs for the whole camera session, so it reads the current step through a ref.
+  const live = useRef({ index, announce, capture: captureFrame });
+  useEffect(() => {
+    live.current = { index, announce, capture: captureFrame };
+  }, [index, announce, captureFrame]);
 
   const loop = useCallback(() => {
     const video = videoRef.current;
-    if (!video || video.readyState < 2) {
+    if (!video || video.readyState < 2 || !video.videoWidth) {
       rafRef.current = requestAnimationFrame(loop);
       return;
     }
     const now = performance.now();
     if (now - lastTick.current > 200) {
       lastTick.current = now;
-      if (!sampleRef.current) {
-        sampleRef.current = document.createElement('canvas');
-        sampleRef.current.width = SAMPLE_W;
-        sampleRef.current.height = SAMPLE_H;
+      const portrait = video.videoHeight > video.videoWidth;
+      const w = portrait ? SAMPLE_SHORT : SAMPLE_LONG;
+      const h = portrait ? SAMPLE_LONG : SAMPLE_SHORT;
+      const canvas = (sampleRef.current ??= document.createElement('canvas'));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
       }
-      const c = sampleRef.current.getContext('2d', { willReadFrequently: true })!;
-      c.drawImage(video, 0, 0, SAMPLE_W, SAMPLE_H);
-      const data = c.getImageData(0, 0, SAMPLE_W, SAMPLE_H).data;
-      const code = guidanceFor(frameStats(data, SAMPLE_W, SAMPLE_H));
-      setGuidance(code);
-      const say = speaker.current.update(code, now);
-      if (say) announce(GUIDANCE_TEXT[say], { source: 'camera guidance' });
-      const before = auto.current.progress(now);
-      const fire = auto.current.update(code, now);
-      const after = auto.current.progress(now);
-      setProgress(after);
-      if (Math.floor(after * 4) > Math.floor(before * 4)) cue('tick');
-      if (fire) {
-        void captureFrame();
+      const c = canvas.getContext('2d', { willReadFrequently: true })!;
+      c.drawImage(video, 0, 0, w, h);
+      const { index: step, announce: say, capture } = live.current;
+      const mode = modeForShot(SHOTS[step]!.kind);
+      const a = analyzeFrame(c.getImageData(0, 0, w, h).data, w, h, mode);
+      setGuidance(a.code);
+      setEdges(a.code === 'CUT' || a.code === 'EDGE_ONLY' ? a.edges.join(' ') : '');
+      if (now < quietUntil.current) {
+        auto.current.reset();
+        setProgress(0);
+      } else {
+        const words = coach.current.update(a, mode, now, { mirrored: mirrored.current });
+        if (words) {
+          setCaption(words);
+          say(words, { source: 'camera guidance' });
+        }
+        const before = auto.current.progress(now);
+        const fire = auto.current.update(a.code, now);
+        const after = auto.current.progress(now);
+        setProgress(after);
+        if (Math.floor(after * 4) > Math.floor(before * 4)) cue('tick');
+        if (fire) void capture();
       }
     }
     rafRef.current = requestAnimationFrame(loop);
-  }, [announce, captureFrame]);
+  }, []);
 
   const start = useCallback(async () => {
     setPhase('starting');
@@ -167,6 +216,8 @@ export function CameraCheck({
         audio: false,
       });
       streamRef.current = stream;
+      mirrored.current = stream.getVideoTracks()[0]?.getSettings().facingMode === 'user';
+      quiet();
       setPhase('live');
       requestAnimationFrame(() => {
         if (videoRef.current) {
@@ -175,9 +226,10 @@ export function CameraCheck({
         }
         rafRef.current = requestAnimationFrame(loop);
       });
-      announce(`Camera on. ${SHOTS[index]!.title}. ${SHOTS[index]!.prompt} I'll take the photo when it looks right.`, {
-        source: 'camera',
-      });
+      announce(
+        `Camera on. ${SHOTS[index]!.title}. ${SHOTS[index]!.prompt} I'll tell you which way to move, and take the photo when it looks right.`,
+        { source: 'camera' },
+      );
     } catch {
       setPhase('denied');
       announce('I couldn’t use the camera. You can allow it in the browser’s settings and try again, or add photos instead.', {
@@ -185,7 +237,7 @@ export function CameraCheck({
         source: 'camera',
       });
     }
-  }, [announce, index, loop]);
+  }, [announce, index, loop, quiet]);
 
   const skip = useCallback(() => {
     if (!shot) return;
@@ -195,11 +247,11 @@ export function CameraCheck({
       stopCamera();
       setPhase('review');
     } else {
+      quiet();
       setIndex(next);
-      speaker.current.reset();
       announce(`Next: ${SHOTS[next]!.title}. ${SHOTS[next]!.prompt}`, { source: 'camera' });
     }
-  }, [announce, index, shot, stopCamera]);
+  }, [announce, index, quiet, shot, stopCamera]);
 
   const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -311,11 +363,12 @@ export function CameraCheck({
         <div className="grid gap-4">
           <p className="max-w-[var(--measure)]">{shot.prompt}</p>
           <div className="viewfinder" data-guidance={guidance ?? 'none'}>
-            <video ref={videoRef} playsInline muted aria-hidden="true" className="w-full h-full object-cover" />
+            <video ref={videoRef} playsInline muted aria-hidden="true" className="w-full h-full object-contain" />
             <div className="viewfinder-corners" aria-hidden="true" />
+            <div className="viewfinder-edges" data-edges={edges} aria-hidden="true" />
             <div className="viewfinder-progress" aria-hidden="true" style={{ ['--p' as string]: progress }} />
             <p className="viewfinder-caption" aria-hidden="true">
-              {guidance ? GUIDANCE_TEXT[guidance] : 'Starting the camera…'}
+              {caption ?? (phase === 'starting' ? 'Starting the camera…' : 'Looking…')}
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -337,8 +390,10 @@ export function CameraCheck({
               className="btn btn-xl"
               onClick={() => {
                 stopCamera();
+                // Drop any guidance still queued in the app's own voice.
+                stop();
                 setPhase('intro');
-                announce('Camera stopped.', { source: 'camera' });
+                announce('Camera stopped. You can start it again, or add photos instead.', { source: 'camera' });
               }}
             >
               Stop

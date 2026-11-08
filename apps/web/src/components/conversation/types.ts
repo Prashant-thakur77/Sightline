@@ -67,6 +67,8 @@ export interface TurnResponse {
   card: Card | null;
   suggestions: { label: string; utterance: string }[];
   phase: string;
+  /** A setting changed by voice that the page applies at once (the app's own voice rate, in percent). */
+  settings?: { speechRate?: number };
 }
 
 export type TurnRequest =

@@ -211,6 +211,10 @@ async function main() {
   const excludedNoAtc = analysedRows.filter((r) => r.keyboardOutcome === 'no-atc').length;
   const excludedErr = analysedRows.filter((r) => r.keyboardOutcome === 'error').length;
   const [nrLo, nrHi] = wilson(notReached.length, kbRows.length);
+  // A dialog that holds focus also stops a keyboard user, so count it as blocked too.
+  const kbBlockedK = notReached.length + excludedOverlay;
+  const kbBlockedN = kbRows.length + excludedOverlay;
+  const [kbbLo, kbbHi] = wilson(kbBlockedK, kbBlockedN);
   const unnamedRows = analysedRows.filter((r) => r.unnamedButtonsProduct != null);
   const unnamedK = unnamedRows.filter((r) => (r.unnamedButtonsProduct ?? 0) + (r.unnamedButtonsHome ?? 0) > 0).length;
   const [unLo, unHi] = wilson(unnamedK, unnamedRows.length);
@@ -243,6 +247,15 @@ async function main() {
       n: kbRows.length,
       script: SCRIPT,
       note: `Tab only from the top of the page, no Enter, Space or clicks; Escape pressed once if focus was trapped. Counted over product pages with an enabled add-to-cart control named "add to cart/bag/basket" or "buy now". Focus traps among the failures: ${trappedAmongNot}. Not in the denominator: ${plural(excludedOverlay, 'page')} where a cookie or sign-up dialog held focus and Escape did not close it, ${excludedDisabled} whose add-to-cart button is disabled or hidden until a size is chosen, ${excludedNoAtc} with no control using that wording, ${plural(excludedErr, 'traversal error')}.`,
+    },
+    {
+      id: 'barrier-keyboard-blocked-incl-dialogs',
+      label: 'Stores where Tab alone could not reach add to cart, counting a dialog that held focus as blocked',
+      value: kbBlockedN ? `${pct(kbBlockedK / kbBlockedN)} (${kbBlockedK} of ${kbBlockedN})` : 'n/a',
+      interval: kbBlockedN ? `95% Wilson ${pct(kbbLo)}–${pct(kbbHi)}` : undefined,
+      n: kbBlockedN,
+      script: SCRIPT,
+      note: `The same traversal as the row above, but the ${plural(excludedOverlay, 'page')} where a cookie or sign-up dialog held focus and Escape did not close it count as blocked instead of being left out: a keyboard or screen-reader user meets that dialog first. Added on 9 November 2026 after the first analysis, from the same crawl; no store was crawled again.`,
     },
     {
       id: 'barrier-unnamed-buttons',

@@ -13,6 +13,8 @@ const EnvSchema = z.object({
   NODE_ENV: z.string().default('development'),
   SESSION_SECRET: optional,
   RECEIPT_SIGNING_KEY: optional,
+  /** Bearer token for POST /api/maintenance (hold deadlines, retention, webhook retries). */
+  MAINTENANCE_TOKEN: optional,
   HELPER_LINK_SECRET: optional,
 
   PAYPAL_ENV: z.string().default('sandbox'),

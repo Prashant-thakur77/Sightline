@@ -50,10 +50,15 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
   const statusRef = useRef<HTMLParagraphElement>(null);
   const [sounds, setSounds] = useState(true);
   const [haptics, setHaptics] = useState(true);
+  // iPhones and some other browsers have no vibration for web pages: say so rather than promise it.
+  const [canVibrate, setCanVibrate] = useState(true);
   const [singleKeys, setSingleKeys] = useState(false);
+  const [heardEcho, setHeardEcho] = useState(true);
 
   useEffect(() => {
+    setCanVibrate(typeof navigator.vibrate === 'function');
     try {
+      setHeardEcho(localStorage.getItem('sl-heard-echo') !== '0');
       setSounds(localStorage.getItem('sl-sounds') !== '0');
       setHaptics(localStorage.getItem('sl-haptics') !== '0');
       setSingleKeys(localStorage.getItem('sl-single-keys') === '1');
@@ -93,6 +98,7 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
       localStorage.setItem('sl-sounds', fd.get('sounds') === 'on' ? '1' : '0');
       localStorage.setItem('sl-haptics', fd.get('haptics') === 'on' ? '1' : '0');
       localStorage.setItem('sl-single-keys', fd.get('singleKeys') === 'on' ? '1' : '0');
+      localStorage.setItem('sl-heard-echo', fd.get('heardEcho') === 'on' ? '1' : '0');
     } catch {
       /* ignore */
     }
@@ -136,6 +142,17 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
         <div className="field">
           <label htmlFor="speechRate">Speech rate for the app's own voice, in percent</label>
           <input id="speechRate" name="speechRate" {...invalid('speechRate')} type="number" min={50} max={250} step={10} defaultValue={initial.speechRate} inputMode="numeric" />
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>When I listen</legend>
+        <div className="choice">
+          <input type="checkbox" id="heardEcho" name="heardEcho" checked={heardEcho} onChange={(e) => setHeardEcho(e.target.checked)} aria-describedby="heardEcho-h" />
+          <label htmlFor="heardEcho">Say what I heard before I answer</label>
+          <p id="heardEcho-h" className="hint">
+            When you talk, I first say “I heard” and your words, so you can catch a word I got wrong. On by default.
+          </p>
         </div>
       </fieldset>
 
@@ -211,8 +228,20 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
           <label htmlFor="sounds">Short sounds for listening, done and attention</label>
         </div>
         <div className="choice">
-          <input type="checkbox" id="haptics" name="haptics" checked={haptics} onChange={(e) => setHaptics(e.target.checked)} />
+          <input
+            type="checkbox"
+            id="haptics"
+            name="haptics"
+            checked={haptics}
+            onChange={(e) => setHaptics(e.target.checked)}
+            aria-describedby={canVibrate ? undefined : 'haptics-h'}
+          />
           <label htmlFor="haptics">Vibration on phones that support it</label>
+          {!canVibrate && (
+            <p id="haptics-h" className="hint">
+              This browser can’t make the phone vibrate, so you won’t feel anything. The sounds and spoken guidance still work.
+            </p>
+          )}
         </div>
       </fieldset>
 

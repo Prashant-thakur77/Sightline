@@ -2922,3 +2922,75 @@ a {
     overflow-wrap: anywhere;
   }
 }
+
+/* ---------- Conversation fixes ---------- */
+@layer components {
+  /* After the first request the greeting shrinks, so the active card (a readback and its Confirm
+     button) stays above the fold. It is the same h1 with the same words; only its size changes. */
+  .convo-h[data-compact] {
+    font-size: var(--step-1);
+    max-width: none;
+  }
+  /* The readback's actions (Confirm, Wait, Cancel and the notes) come after the receipt in reading
+     order. When the card is wide enough, measured in rem so large text keeps one column, they sit
+     beside the receipt and stay in view while it scrolls, so Confirm is never far below the fold. */
+  .convo-card {
+    container: convo-card / inline-size;
+  }
+  .card-actions {
+    display: grid;
+    /* minmax(0, 1fr): an auto column would grow to the buttons' widest minimum and scroll sideways. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    align-content: start;
+  }
+  @container convo-card (min-width: 44rem) {
+    .card-readback {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 16rem);
+      align-items: start;
+    }
+    .card-readback > * {
+      grid-column: 1 / -1;
+    }
+    .card-readback > .receipt {
+      grid-column: 1;
+    }
+    .card-readback > .card-actions {
+      grid-column: 2;
+      grid-row: 3;
+      position: sticky;
+      top: var(--space-4);
+    }
+    .card-readback .confirm-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+/* ---------- Camera and helper fixes ---------- */
+@layer components {
+  /* The edge the item is cut off at gets a thick bar, as well as being said. */
+  .viewfinder-edges {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: 0 solid var(--yellow);
+  }
+  .viewfinder-edges[data-edges~='left'] {
+    border-left-width: 12px;
+  }
+  .viewfinder-edges[data-edges~='right'] {
+    border-right-width: 12px;
+  }
+  .viewfinder-edges[data-edges~='top'] {
+    border-top-width: 12px;
+  }
+  .viewfinder-edges[data-edges~='bottom'] {
+    border-bottom-width: 12px;
+  }
+  /* What happened to the helper's link, under the button that sent it. */
+  .helper-status {
+    margin: 0;
+    font-weight: 700;
+  }
+}

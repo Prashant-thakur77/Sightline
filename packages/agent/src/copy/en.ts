@@ -68,6 +68,11 @@ export const en = {
       `I'm ${PRODUCT_NAME}. I can find things, read back exactly what you're buying, and check your parcel when it arrives.`,
     nothingToRepeat: "There's nothing to repeat yet. Say what you're looking for.",
     notNow: "That isn't available right now. Nothing has changed. Say 'help' to hear what you can do.",
+    /** "Yes" or "no" when nothing was asked. */
+    nothingAsked: "Okay. Say what you're looking for, or 'help' to hear what I can do.",
+    noThanks: "Okay. Say what you'd like instead.",
+    askWhat: 'Okay. What should I look for?',
+    whichOne: (choices: string[]): string => `Which one: ${choices.join(', or ')}?`,
   },
 
   help: {
@@ -133,6 +138,16 @@ export const en = {
       "To pay, say 'confirm purchase' or use the Confirm button. To change something, say what to change. To stop without paying, say 'cancel'.",
     missing: LISTING_DOESNT_SAY,
     invalidated: "Something changed since I read that to you, so I haven't paid. Here's the new version.",
+    /** Answers to questions asked during a readback, from the readback's own fields. */
+    answers: {
+      total: (total: string): string => `The total is ${total}, with shipping and tax.`,
+      field: (label: string, value: string): string => `${label}: ${value}.`,
+      lineField: (ordinal: string, label: string, value: string): string => `${ordinal} item, ${label.toLowerCase()}: ${value}.`,
+      delivery: (date: string): string => `It arrives by ${date}.`,
+      soldBy: (seller: string): string => `Sold by ${seller}.`,
+      storePaidNow: 'The store is paid as soon as you confirm.',
+      notInReadback: "I can tell you the total, size, colour, seller or delivery date from this readback. Nothing is paid yet. To pay, say 'confirm purchase'. To stop, say 'cancel'.",
+    },
   },
 
   confirm: {
@@ -208,10 +223,18 @@ export const en = {
     optionsPrompt1: "Say 'tell me more' for details, or 'more' for other options.",
     noMore: "That's everything I found. Want me to search for something a little different?",
     noneFound: (what: string): string => `I couldn't find ${what}.`,
+    /** Nothing in the catalog is the kind of thing asked for: "I couldn't find jeans in Demo Store." */
+    noneInCategory: (plural: string, store?: string): string => (store ? `I couldn't find ${plural} in ${store}.` : `I couldn't find any ${plural}.`),
+    somethingElse: 'Want me to look for something else?',
     noneFoundGeneric: "I couldn't find anything for that.",
     tryInstead: (suggestions: string[]): string => `Want me to try ${suggestions.join(', or ')}?`,
     closestOverBudget: (price: Money): string => `The closest one is ${m(price)}.`,
     whyIntro: (wordCount: string): string => `Here's why I picked ${wordCount === 'one' ? 'this one' : 'these'}.`,
+    /** What every option has, said once: "All three: Navy, as you asked. Size M is listed." */
+    whyShared: (all: string, reasons: string[]): string => `${all}: ${reasons.join(' ')}`,
+    /** What sets one option apart when its reasons are the same as the others'. */
+    whyPrice: (price: Money, cheapest: boolean): string => `${m(price)}${cheapest ? ', the cheapest' : ''}.`,
+    whyNothingElse: 'Nothing else sets it apart.',
   },
 
   why: {
@@ -221,7 +244,6 @@ export const en = {
     sizeListed: (size: string): string => `Size ${size} is listed.`,
     sizeMismatch: (listed: string, wanted: string): string => `The listed size is ${listed}, not ${wanted}.`,
     categoryMatch: (category: string): string => `It's a ${category}, as you asked.`,
-    categoryMismatch: (category: string): string => `It may not be a ${category}.`,
     attributeMatch: (value: string): string => `${capitaliseFirst(value)}, as you asked.`,
     attributeMismatch: (value: string): string => `It may not be ${value}.`,
     underBudget: (price: Money, budget: Money): string => `${m(price)}, under your ${m(budget)} budget.`,
@@ -243,6 +265,7 @@ export const en = {
       outOfStock: 'It is out of stock.',
       sizeSoldOut: (size: string): string => `Size ${size} is sold out.`,
       notFreeReturns: "Returns aren't free.",
+      otherCategory: (plural: string): string => `It isn't one of the ${plural}.`,
     },
   },
 
@@ -252,6 +275,25 @@ export const en = {
     valueIs: (who: string, value: string): string => `${who} is ${value}`,
     valueHas: (who: string, value: string): string => `${who} has ${value}`,
     valueMissing: (who: string): string => `for ${who} the listing doesn't say`,
+    /** Several options share a value: "one and two are cotton". */
+    valueAre: (who: string, value: string): string => `${who} are ${value}`,
+    valueHave: (who: string, value: string): string => `${who} have ${value}`,
+    valuesMissing: (who: string): string => `for ${who} the listings don't say`,
+    /** Rows where every option is the same, said once. */
+    all: (count: string): string => (count === 'two' ? 'Both' : `All ${count}`),
+    sameAre: (all: string, values: string): string => `${all} are ${values}.`,
+    sameAreWith: (all: string, values: string, withs: string): string => `${all} are ${values}, with ${withs}.`,
+    sameHave: (all: string, withs: string): string => `${all} have ${withs}.`,
+    sameCost: (all: string, price: Money): string => `${all} cost ${m(price)}.`,
+    sizeValue: (size: string): string => `size ${size}`,
+    materialValue: (material: string): string => `made of ${material}`,
+    noneGive: (what: string): string => `None of the listings give ${what}.`,
+    fieldNames: { colour: 'a colour', size: 'a size', material: 'a material', returns: 'a return policy', rating: 'ratings', price: 'a price' },
+    ratingShort: (avg: number, count: number): string => `${avg} from ${count} ${count === 1 ? 'review' : 'reviews'}`,
+    askMore: (aspects: string[]): string => {
+      const said = aspects.map((a) => `'compare by ${a}'`);
+      return `Say ${said.length > 1 ? `${said.slice(0, -1).join(', ')} or ${said[said.length - 1]}` : said[0]} for more.`;
+    },
     cheaperBy: (who: string, diff: Money): string => `${capitaliseFirst(who)} is cheaper by ${m(diff)}.`,
     samePrice: 'They cost the same.',
     cantFeel: (aspect: string): string => `I can't tell which is ${aspect} for sure. Here's what each listing says it's made of.`,
@@ -317,6 +359,31 @@ export const en = {
     tryAgainLater: 'Want to try again near a window?',
   },
 
+  offers: {
+    none: "There's no offer waiting for your answer. Say 'where's my order' to hear your orders.",
+    /** What accepting means, said before the buyer chooses. */
+    meansRefund: (merchant: string, amount: Money): string => `If you accept, ${merchant} refunds ${mFull(amount)} and your case closes.`,
+    meansReturn: (merchant: string, amount: Money, noun: string): string =>
+      `If you accept, you send the ${noun} back, and ${merchant} refunds ${mFull(amount)} once it arrives.`,
+    meansReplacement: (merchant: string, noun: string): string =>
+      `If you accept, ${merchant} sends a new ${noun} and your case closes. You don't get money back.`,
+    meansRefundAndReplacement: (merchant: string, amount: Money, noun: string): string =>
+      `If you accept, ${merchant} refunds ${mFull(amount)}, sends a new ${noun}, and your case closes.`,
+    refundAndReplacement: (merchant: string, amount: Money, noun: string): string =>
+      `${merchant} offered a refund of ${mFull(amount)} and a replacement ${noun}.`,
+    cantUndo: "You can't undo accepting.",
+    acceptedRefund: (amount: Money): string => `Accepted. ${mFull(amount)} comes back to you next. I'll tell you when it's done.`,
+    acceptedReturn: (merchant: string, amount: Money, noun: string): string =>
+      `Accepted. Send the ${noun} back to ${merchant}. They refund ${mFull(amount)} once it arrives, and I'll tell you when they do.`,
+    acceptedReplacement: (merchant: string, noun: string): string => `Accepted. ${merchant} sends a new ${noun} next, and your case is closed.`,
+    declined: (merchant: string): string => `Okay, I declined. Your case with ${merchant} stays open, and they can make another offer.`,
+    notAnswered: "Okay, I haven't answered. The offer stays open. Say 'what did they offer' to hear it again.",
+    gone: "That offer isn't open any more, so nothing changed. Say 'where's my order' to hear where things are.",
+    paypalUnavailable:
+      "This offer came through PayPal, and I can't answer PayPal offers from here yet. Nothing changed. You can answer it in your PayPal account.",
+    paypalFailed: "PayPal didn't take that answer just now. Nothing changed. Try again in a minute.",
+  },
+
   cases: {
     sent: (merchant: string, deadline: string): string =>
       `I sent your case to ${merchant} through PayPal. They have until ${deadline} to reply. I'll tell you when they do.`,
@@ -363,9 +430,18 @@ export const en = {
   settings: {
     faster: "Okay, I'll talk faster. Say 'slower' to undo.",
     slower: "Okay, I'll talk slower. Say 'faster' to undo.",
-    brief: "Okay, I'll keep it brief. Say 'more detail' to undo.",
-    detailed: "Okay, I'll give more detail. Say 'be brief' to undo.",
-    standard: "Okay, back to normal detail.",
+    fastest: "That's as fast as I go. Say 'slower' to slow down.",
+    slowest: "That's as slow as I go. Say 'faster' to speed up.",
+    /** The screen reader reads the replies, so its own rate setting decides the speed. */
+    rateIsScreenReaders: "Your screen reader reads my replies, so its own speech rate decides how fast I talk.",
+    offerBrief: 'I can keep my answers shorter instead. Want me to?',
+    /** Spoken name of each verbosity, as the phrase that switches to it. */
+    verbosityPhrase: { brief: 'be brief', standard: 'normal detail', detailed: 'more detail' } as Record<'brief' | 'standard' | 'detailed', string>,
+    brief: (undo: string): string => `Okay, I'll keep it brief. Say '${undo}' to undo.`,
+    detailed: (undo: string): string => `Okay, I'll give more detail. Say '${undo}' to undo.`,
+    standard: (undo: string): string => `Okay, back to normal detail. Say '${undo}' to undo.`,
+    alreadyVerbosity: (others: string[]): string => `That's already how I talk. To change it, say ${others.map((p) => `'${p}'`).join(' or ')}.`,
+    inSettings: "You can change that in Settings. To open it, choose 'Open settings', under the heading Settings.",
     limitAsk: 'What should your limit for one order be?',
     limitSet: (limit: Money): string =>
       `Your limit for one order is now ${m(limit)}. Say 'change my spending limit' to change it again.`,

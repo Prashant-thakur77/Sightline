@@ -17,7 +17,7 @@ type Virtual = {
 const STORAGE_KEY = 'sl-speech-viewer';
 
 /**
- * Shows sighted people, word for word, what a screen reader says on this page: every focus
+ * Shows sighted people a simulation of what a screen reader says on this page: every focus
  * change and every live announcement, plus a "read this page" walk-through. It runs a virtual
  * screen reader over the app root; the transcript itself is hidden from assistive technology so
  * real screen-reader users never hear things twice.

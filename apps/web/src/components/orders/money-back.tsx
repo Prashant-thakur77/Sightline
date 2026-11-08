@@ -68,7 +68,7 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
       setPreview(data);
       cue('attention');
       announce(
-        `${data.summary} ${data.path === 'void' ? `To cancel the payment hold of ${data.amount}, press Send it.` : 'To send this to Demo Store, press Send it.'}`,
+        `${data.summary} ${data.path === 'void' ? `Your ${data.amount} stays on hold while Demo Store looks. To send it, press Send it.` : 'To send this to Demo Store, press Send it.'}`,
         { source: 'money back' },
       );
     } catch (e) {
@@ -138,7 +138,7 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button type="button" className="btn btn-primary btn-xl" onClick={send} aria-disabled={busy || undefined}>
-              {busy ? 'Sending…' : preview.path === 'void' ? `Send it: cancel the ${preview.amount} hold` : 'Send it to Demo Store'}
+              {busy ? 'Sending…' : 'Send it to Demo Store'}
             </button>
             <button
               type="button"

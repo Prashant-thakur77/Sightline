@@ -51,7 +51,7 @@ Data flow in one line each:
 3. `startReadback` builds a cart, hashes it, and composes the readback from a template (`packages/agent/src/readback.ts`). Nothing a model wrote is in it.
 4. The confirmation state machine (`packages/agent/src/confirm.ts`) needs two keys. Then `payForReadback` (`apps/web/src/server/payments.ts`) runs the gate and, if it allows, creates the PayPal order.
 5. After delivery the camera check posts photos to `/api/orders/[id]/check`. The vision service returns a verdict. `afterVerdict` (`apps/web/src/server/after-check.ts`) captures, leaves the hold, or offers money back.
-6. Money back builds a signed evidence pack, then voids the hold or opens a case with the seller.
+6. Money back builds a signed evidence pack and sends the case to the store. A held payment stays held until the store accepts the return (void) or offers a replacement; with no answer in three business days the hold sweep voids it (`server/holds.ts`). The sweep also pays the store a week after an unchecked delivery, retries failed captures and reauthorizes holds older than PayPal's three-day honour period. It runs from `POST /api/maintenance` every 15 minutes (render.yaml cron) and, throttled, when a demo starts.
 
 ## 2. Order lifecycle state machine
 

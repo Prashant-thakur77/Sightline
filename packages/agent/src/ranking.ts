@@ -7,11 +7,13 @@ import type { Money, ProductSnapshot } from '@sightline/core';
 import { en } from './copy/en';
 import type { ShoppingQuery } from './grammar';
 import {
+  CATEGORIES,
   FITS,
   NECKLINES,
   PATTERNS,
   SLEEVES,
   categoryOf,
+  categoryPlural,
   colourSupport,
   findPhrases,
   materialSupport,
@@ -59,7 +61,7 @@ export interface RankedOption {
   displaySize?: string;
 }
 
-export type ExclusionReason = 'over_budget' | 'under_minimum' | 'out_of_stock' | 'size_sold_out' | 'returns_not_free';
+export type ExclusionReason = 'wrong_category' | 'over_budget' | 'under_minimum' | 'out_of_stock' | 'size_sold_out' | 'returns_not_free';
 
 export interface ExcludedCandidate {
   snapshot: ProductSnapshot;
@@ -79,7 +81,6 @@ export interface RankResult {
 /** Score weights, in one place so they can be tuned and explained. */
 export const WEIGHTS = {
   categoryMatch: 3,
-  categoryMismatch: -2,
   colourMatch: 3,
   colourMismatch: -4,
   sizeMatch: 2,
@@ -114,6 +115,19 @@ function listingCategory(s: ProductSnapshot) {
   return (s.category ? categoryOf(s.category) : undefined) ?? categoryOf(s.title);
 }
 
+/**
+ * Whether a listing is the kind of thing asked for. The listing's category and title decide when
+ * they name any category; the description is used only when neither does. "Black jeans" never
+ * matches a black T-shirt or a black USB-C cable.
+ */
+export function isInCategory(s: ProductSnapshot, category: string): boolean {
+  const named = new Set(
+    [...findPhrases(words(s.category ?? ''), CATEGORIES, true), ...findPhrases(words(s.title), CATEGORIES, true)].map((m) => m.canonical),
+  );
+  if (named.size > 0) return named.has(category);
+  return findPhrases(words(s.description ?? ''), CATEGORIES, true).some((m) => m.canonical === category);
+}
+
 function attributeSupport(s: ProductSnapshot, key: string): Set<string> {
   if (key === 'material') return materialSupport(s.attributes.material ?? s.title);
   const lex = ATTRIBUTE_LEXICONS[key];
@@ -140,6 +154,9 @@ function scoreCandidate(c: Candidate, input: RankInput): Scored | ExcludedCandid
   const caveats: string[] = [];
   let score = 0;
 
+  // Category first: something that isn't what was asked for is never shown, whatever its price.
+  if (q.category && !isInCategory(s, q.category))
+    return { snapshot: s, reason: 'wrong_category', detail: en.why.excluded.otherCategory(categoryPlural(q.category)) };
   if (c.inStock === false) return { snapshot: s, reason: 'out_of_stock', detail: en.why.excluded.outOfStock };
 
   // Price
@@ -171,15 +188,9 @@ function scoreCandidate(c: Candidate, input: RankInput): Scored | ExcludedCandid
     }
   }
 
-  // Category
+  // Category: listings in another category were excluded above.
   const cat = listingCategory(s);
-  if (q.category) {
-    if (cat?.canonical === q.category) score += WEIGHTS.categoryMatch;
-    else if (cat) {
-      score += WEIGHTS.categoryMismatch;
-      caveats.push(en.why.categoryMismatch(q.category));
-    }
-  }
+  if (q.category) score += WEIGHTS.categoryMatch;
 
   // Colour
   const colours = colourSupport(s.attributes.colour);
@@ -291,8 +302,8 @@ function compareScored(a: Scored, b: Scored): number {
 
 /**
  * Rank candidates for a query. Deterministic: ties break on lower price, then more reviews, then
- * snapshot id. Over-budget, out-of-stock and sold-out-size listings are excluded with a reason,
- * which the "found none" message uses to suggest a refinement.
+ * snapshot id. Listings in another category, over-budget, out-of-stock and sold-out-size listings
+ * are excluded with a reason, which the "found none" message uses to suggest a refinement.
  */
 export function rankProducts(input: RankInput): RankResult {
   const limit = Math.min(3, Math.max(1, input.limit ?? 3));

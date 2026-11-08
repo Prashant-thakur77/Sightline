@@ -13,7 +13,7 @@ All payments run on the **PayPal sandbox**. The app refuses to start if it is po
 | Step | Where | What you see |
 |---|---|---|
 | 1 | `/judge` | One page: the problem, the path, live integration status and every number. |
-| 2 | "Shop as Maya, Speech Viewer on" | The real app with a panel that shows, word for word, what a screen reader says. No sign-up. |
+| 2 | "Shop as Maya, Speech Viewer on" | The real app with a panel that simulates what a screen reader says and lists every announcement. No sign-up. |
 | 3 | "Run the whole lifecycle" | About 90 seconds: voice request, readback, two-key confirmation, PayPal hold, wrong size shipped, camera check, money back. Every PayPal call is a real sandbox call; shipping and delivery are simulated by the Demo Store controls. Needs PayPal sandbox keys on the server. |
 | 4 | Any receipt link | The page re-checks the receipt's hash and Ed25519 signature on load. `node scripts/verify-receipt.mjs` checks it offline. |
 | 5 | `evals/RESULTS.md` | Every number, the script that produced it, its baseline and interval. |
@@ -22,9 +22,9 @@ All payments run on the **PayPal sandbox**. The app refuses to start if it is po
 
 1. **Shop by voice.** "I need a navy crew-neck sweater, medium, under forty dollars." You hear at most three options with the facts that matter. If the listing does not say something, you hear "the listing doesn't say", never a guess.
 2. **Readback before paying.** A template (not the model) reads the item, colour, size, seller, total with tax and shipping, delivery date and return window. Paying needs two independent keys: your words or the Confirm button, and a second check by a separate model call. "Wait" holds it open with no time limit.
-3. **Money waits for the check.** For stores that opt in, PayPal only authorizes the payment. The camera check decides: a match captures it, a wrong item voids it, and the money never leaves.
+3. **Money waits for the check.** For stores that opt in, PayPal only authorizes the payment. The camera check decides: a match captures it. A wrong item goes to the store with the evidence while the money stays on hold; the store accepts the return, which voids the hold, or offers a replacement, and if it doesn't answer in 3 business days the hold is voided anyway. If the buyer never checks, the store is paid a week after delivery, after a reminder. Holds kept past PayPal's three-day honour period are reauthorized once, and failed captures are retried (`apps/web/src/server/holds.ts`, run every 15 minutes).
 4. **Unboxing check.** The phone camera talks you into frame ("move back a little", "there's a glare") and takes the photos. It compares colour in CIELAB colour space, reads the size tag twice with two different readers, and checks the product and any damage. When it is not sure it says so, and you can ask someone you trust to look through a private, view-only link.
-5. **Money back.** "This is wrong" builds a signed evidence pack (order, the readback you heard, the listing as it was, your photos, the check), reads you a two-sentence summary, and only then voids the PayPal hold, or, for a payment already captured, sends the case to the store with the evidence.
+5. **Money back.** "This is wrong" builds a signed evidence pack (order, the readback you heard, the listing as it was, your photos, the check), reads you a two-sentence summary, and only then sends the case to the store with the evidence. For a held payment the money stays on hold until the store takes the item back; for a payment already captured, the store can refund through PayPal from its cases desk.
 
 ## How PayPal is used
 

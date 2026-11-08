@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { PRODUCT_NAME } from '@sightline/core';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
@@ -21,7 +21,17 @@ export default async function Judge() {
   const runReady = INTEGRATIONS.paypal && INTEGRATIONS.vision;
   const runMissing = [!INTEGRATIONS.paypal && 'PayPal sandbox keys', !INTEGRATIONS.vision && 'the vision service'].filter(Boolean) as string[];
   const headlines = suites.flatMap((s) => s.headlines.map((h) => ({ ...h, suite: s.title, ranAt: h.ranAt ?? s.ranAt, gitSha: h.gitSha ?? s.gitSha })));
-  const [receipt] = await db().select({ id: tables.receipts.id }).from(tables.receipts).where(eq(tables.receipts.kind, 'gate')).orderBy(desc(tables.receipts.createdAt)).limit(1);
+  // Show a payment the gate allowed when there is one (a refusal is a less useful first example).
+  const [allowed] = await db()
+    .select({ id: tables.receipts.id })
+    .from(tables.receipts)
+    .where(and(eq(tables.receipts.kind, 'gate'), sql`${tables.receipts.body}->>'allowed' = 'true'`))
+    .orderBy(desc(tables.receipts.createdAt))
+    .limit(1);
+  const [anyReceipt] = allowed
+    ? [allowed]
+    : await db().select({ id: tables.receipts.id }).from(tables.receipts).where(eq(tables.receipts.kind, 'gate')).orderBy(desc(tables.receipts.createdAt)).limit(1);
+  const receipt = anyReceipt;
   const live: [string, boolean, string][] = [
     ['PayPal sandbox (Orders v2, Vault, Payments, tracking, Disputes, webhooks)', INTEGRATIONS.paypal, 'Every payment, hold, capture, void and refund'],
     ['Claude (agent, confirmation check, vision, case writing)', INTEGRATIONS.anthropic, 'Second confirmation key, free questions, size-tag reading'],
@@ -53,7 +63,7 @@ export default async function Judge() {
               <span className="jpath-n" aria-hidden="true">1</span>
               <div>
                 <h3>Try it with the Speech Viewer on</h3>
-                <p>Shop as Maya. The Speech Viewer panel shows, word for word, what a screen reader says on every screen.</p>
+                <p>Shop as Maya. The Speech Viewer panel simulates what a screen reader says on every screen, and lists every announcement the app makes.</p>
                 <JudgeStart />
               </div>
             </li>

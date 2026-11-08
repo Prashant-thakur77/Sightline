@@ -77,14 +77,15 @@ describe('AskHelper', () => {
     await settle();
   });
 
-  it('moves focus to the link when it is made, and back to the button when it is cancelled', async () => {
+  it('moves focus to the way to send the link when it is made, and back to the button when it is cancelled', async () => {
     fetchMock.mockImplementationOnce(() => json({ link: 'https://example.test/h/abc' }));
     wrap(<AskHelper orderId="ord_1" helperName="Asha" />);
     const ask = screen.getByRole('button', { name: 'Ask Asha to look' });
     ask.focus();
     fireEvent.click(ask);
     await settle();
-    expect(document.activeElement).toBe(screen.getByLabelText('Link for Asha'));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Copy the link' }));
+    expect(screen.getByLabelText('Link for Asha')).toBeTruthy();
 
     fetchMock.mockImplementationOnce(offline);
     fireEvent.click(screen.getByRole('button', { name: 'Cancel this link' }));
@@ -255,7 +256,7 @@ describe('CaseDesk', () => {
     const message = 'Released the $36.72 hold. The case is closed.';
     fetchMock.mockImplementation(() => json({ ok: true, message }));
     const { rerender } = wrap(<CaseDesk cases={[kase(true)]} />);
-    fireEvent.click(screen.getByRole('button', { name: /^Refund in full/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Accept the return and release the hold/ }));
     await settle();
     fireEvent.click(screen.getByRole('button', { name: 'Yes, release $36.72' }));
     await settle();

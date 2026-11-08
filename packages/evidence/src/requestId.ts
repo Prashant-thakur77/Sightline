@@ -25,6 +25,7 @@ export const PAYPAL_REQUEST_ID_KINDS = [
   'capture',
   'authorize',
   'void',
+  'reauthorize',
   'refund',
   'offer-accept',
   'dispute',

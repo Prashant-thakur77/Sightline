@@ -66,7 +66,7 @@ export async function afterVerdict(a: { userId: string; orderId: string; verific
       kind: 'money-back',
       payAfterCheck: held,
       say: held
-        ? `${a.verdict.headline} Demo Store has not been paid yet: the ${amount} is only on hold. Say “get my money back” and I'll cancel the hold.`
+        ? `${a.verdict.headline} Demo Store has not been paid yet: the ${amount} is only on hold. Say “get my money back” and I'll send Demo Store the evidence. The money stays on hold until they take the item back.`
         : `${a.verdict.headline} Say “get my money back” and I'll build the evidence and ask Demo Store through PayPal.`,
     };
   }

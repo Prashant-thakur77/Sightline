@@ -10,6 +10,7 @@ import { verifyDelivery } from './vision';
 import { putBlob } from './blobs';
 import { afterVerdict } from './after-check';
 import { prepareMoneyBack, sendMoneyBack, notify } from './cases';
+import { respondToCase } from './merchant';
 import { audit } from './audit';
 
 export interface StepEvent {
@@ -139,6 +140,20 @@ export async function* runLifecycle(): AsyncGenerator<StepEvent> {
     yield { step: 6, title: '“Get my money back”', status: 'failed', detail: (e as Error).message };
     return;
   }
-  const [last] = await db().select().from(tables.cases).where(and(eq(tables.cases.orderId, orderId), eq(tables.cases.userId, userId))).orderBy(desc(tables.cases.createdAt)).limit(1);
-  yield { step: 7, title: 'Done', status: 'done', detail: last?.stage === 'resolved' ? 'The PayPal hold was cancelled. Demo Store was never paid.' : 'The case is with Demo Store.' };
+  const [kase] = await db().select().from(tables.cases).where(and(eq(tables.cases.orderId, orderId), eq(tables.cases.userId, userId))).orderBy(desc(tables.cases.createdAt)).limit(1);
+  // The store sees the evidence and accepts the return; for a held payment that voids the hold.
+  yield { step: 7, title: 'Demo Store accepts the return (demo control)', status: 'running' };
+  const reply = kase ? await respondToCase(kase.id, 'refund') : null;
+  if (!reply?.ok) {
+    yield { step: 7, title: 'Demo Store accepts the return (demo control)', status: 'failed', detail: reply?.message ?? 'No case was found for this order.' };
+    return;
+  }
+  yield { step: 7, title: 'Demo Store accepts the return (demo control)', status: 'done', detail: reply.message };
+  const [o] = await db().select().from(tables.orders).where(eq(tables.orders.id, orderId)).limit(1);
+  yield {
+    step: 8,
+    title: 'Done',
+    status: 'done',
+    detail: o?.status === 'voided' ? 'PayPal cancelled the hold. Demo Store was never paid, and Maya was never charged.' : 'Demo Store refunded the payment through PayPal.',
+  };
 }

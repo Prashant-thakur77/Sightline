@@ -73,6 +73,9 @@ test.describe('money back after a wrong item', () => {
     const said = await result.textContent();
     const day = said?.match(/until (\w+ \d+ \w+)/)?.[1];
     if (day) await expect(page.locator('#money-back')).toContainText(`until ${day}`);
+    // The refresh after sending re-renders the page; let it settle (title included) before axe.
+    await page.waitForLoadState('networkidle').catch(() => undefined);
+    await expect(page).toHaveTitle(/\S/);
     await expectNoAxeViolations(page);
   });
 });

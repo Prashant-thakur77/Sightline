@@ -204,7 +204,7 @@ export default async function Landing() {
               <span className="flow-k">
                 <span aria-hidden="true">✕</span> Wrong item
               </span>
-              <span>PayPal voids the hold. Your money never moved.</span>
+              <span>The store takes it back and PayPal cancels the hold. If the store doesn’t answer in 3 business days, the hold is cancelled anyway. Your money never moved.</span>
             </li>
           </ol>
         </section>

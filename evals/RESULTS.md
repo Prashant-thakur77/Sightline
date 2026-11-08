@@ -6,7 +6,7 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 
 | Suite | Results | Negative results | Ran at (UTC) | Git |
 | --- | --- | --- | --- | --- |
-| Checkout Barrier Index | 6 | 0 | 2026-11-08T22:07:14.585Z | 30fef95 |
+| Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | uncommitted |
 | Spoken purchase confirmation | 5 | 2 | 2026-11-08T22:45:01.367Z | 30fef95 |
 | Duplicate orders | 8 | 2 | 2026-11-08T22:45:02.678Z | 30fef95 |
 | Grounded answers | 5 | 2 | 2026-11-08T22:45:02.998Z | 30fef95 |
@@ -15,12 +15,13 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 
 ## Checkout Barrier Index
 
-Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git 30fef95
+Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git uncommitted
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
 | Median axe-core violations per product page (distinct WCAG A/AA rules failed) | 4 | — | IQR 2–6 | 60 | `evals/barrier/analyse.mjs` |
 | Stores where keyboard-only traversal could not reach add to cart within 150 Tabs | 9% (3 of 33) | — | 95% Wilson 3%–24% | 33 | `evals/barrier/analyse.mjs` |
+| Stores where Tab alone could not reach add to cart, counting a dialog that held focus as blocked | 33% (15 of 45) | — | 95% Wilson 21%–48% | 45 | `evals/barrier/analyse.mjs` |
 | Stores with at least one button that has no accessible name (home or product page) | 35% (21 of 60) | — | 95% Wilson 24%–48% | 60 | `evals/barrier/analyse.mjs` |
 | Most common failing rule: color-contrast | 60% of stores (36 of 60) | — | 95% Wilson 47%–71% | 60 | `evals/barrier/analyse.mjs` |
 | Sampled stores that refused or timed out for an honest, rate-limited, read-only crawler | 24 of 100 | — | 95% Wilson 17%–33% | 100 | `evals/barrier/analyse.mjs` |
@@ -30,6 +31,7 @@ Notes:
 
 - Median axe-core violations per product page (distinct WCAG A/AA rules failed): axe-core 4.14.0, tags wcag2a, wcag2aa, wcag21aa, wcag22aa, one product page per store. Median failing elements per product page: 13. Home page median: 3 rules.
 - Stores where keyboard-only traversal could not reach add to cart within 150 Tabs: Tab only from the top of the page, no Enter, Space or clicks; Escape pressed once if focus was trapped. Counted over product pages with an enabled add-to-cart control named "add to cart/bag/basket" or "buy now". Focus traps among the failures: 1. Not in the denominator: 12 pages where a cookie or sign-up dialog held focus and Escape did not close it, 7 whose add-to-cart button is disabled or hidden until a size is chosen, 8 with no control using that wording, 0 traversal errors.
+- Stores where Tab alone could not reach add to cart, counting a dialog that held focus as blocked: The same traversal as the row above, but the 12 pages where a cookie or sign-up dialog held focus and Escape did not close it count as blocked instead of being left out: a keyboard or screen-reader user meets that dialog first. Added on 9 November 2026 after the first analysis, from the same crawl; no store was crawled again.
 - Stores with at least one button that has no accessible name (home or product page): axe-core rules button-name, input-button-name and aria-command-name. A screen reader announces these as "button" with nothing else.
 - Most common failing rule: color-contrast: Elements must meet minimum color contrast ratio thresholds. Counted once per store if it fails on the home, product or cart page; 697 failing elements in total. Tied on store count with target-size (480 elements); ranked first by failing elements.
 - Sampled stores that refused or timed out for an honest, rate-limited, read-only crawler: Blocked at the home page: 21; at the product page: 3. Also excluded: 0 disallowed by robots.txt, 16 with no product page found from the home page, 0 crawler errors. Blocked stores are left out of every other number.

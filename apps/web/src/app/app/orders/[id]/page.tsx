@@ -75,6 +75,8 @@ const HAPPENED: Record<string, string> = {
   'evidence.built': 'The evidence pack was signed',
   'case.sent_to_seller': 'Your case went to Demo Store',
   'case.offer_made': 'Demo Store made an offer',
+  'case.offer_accepted': 'You accepted the offer',
+  'case.offer_declined': 'You declined the offer',
   'case.no_response': 'Demo Store did not reply in time',
   'helper.asked': 'You asked your helper to look',
   'helper.answered': 'Your helper answered',
@@ -259,6 +261,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <p>
               Demo Store has until {spokenDate(kase!.dueAt)} to reply. If they
               don’t, you can open a case with PayPal yourself and attach the signed evidence pack. I’ll tell you when anything changes.
+            </p>
+          )}
+          {kase?.stage === 'offer_received' && (
+            <p>
+              Demo Store made an offer, and nothing changes until you answer. To hear it and answer by voice, go to{' '}
+              <Link className="link-target" href="/app">
+                Shop
+              </Link>{' '}
+              and say “what did they offer”.
             </p>
           )}
           {pack && (

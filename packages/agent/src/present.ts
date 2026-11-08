@@ -15,7 +15,7 @@ import {
 } from '@sightline/core';
 import { confidenceSentence, en, m, returnsPhrase, returnsShort } from './copy/en';
 import type { DetailsTopic, OptionContext, ShoppingQuery } from './grammar';
-import { CATEGORIES, categoryOf } from './lexicon';
+import { CATEGORIES, categoryOf, categoryPlural } from './lexicon';
 import { numberToWords, optionWord } from './numbers';
 import { cheapestOverBudget, type RankResult, type RankedOption } from './ranking';
 import { capitalise, joinAnd } from './text';
@@ -131,35 +131,100 @@ function suggestedBudget(max: Money): Money {
   return { cents: raised, currency: max.currency };
 }
 
+/** What "yes" means after a "found none" question. The conductor turns each into a new search. */
+export type NoneSuggestion =
+  | { kind: 'max_price'; amount: Money; said: string }
+  | { kind: 'any_colour'; said: string }
+  | { kind: 'any_returns'; said: string }
+  | { kind: 'different_words'; said: string }
+  | { kind: 'something_else'; said: string };
+
+export interface NonePresentation extends Spoken {
+  /** The offers made in the question, in the order they were said. */
+  suggestions: NoneSuggestion[];
+  /** True when nothing in the catalog is the kind of thing asked for. */
+  categoryMissing: boolean;
+}
+
+/**
+ * True when no listing is the kind of thing asked for: every candidate the store returned was
+ * another category, or it returned none. Not said when a price filter was set: the store may have
+ * left out listings of that kind for their price, so the budget message is the honest one.
+ */
+function categoryMissing(query: ShoppingQuery, result?: Pick<RankResult, 'excluded'>): boolean {
+  if (!query.category || !result || query.maxPrice || query.minPrice) return false;
+  return result.excluded.every((e) => e.reason === 'wrong_category');
+}
+
 /**
  * "I couldn't find a navy crew-neck sweater in size M under $40. The closest one is $45. Want me
- * to try up to $45, or any colour?" At most two suggestions.
+ * to try up to $45, or any colour?" At most two suggestions. When the store has nothing of that
+ * kind at all, it says so plainly instead: "I couldn't find jeans in Demo Store. Want me to look
+ * for something else?"
  */
-export function presentNone(query: ShoppingQuery, result?: Pick<RankResult, 'excluded'>): Spoken {
+export function presentNone(query: ShoppingQuery, result?: Pick<RankResult, 'excluded'>, opts: { store?: string } = {}): NonePresentation {
+  if (categoryMissing(query, result)) {
+    const somethingElse: NoneSuggestion = { kind: 'something_else', said: en.search.somethingElse };
+    return {
+      ...spoken([en.search.noneInCategory(categoryPlural(query.category!), opts.store), en.search.somethingElse]),
+      suggestions: [somethingElse],
+      categoryMissing: true,
+    };
+  }
   const sentences = [en.search.noneFound(describeQuery(query))];
-  const suggestions: string[] = [];
+  const suggestions: NoneSuggestion[] = [];
   const closest = result ? cheapestOverBudget({ options: [], total: 0, remaining: 0, excluded: result.excluded }) : undefined;
   if (closest) {
     sentences.push(en.search.closestOverBudget(closest));
-    suggestions.push(en.search.suggestUpTo(closest));
+    suggestions.push({ kind: 'max_price', amount: closest, said: en.search.suggestUpTo(closest) });
   } else if (query.maxPrice) {
-    suggestions.push(en.search.suggestUpTo(suggestedBudget(query.maxPrice)));
+    const raised = suggestedBudget(query.maxPrice);
+    suggestions.push({ kind: 'max_price', amount: raised, said: en.search.suggestUpTo(raised) });
   }
-  if (query.colour) suggestions.push(en.search.suggestAnyColour);
-  if (query.freeReturns) suggestions.push(en.search.suggestAnyReturns);
-  if (suggestions.length === 0) suggestions.push(en.search.suggestDifferentWords);
-  sentences.push(en.search.tryInstead(suggestions.slice(0, 2)));
-  return spoken(sentences);
+  if (query.colour) suggestions.push({ kind: 'any_colour', said: en.search.suggestAnyColour });
+  if (query.freeReturns) suggestions.push({ kind: 'any_returns', said: en.search.suggestAnyReturns });
+  if (suggestions.length === 0) suggestions.push({ kind: 'different_words', said: en.search.suggestDifferentWords });
+  const offered = suggestions.slice(0, 2);
+  sentences.push(en.search.tryInstead(offered.map((x) => x.said)));
+  return { ...spoken(sentences), suggestions: offered, categoryMissing: false };
 }
 
-/** "Here's why I picked these. One: Navy, as you asked. Free returns for 30 days. ..." */
-export function presentWhy(options: RankedOption[]): Spoken {
+/**
+ * "Here's why I picked these. All three: Navy, as you asked. Size M is listed. One: $29, the
+ * cheapest. Two: Rated 4.8 out of 5 from 40 reviews. ..." What every option shares is said once;
+ * each option then gets what sets it apart, so no reason is read three times.
+ */
+export function presentWhy(options: Array<Pick<RankedOption, 'snapshot' | 'why' | 'caveats'>>): Spoken {
   const shown = options.slice(0, 3);
-  const sentences = [en.search.whyIntro(numberToWords(shown.length))];
+  const count = numberToWords(shown.length);
+  const sentences = [en.search.whyIntro(count)];
+  const positives = shown.map((o) => o.why.filter((w) => !o.caveats.includes(w)));
+  if (shown.length === 1) {
+    sentences.push(`${optionWord(1)}: ${[...positives[0]!.slice(0, 2), ...shown[0]!.caveats.slice(0, 1)].join(' ')}`);
+    return spoken(sentences);
+  }
+  const everyone = (list: string[][]) => (list[0] ?? []).filter((w) => list.every((l) => l.includes(w)));
+  const sharedReasons = everyone(positives);
+  const sharedCaveats = everyone(shown.map((o) => o.caveats));
+  const shared = [...sharedReasons.slice(0, 2), ...sharedCaveats.slice(0, 1)];
+  if (shared.length > 0) sentences.push(en.search.whyShared(en.compare.all(count), shared));
+
+  const prices = shown.map((o) => o.snapshot.price);
+  const sameCurrency = prices.every((p) => p.currency === prices[0]!.currency);
+  const minPrice = Math.min(...prices.map((p) => p.cents));
+  const pricesDiffer = sameCurrency && prices.some((p) => p.cents !== prices[0]!.cents);
+  const cheapestCount = prices.filter((p) => p.cents === minPrice).length;
+
   shown.forEach((o, i) => {
-    const positives = o.why.filter((w) => !o.caveats.includes(w)).slice(0, 2);
-    const caveat = o.caveats.slice(0, 1);
-    sentences.push(`${optionWord(i + 1)}: ${[...positives, ...caveat].join(' ')}`);
+    // Price first: it is usually what sets options apart. The budget sentence already carries it.
+    const own = positives[i]!
+      .filter((w) => !sharedReasons.includes(w))
+      .sort((a, b) => Number(b.includes(m(o.snapshot.price))) - Number(a.includes(m(o.snapshot.price))));
+    const mentionsPrice = own.some((w) => w.includes(m(o.snapshot.price)));
+    const price = pricesDiffer && !mentionsPrice ? [en.search.whyPrice(o.snapshot.price, o.snapshot.price.cents === minPrice && cheapestCount === 1)] : [];
+    const caveat = o.caveats.filter((c) => !sharedCaveats.includes(c)).slice(0, 1);
+    const parts = [...price, ...own].slice(0, 2).concat(caveat);
+    sentences.push(`${optionWord(i + 1)}: ${parts.length > 0 ? parts.join(' ') : en.search.whyNothingElse}`);
   });
   return spoken(sentences);
 }
@@ -235,15 +300,40 @@ function rowsFor(aspect: string | undefined): ComparisonRow['key'][] {
   return all;
 }
 
+/** Word budget for a spoken comparison of up to three options, by verbosity. Detailed has none. */
+const COMPARE_WORD_BUDGET: Record<Verbosity, number> = { brief: 40, standard: 60, detailed: Infinity };
+
+/** Rows dropped first when a comparison runs long, and the aspect name the grammar understands. */
+const DROP_ORDER: Array<{ key: ComparisonRow['key']; aspect: string }> = [
+  { key: 'rating', aspect: 'ratings' },
+  { key: 'returns', aspect: 'returns' },
+  { key: 'material', aspect: 'material' },
+];
+
+const wordCount = (sentences: string[]): number => sentences.join(' ').split(/\s+/).filter(Boolean).length;
+
 /**
  * Structured comparison of two or three options. `labels` are the numbers the user heard
- * ("one", "three"). Only listing data is compared; subjective aspects say so.
+ * ("one", "three"). Only listing data is compared; subjective aspects say so. Spoken text leads
+ * with what differs, then says once what every option shares ("All three are navy, size M."), and
+ * keeps to about 60 words at standard verbosity; detailed says everything.
  */
-export function presentComparison(items: Array<{ label: number; snapshot: ProductSnapshot }>, aspect?: string): Comparison {
+export function presentComparison(
+  items: Array<{ label: number; snapshot: ProductSnapshot }>,
+  aspect?: string,
+  verbosity: Verbosity = 'standard',
+): Comparison {
   const shown = items.slice(0, 3);
   const who = shown.map((i) => numberToWords(i.label));
   const keys = rowsFor(aspect);
   const L = en.compare.labels;
+  const detailed = verbosity === 'detailed';
+  const isMissing = (key: ComparisonRow['key'], s: ProductSnapshot): boolean =>
+    (key === 'colour' && !s.attributes.colour) ||
+    (key === 'size' && !s.attributes.size) ||
+    (key === 'material' && !s.attributes.material) ||
+    (key === 'returns' && returnsShort(s.returnPolicy) === 'return policy not given') ||
+    (key === 'rating' && !(s.rating && s.rating.count > 0));
   const rows: ComparisonRow[] = keys.map((key) => ({
     key,
     label: L[key],
@@ -265,39 +355,92 @@ export function presentComparison(items: Array<{ label: number; snapshot: Produc
     }),
   }));
 
-  const sentences = [en.compare.intro(joinAnd(who))];
-  if (aspect && SUBJECTIVE_MATERIAL_ASPECTS.has(aspect.toLowerCase())) sentences.push(en.compare.cantFeel(aspect.toLowerCase()));
-  for (const row of rows) {
-    const phrases = shown.map(({ snapshot: s }, i) => {
-      const w = who[i]!;
-      const v = row.values[i]!;
-      const missing =
-        (row.key === 'colour' && !s.attributes.colour) ||
-        (row.key === 'size' && !s.attributes.size) ||
-        (row.key === 'material' && !s.attributes.material);
-      if (missing) return en.compare.valueMissing(w);
-      if (row.key === 'returns') return v === 'return policy not given' ? en.compare.valueMissing(w) : en.compare.valueHas(w, v);
-      if (row.key === 'rating') return v === en.compare.noRating ? en.compare.valueHas(w, v) : en.compare.valueIs(w, v);
-      return en.compare.valueIs(w, v);
+  /** The spoken value: shorter ratings unless detailed. */
+  const spokenValue = (key: ComparisonRow['key'], s: ProductSnapshot, v: string): string =>
+    key === 'rating' && !detailed && s.rating && s.rating.count > 0 ? en.compare.ratingShort(s.rating.average, s.rating.count) : v;
+
+  /** "Material: one is cotton, two and three are wool." Options with the same value are grouped. */
+  const rowSentence = (row: ComparisonRow): string => {
+    const groups: Array<{ value: string; missing: boolean; idx: number[] }> = [];
+    row.values.forEach((v, i) => {
+      const missing = isMissing(row.key, shown[i]!.snapshot);
+      const g = groups.find((x) => x.value === v && x.missing === missing);
+      if (g) g.idx.push(i);
+      else groups.push({ value: v, missing, idx: [i] });
     });
-    sentences.push(en.compare.row(row.label, phrases.join(', ')));
-  }
-  if (keys.includes('price') && shown.length >= 2) {
-    const prices = shown.map((i) => i.snapshot.price);
-    const sameCurrency = prices.every((p) => p.currency === prices[0]!.currency);
-    if (sameCurrency) {
-      if (shown.length === 2) {
-        const diff = prices[0]!.cents - prices[1]!.cents;
-        if (diff === 0) sentences.push(en.compare.samePrice);
-        else sentences.push(en.compare.cheaperBy(diff > 0 ? who[1]! : who[0]!, { cents: Math.abs(diff), currency: prices[0]!.currency }));
-      } else {
-        const min = Math.min(...prices.map((p) => p.cents));
-        const cheapest = prices.map((p, i) => (p.cents === min ? i : -1)).filter((i) => i >= 0);
-        if (cheapest.length === 1) sentences.push(en.compare.cheapest(who[cheapest[0]!]!, prices[cheapest[0]!]!));
-      }
+    const phrases = groups.map((g) => {
+      const names = joinAnd(g.idx.map((i) => who[i]!));
+      const many = g.idx.length > 1;
+      if (g.missing && row.key !== 'rating') return many ? en.compare.valuesMissing(names) : en.compare.valueMissing(names);
+      const v = spokenValue(row.key, shown[g.idx[0]!]!.snapshot, g.value);
+      if (row.key === 'returns' || row.key === 'rating') return many ? en.compare.valueHave(names, v) : en.compare.valueHas(names, v);
+      return many ? en.compare.valueAre(names, v) : en.compare.valueIs(names, v);
+    });
+    return en.compare.row(row.label, phrases.join(', '));
+  };
+
+  const prices = shown.map((i) => i.snapshot.price);
+  const sameCurrency = prices.every((p) => p.currency === prices[0]!.currency);
+  const priceVerdict = (): string | null => {
+    if (!keys.includes('price') || shown.length < 2 || !sameCurrency) return null;
+    if (shown.length === 2) {
+      const diff = prices[0]!.cents - prices[1]!.cents;
+      if (diff === 0) return null;
+      return en.compare.cheaperBy(diff > 0 ? who[1]! : who[0]!, { cents: Math.abs(diff), currency: prices[0]!.currency });
     }
+    const min = Math.min(...prices.map((p) => p.cents));
+    const cheapest = prices.map((p, i) => (p.cents === min ? i : -1)).filter((i) => i >= 0);
+    return cheapest.length === 1 ? en.compare.cheapest(who[cheapest[0]!]!, prices[cheapest[0]!]!) : null;
+  };
+
+  const lead = [en.compare.intro(joinAnd(who))];
+  if (aspect && SUBJECTIVE_MATERIAL_ASPECTS.has(aspect.toLowerCase())) lead.push(en.compare.cantFeel(aspect.toLowerCase()));
+
+  const allSame = (row: ComparisonRow) =>
+    shown.length > 1 && row.values.every((v, i) => v === row.values[0] && isMissing(row.key, shown[i]!.snapshot) === isMissing(row.key, shown[0]!.snapshot));
+  const differing = rows.filter((r) => !allSame(r));
+  const same = rows.filter((r) => allSame(r));
+
+  // What every option shares, in one sentence: "All three are navy, size M, with free returns for 30 days."
+  const all = en.compare.all(numberToWords(shown.length));
+  const sameSentences: string[] = [];
+  const be: string[] = [];
+  const withs: string[] = [];
+  for (const row of same) {
+    const first = shown[0]!.snapshot;
+    if (isMissing(row.key, first)) {
+      sameSentences.push(en.compare.noneGive(en.compare.fieldNames[row.key]));
+      continue;
+    }
+    const v = spokenValue(row.key, first, row.values[0]!);
+    if (row.key === 'price') sameSentences.push(en.compare.sameCost(all, first.price));
+    else if (row.key === 'colour') be.push(v);
+    else if (row.key === 'size') be.push(en.compare.sizeValue(v));
+    else if (row.key === 'material') be.push(en.compare.materialValue(v));
+    else withs.push(row.key === 'rating' && !detailed ? `a rating of ${v}` : v);
   }
-  return { ...spoken(sentences), rows };
+  if (be.length > 0) sameSentences.unshift(withs.length > 0 ? en.compare.sameAreWith(all, be.join(', '), joinAnd(withs)) : en.compare.sameAre(all, be.join(', ')));
+  else if (withs.length > 0) sameSentences.unshift(en.compare.sameHave(all, joinAnd(withs)));
+
+  const verdict = priceVerdict();
+  const compose = (rowsToSay: ComparisonRow[], dropped: string[]): string[] => [
+    ...lead,
+    ...rowsToSay.flatMap((r) => (r.key === 'price' && verdict ? [rowSentence(r), verdict] : [rowSentence(r)])),
+    ...sameSentences,
+    ...(dropped.length > 0 ? [en.compare.askMore(dropped)] : []),
+  ];
+
+  // Keep it short: drop the least useful differing rows first, and say how to hear them.
+  const budget = COMPARE_WORD_BUDGET[verbosity];
+  let kept = differing;
+  const dropped: string[] = [];
+  for (const d of DROP_ORDER) {
+    if (wordCount(compose(kept, dropped)) <= budget) break;
+    if (!kept.some((r) => r.key === d.key) || kept.length <= 1) continue;
+    kept = kept.filter((r) => r.key !== d.key);
+    dropped.unshift(d.aspect);
+  }
+  return { ...spoken(compose(kept, dropped)), rows };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -450,6 +593,69 @@ export function presentCaseUpdate(update: CaseUpdate, verbosity: Verbosity = 'st
       return spoken([c.sellerWon(update.merchant)]);
     case 'declined':
       return spoken([c.declined(update.merchant)]);
+  }
+}
+
+/** A store's offer on an open case, in the buyer's terms. */
+export type OfferKind = 'refund' | 'refund_with_return' | 'replacement' | 'refund_with_replacement';
+
+export interface OfferChoice {
+  merchant: string;
+  kind: OfferKind;
+  amount?: Money;
+  /** "sweater", from the order's category. */
+  itemNoun?: string;
+}
+
+/**
+ * Read an offer like a readback before the buyer answers it: what was offered, what accepting
+ * means, that it can't be undone, and how to answer. "Demo Store offered to send a replacement
+ * sweater. If you accept, Demo Store sends a new sweater and your case closes. You don't get money
+ * back. You can't undo accepting. Say 'accept' to accept the offer, or 'decline' to say no.
+ * Nothing changes until you choose."
+ */
+export function presentOfferChoice(o: OfferChoice): Spoken {
+  const noun = o.itemNoun ?? en.check.defaultNoun;
+  const amount = o.amount ?? { cents: 0, currency: 'USD' };
+  const c = en.cases;
+  const f = en.offers;
+  let lead: string;
+  let means: string;
+  switch (o.kind) {
+    case 'refund':
+      lead = `${c.offerFullRefund(o.merchant, amount)}${c.keepIt(noun)}`;
+      means = f.meansRefund(o.merchant, amount);
+      break;
+    case 'refund_with_return':
+      lead = `${c.offerFullRefund(o.merchant, amount)}${c.ifSendBack(noun)}`;
+      means = f.meansReturn(o.merchant, amount, noun);
+      break;
+    case 'replacement':
+      lead = `${c.offerReplacement(o.merchant, noun)}.`;
+      means = f.meansReplacement(o.merchant, noun);
+      break;
+    case 'refund_with_replacement':
+      lead = f.refundAndReplacement(o.merchant, amount, noun);
+      means = f.meansRefundAndReplacement(o.merchant, amount, noun);
+      break;
+  }
+  return spoken([lead, means, f.cantUndo, en.help.offer]);
+}
+
+/** What happens next once the buyer has answered. */
+export function presentOfferAnswer(o: OfferChoice & { answer: 'accept' | 'decline' }): Spoken {
+  const noun = o.itemNoun ?? en.check.defaultNoun;
+  const amount = o.amount ?? { cents: 0, currency: 'USD' };
+  const f = en.offers;
+  if (o.answer === 'decline') return spoken([f.declined(o.merchant)]);
+  switch (o.kind) {
+    case 'refund':
+    case 'refund_with_replacement':
+      return spoken([f.acceptedRefund(amount)]);
+    case 'refund_with_return':
+      return spoken([f.acceptedReturn(o.merchant, amount, noun)]);
+    case 'replacement':
+      return spoken([f.acceptedReplacement(o.merchant, noun)]);
   }
 }
 

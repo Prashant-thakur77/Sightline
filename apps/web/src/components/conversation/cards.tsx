@@ -153,11 +153,12 @@ export function CardView({
       );
     case 'readback':
       return (
-        <section aria-labelledby="card-h" className="card">
+        <section aria-labelledby="card-h" className="card card-readback">
           <h2 id="card-h" tabIndex={-1} className="card-h">
             {card.heading}
           </h2>
-          <MomentsStrip done={1} current="Paid" />
+          {/* Paying is the step being decided, but nothing is paid until the buyer confirms. */}
+          <MomentsStrip done={1} current="Paid" currentNote="not yet, waiting for you to confirm" />
           <div className="receipt" role="group" aria-label="Readback">
             <div className="receipt-edge" aria-hidden="true" />
             <dl className="receipt-lines">
@@ -175,24 +176,30 @@ export function CardView({
             </p>
             <div className="receipt-edge receipt-edge-bottom" aria-hidden="true" />
           </div>
-          {card.held && <p className="receipt-note">Holding. Take your time. Nothing happens until you confirm.</p>}
-          <div className="confirm-row">
-            <button
-              type="button"
-              className="btn btn-primary btn-xl"
-              onClick={() => onConfirm(card.readbackId)}
-              aria-keyshortcuts="Shift+Enter"
-            >
-              {card.needsSecondPress ? `Press again to pay ${card.total}` : `Confirm and pay ${card.total}`}
-            </button>
-            <button type="button" className="btn btn-xl" onClick={() => onHold(card.readbackId)}>
-              Wait, hold on
-            </button>
-            <button type="button" className="btn btn-xl" onClick={onCancel}>
-              Cancel
-            </button>
+          {/* After the receipt in reading order; on wide screens shown beside it and kept in view. */}
+          <div className="card-actions">
+            {card.held && <p className="receipt-note">Holding. Take your time. Nothing happens until you confirm.</p>}
+            {/* data-action lets focus stay on the same control when this card is shown again
+                (after a first press, or after Wait). */}
+            <div className="confirm-row">
+              <button
+                type="button"
+                className="btn btn-primary btn-xl"
+                onClick={() => onConfirm(card.readbackId)}
+                aria-keyshortcuts="Shift+Enter"
+                data-action="confirm"
+              >
+                {card.needsSecondPress ? `Press again to pay ${card.total}` : `Confirm and pay ${card.total}`}
+              </button>
+              <button type="button" className="btn btn-xl" onClick={() => onHold(card.readbackId)} data-action="hold">
+                Wait, hold on
+              </button>
+              <button type="button" className="btn btn-xl" onClick={onCancel} data-action="cancel">
+                Cancel
+              </button>
+            </div>
+            <p className="receipt-note">Paying with {card.payWith}. To change something, say what to change.</p>
           </div>
-          <p className="receipt-note">Paying with {card.payWith}. To change something, say what to change.</p>
         </section>
       );
     case 'paypal':

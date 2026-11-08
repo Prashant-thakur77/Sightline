@@ -5,18 +5,24 @@ import { formatMoney, formatMoneyShort, money, newId, type Cart, type ProductSna
 import { hashCart, hashReadbackText } from '@sightline/evidence';
 import { catalogFromEnv, computeTotals, deliveryEstimate, snapshotOf, type CatalogProduct } from '@sightline/catalog';
 import {
+  answerReadbackQuestion,
+  categoryOf,
   checkGrounding,
   composeReadback,
   decideConfirmation,
   en,
   initialConfirmationState,
   listingWarnings,
+  normaliseText,
   parseIntent,
   parseShoppingQuery,
+  parseYesNo,
   presentComparison,
   presentDetails,
   presentNone,
   describeQuery,
+  presentOfferAnswer,
+  presentOfferChoice,
   presentOptions,
   presentPaid,
   presentWhy,
@@ -24,9 +30,12 @@ import {
   rankProducts,
   type ConfirmationState,
   type DetailsTopic,
+  type NoneSuggestion,
+  type OfferChoice,
   type OptionContext,
   type ParsedIntent,
   type RankedOption,
+  type SettingsSlots,
   type ShoppingQuery,
 } from '@sightline/agent';
 import type { Card, ChatMessage, OptionItem, TurnRequest, TurnResponse } from '@/components/conversation/types';
@@ -34,6 +43,8 @@ import { appUrl, db, demoSeller, ENV, INTEGRATIONS } from './runtime';
 import { aiAvailable, answerAboutListing, confirmationClassifier, extractShoppingQuery } from './ai';
 import { payForReadback, completeApprovedOrder, reconcileUnknownOrders, type PayOutcome } from './payments';
 import { audit } from './audit';
+import { answerOffer, findOpenOffer, type OpenOffer } from './offers';
+import { offerKind, type OfferAnswer } from './offer-plan';
 
 const SNAPSHOT_MAX_AGE_MS = 12 * 60 * 1000;
 
@@ -42,10 +53,22 @@ interface StoredOption extends OptionContext {
   snapshotId: string;
   selection: Record<string, string>;
   why: string[];
+  /** The caveats within why, so "why these?" can lead with the reasons. */
+  caveats?: string[];
 }
 
+/**
+ * What "yes" does after a question the assistant just asked ("Want me to try up to $45?"). Never
+ * a purchase: paying always goes through the readback and its two-key confirmation.
+ */
+type Pending =
+  | { kind: 'search'; query: ShoppingQuery; said: string }
+  | { kind: 'ask'; said: string }
+  | { kind: 'check'; said: string }
+  | { kind: 'verbosity'; verbosity: Verbosity; said: string };
+
 interface ConvoState {
-  phase: 'browsing' | 'readback';
+  phase: 'browsing' | 'readback' | 'offer';
   query?: ShoppingQuery;
   offset?: number;
   options?: StoredOption[];
@@ -53,6 +76,10 @@ interface ConvoState {
   readbackId?: string;
   confirm?: ConfirmationState;
   lastSay?: string;
+  /** The offers in the question just asked; cleared on every turn that does not answer it. */
+  pending?: Pending[];
+  /** The store's offer that was just read out, while phase is 'offer'. */
+  offer?: { caseId: string; offerId: string };
 }
 
 interface Ctx {
@@ -123,11 +150,19 @@ function optionItem(index: number, s: ProductSnapshot, why: string[], available 
 }
 
 function suggestionsFor(phase: ConvoState['phase'], hasOptions: boolean): Reply['suggestions'] {
+  // The readback card has its own Confirm, Wait and Cancel buttons; repeating them here would
+  // mean two Confirm controls. These are questions the readback can answer instead.
   if (phase === 'readback')
     return [
-      { label: 'Confirm purchase', utterance: 'confirm purchase' },
-      { label: 'Wait', utterance: 'wait' },
-      { label: 'Cancel', utterance: 'cancel' },
+      { label: 'What’s the total?', utterance: "what's the total" },
+      { label: 'When does it arrive?', utterance: 'when does it arrive' },
+      { label: 'Read it again', utterance: 'read it again' },
+    ];
+  if (phase === 'offer')
+    return [
+      { label: 'Accept the offer', utterance: 'accept the offer' },
+      { label: 'Decline the offer', utterance: 'decline the offer' },
+      { label: 'Not now', utterance: 'not now' },
     ];
   if (hasOptions)
     return [
@@ -172,9 +207,14 @@ async function search(ctx: Ctx, query: ShoppingQuery, offset = 0): Promise<Reply
     offset,
   });
   if (ranked.options.length === 0) {
-    const none = presentNone(query, ranked);
+    const none = presentNone(query, ranked, { store: demoSeller().name });
     ctx.state.options = [];
-    return { say: none.text, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
+    // Refinements and "yes" apply to what was just asked.
+    ctx.state.query = query;
+    ctx.state.offset = 0;
+    ctx.state.focus = undefined;
+    ctx.state.pending = none.suggestions.map((sg) => pendingForNone(query, sg));
+    return { say: none.text, politeness: 'polite', card: null, suggestions: pendingChips(ctx.state.pending) };
   }
   for (const o of ranked.options) await saveSnapshot(o.snapshot);
   const presentation = presentOptions(ranked, { query, verbosity: ctx.prefs.verbosity as Verbosity, firstPage: offset === 0 });
@@ -187,6 +227,7 @@ async function search(ctx: Ctx, query: ShoppingQuery, offset = 0): Promise<Reply
     snapshotId: o.snapshot.id,
     selection: Object.fromEntries(o.snapshot.variantId.split(';').filter(Boolean).map((kv) => kv.split('=') as [string, string])),
     why: o.why,
+    caveats: o.caveats,
   }));
   return {
     say: presentation.text,
@@ -288,7 +329,7 @@ async function compare(ctx: Ctx, indices: number[] | 'all', aspect?: string): Pr
   if (chosen.length < 2) return { say: 'There is nothing to compare yet. Say what you are looking for first.', politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', opts.length > 0) };
   const snaps = await loadSnapshots(chosen.map((o) => o.snapshotId));
   const items = chosen.map((o) => ({ label: o.index, snapshot: snaps.get(o.snapshotId)! })).filter((x) => x.snapshot);
-  const c = presentComparison(items, aspect);
+  const c = presentComparison(items, aspect, ctx.prefs.verbosity as Verbosity);
   return {
     say: c.text,
     politeness: 'polite',
@@ -488,7 +529,7 @@ const REREAD_AFTER = new Set([
   'LISTING_CHANGED',
 ]);
 
-async function confirmStep(ctx: Ctx, opts: { phrase?: string; button: boolean }): Promise<Reply> {
+async function confirmStep(ctx: Ctx, opts: { phrase?: string; button: boolean; answer?: string }): Promise<Reply> {
   const readbackId = ctx.state.readbackId;
   const loaded = readbackId ? await loadReadbackRow(readbackId) : null;
   if (!loaded || ctx.state.phase !== 'readback') {
@@ -556,9 +597,33 @@ async function confirmStep(ctx: Ctx, opts: { phrase?: string; button: boolean })
       ctx.state.phase = 'browsing';
       return { say: "Okay, I haven't paid. What would you like to change?", politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', true) };
     }
-    default:
-      return readbackReply(rb.text, rb.fields as never, rb.id, cart, vaulted, false, rb.holdOpen, decision.say || en.help.readback);
+    default: {
+      // A question about the readback gets its answer from the readback, then how to pay; one the
+      // readback can't answer says what it can answer. Neither is ever just "Nothing is paid yet".
+      const say =
+        decision.outcome === 'not_confirmed' && opts.answer
+          ? opts.answer
+          : decision.outcome === 'not_confirmed' && decision.phraseMatch?.reason === 'question'
+            ? en.readback.answers.notInReadback
+            : decision.say || en.help.readback;
+      const awaiting = decision.state.kind === 'awaiting_second_press';
+      return readbackReply(rb.text, rb.fields as never, rb.id, cart, vaulted, awaiting, rb.holdOpen, say);
+    }
   }
+}
+
+/** "What's the total?" and other questions during a readback, answered from its own fields. */
+async function readbackQuestion(ctx: Ctx, raw: string): Promise<Reply | null> {
+  const loaded = ctx.state.readbackId ? await loadReadbackRow(ctx.state.readbackId) : null;
+  if (!loaded) return null;
+  const answer = answerReadbackQuestion({
+    utterance: raw,
+    fields: loaded.rb.fields as never,
+    text: loaded.rb.text,
+    verbosity: ctx.prefs.verbosity as Verbosity,
+  });
+  if (!answer) return null;
+  return confirmStep(ctx, { phrase: raw, button: false, answer: answer.text });
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -580,6 +645,7 @@ const STATUS_WORDS: Record<string, string> = {
   verified_unsure: 'checked, not sure yet',
   case_open: 'with an open case',
   resolved_refund: 'refunded',
+  resolved_replacement: 'settled with a replacement',
   voided: 'cancelled, the hold was released',
   failed: 'not placed, nothing charged',
 };
@@ -602,7 +668,7 @@ async function check(ctx: Ctx): Promise<Reply> {
   const target = orders.find((o) => ['delivered', 'shipped', 'authorized', 'captured', 'verified_unsure'].includes(o.status));
   if (!target) return { say: "I don't see a delivery to check yet.", politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
   return {
-    say: `Let's check your ${target.title}. I'll open the camera page. I'll guide you with my voice.`,
+    say: `Let's check your ${target.title}. The link 'Open the camera check' is under the heading 'Check your parcel'. Open it, and I'll guide you with my voice there.`,
     politeness: 'polite',
     card: { kind: 'link', heading: 'Check your parcel', text: `Compare what arrived with the ${target.title} you ordered.`, href: `/app/check/${target.id}`, label: 'Open the camera check' },
     suggestions: [],
@@ -614,7 +680,7 @@ async function moneyBack(ctx: Ctx): Promise<Reply> {
   const target = orders.find((o) => ['verified_mismatch', 'verified_unsure', 'delivered', 'captured', 'case_open'].includes(o.status));
   if (!target) return { say: "I don't see an order that needs money back. Say 'where's my order' to hear your orders.", politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
   return {
-    say: `I'll get your money back for the ${target.title}. I'll show you the evidence first, and nothing is sent until you confirm.`,
+    say: `I can get your money back for the ${target.title}. The link 'Open the case' is under the heading 'Get your money back'. There I read you the evidence first, and nothing is sent until you confirm.`,
     politeness: 'polite',
     card: { kind: 'link', heading: 'Get your money back', text: `Start a case for the ${target.title}.`, href: `/app/orders/${target.id}#money-back`, label: 'Open the case' },
     suggestions: [],
@@ -622,20 +688,236 @@ async function moneyBack(ctx: Ctx): Promise<Reply> {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Offers from the store on an open case
+
+const SETTINGS_CARD: Card = { kind: 'link', heading: 'Settings', text: 'Speech, sizes and spending limits.', href: '/app/settings', label: 'Open settings' };
+
+function offerChoice(open: OpenOffer): OfferChoice {
+  return {
+    merchant: demoSeller().name,
+    kind: offerKind(open.offer.type),
+    amount: money(open.amountCents, open.currency),
+    itemNoun: categoryOf(open.title)?.canonical ?? en.check.defaultNoun,
+  };
+}
+
+/** Read the open offer like a readback: what it is, what accepting means, how to answer. */
+async function offerTurn(ctx: Ctx): Promise<Reply> {
+  const open = await findOpenOffer(ctx.userId);
+  if (!open) {
+    leaveOffer(ctx);
+    return { say: en.offers.none, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', Boolean(ctx.state.options?.length)) };
+  }
+  const choice = offerChoice(open);
+  const spoken = presentOfferChoice(choice);
+  ctx.state.phase = 'offer';
+  ctx.state.offer = { caseId: open.caseId, offerId: open.offer.id };
+  return {
+    say: spoken.text,
+    politeness: 'polite',
+    cue: 'attention',
+    card: {
+      kind: 'link',
+      heading: `${choice.merchant}’s offer`,
+      text: spoken.sentences.slice(0, 3).join(' '),
+      href: `/app/orders/${open.orderId}#money-back`,
+      label: 'See the order',
+    },
+    suggestions: suggestionsFor('offer', false),
+  };
+}
+
+function leaveOffer(ctx: Ctx) {
+  if (ctx.state.phase === 'offer') ctx.state.phase = 'browsing';
+  ctx.state.offer = undefined;
+}
+
+async function answerTheOffer(ctx: Ctx, answer: OfferAnswer): Promise<Reply> {
+  const held = ctx.state.offer!;
+  const result = await answerOffer(ctx.userId, held.caseId, held.offerId, answer);
+  leaveOffer(ctx);
+  const after = suggestionsFor('browsing', Boolean(ctx.state.options?.length));
+  if (!result.ok) {
+    const say = result.reason === 'gone' ? en.offers.gone : result.reason === 'paypal-unavailable' ? en.offers.paypalUnavailable : en.offers.paypalFailed;
+    return { say, politeness: 'assertive', cue: 'error', card: null, suggestions: after };
+  }
+  const spoken = presentOfferAnswer({ ...offerChoice(result.offer), answer });
+  return {
+    say: spoken.text,
+    politeness: 'polite',
+    cue: 'done',
+    card: { kind: 'link', heading: answer === 'accept' ? 'Offer accepted' : 'Offer declined', text: spoken.text, href: `/app/orders/${result.offer.orderId}#money-back`, label: 'See the order' },
+    suggestions: after,
+  };
+}
+
+/**
+ * While an offer is being answered. Only an accept phrase or the word decline (or reject, refuse)
+ * answers it; "no", "wait" or "cancel" leave it open. Returns null to route the turn normally.
+ */
+async function offerPhase(ctx: Ctx, parsed: ParsedIntent, raw: string): Promise<Reply | null> {
+  const stay = (say: string): Reply => ({ say, politeness: 'polite', card: null, suggestions: suggestionsFor('offer', false) });
+  const notAnswered = (): Reply => {
+    leaveOffer(ctx);
+    return { say: en.offers.notAnswered, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', Boolean(ctx.state.options?.length)) };
+  };
+  if (!ctx.state.offer) {
+    leaveOffer(ctx);
+    return null;
+  }
+  if (parsed.intent === 'offer') {
+    if (parsed.slots.action === 'accept') return answerTheOffer(ctx, 'accept');
+    if (parsed.slots.action === 'decline') return /\b(decline|declined|reject|refuse)\b/i.test(raw) ? answerTheOffer(ctx, 'decline') : notAnswered();
+    leaveOffer(ctx);
+    return offerTurn(ctx);
+  }
+  if (parsed.intent === 'cancel' || parsed.intent === 'hold') return notAnswered();
+  if (parsed.intent === 'help') return null;
+  const yn = parseYesNo(raw);
+  if (yn === 'no') return notAnswered();
+  if (yn === 'yes' || parsed.intent === 'confirm' || parsed.intent === 'freeform') return stay(en.help.offer);
+  leaveOffer(ctx);
+  return null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Settings by voice
+
+const RATE_STEP = 25;
+const RATE_MIN = 50;
+const RATE_MAX = 250;
+
+async function setVerbosity(ctx: Ctx, next: Verbosity): Promise<Reply> {
+  const prev = (ctx.prefs.verbosity as Verbosity) ?? 'standard';
+  const after = suggestionsFor(ctx.state.phase === 'offer' ? 'browsing' : ctx.state.phase, Boolean(ctx.state.options?.length));
+  const P = en.settings.verbosityPhrase;
+  if (prev === next) {
+    const others = (['brief', 'standard', 'detailed'] as const).filter((v) => v !== next).map((v) => P[v]);
+    return { say: en.settings.alreadyVerbosity(others), politeness: 'polite', card: null, suggestions: after };
+  }
+  await db().update(tables.preferences).set({ verbosity: next }).where(eq(tables.preferences.userId, ctx.userId));
+  ctx.prefs.verbosity = next;
+  await audit({ userId: ctx.userId, actor: 'user', action: 'settings.saved', subjectId: ctx.userId, payload: { verbosity: next, by: 'voice' } });
+  return { say: en.settings[next](P[prev]), politeness: 'polite', card: null, suggestions: after };
+}
+
+async function setSpeechRate(ctx: Ctx, change: 'faster' | 'slower'): Promise<Reply> {
+  const after = suggestionsFor(ctx.state.phase === 'offer' ? 'browsing' : ctx.state.phase, Boolean(ctx.state.options?.length));
+  // With a screen reader reading the replies, only the screen reader can change the speed.
+  if (ctx.prefs.voiceMode === 'screen-reader') {
+    if (ctx.prefs.verbosity === 'brief') return { say: en.settings.rateIsScreenReaders, politeness: 'polite', card: null, suggestions: after };
+    ctx.state.pending = [{ kind: 'verbosity', verbosity: 'brief', said: en.settings.verbosityPhrase.brief }];
+    return {
+      say: `${en.settings.rateIsScreenReaders} ${en.settings.offerBrief}`,
+      politeness: 'polite',
+      card: null,
+      suggestions: [
+        { label: 'Yes, keep it brief', utterance: 'yes' },
+        { label: 'No, thanks', utterance: 'no thanks' },
+      ],
+    };
+  }
+  const current = ctx.prefs.speechRate ?? 100;
+  const next = Math.min(RATE_MAX, Math.max(RATE_MIN, current + (change === 'faster' ? RATE_STEP : -RATE_STEP)));
+  if (next === current)
+    return { say: change === 'faster' ? en.settings.fastest : en.settings.slowest, politeness: 'polite', card: null, suggestions: after, settings: { speechRate: current } };
+  await db().update(tables.preferences).set({ speechRate: next }).where(eq(tables.preferences.userId, ctx.userId));
+  ctx.prefs.speechRate = next;
+  await audit({ userId: ctx.userId, actor: 'user', action: 'settings.saved', subjectId: ctx.userId, payload: { speechRate: next, by: 'voice' } });
+  return { say: en.settings[change], politeness: 'polite', card: null, suggestions: after, settings: { speechRate: next } };
+}
+
+async function settingsTurn(ctx: Ctx, slots: SettingsSlots): Promise<Reply> {
+  if (slots.setting === 'verbosity' && slots.verbosity) return setVerbosity(ctx, slots.verbosity);
+  if (slots.setting === 'speech_rate' && slots.change) return setSpeechRate(ctx, slots.change);
+  // Limits, sizes and the voice are changed on the Settings page, where they can be checked.
+  return { say: en.settings.inSettings, politeness: 'polite', card: SETTINGS_CARD, suggestions: [] };
+}
+
+// ---------------------------------------------------------------------------------------------
+// "Yes" and "no" to the question just asked
+
+function pendingForNone(query: ShoppingQuery, sg: NoneSuggestion): Pending {
+  switch (sg.kind) {
+    case 'max_price':
+      return { kind: 'search', query: { ...query, maxPrice: sg.amount }, said: sg.said };
+    case 'any_colour':
+      return { kind: 'search', query: { ...query, colour: undefined }, said: sg.said };
+    case 'any_returns':
+      return { kind: 'search', query: { ...query, freeReturns: undefined }, said: sg.said };
+    default:
+      return { kind: 'ask', said: sg.said };
+  }
+}
+
+/** Chips for the offers just made: each sends its own words, which pick it. */
+function pendingChips(pending: Pending[] | undefined): Reply['suggestions'] {
+  const chips = (pending ?? [])
+    .filter((p) => p.kind === 'search')
+    .map((p) => ({ label: `Try ${p.said}`, utterance: p.said }));
+  if (pending?.length === 1) return [{ label: 'Yes', utterance: 'yes' }, { label: 'No', utterance: 'no' }];
+  return [...chips, { label: 'Help', utterance: 'help' }];
+}
+
+async function runPending(ctx: Ctx, p: Pending): Promise<Reply> {
+  switch (p.kind) {
+    case 'search':
+      return search(ctx, p.query);
+    case 'check':
+      return check(ctx);
+    case 'verbosity':
+      return setVerbosity(ctx, p.verbosity);
+    case 'ask':
+      return { say: en.general.askWhat, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
+  }
+}
+
+/** A "yes" or "no" (or the words of one offer) after a question; null when the turn is something else. */
+async function answerPending(ctx: Ctx, raw: string, pending: Pending[] | undefined): Promise<Reply | null> {
+  const said = normaliseText(raw).replace(/[.!?]+$/, '').trim();
+  const picked = pending?.find((p) => normaliseText(p.said) === said);
+  if (picked) return runPending(ctx, picked);
+  const yn = parseYesNo(raw);
+  if (!yn) return null;
+  const after = suggestionsFor('browsing', Boolean(ctx.state.options?.length));
+  if (!pending?.length) return { say: yn === 'no' ? en.general.noThanks : en.general.nothingAsked, politeness: 'polite', card: null, suggestions: after };
+  if (yn === 'no') return { say: en.general.noThanks, politeness: 'polite', card: null, suggestions: after };
+  if (pending.length === 1) return runPending(ctx, pending[0]!);
+  ctx.state.pending = pending;
+  return { say: en.general.whichOne(pending.map((p) => p.said)), politeness: 'polite', card: null, suggestions: pendingChips(pending) };
+}
+
+// ---------------------------------------------------------------------------------------------
 
 function grammarCtx(ctx: Ctx) {
   return {
-    phase: ctx.state.phase === 'readback' ? ('readback' as const) : ('browsing' as const),
+    phase: ctx.state.phase === 'readback' ? ('readback' as const) : ctx.state.phase === 'offer' ? ('offer' as const) : ('browsing' as const),
     options: ctx.state.options,
     savedSizes: ctx.prefs.sizes as never,
     currency: 'USD',
   };
 }
 
-async function route(ctx: Ctx, parsed: ParsedIntent, raw: string): Promise<Reply> {
-  // During a readback, everything goes through the confirmation state machine first.
-  if (ctx.state.phase === 'readback' && ['confirm', 'hold', 'cancel', 'cart', 'refine', 'freeform'].includes(parsed.intent)) {
-    return confirmStep(ctx, { phrase: raw, button: false });
+async function route(ctx: Ctx, parsed: ParsedIntent, raw: string, pending?: Pending[]): Promise<Reply> {
+  // An offer that was just read out: accept, decline, or leave it open.
+  if (ctx.state.phase === 'offer') {
+    const answered = await offerPhase(ctx, parsed, raw);
+    if (answered) return answered;
+  }
+  // During a readback, confirm, hold, cancel and changes go through the confirmation state machine
+  // first; questions are answered from the readback itself, then say how to pay.
+  if (ctx.state.phase === 'readback') {
+    if (['confirm', 'hold', 'cancel', 'cart', 'refine'].includes(parsed.intent)) return confirmStep(ctx, { phrase: raw, button: false });
+    if (!(parsed.intent === 'help' && parsed.slots.topic === 'repeat')) {
+      const answered = await readbackQuestion(ctx, raw);
+      if (answered) return answered;
+    }
+    if (parsed.intent === 'freeform') return confirmStep(ctx, { phrase: raw, button: false });
+  }
+  // "Yes" or "no" to the question just asked.
+  if (ctx.state.phase === 'browsing') {
+    const answered = await answerPending(ctx, raw, pending);
+    if (answered) return answered;
   }
   switch (parsed.intent) {
     case 'search':
@@ -679,22 +961,22 @@ async function route(ctx: Ctx, parsed: ParsedIntent, raw: string): Promise<Reply
     case 'case':
       return moneyBack(ctx);
     case 'offer':
-      return moneyBack(ctx);
+      // Accept or decline is only taken once the offer and what accepting means have been heard.
+      return offerTurn(ctx);
     case 'help':
-      if (parsed.slots.topic === 'repeat') return { say: ctx.state.lastSay ?? en.general.nothingToRepeat, politeness: 'polite', card: null, suggestions: suggestionsFor(ctx.state.phase, Boolean(ctx.state.options?.length)) };
+      if (parsed.slots.topic === 'repeat') {
+        ctx.state.pending = pending;
+        return { say: ctx.state.lastSay ?? en.general.nothingToRepeat, politeness: 'polite', card: null, suggestions: suggestionsFor(ctx.state.phase, Boolean(ctx.state.options?.length)) };
+      }
       if (parsed.slots.topic === 'more') return { say: en.help.more, politeness: 'polite', card: HELP_CARD, suggestions: suggestionsFor('browsing', false) };
       return { say: en.help.main, politeness: 'polite', card: HELP_CARD, suggestions: suggestionsFor('browsing', false) };
     case 'settings':
-      return {
-        say: 'You can change that in Settings. I opened it for you.',
-        politeness: 'polite',
-        card: { kind: 'link', heading: 'Settings', text: 'Speech, sizes and spending limits.', href: '/app/settings', label: 'Open settings' },
-        suggestions: [],
-      };
+      return settingsTurn(ctx, parsed.slots);
     case 'freeform': {
       if (/\bwhy\b/i.test(raw) && ctx.state.options?.length) {
         const snaps = await loadSnapshots(ctx.state.options.map((o) => o.snapshotId));
-        const why = presentWhy(ctx.state.options.map((o, i) => ({ rank: i + 1, snapshot: snaps.get(o.snapshotId)!, score: 0, why: o.why, caveats: [], verifiable: true, missing: [] })));
+        const shown = ctx.state.options.filter((o) => snaps.has(o.snapshotId));
+        const why = presentWhy(shown.map((o) => ({ snapshot: snaps.get(o.snapshotId)!, why: o.why, caveats: o.caveats ?? [] })));
         return { say: why.text, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', true) };
       }
       if (ctx.state.focus && aiAvailable()) return details(ctx, ctx.state.focus, 'general', raw);
@@ -742,12 +1024,15 @@ async function record(ctx: Ctx, role: 'user' | 'agent', text: string, meta?: Rec
 
 export async function handleTurn(userId: string, req: TurnRequest): Promise<TurnResponse> {
   const ctx = await loadContext(userId);
+  // A question is only answered by the very next turn; anything else drops it.
+  const asked = ctx.state.pending;
+  ctx.state.pending = undefined;
   let reply: Reply;
   if ('text' in req) {
     const text = req.text.trim().slice(0, 500);
     await record(ctx, 'user', text, { source: req.source });
     const parsed = parseIntent(text, grammarCtx(ctx));
-    reply = await route(ctx, parsed, text);
+    reply = await route(ctx, parsed, text, asked);
   } else {
     switch (req.action) {
       case 'start': {
@@ -786,7 +1071,7 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
                 : null,
               suggestions: suggestionsFor('browsing', false),
             };
-        ctx.state = { phase: 'browsing' };
+        ctx.state = { phase: 'browsing', ...(pending ? { pending: [{ kind: 'check', said: 'check it now' }] } : {}) };
         break;
       }
       case 'choose':
@@ -803,7 +1088,11 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
         reply = await confirmStep(ctx, { phrase: 'wait', button: false });
         break;
       case 'cancel':
-        reply = ctx.state.phase === 'readback' ? await confirmStep(ctx, { phrase: 'cancel', button: false }) : { say: 'Okay. Nothing was charged.', politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
+        if (ctx.state.phase === 'offer') {
+          leaveOffer(ctx);
+          reply = { say: en.offers.notAnswered, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
+        } else
+          reply = ctx.state.phase === 'readback' ? await confirmStep(ctx, { phrase: 'cancel', button: false }) : { say: 'Okay. Nothing was charged.', politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
         break;
       case 'paypal-approved': {
         const loaded = await loadReadbackRow(req.readbackId);
@@ -812,6 +1101,7 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
         break;
       }
       case 'repeat':
+        ctx.state.pending = asked;
         reply = { say: ctx.state.lastSay ?? en.general.nothingToRepeat, politeness: 'polite', card: null, suggestions: [] };
         break;
     }

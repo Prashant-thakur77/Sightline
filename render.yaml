@@ -42,6 +42,8 @@ services:
         sync: false
       - key: HELPER_LINK_SECRET
         generateValue: true
+      - key: MAINTENANCE_TOKEN
+        sync: false
       - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET
@@ -73,6 +75,25 @@ services:
       - key: WEB_PUSH_VAPID_PUBLIC
         sync: false
       - key: WEB_PUSH_VAPID_PRIVATE
+        sync: false
+
+  # Every 15 minutes: payment-hold deadlines (void when a store doesn't answer, pay the store a
+  # week after an unchecked delivery, retry failed captures, reauthorize after the honour period),
+  # photo retention and webhook retries. Same token as the web service.
+  - type: cron
+    name: sightline-maintenance
+    runtime: node
+    plan: starter
+    region: oregon
+    schedule: "*/15 * * * *"
+    buildCommand: "true"
+    startCommand: node -e "fetch(process.env.APP_URL + '/api/maintenance', { method: 'POST', headers: { authorization: 'Bearer ' + process.env.MAINTENANCE_TOKEN } }).then(async (r) => { console.log(r.status, await r.text()); process.exit(r.ok ? 0 : 1); }).catch((e) => { console.error(e); process.exit(1); })"
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: APP_URL
+        sync: false
+      - key: MAINTENANCE_TOKEN
         sync: false
 
   - type: pserv

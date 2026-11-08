@@ -431,7 +431,7 @@ function CaseCard({
                               if (!unavailable) setPending(a.action);
                             }}
                           >
-                            {a.label}
+                            {a.action === 'refund' && c.refundPath === 'void' ? 'Accept the return and release the hold' : a.label}
                             {suggested === a.action && (
                               <span className="mx-suggested-tag">
                                 <span className="sr-only">, </span>Suggested

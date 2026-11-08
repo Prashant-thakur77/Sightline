@@ -4,11 +4,11 @@ Fill the bracketed numbers from `evals/RESULTS.md` on the final commit. Every nu
 
 ## Tagline
 
-A voice-first shopping agent for blind and low-vision people that checks the parcel before PayPal pays the store, and gets the money back when it's wrong.
+Voice-first shopping for blind and low-vision people: PayPal holds the money until your phone confirms the parcel is what you paid for.
 
 ## Inspiration
 
-Blind people can already shop online with a screen reader, slowly. The part that still breaks is after checkout. A parcel arrives, and the only way to know if it's the navy medium you paid for, and not a black large, is to ask someone. Getting money back is worse: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven of them couldn't use the retailer's return method at all (Which? with RIDC). A 2026 study of blind shoppers using an AI shopping agent left payment, delivery checks and returns out of scope entirely.
+Blind people can already shop online with a screen reader, slowly. The part that still breaks is after checkout. A parcel arrives, and the only way to know if it's the navy medium you paid for, and not a black large, is to ask someone. Getting money back is worse: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven of them couldn't use the retailer's return method at all (Which? with RIDC). In a CHI 2026 study of 12 blind and low-vision people shopping with an AI agent (Shin et al., "Toward Independent Online Shopping of the Visually Impaired Through Voice-based Computer-Using Agent"), participants could not verify what the agent told them and did not trust it with payment.
 
 We wanted the whole money lifecycle to be something a blind person can do alone, with PayPal underneath it.
 
@@ -18,7 +18,7 @@ We wanted the whole money lifecycle to be something a blind person can do alone,
 2. **Hear exactly what you pay for.** A template, not the AI, reads the item, colour, size, seller, total with tax and shipping, delivery date and return window. Paying needs two independent keys: your words (or the Confirm button) and a separate model check. "Wait" holds it open with no time limit.
 3. **Money waits for the check.** For stores that opt in, PayPal only authorizes the payment at purchase.
 4. **Check the parcel with your phone.** The camera talks you into frame and takes the photos. It compares colour in CIELAB colour space against the listing photo, reads the size tag twice with two different readers, and checks the product and any damage. It says "not sure" rather than guess, and can ask someone you trust to look through a private, view-only link.
-5. **Get your money back.** A match captures the payment. A wrong item voids the hold, so the money never left. For payments already captured, a signed evidence pack goes to the seller, who can refund through PayPal from the cases desk; every update is read aloud.
+5. **Get your money back.** A match captures the payment. A wrong item goes to the store with a signed evidence pack while the money stays on hold: the store accepts the return, which voids the hold, or offers a replacement, and if it doesn't answer in three business days the hold is voided anyway. The money never left, and the store always sees the evidence first. If the buyer never checks, the store is paid a week after delivery, after a reminder. For payments already captured, a signed evidence pack goes to the seller, who can refund through PayPal from the cases desk; every update is read aloud.
 
 ## How we built it
 
@@ -37,6 +37,10 @@ We wanted the whole money lifecycle to be something a blind person can do alone,
 - Model output never moves money: amounts, payee and confirmation come from frozen listing snapshots, the readback and an eight-guard payment gate that signs a receipt for every decision.
 
 **Also:** an MCP server so other shopping agents can use the accessible readback, delivery check and evidence packs; AG Grid and AG Studio for the Demo Store console and dashboards; Render for hosting.
+
+## Fair to stores too
+
+Stores that opt in to pay after check should see fewer "not as described" disputes: the buyer checks before paying, and the store sees the signed evidence before anything is released. A store is never left unpaid by silence: an unchecked delivery is paid a week after it arrives, after a reminder to the buyer.
 
 ## Accessibility is the product
 

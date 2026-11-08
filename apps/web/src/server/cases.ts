@@ -2,12 +2,10 @@ import 'server-only';
 import { and, desc, eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { addBusinessDays, formatMoney, newId, reasonForSeller, spokenDate, type OrderStatus, type Readback, type Verdict } from '@sightline/core';
-import { buildManifest, paypalRequestId, signHash, type EvidenceManifest } from '@sightline/evidence';
+import { buildManifest, signHash, type EvidenceManifest } from '@sightline/evidence';
 import { db } from './runtime';
 import { getBlob } from './blobs';
 import { receiptKeyPair } from './keys';
-import { paypal } from './paypal';
-import { dbReservations } from './gate-ports';
 import { audit } from './audit';
 import { writeCaseNarrative } from './ai';
 import { extractTokens } from '@sightline/agent';
@@ -173,19 +171,19 @@ export async function sendMoneyBack(userId: string, caseId: string): Promise<Mon
   const now = new Date();
 
   if (isHeld(o!)) {
-    await paypal().payments.voidAuthorization(o!.authorizationId!, { requestId: paypalRequestId('void', o!.authorizationId!) });
-    await db().update(tables.orders).set({ status: 'voided', updatedAt: now.toISOString() }).where(eq(tables.orders.id, o!.id));
+    // The money stays on hold: the store accepts the return (which voids the hold) or offers a
+    // replacement. If it does not answer by the deadline, the hold sweep voids it anyway, so the
+    // buyer is never charged either way, and a store always gets to see the evidence first.
+    const due = addBusinessDays(now, 3);
     await db()
       .update(tables.cases)
-      .set({ stage: 'resolved', status: 'resolved', outcome: { kind: 'voided', amount: o!.amountCents }, updatedAt: now.toISOString() })
+      .set({ stage: 'seller_contacted', status: 'open', dueAt: due.toISOString(), updatedAt: now.toISOString() })
       .where(eq(tables.cases.id, c.id));
-    const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o!.paypalRequestId)).limit(1);
-    if (rsv && rsv.status === 'reserved') await dbReservations.release(rsv.id, 'voided_after_check', now);
-    await audit({ userId, actor: 'paypal', action: 'payment.voided_after_check', subjectId: o!.id, payload: { caseId: c.id } });
-    await notify(userId, 'case', `Payment hold cancelled. Demo Store was never paid. ${amount} is released back to you.`, `/app/orders/${o!.id}`);
+    await db().update(tables.orders).set({ status: 'case_open', updatedAt: now.toISOString() }).where(eq(tables.orders.id, o!.id));
+    await audit({ userId, actor: 'user', action: 'case.return_requested', subjectId: o!.id, payload: { caseId: c.id, dueAt: due.toISOString() } });
     return {
-      stage: 'resolved',
-      say: `Done. I cancelled the payment hold with PayPal. Demo Store was never paid, and your ${amount} is released. I've told Demo Store, so they can arrange to collect the item.`,
+      stage: 'seller_contacted',
+      say: `I sent your case to Demo Store with the evidence. Your ${amount} stays on hold, so Demo Store can't take it. They have until ${spokenDate(due)} to accept the return, which cancels the hold. If they don't answer by then, I'll cancel the hold myself and the money is released to you.`,
     };
   }
 

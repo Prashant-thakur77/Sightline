@@ -3,6 +3,7 @@ import { ensurePersona, type PersonaKey } from '@/server/personas';
 import { createSession } from '@/server/session';
 import { maybePurgeExpiredPhotos } from '@/server/privacy';
 import { retryFailedWebhooks } from '@/server/webhooks';
+import { maybeSweepHolds } from '@/server/holds';
 
 /** Starts a demo session as a seeded persona. Demo personas only; no real accounts. */
 export async function POST(req: Request) {
@@ -16,6 +17,8 @@ export async function POST(req: Request) {
     await maybePurgeExpiredPhotos().catch(() => undefined);
     // Webhook events whose processing failed are retried here too, not only when the next one arrives.
     await retryFailedWebhooks().catch(() => undefined);
+    // Hold deadlines also run here, at most every ten minutes, in case the scheduled job is not set up.
+    await maybeSweepHolds().catch(() => undefined);
   });
   return NextResponse.json({ ok: true, userId });
 }

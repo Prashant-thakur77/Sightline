@@ -66,7 +66,7 @@ describe('featured results', () => {
     const { featuredHeadlines } = await import('../src/server/headlines');
     const cards = await featuredHeadlines(6);
     const byId = new Map(cards.map((c) => [c.id, c]));
-    expect([...byId.keys()]).toContain('barrier-keyboard-atc-unreachable');
+    expect([...byId.keys()]).toContain('barrier-keyboard-blocked-incl-dialogs');
 
     const sb = byId.get('mismatch-recall')!;
     const sbFile = await file('sightbench');

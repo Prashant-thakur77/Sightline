@@ -84,8 +84,8 @@ const PICKS: Pick[] = [
   },
   {
     suite: 'barrier',
-    id: 'barrier-keyboard-atc-unreachable',
-    label: () => 'stores where pressing Tab could not reach “Add to cart”',
+    id: 'barrier-keyboard-blocked-incl-dialogs',
+    label: () => 'stores where pressing Tab could not reach “Add to cart”, counting dialogs that trap focus',
   },
 ];
 

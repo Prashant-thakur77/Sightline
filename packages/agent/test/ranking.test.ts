@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ProductSnapshot } from '@sightline/core';
 import { parseShoppingQuery } from '../src/grammar';
-import { WEIGHTS, cheapestOverBudget, rankProducts, type Candidate } from '../src/ranking';
+import { WEIGHTS, cheapestOverBudget, isInCategory, rankProducts, type Candidate } from '../src/ranking';
 import { snapshot, usd } from './helpers';
 
 const q = parseShoppingQuery('navy crew-neck sweater, medium, under forty dollars');
@@ -114,6 +114,37 @@ describe('rankProducts', () => {
     const second = rankProducts({ candidates: many, query: q, offset: 3 });
     expect(second.options.map((o) => o.rank)).toEqual([4, 5, 6]);
     expect(second.remaining).toBe(1);
+  });
+
+  it('never shows another kind of thing: black jeans do not bring back a cable, a T-shirt or shoes', () => {
+    const jeansQuery = parseShoppingQuery('black jeans size 32');
+    const cable = variant('cable', { title: 'Braided USB-C to USB-C cable, 2 m', category: 'chargers', description: '60 watt braided USB-C cable.', attributes: { colour: 'Black' } });
+    const tee = variant('tee', { title: 'Mill heavyweight cotton T-shirt', category: 't-shirts', attributes: { colour: 'Black', size: 'M' } });
+    const shoes = variant('shoes', { title: 'Trail Runner 2 running shoes', category: 'shoes', attributes: { colour: 'Black', size: '10' } });
+    const r = rankProducts({ candidates: [cable, tee, shoes], query: jeansQuery });
+    expect(r.options).toEqual([]);
+    expect(r.excluded.map((e) => e.reason)).toEqual(['wrong_category', 'wrong_category', 'wrong_category']);
+    expect(r.excluded[0]!.detail).toBe("It isn't one of the jeans.");
+  });
+
+  it('keeps listings in the category, even with a mixed category slug or only the title naming it', () => {
+    const jeansQuery = parseShoppingQuery('black jeans size 32');
+    const jeans = variant('jeans', { title: 'Slim black jeans', category: 'clothing-bottoms', attributes: { colour: 'Black', size: '32' } });
+    const sweaterSlug = snapshot({ title: 'Harbor merino crew', category: 'clothing tops sweaters' });
+    expect(isInCategory(sweaterSlug, 'sweater')).toBe(true);
+    expect(isInCategory(snapshot({ title: 'Merino crew', category: undefined, description: 'A soft merino sweater.' }), 'sweater')).toBe(true);
+    // A T-shirt whose description mentions jeans is still a T-shirt.
+    expect(isInCategory(snapshot({ title: 'Mill T-shirt', category: 't-shirts', description: 'Goes with jeans.' }), 'jeans')).toBe(false);
+    const r = rankProducts({ candidates: [jeans, variant('tee', { title: 'Mill T-shirt', category: 't-shirts', attributes: { colour: 'Black' } })], query: jeansQuery });
+    expect(r.options.map((o) => o.snapshot.id)).toEqual(['jeans']);
+  });
+
+  it('checks the category before the budget, so another kind of thing is never "the closest one"', () => {
+    const cheapJeans = parseShoppingQuery('jeans under ten dollars');
+    const tee = variant('tee', { title: 'Mill T-shirt', category: 't-shirts', price: usd(1800) });
+    const r = rankProducts({ candidates: [tee], query: cheapJeans });
+    expect(r.excluded.map((e) => e.reason)).toEqual(['wrong_category']);
+    expect(cheapestOverBudget(r)).toBeUndefined();
   });
 
   it('does not ask for a size on unsized products', () => {

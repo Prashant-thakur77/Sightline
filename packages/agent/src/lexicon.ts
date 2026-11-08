@@ -333,6 +333,16 @@ export function categoryOf(text: string): CategoryEntry | undefined {
   return findPhrases(words(text), CATEGORIES, true)[0]?.entry;
 }
 
+const IRREGULAR_PLURALS: Record<string, string> = { scarf: 'scarves', watch: 'watches' };
+
+/** "sweater" to "sweaters", "dress" to "dresses"; names already plural ("jeans", "running shoes") stay. */
+export function categoryPlural(category: string): string {
+  if (IRREGULAR_PLURALS[category]) return IRREGULAR_PLURALS[category]!;
+  if (/(ss|sh|ch|x)$/.test(category)) return `${category}es`;
+  if (/s$/.test(category)) return category;
+  return `${category}s`;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Sizes
 

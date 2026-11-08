@@ -57,7 +57,9 @@ export const PERSONAS: Record<PersonaKey, Persona> = {
 export async function ensurePersona(key: PersonaKey): Promise<string> {
   const p = PERSONAS[key];
   const userId = newId('usr');
-  const email = p.email.replace('@', `+${userId.slice(4, 14)}@`);
+  // The random end of the id, not its time prefix: two visitors in the same millisecond must not
+  // get the same address.
+  const email = p.email.replace('@', `+${userId.slice(-10)}@`);
   await db().transaction(async (tx) => {
     await tx.insert(tables.users).values({ id: userId, email, displayName: p.displayName, isDemo: true });
     await tx.insert(tables.preferences).values({ userId, ...p.prefs, onboardedAt: new Date().toISOString() });

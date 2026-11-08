@@ -2,7 +2,7 @@
   "suite": "barrier",
   "title": "Checkout Barrier Index",
   "ranAt": "2026-11-08T22:07:14.585Z",
-  "gitSha": "30fef95",
+  "gitSha": "uncommitted",
   "headlines": [
     {
       "id": "barrier-median-violations-product",
@@ -21,6 +21,15 @@
       "n": 33,
       "script": "evals/barrier/analyse.mjs",
       "note": "Tab only from the top of the page, no Enter, Space or clicks; Escape pressed once if focus was trapped. Counted over product pages with an enabled add-to-cart control named \"add to cart/bag/basket\" or \"buy now\". Focus traps among the failures: 1. Not in the denominator: 12 pages where a cookie or sign-up dialog held focus and Escape did not close it, 7 whose add-to-cart button is disabled or hidden until a size is chosen, 8 with no control using that wording, 0 traversal errors."
+    },
+    {
+      "id": "barrier-keyboard-blocked-incl-dialogs",
+      "label": "Stores where Tab alone could not reach add to cart, counting a dialog that held focus as blocked",
+      "value": "33% (15 of 45)",
+      "interval": "95% Wilson 21%–48%",
+      "n": 45,
+      "script": "evals/barrier/analyse.mjs",
+      "note": "The same traversal as the row above, but the 12 pages where a cookie or sign-up dialog held focus and Escape did not close it count as blocked instead of being left out: a keyboard or screen-reader user meets that dialog first. Added on 9 November 2026 after the first analysis, from the same crawl; no store was crawled again."
     },
     {
       "id": "barrier-unnamed-buttons",
