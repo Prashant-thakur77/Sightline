@@ -5,6 +5,8 @@ import { db } from '@/server/runtime';
 import { SettingsForm } from './settings-form';
 import { PushOptIn } from '@/components/a11y/push-optin';
 import { vapidPublicKey } from '@/server/push';
+import { photoSummary, PHOTO_RETENTION_DAYS } from '@/server/privacy';
+import { DataControls } from './data-controls';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Settings' };
@@ -13,6 +15,7 @@ export default async function Settings() {
   const user = await requireUser();
   const [p] = await db().select().from(tables.preferences).where(eq(tables.preferences.userId, user.id)).limit(1);
   const [helper] = await db().select().from(tables.helpers).where(eq(tables.helpers.userId, user.id)).limit(1);
+  const photos = await photoSummary(user.id);
   return (
     <div className="grid gap-8 max-w-[760px]">
       <header className="grid gap-2">
@@ -40,6 +43,7 @@ export default async function Settings() {
           <PushOptIn vapidKey={vapidPublicKey()} />
         </fieldset>
       </section>
+      <DataControls photoCount={photos.total} neededByCase={photos.needed} retentionDays={PHOTO_RETENTION_DAYS} />
     </div>
   );
 }

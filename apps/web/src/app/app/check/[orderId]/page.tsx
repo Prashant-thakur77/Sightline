@@ -4,6 +4,7 @@ import { CheckFlow } from '@/components/check/check-flow';
 import { MomentsStrip } from '@/components/shell/moments';
 import { requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
+import { existingBlobIds } from '@/server/blobs';
 
 export const metadata = { title: 'Check your parcel' };
 
@@ -13,6 +14,8 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
   const found = await orderForUser(orderId, user.id);
   if (!found || !found.snapshot) notFound();
   const s = found.snapshot;
+  const itemBlob = found.verification?.photos.find((p) => p.kind === 'item')?.blobId;
+  const itemPhotoKept = itemBlob ? (await existingBlobIds([itemBlob])).has(itemBlob) : false;
   const shipped = found.shipment?.shippedVariant;
   // Demo parcel photos match what the Demo Store merchant shipped (set with the demo controls).
   const demoShots =
@@ -50,9 +53,7 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
           found.verification?.verdict
             ? {
                 verdict: found.verification.verdict,
-                itemPhoto: found.verification.photos.find((p) => p.kind === 'item')
-                  ? `/api/blobs/${found.verification.photos.find((p) => p.kind === 'item')!.blobId}`
-                  : undefined,
+                itemPhoto: itemBlob && itemPhotoKept ? `/api/blobs/${itemBlob}` : undefined,
               }
             : null
         }

@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import sharp from 'sharp';
 import { tables } from '@sightline/db';
 import { newId } from '@sightline/core';
@@ -41,4 +41,11 @@ export async function getBlob(id: string): Promise<{ bytes: Buffer; mime: string
   const [b] = await db().select().from(tables.blobs).where(eq(tables.blobs.id, id)).limit(1);
   if (!b?.bytes) return null;
   return { bytes: b.bytes, mime: b.mime, sha256: b.sha256, ownerId: b.ownerId };
+}
+
+/** Which of these photos still exist; a buyer may have deleted them, or retention removed them. */
+export async function existingBlobIds(ids: string[]): Promise<Set<string>> {
+  if (!ids.length) return new Set();
+  const rows = await db().select({ id: tables.blobs.id }).from(tables.blobs).where(inArray(tables.blobs.id, ids));
+  return new Set(rows.map((r) => r.id));
 }

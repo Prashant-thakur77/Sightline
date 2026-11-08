@@ -8,6 +8,7 @@ import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { db } from '@/server/runtime';
 import { receiptKeyPair } from '@/server/keys';
 import { currentUser } from '@/server/session';
+import { existingBlobIds } from '@/server/blobs';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Evidence pack' };
@@ -20,6 +21,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
   const [ver] = pack.verificationId ? await db().select().from(tables.verifications).where(eq(tables.verifications.id, pack.verificationId)).limit(1) : [];
   const [owner] = await db().select({ userId: tables.orders.userId }).from(tables.orders).where(eq(tables.orders.id, pack.orderId)).limit(1);
   const isOwner = Boolean(user && owner && owner.userId === user.id);
+  const present = isOwner && ver ? await existingBlobIds(ver.photos.map((p) => p.blobId)) : new Set<string>();
   const { ed25519, ...manifest } = pack.manifest as Record<string, unknown> & { ed25519?: string };
   const recomputed = hashManifest(manifest as never);
   const hashOk = recomputed === pack.manifestHash;
@@ -113,7 +115,11 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
           <ul className="ev-thumbs">
             {ver.photos.map((p) => (
               <li key={p.blobId}>
-                <img src={`/api/blobs/${p.blobId}`} alt={`What arrived: ${p.kind === 'label' ? 'the size tag' : p.kind === 'item' ? 'the item' : 'the damage'}.`} />
+                {present.has(p.blobId) ? (
+                  <img src={`/api/blobs/${p.blobId}`} alt={`What arrived: ${p.kind === 'label' ? 'the size tag' : p.kind === 'item' ? 'the item' : 'the damage'}.`} />
+                ) : (
+                  <p className="hint">Photo of {p.kind === 'label' ? 'the size tag' : p.kind === 'item' ? 'the item' : 'the damage'} deleted. Its fingerprint is still in the signed pack.</p>
+                )}
               </li>
             ))}
           </ul>

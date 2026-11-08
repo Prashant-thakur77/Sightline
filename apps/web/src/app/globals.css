@@ -318,6 +318,16 @@ a {
     min-height: 72px;
     font-size: var(--step-1);
   }
+  /* Destructive confirm: same ink-on-paper text as any button; the label says what it deletes. */
+  .btn-danger {
+    border-color: var(--mismatch);
+    border-width: 3px;
+    box-shadow: 0 4px 0 var(--mismatch);
+  }
+  .btn-danger:active {
+    box-shadow: 0 1px 0 var(--mismatch);
+    transform: translateY(3px);
+  }
   .btn-quiet {
     border-color: transparent;
     background: transparent;
@@ -506,7 +516,15 @@ a {
     color: var(--paper);
     border-color: var(--ink);
   }
-  .speech-viewer-toggle[aria-pressed='true'] {
+  /* Its own hover, so the generic pale .btn:hover never puts pale text on a pale fill. */
+  .speech-viewer-toggle:hover {
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .speech-viewer-toggle[aria-pressed='true'],
+  .speech-viewer-toggle[aria-pressed='true']:hover {
     background: var(--yellow);
     color: var(--yellow-ink);
     border-color: var(--yellow-ink);

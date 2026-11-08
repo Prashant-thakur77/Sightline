@@ -7,6 +7,7 @@ import { tables } from '@sightline/db';
 import { requireUser } from '@/server/session';
 import { db } from '@/server/runtime';
 import { audit } from '@/server/audit';
+import { deleteMyData, deleteMyPhotos, PHOTO_RETENTION_DAYS } from '@/server/privacy';
 
 const Schema = z.object({
   verbosity: z.enum(['brief', 'standard', 'detailed']),
@@ -72,4 +73,42 @@ export async function saveSettings(_prev: SaveState, form: FormData): Promise<Sa
   await audit({ userId: user.id, actor: 'user', action: 'settings.saved', subjectId: user.id, payload: { perOrderCapCents: Math.round(v.perOrderCap * 100), dailyCapCents: Math.round(v.dailyCap * 100) } });
   revalidatePath('/app/settings');
   return { ok: true, message: 'Saved. Your new settings apply from your next request.' };
+}
+
+export type DeleteState = { ok: boolean; message: string } | null;
+
+const photos = (n: number) => `${n} parcel photo${n === 1 ? '' : 's'}`;
+const keptNote = (kept: number) =>
+  kept
+    ? ` I kept ${photos(kept)}, because your money-back case is still open. ${kept === 1 ? 'It goes' : 'They go'} when the case is resolved, or after ${PHOTO_RETENTION_DAYS} days.`
+    : '';
+
+export async function deletePhotosAction(_prev: DeleteState, _form: FormData): Promise<DeleteState> {
+  const user = await requireUser();
+  try {
+    const r = await deleteMyPhotos(user.id);
+    revalidatePath('/app/settings');
+    if (!r.deleted && !r.kept) return { ok: true, message: 'There were no parcel photos to delete.' };
+    const done = r.deleted ? `Done. I deleted ${photos(r.deleted)}. This can't be undone. Your receipts still check out, because they keep each photo's fingerprint, not the photo.` : 'Nothing was deleted.';
+    return { ok: true, message: done + keptNote(r.kept) };
+  } catch {
+    return { ok: false, message: 'Something went wrong part way, so some photos may still be here. Press Delete my photos again to finish.' };
+  }
+}
+
+export async function deleteDataAction(_prev: DeleteState, _form: FormData): Promise<DeleteState> {
+  const user = await requireUser();
+  try {
+    const r = await deleteMyData(user.id);
+    revalidatePath('/app/settings');
+    return {
+      ok: true,
+      message:
+        `Done. I deleted your conversations, saved sizes and colours, helper contact, notifications and ${photos(r.photos.deleted)}. This can't be undone. ` +
+        `Your orders, payments and receipts are kept, because refunds need them.` +
+        keptNote(r.photos.kept),
+    };
+  } catch {
+    return { ok: false, message: 'Something went wrong part way, so some of your data may still be here. Press Delete everything again to finish.' };
+  }
 }

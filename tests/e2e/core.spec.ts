@@ -88,4 +88,23 @@ test.describe('other pages', () => {
     await expect(page.locator('#settings-status')).toBeFocused();
     await expect(page.locator('#settings-status')).toContainText('Saved');
   });
+
+  test('delete everything asks first, can be cancelled, and announces what was kept', async ({ page }) => {
+    await page.goto('/app/settings');
+    const open = page.getByRole('button', { name: 'Delete everything' });
+    await open.click();
+    const question = page.getByRole('group', { name: /Delete your conversations/ });
+    await expect(question.locator('p').first()).toBeFocused();
+    await page.getByRole('button', { name: 'Keep them' }).last().click();
+    await expect(open).toBeFocused();
+    await expect.poll(() => announcements(page)).toContain('Nothing was deleted.');
+
+    await open.click();
+    await page.getByRole('button', { name: 'Yes, delete everything' }).click();
+    const result = page.locator('#main').getByText(/^Done\. I deleted your conversations/);
+    await expect(result).toBeFocused();
+    await expect(result).toContainText('Your orders, payments and receipts are kept');
+    await expect.poll(async () => (await announcements(page)).some((a) => a.startsWith('Done. I deleted your conversations'))).toBe(true);
+    await expectNoAxeViolations(page);
+  });
 });

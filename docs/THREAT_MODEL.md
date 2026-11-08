@@ -229,7 +229,7 @@ Closing it: an IP and session rate limiter in `proxy.ts` (or at Render's edge), 
 
 | Item | Where | Status |
 |---|---|---|
-| Photos | `blobs.bytes` in Postgres, sanitised JPEG, `owner_id` = user | Stripped of EXIF/GPS before storing (`sanitisePhoto`) and again in the vision service. Not encrypted at application level; relies on the managed database's disk encryption. No retention limit, no delete route. `owner_id` has no foreign key, so deleting a user does not delete their photos. **Open.** |
+| Photos | `blobs.bytes` in Postgres, sanitised JPEG, `owner_id` = user | Stripped of EXIF/GPS before storing (`sanitisePhoto`) and again in the vision service. Not encrypted at application level; relies on the managed database's disk encryption. Deleted after 30 days, or when the buyer asks, unless an unresolved case needs them (`apps/web/src/server/privacy.ts`). Checks keep the SHA-256, so signed packs still verify. `owner_id` has no foreign key, so deleting a user row directly would not delete their photos; the delete routes go through `privacy.ts`. |
 | Capture time | Not stored from EXIF in the web app (sharp drops it); evidence file time is the verification time (`cases.ts`) | Honest in the manifest: it is when the check ran, not when the photo was taken. |
 | Secrets | Environment only. `.env*` is git-ignored except `.env.example` (`.gitignore`); Render secrets are `sync: false` | `server-only` imports keep server env out of client bundles. CI runs a gitleaks scan on every push and pull request with full history (`.github/workflows/ci.yml`). `CLAUDE.md` says gitleaks also runs before commits, but no pre-commit hook is installed in this checkout's `.git/hooks`. **Open** (low): install the hook. `/api/health` returns booleans for which integrations are configured, never values. |
 | Secret blast radius | `RECEIPT_SIGNING_KEY` signs everything (section 10). `ANTHROPIC_API_KEY` is on two services. `PAYPAL_CLIENT_SECRET` is sandbox. | No rotation procedure in the repo. |
@@ -272,6 +272,7 @@ Files: `apps/mcp/src/*`.
 - **Money back without a check.** `prepareMoneyBack` refuses unless the latest check says mismatch or not sure.
 - **Case narrative.** Model text is used only if every amount, size, colour and date it mentions is in the facts; otherwise the template text is sent (`narrativeGrounded` in `apps/web/src/server/cases.ts`).
 - **Helper links** can be cancelled from the order page (`/api/orders/[id]/helper/revoke`).
+- **Retention and deletion.** Parcel photos are deleted after 30 days unless an unresolved money-back case needs them; Settings has "Delete my photos" and "Delete everything" (conversations, saved sizes and colours, helper contact, notifications, devices, photos). Payment records, receipts and the audit chain stay, because refunds and the tamper-evident log need them. Helper links to deleted photos are cancelled (`apps/web/src/server/privacy.ts`, tested in `apps/web/test/privacy.int.test.ts`). Retention runs at most hourly from a busy route, not on a timer.
 
 ## Known gaps, ranked by risk
 
@@ -280,6 +281,6 @@ Files: `apps/mcp/src/*`.
 3. **Single signing secret, no rotation, no audit-chain anchor.** One leaked `RECEIPT_SIGNING_KEY` forges receipts; the chain is written and checkable but not anchored externally.
 4. **Held payments are not followed up on a timer.** A failed capture after a match is not retried automatically; authorization expiry is not watched.
 5. **A dishonest buyer controls the photos.** The server needs a non-matching verdict before money back, but the photos come from the buyer; production needs a seller review window and photo provenance.
-6. **Photos and conversations have no retention or deletion path** yet.
+6. **Retention runs opportunistically**, at most hourly when a demo starts, not on a schedule; on an idle server old photos wait for the next visit. The audit log keeps action names and counts after a deletion, by design.
 7. **CSP headers, unauthenticated internal vision service** (private network only on Render), **no pre-commit secret hook** (gitleaks runs in CI).
 8. **Background speech can satisfy key 1 text matching.** Measured as a negative result; reduced by push-to-talk and the second key, not removed.
