@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+
 import numpy as np
 import pytest
 
@@ -251,3 +253,80 @@ def test_unreliable_mask_lowers_confidence(th, navy_listing):
     ic, _ = _analyse(render_scene(NAVY)[0], th)
     out = colour.compare(ic, [navy_listing], "navy", th["colour"], mask_reliable=False)
     assert out["confidence"] == "fairly_sure"
+
+
+# --------------------------------------------------------------------------------------------
+# Rules fitted on the SightBench dev split (thresholds "fitted-dev-2026-11-09"). Each is also run
+# with the kept "initial-unfitted" set, which must keep its old behaviour.
+# --------------------------------------------------------------------------------------------
+
+WHITE = (242, 242, 240)
+GREY = (150, 150, 148)
+
+
+@pytest.fixture(scope="module")
+def unfitted():
+    from app.config import load_thresholds
+
+    return load_thresholds("initial-unfitted")
+
+
+def test_same_brightness_delta_e_ignores_exposure():
+    white = colour.srgb_to_lab(np.array(WHITE, np.uint8))
+    grey = colour.srgb_to_lab(np.array(GREY, np.uint8))
+    assert colour.ciede2000(grey, white, kL=2.0) > 10  # far apart as photographed
+    assert colour.same_brightness_delta_e(grey, white, kL=2.0) < 1.0  # an exposure gain explains it
+    navy = colour.srgb_to_lab(np.array(NAVY, np.uint8))
+    black = colour.srgb_to_lab(np.array(BLACK, np.uint8))
+    assert colour.same_brightness_delta_e(black, navy, kL=2.0) > 10  # navy is bluer, not only lighter
+
+
+def test_brightness_alone_is_not_a_sure_disagreement_without_a_white_reference(th, unfitted):
+    # A white sweater photographed too dark reads grey. Without paper in view the exposure is unknown.
+    for t, expected in ((th, "fairly_sure"), (unfitted, "sure")):
+        listed = _analyse(listing_image(WHITE), t)[0]
+        ic, m = _analyse(render_scene(GREY)[0], t)
+        out = colour.compare(ic, [listed], "white", t["colour"], m.reliable)
+        assert out["light_quality"] == "good"
+        assert out["reference_used"] is False
+        assert out["finding"] == "disagree"
+        assert out["delta_e"] >= t["colour"]["mismatch_min_de"]
+        assert out["delta_e_same_brightness"] < 10
+        assert out["confidence"] == expected
+        assert ("brightness_only" in out["confidence_limits"]) is (t is th)
+
+
+def test_with_a_white_reference_brightness_counts(th):
+    # With paper in view the exposure is normalised against it, so a lightness difference is real.
+    listed = _analyse(listing_image(WHITE), th)[0]
+    ic, m = _analyse(render_scene(GREY)[0], th)
+    ic.white_balance = dataclasses.replace(ic.white_balance, reference_used=True)
+    out = colour.compare(ic, [listed], "white", th["colour"], m.reliable)
+    assert out["finding"] == "disagree"
+    assert out["confidence"] == "sure"
+    assert out["confidence_limits"] == []
+
+
+def test_a_photo_that_fails_the_quality_gate_lowers_colour_confidence(th, unfitted, navy_listing):
+    ic, m = _analyse(render_scene(BLACK)[0], th)
+    ok = colour.compare(ic, [navy_listing], "navy", th["colour"], m.reliable, photo_ok=True)
+    poor = colour.compare(ic, [navy_listing], "navy", th["colour"], m.reliable, photo_ok=False)
+    assert (ok["finding"], ok["confidence"]) == ("disagree", "sure")
+    assert (poor["finding"], poor["confidence"]) == ("disagree", "fairly_sure")
+    assert poor["photo_ok"] is False
+    assert poor["confidence_limits"] == ["photo_quality"]
+    old = colour.compare(ic, [navy_listing], "navy", unfitted["colour"], m.reliable, photo_ok=False)
+    assert old["confidence"] == "sure"
+
+
+def test_a_dark_photo_is_too_dark_to_judge(th, unfitted, navy_listing):
+    rgb = dim(render_scene(BLACK)[0], 0.06)  # the brightest 5% of the frame is under 0.30 luma
+    ic, m = _analyse(rgb, th)
+    assert th["colour"]["poor_bright_luma"] > ic.light.bright_luma > unfitted["colour"]["poor_bright_luma"]
+    out = colour.compare(ic, [navy_listing], "navy", th["colour"], m.reliable)
+    assert out["finding"] == "unknown"
+    assert out["abstain_reason"] == "low_light"
+    ic_old, m_old = _analyse(rgb, unfitted)
+    old = colour.compare(ic_old, [navy_listing], "navy", unfitted["colour"], m_old.reliable)
+    assert old["light_quality"] == "dim"
+    assert old["finding"] == "disagree"

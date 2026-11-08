@@ -1,0 +1,13 @@
+{
+  "manifest": "evals/sightbench/manifests/test.json",
+  "sha256": "e7561f6ddae5b447e10fc6bb4e5eb29ec08dcb1082e58fcde0cc3c691bd78e73",
+  "frozen_at": "2026-11-08T20:38:34+00:00",
+  "rule": "Frozen before any system was run or tuned. Never tune on it. check-splits.mjs fails if this hash changes.",
+  "seed": 20261109,
+  "pairs": 420,
+  "products": 42,
+  "dev_manifest": "evals/sightbench/manifests/dev.json",
+  "dev_sha256": "8cbbba4238015b03cdd9779178362366cf596ce4e0f2790d9851781489dd63bc",
+  "generator_sha256": "875238bd0c468c56b8c8715f5375bf3022a1763e1950f4e6b44ee12e74c2940b",
+  "synthetic": true
+}

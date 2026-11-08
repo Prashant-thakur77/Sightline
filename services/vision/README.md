@@ -19,10 +19,12 @@ uv run pytest -q                          # tests (no network, no API key needed
 
 ```json
 {"status": "ok", "version": "0.1.0", "vlm": {"configured": false, "engine": "none"},
- "ocr": {"engine": "rapidocr"}, "mask": "grabcut", "thresholds": "initial-unfitted"}
+ "ocr": {"engine": "rapidocr"}, "mask": "grabcut", "thresholds": "fitted-dev-2026-11-09"}
 ```
 
-`vlm.configured` is false until `VISION_MODEL` and `ANTHROPIC_API_KEY` are both set.
+`vlm.configured` is false until `VISION_MODEL` and `ANTHROPIC_API_KEY` are both set. `thresholds`
+is the version of the threshold set in use; every `/verify` response repeats it in
+`modules.engines.thresholds`.
 
 ### `POST /quality`
 
@@ -121,9 +123,14 @@ too_many_photos | too_many_listing_images | bad_url | unreadable | empty`.
    cluster that looks like the background. It is compared with the listing images' dominant colour
    (primary) and with the listing colour name's Lab centre (secondary) using CIEDE2000, with lightness
    weighted down (kL = 2) because exposure moves lightness most. The CIEDE2000 code is checked
-   against all 34 published CIEDE2000 reference test pairs. Colour abstains in very low light or a
-   strong colour cast; dim or tinted light lowers confidence by one step. If the listing photo and
-   the colour name disagree with each other, colour abstains.
+   against all 34 published CIEDE2000 reference test pairs. Colour abstains in a dark photo (the
+   brightest 5% of the frame under 0.30 luma) or a strong colour cast; dim or tinted light, an
+   unreliable mask and an item photo that fails the quality gate each lower confidence by one step.
+   Without a white reference the exposure is unknown, so a `sure` disagreement also needs the
+   colours to differ at the same brightness (delta E at least 10 after scaling the delivered colour
+   to the listing colour's luminance): white read as grey is at most `fairly_sure`. If the listing
+   photo and the colour name disagree with each other, colour abstains. `confidence_limits` in the
+   module output says which of these lowered the confidence.
 4. **Size label** (`label.py`). Read A: the vision model's structured read of the tag, with boxes.
    Read B: OCR (RapidOCR, PP-OCR models on ONNX Runtime, shipped inside the wheel, no download). OCR
    re-reads read A's size box when there is one. When the text detector finds no size (a lone thin
@@ -146,9 +153,23 @@ Without a model key, identity and damage report `unknown`, so the service answer
 
 ## Thresholds
 
-Every decision threshold is in `app/thresholds.json`. The current values are hand-set starting
-points (`"version": "initial-unfitted"`). Fit them on the SightBench dev split only, never on test.
-`VISION_THRESHOLDS=/path/override.json` overlays a file that only needs the keys it changes.
+Every decision threshold is in `app/thresholds.json`, version `fitted-dev-2026-11-09`: the hand-set
+starting values with the colour confidence rules fitted on the SightBench dev split only (synthetic
+renders, 180 pairs), never on test. Its `fitted` block records what changed and the dev evidence:
+
+| key | hand-set | fitted | why (dev split) |
+|---|---|---|---|
+| `colour.quality_issue_steps` | 0 | 1 | All 5 `sure` colour disagreements on right-colour items came from photos that failed the quality gate. |
+| `colour.sure_min_de_same_brightness` | off | 10 | Without a white reference, brightness alone (white read as grey, blush as brown) must not make the check sure. |
+| `colour.poor_bright_luma` | 0.15 | 0.30 | Below it, colour disagreements carried no information (23 of 34 right-colour items "disagreed", 3 of 6 wrong-colour ones). |
+
+Everything else keeps its hand-set value. The hand-set set is kept as
+`app/threshold_sets/initial-unfitted.json` (the first SightBench test run used it); the two keys
+added later are set there to values that reproduce its original behaviour.
+
+`VISION_THRESHOLDS` takes a set name (`initial-unfitted`), which replaces the default, or a path to
+an override file, which is overlaid on the default and only needs the keys it changes. Fit on the
+SightBench dev split only, never on test.
 
 ## Privacy
 
@@ -170,7 +191,7 @@ The service stores nothing.
 | `VISION_OCR` | `rapidocr` | `off` to disable OCR (size then gets a single read). |
 | `VISION_OCR_THREADS` | ONNX default | Threads for OCR inference (the Docker image sets 2). |
 | `VISION_WARM_OCR` | `1` | Load the OCR models in the background at startup. |
-| `VISION_THRESHOLDS` | unset | Thresholds override file. |
+| `VISION_THRESHOLDS` | unset | A threshold set name (`initial-unfitted`) or a path to an override file. |
 | `VISION_MAX_FILE_MB` / `VISION_MAX_REQUEST_MB` | `10` / `40` | Upload limits. |
 
 ## Footprint
@@ -207,8 +228,12 @@ ablations, `--thresholds` tries an override file. The manifest format is documen
 - The model client has only been exercised against a stubbed SDK. With a key: run the bench on the
   dev split, check the label, identity and damage prompts on real photos, and confirm the request
   options (`effort`, `fallbacks`) suit the chosen `VISION_MODEL`.
-- Thresholds are unfitted. Colour tolerances per name, delta E cut-offs and the quality-gate limits
-  all need fitting on real dev photos.
+- Only the colour confidence rules are fitted, and only on synthetic dev renders. Colour name
+  tolerances, the agree cut-offs, the quality-gate and mask limits and the label values are still
+  hand-set, and everything needs refitting on real dev photos.
+- On wood tables and plank floors the colour check gives up: gray-world white balance reads the
+  orange surface as orange light. The masks there are fine; it needs a white reference (a sheet of
+  paper) in the photo or a better light estimate.
 - The quality gate's coverage estimate assumes a plain surface. Patterned or very dark surfaces will
   give wrong framing hints.
 - HEIC uploads are not accepted; the browser should send JPEG.

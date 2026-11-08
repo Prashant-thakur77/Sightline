@@ -119,7 +119,9 @@ def run_verify(
             with timer("colour"):
                 delivered = colour.analyse_image(item_small, item_mask.mask, th["colour"])
                 listed = [colour.analyse_image(rgb, m.mask, th["colour"]) for rgb, m in zip(listing_small, listing_masks, strict=True)]
-                return colour.compare(delivered, listed, listing.get("colour"), th["colour"], mask_reliable=item_mask.reliable)
+                return colour.compare(
+                    delivered, listed, listing.get("colour"), th["colour"], mask_reliable=item_mask.reliable, photo_ok=q_results[best].ok
+                )
 
         modules["colour"] = _guard("colour", run_colour)
 

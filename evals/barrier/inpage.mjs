@@ -23,14 +23,17 @@ export function harvestLinks() {
     let el = a;
     for (let i = 0; i < 7 && el; i++) {
       const cls = typeof el.className === 'string' ? el.className : '';
-      const data = [...el.attributes].filter((x) => x.name.startsWith('data-')).map((x) => x.name).join(' ');
+      const data = [...el.attributes]
+        .filter((x) => x.name.startsWith('data-'))
+        .map((x) => `${x.name}=${String(x.value).slice(0, 24)}`)
+        .join(' ');
       ctx.push(`${cls} ${el.id || ''} ${data}`);
       el = el.parentElement;
     }
     out.push({
       href,
       text: (a.innerText || a.getAttribute('aria-label') || '').trim().slice(0, 80),
-      ctx: ctx.join(' | ').slice(0, 700),
+      ctx: ctx.join(' | ').slice(0, 900),
       inHeader: !!a.closest('header,nav,[role=banner],[role=navigation]'),
       inFooter: !!a.closest('footer,[role=contentinfo]'),
       visible: r.width > 0 && r.height > 0,
@@ -97,9 +100,17 @@ export function inspectProduct() {
     if (img && img.alt.trim()) return img.alt.trim();
     return (el.getAttribute('title') || '').trim();
   };
+  // The visible page title marks the main product region: walking up from a control, reaching an ancestor that holds
+  // the title means the control belongs to the main product, so layout wrappers above it are never examined.
+  const shownH1 = [...document.querySelectorAll('h1')].filter((h) => {
+    const r = h.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+  const titleH1 = shownH1.find((h) => !h.closest('header,[role=banner],nav')) ?? shownH1[0];
   const secondaryWhy = (el) => {
     let e = el;
     for (let i = 0; i < 12 && e && e !== document.body; i++) {
+      if (titleH1 && e.contains(titleH1)) return null;
       const m = `${typeof e.className === 'string' ? e.className : ''} ${e.id || ''}`.match(SECONDARY);
       if (m) return m[0];
       e = e.parentElement;
@@ -190,8 +201,7 @@ export function inspectProduct() {
   }
 
   // ---- product region: walk up from the h1 until it holds a large image
-  const h1s = [...document.querySelectorAll('h1')].filter(visibleBox);
-  const h1 = h1s[0] || document.querySelector('h1');
+  const h1 = titleH1 || document.querySelector('h1');
   let root = null;
   if (h1) {
     let e = h1.parentElement;

@@ -1,6 +1,6 @@
 // Checkout Barrier Index crawler.
 //
-//   node evals/barrier/run.mjs [--only=<domain>] [--limit=N] [--retry-blocked] [--force]
+//   node evals/barrier/run.mjs [--only=<domain>[,<domain>...]] [--limit=N] [--retry=timeout,error,no-product] [--force]
 //
 // Reads evals/data/raw/barrier/stores.json (git-ignored) and writes one raw JSON file per store to
 // evals/data/raw/barrier/stores/<domainHash>.json. Resumable: stores with a file are skipped.
@@ -28,8 +28,13 @@ const args = Object.fromEntries(
   }),
 );
 
-const withTimeout = (p, ms, label) =>
-  Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout: ${label}`)), ms))]);
+function withTimeout(p, ms, label) {
+  let timer;
+  const t = new Promise((_, rej) => {
+    timer = setTimeout(() => rej(new Error(`timeout: ${label}`)), ms);
+  });
+  return Promise.race([p, t]).finally(() => clearTimeout(timer));
+}
 
 // ---------------------------------------------------------------- page helpers
 
@@ -128,14 +133,33 @@ function scoreProductLink(link, key) {
   if (/\/(p|dp|ip|pd|prod)\/[^/]+/.test(p)) s += 8;
   if (/[-_/](p|prod|pd|sku|style|item)?[-_]?\d{5,}(\.html?)?\/?$/.test(p)) s += 6;
   if (/\.html?$/.test(p)) s += 2;
+  if (/\/[^/]*\d{3,}[^/]*\.html?$/.test(p)) s += 4;
   const ctx = link.ctx.toLowerCase();
-  if (/product[-_]?(tile|card|item|grid|link|image|img|name|title|block|thumb)|card[-_]product|productgrid|product-item|data-product-id|data-pid|data-entity-id|data-product|data-item-id|data-sku|grid-product|productcard/.test(ctx)) s += 5;
+  if (/product[-_]{0,2}(tile|card|item|grid|link|image|img|name|title|block|thumb)|card[-_]product|productgrid|product-item|data-product-id|data-pid|data-entity-id|data-product|data-item-id|data-sku|grid-product|productcard|loopproduct|loop-product|type-product/.test(ctx)) s += 5;
   if (link.inHeader) s -= 3;
   if (link.inFooter) s -= 6;
   if (!link.visible) s -= 1;
   if (/\/(collections|category|categories|product-category|catalog|c)\/[^/]*\/?$/.test(p) && !/\/products?\//.test(p)) s -= 4;
+  if (/card[-_](title|figure|img|image|body)|product-click|productclick/.test(ctx)) s += 3;
   if (/gift|card|sample|swatch|bundle|subscription|giftcard|e-gift/.test(p)) s -= 4;
   return s;
+}
+
+/** Second pass for flat product URLs (e.g. /blue-linen-shirt/): hyphenated slugs in the page body, verified on visit. */
+function scoreSlugLink(link, key) {
+  const base = scoreProductLink(link, key);
+  if (base <= -99 || link.inHeader || link.inFooter || !link.visible) return -99;
+  const p = new URL(link.href).pathname.toLowerCase().replace(/\/$/, '');
+  const parts = p.split('/').filter(Boolean);
+  if (parts.length < 1 || parts.length > 3) return -99;
+  const last = parts[parts.length - 1];
+  return base + (last.split('-').length >= 3 ? 3 : 0);
+}
+
+function pickCandidates(links, key) {
+  let c = links.map((l) => ({ href: l.href, s: scoreProductLink(l, key) })).filter((x) => x.s >= 5);
+  if (!c.length) c = links.map((l) => ({ href: l.href, s: scoreSlugLink(l, key) })).filter((x) => x.s >= 3);
+  return c.sort((a, b) => b.s - a.s);
 }
 
 function scoreCategoryLink(link, key) {
@@ -150,7 +174,7 @@ function scoreCategoryLink(link, key) {
   if (/\/(cart|checkout|account|login|search|blogs?|pages\/|help|faq|contact|about|gift)/.test(p)) return -99;
   let s = 0;
   if (/\/collections\/all\/?$/.test(p)) s += 6;
-  if (/\/(collections|category|categories|product-category|shop|catalog|c)\//.test(p)) s += 4;
+  if (/\/(collections|category|categories|product-category|shop|shop-all|catalog|c)(\/|$)/.test(p)) s += 4;
   if (/(women|men|new|sale|best|all|clothing|shoes|home|accessories|bags|tops|shirts|bedding|furniture)/.test(p)) s += 2;
   if (link.inHeader) s += 1;
   if (link.inFooter) s -= 2;
@@ -384,27 +408,30 @@ async function crawlStore(browser, AxeBuilder, ua, store) {
     });
 
     // ---- product page: candidates from the home page, else from one category page
-    let candidates = links
-      .map((l) => ({ href: l.href, s: scoreProductLink(l, key) }))
-      .filter((c) => c.s >= 5)
-      .sort((a, b) => b.s - a.s);
+    let blockedProduct = 0;
+    let candidates = links.map((l) => ({ href: l.href, s: scoreProductLink(l, key) })).filter((c) => c.s >= 5);
     if (candidates.length === 0) {
       const cats = links
         .map((l) => ({ href: l.href, s: scoreCategoryLink(l, key) }))
         .filter((c) => c.s >= 3)
         .sort((a, b) => b.s - a.s);
-      if (cats.length) {
-        const cat = await visit(page, cats[0].href, book, pacer);
-        rec.pages.category = { status: cat.status, blocked: !!cat.blocked, skipped: cat.skipped, reason: cat.reason };
-        if (!cat.blocked && !cat.skipped) {
+      // up to two category pages, stopping at the first that lists products
+      for (const catLink of cats.slice(0, 2)) {
+        const cat = await visit(page, catLink.href, book, pacer);
+        rec.pages.category = { url: catLink.href, status: cat.status, blocked: !!cat.blocked, skipped: cat.skipped, reason: cat.reason };
+        if (cat.blocked) {
+          blockedProduct++;
+          break;
+        }
+        if (!cat.skipped) {
           const clinks = await page.evaluate(harvestLinks).catch(() => []);
-          candidates = clinks
-            .map((l) => ({ href: l.href, s: scoreProductLink(l, key) }))
-            .filter((c) => c.s >= 5)
-            .sort((a, b) => b.s - a.s);
+          candidates = pickCandidates(clinks, key);
+          if (candidates.length) break;
         }
       }
+      if (!candidates.length) candidates = pickCandidates(links, key);
     }
+    candidates.sort((a, b) => b.s - a.s);
     // spread picks across the page instead of three neighbours from one carousel
     const seenPaths = new Set();
     candidates = candidates.filter((c) => {
@@ -414,9 +441,9 @@ async function crawlStore(browser, AxeBuilder, ua, store) {
       return true;
     });
     rec.productCandidates = candidates.length;
+    rec.productCandidateSample = candidates.slice(0, 5).map((c) => `${c.s} ${c.href}`);
     let product = null;
     let fallback = null;
-    let blockedProduct = 0;
     for (const c of candidates.slice(0, 3)) {
       const v = await visit(page, c.href, book, pacer);
       if (v.skipped) {
@@ -538,7 +565,9 @@ async function main() {
     try {
       prev = JSON.parse(await fs.readFile(file, 'utf8'));
     } catch {}
-    if (prev && !args.force && !(args['retry-blocked'] && ['blocked', 'error'].includes(prev.status))) continue;
+    const retry = new Set(String(args.retry ?? (args['retry-blocked'] ? 'blocked,error' : '')).split(',').filter(Boolean));
+    const timedOut = prev?.status === 'blocked' && /timeout/.test(`${prev.blockedReason ?? ''} ${prev.pages?.home?.reason ?? ''} ${(prev.notes ?? []).join(' ')}`);
+    if (prev && !args.force && !retry.has(prev.status) && !(retry.has('timeout') && timedOut)) continue;
     if (args.limit && n >= Number(args.limit)) break;
     n++;
     let rec;

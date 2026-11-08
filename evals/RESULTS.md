@@ -6,10 +6,52 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 
 | Suite | Results | Negative results | Ran at (UTC) | Git |
 | --- | --- | --- | --- | --- |
+| Checkout Barrier Index | 6 | 0 | 2026-11-08T22:07:14.585Z | uncommitted |
 | Spoken purchase confirmation | 5 | 2 | 2026-11-08T20:05:21.235Z | uncommitted |
 | Duplicate orders | 8 | 2 | 2026-11-08T20:05:22.549Z | uncommitted |
 | Grounded answers | 5 | 2 | 2026-11-08T20:05:22.865Z | uncommitted |
 | Adversarial listings (red team) | 5 | 1 | 2026-11-08T20:05:21.560Z | uncommitted |
+| SightBench: does the parcel match? | 12 | 5 | 2026-11-08T21:32:33.418Z | uncommitted |
+
+## Checkout Barrier Index
+
+Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git uncommitted
+
+| Result | Value | Baseline | Interval | n | Script |
+| --- | --- | --- | --- | --- | --- |
+| Median axe-core violations per product page (distinct WCAG A/AA rules failed) | 4 | — | IQR 2–6 | 60 | `evals/barrier/analyse.mjs` |
+| Stores where keyboard-only traversal could not reach add to cart within 150 Tabs | 9% (3 of 33) | — | 95% Wilson 3%–24% | 33 | `evals/barrier/analyse.mjs` |
+| Stores with at least one button that has no accessible name (home or product page) | 35% (21 of 60) | — | 95% Wilson 24%–48% | 60 | `evals/barrier/analyse.mjs` |
+| Most common failing rule: color-contrast | 60% of stores (36 of 60) | — | 95% Wilson 47%–71% | 60 | `evals/barrier/analyse.mjs` |
+| Sampled stores that refused or timed out for an honest, rate-limited, read-only crawler | 24 of 100 | — | 95% Wilson 17%–33% | 100 | `evals/barrier/analyse.mjs` |
+| Sightline path: product facts, readback and payment reachable by voice and keyboard on all 60 items; no store UI needed | By design | — | — | 60 | `evals/barrier/analyse.mjs` |
+
+Notes:
+
+- Median axe-core violations per product page (distinct WCAG A/AA rules failed): axe-core 4.14.0, tags wcag2a, wcag2aa, wcag21aa, wcag22aa, one product page per store. Median failing elements per product page: 13. Home page median: 3 rules.
+- Stores where keyboard-only traversal could not reach add to cart within 150 Tabs: Tab only from the top of the page, no Enter, Space or clicks; Escape pressed once if focus was trapped. Counted over product pages with an enabled add-to-cart control named "add to cart/bag/basket" or "buy now". Focus traps among the failures: 1. Not in the denominator: 12 pages where a cookie or sign-up dialog held focus and Escape did not close it, 7 whose add-to-cart button is disabled or hidden until a size is chosen, 8 with no control using that wording, 0 traversal errors.
+- Stores with at least one button that has no accessible name (home or product page): axe-core rules button-name, input-button-name and aria-command-name. A screen reader announces these as "button" with nothing else.
+- Most common failing rule: color-contrast: Elements must meet minimum color contrast ratio thresholds. Counted once per store if it fails on the home, product or cart page; 697 failing elements in total. Tied on store count with target-size (480 elements); ranked first by failing elements.
+- Sampled stores that refused or timed out for an honest, rate-limited, read-only crawler: Blocked at the home page: 21; at the product page: 3. Also excluded: 0 disallowed by robots.txt, 16 with no product page found from the home page, 0 crawler errors. Blocked stores are left out of every other number.
+- Sightline path: product facts, readback and payment reachable by voice and keyboard on all 60 items; no store UI needed: A design property, not a measurement on these stores: Sightline reads product facts from catalog data, speaks the readback and pays through PayPal, so none of the store pages audited here sit on its path. 60 is the number of stores whose product page was crawled.
+
+Limitations:
+
+- Convenience sample: 100 well-known stores selling everyday goods, picked from public knowledge and platform showcase pages, then grouped by the platform their pages actually showed. Not a random sample of all online stores, and platform groups are small, so per-platform numbers are indicative only.
+- Crawled between 2026-11-08 20:14 and 2026-11-08 22:07 UTC from a single location in India with headless Chromium at 1280×900. Stores change their pages often, and geo redirects, currency conversion and consent banners differ by country: several large US retailers answered with a country selector or a global corporate page, which shows up here as no product page found.
+- Stores that timed out or gave no product page on the first pass were crawled once more after product-link discovery was widened (a second category page and flat product URLs). Stores already measured were not crawled again, so a fresh run of the current code can pick different product pages.
+- 24 stores refused or timed out and are excluded, so the measured set leans toward stores without aggressive bot defences.
+- Automated rules catch only part of WCAG. Zero axe violations would not mean a page is accessible; these counts are a floor, not a full audit. No screen reader was run.
+- One product page per store, found from links on the home page (or up to two category pages). It may not represent the rest of the catalogue.
+- Keyboard traversal presses Tab only (plus Escape once when trapped). It never presses Enter, Space or arrow keys, so it does not open menus, choose a size or dismiss dialogs that need a button press. Pages where a consent or sign-up dialog held focus, and pages whose add-to-cart button is disabled or hidden until a size is chosen, are left out of the reachability rate rather than counted as failures.
+- Add to cart is matched by its accessible name in English ("add to cart/bag/basket", "buy now"). Stores that use other wording are counted as having no matching control, not as failures.
+- Visible focus is a heuristic: computed styles of the focused element, its label, parent, next sibling, first child and pseudo-elements are compared focused versus blurred. It misses indicators drawn elsewhere and can count unrelated style changes.
+- Product images, the price region and size or colour selectors are found by heuristics on class names, the main heading and structured data, and can miss or misclassify elements.
+- Cart pages are opened by direct URL only where robots.txt allows: 32 stores had an (empty) cart page audited and 29 were skipped because robots.txt disallows it, so cart numbers are partial. Checkout pages are never opened.
+- The Sightline path line is a design property of the product, not a measurement on these stores.
+- Stores appear only as unsalted 12-character sha256 prefixes of their domain. That keeps names out of the published data but does not stop someone who guesses a domain from confirming it; the per-store rows exist for reproducibility, not for naming stores.
+
+Full per-item data: `evals/results/barrier.json` (`details`).
 
 ## Spoken purchase confirmation
 
@@ -135,3 +177,51 @@ Limitations:
 - Ten listings per card: a zero count still leaves an upper bound near 28% per card.
 
 Full per-item data: `evals/results/redteam.json` (`details`).
+
+## SightBench: does the parcel match?
+
+Suite `sightbench` · ran 2026-11-08T21:32:33.418Z · git uncommitted
+
+| Result | Value | Baseline | Interval | n | Script |
+| --- | --- | --- | --- | --- | --- |
+| Mismatches flagged on the frozen test split, Sightline without model reads **(negative result)** | 2 of 210 (1.0%) | CLIP ViT-B/32, dev-fitted: 194 of 210 (92.4%) | 95% Wilson 0.3%–3.4% | 210 | `evals/sightbench/run.ts` |
+| Matching items wrongly called a mismatch (false alarms), Sightline | 1 of 210 (0.5%) | CLIP: 189 of 210 (90.0%) | 95% Wilson 0.1%–2.6% | 210 | `evals/sightbench/run.ts` |
+| Pairs where Sightline answered "not sure" (abstained) | 417 of 420 (99.3%) | CLIP baseline never abstains | 95% Wilson 97.9%–99.8% | 420 | `evals/sightbench/run.ts` |
+| Accuracy when Sightline gives an answer (match or mismatch) | 2 of 3 (66.7%) | CLIP (always answers): 215 of 420 (51.2%) | 95% Wilson 20.8%–93.9% | 3 | `evals/sightbench/run.ts` |
+| Secondary metric, added after the first test run: mismatches where Sightline names the difference (mismatch, or "not sure" with the right module disagreeing) | 65 of 210 (31.0%) | first test run (unfitted): 76 of 210 | 95% Wilson 25.1%–37.5% | 210 | `evals/sightbench/run.ts` |
+| False-alarm twin of the secondary metric: matching items called a mismatch or given any disagreeing reason | 21 of 210 (10.0%) | first test run (unfitted): 45 of 210 | 95% Wilson 6.6%–14.8% | 210 | `evals/sightbench/run.ts` |
+| First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure | 7/210 · 6/210 · 407/420 | this run: 2/210 · 1/210 · 417/420 | — | 420 | `evals/sightbench/run.ts` |
+| Navy delivered for black (or black for navy) in dim light: mismatches caught by Sightline **(negative result)** | 0 of 7 | in daylight: 0 of 7; CLIP dim: 7 of 7 | 95% Wilson 0.0%–35.4% | 7 | `evals/sightbench/run.ts` |
+| Wrong size delivered: caught by Sightline without model reads **(negative result)** | 1 of 53 | size-tag OCR alone: 51 of 53 | 95% Wilson 0.3%–9.9% | 53 | `evals/sightbench/run.ts` |
+| Different model or damage marks: caught by Sightline without model reads **(negative result)** | model 0 of 52, damage 0 of 52 | CLIP: model 52 of 52, damage 48 of 52 | — | 104 | `evals/sightbench/run.ts` |
+| Colour check gave up ("heavy colour cast") on wood tables and plank floors **(negative result)** | 109 of 113 | other surfaces: 42 of 307 | 95% Wilson 91.3%–98.6% | 113 | `evals/sightbench/run.ts` |
+| POST /verify latency on the dev laptop, p50 / p95 | 1.12 s / 1.44 s | — | — | 420 | `evals/sightbench/run.ts` |
+
+Notes:
+
+- Mismatches flagged on the frozen test split, Sightline without model reads: Synthetic renders, not real photos. Stratified over colour, size, model and damage mismatches. No model reads in this run: identity and damage report unknown, so the service never says match. CLIP's dev-fitted threshold also flags 189 of 210 (90.0%) of matching pairs (dev balanced accuracy 0.5444), so its recall says little. The first test run (unfitted thresholds) flagged 7 of 210: the dev-fitted colour rules removed false alarms but also real colour catches (see "First test run").
+- Matching items wrongly called a mismatch (false alarms), Sightline: Synthetic renders, not real photos. A false alarm tells a buyer to return an item that is right. 1 of 1 came from a "sure" colour disagreement (listed: sky blue); see details.worstCases.sightlineFalseAlarms.
+- Pairs where Sightline answered "not sure" (abstained): Coverage 3 of 420 (0.7%). Accuracy when Sightline did answer: 2 of 3 (66.7%); CLIP accuracy: 215 of 420 (51.2%). No model reads in this run: identity and damage report unknown, so the service never says match.
+- Secondary metric, added after the first test run: mismatches where Sightline names the difference (mismatch, or "not sure" with the right module disagreeing): Synthetic renders, not real photos. What the buyer hears, for example "The size tag seems to read L, you ordered M, but I'm only fairly sure.", and the money-back path stays open for "not sure". Per type: colour 14 of 53, damage 0 of 52, model 0 of 52, size 51 of 53. Defined after the first test run's primary numbers were known, so it is reported next to them, never instead of them.
+- False-alarm twin of the secondary metric: matching items called a mismatch or given any disagreeing reason: Synthetic renders, not real photos. The buyer hears a difference that is not there, even if only as "not sure". Disagreeing modules on these pairs: colour 21.
+- First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure: The frozen test split has been run 2 times: first with the hand-set thresholds, then with thresholds fitted on the dev split only. Nothing was tuned on test. Every run's numbers are in details.testRuns. Mismatches flagged per type, first run -> this run: colour 4 -> 1 of 53, damage 2 -> 0 of 52, model 0 -> 0 of 52, size 1 -> 1 of 53. Secondary metric, first run -> this run: named 76 of 210 -> 65 of 210, twin false alarms 45 of 210 -> 21 of 210.
+- Navy delivered for black (or black for navy) in dim light: mismatches caught by Sightline: Synthetic renders, not real photos. In dim light the colour module disagreed on 0, but dim light lowers its confidence below "sure", so the verdict was "not sure"; it agreed (wrongly) on 0 and gave up on 7. CLIP's 7 of 7 means little: it flags 90.0% of matching pairs too. Only 7 pairs per light level, so intervals are wide.
+- Wrong size delivered: caught by Sightline without model reads: With OCR as the only tag read, a size is at most "fairly sure", and fusion needs "sure" to call a mismatch, so these end as "not sure". OCR alone called 0 of 210 matching pairs a mismatch (synthetic tags).
+- Different model or damage marks: caught by Sightline without model reads: Identity and damage checks need the vision model, which this run did not have.
+- Colour check gave up ("heavy colour cast") on wood tables and plank floors: Synthetic renders, not real photos. Without a sheet of white paper in view, white balance is gray world over the background, so an orange wood surface reads as a strong colour cast and the colour module abstains. Holds in daylight too. Checked on dev: the item masks on wood are tight and the background pixels are plain wood, so this is the gray-world assumption, not a mask bug; it was not fitted away.
+- POST /verify latency on the dev laptop, p50 / p95: Client wall time, one request at a time over localhost, CPU only, no model calls. Server-side total p50 1116 ms.
+
+Limitations:
+
+- Synthetic renders, not real photos: listing images are clean procedural renders and delivered photos are phone-like renders (perspective, rotation, uneven light, colour casts, blur, noise, JPEG). Real photos will differ; the real photo set (evals/sightbench/real/SHOTLIST.md) is not collected yet.
+- No vision-model reads in this run (no ANTHROPIC_API_KEY): the service ran colour, OCR, quality and fusion only. Identity and damage report unknown, so it can never answer match, and a size read once by OCR is at most fairly sure. Re-run with --with-model once the service has a key.
+- Service thresholds: fitted-dev-2026-11-09, fitted on the dev split only (services/vision/app/thresholds.json, "fitted"); the hand-set set is kept as initial-unfitted. The CLIP threshold was also fitted on dev only: 0.880224 (maximise balanced accuracy on dev over midpoints of sorted dev scores; ties -> median tied candidate). Dev has only 180 pairs (23 colour mismatches), so the fit is coarse.
+- The frozen test split has been run 2 times: run 1 on 2026-11-08 (no-model, unfitted thresholds); run 2 on 2026-11-08 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)). Each run's numbers are in details.testRuns; nothing was tuned on test.
+- The secondary metric ("names the difference" and its false-alarm twin) was defined after the first test run had been scored. It is reported next to the primary metrics, never instead of them.
+- The test split (420 pairs, sha256 e7561f6ddae5) was frozen before any system ran. Products never cross splits (check-splits.mjs).
+- One delivered photo, one tag photo (not for mugs) and one listing image per pair; no damage close-up was sent, because a blind buyer may not know where to aim.
+- Navy/black is deliberately oversampled (40% of colour mismatches), but that is still 7 pairs per light level; per-cell intervals are wide.
+- The CLIP baseline sees only the listing image and the delivered photo, never the tag or the listing text, so it cannot see size by design.
+- Ablations are decision rules applied to the module outputs of the same /verify calls, not separate service runs.
+
+Full per-item data: `evals/results/sightbench.json` (`details`).

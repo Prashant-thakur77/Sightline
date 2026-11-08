@@ -70,16 +70,16 @@ async function checkOne(c, book) {
  *  - stores the precheck saw as custom, up to 30, those expected to be Magento first (headless Magento only shows
  *    itself to the browser) and then large retailers;
  *  - up to 6 large retailers that refused the plain precheck request, because blocking is itself a result;
- *  - stores that do not sell everyday goods are left out.
+ *  - candidates marked { "skip": "<reason>" } in candidates.json (for example, not everyday goods) are left out.
  */
-const NOT_EVERYDAY = new Set(['berlinpackaging.com', 'ubiquiti.com']);
 const CAPS = { shopify: 20, woocommerce: 20, magento: 20, bigcommerce: 20, sfcc: 20 };
 
 async function select() {
   const checked = JSON.parse(await fs.readFile(path.join(RAW_DIR, 'candidates-checked.json'), 'utf8'));
   const order = JSON.parse(await fs.readFile(path.join(RAW_DIR, 'candidates.json'), 'utf8')).map((c) => bareDomain(c.domain));
   checked.sort((a, b) => order.indexOf(a.domain) - order.indexOf(b.domain));
-  const eligible = checked.filter((c) => !c.robotsBlocked && !NOT_EVERYDAY.has(c.domain));
+  const skip = new Set(JSON.parse(await fs.readFile(path.join(RAW_DIR, 'candidates.json'), 'utf8')).filter((c) => c.skip).map((c) => bareDomain(c.domain)));
+  const eligible = checked.filter((c) => !c.robotsBlocked && !skip.has(c.domain));
   const stores = [];
   for (const [platform, cap] of Object.entries(CAPS)) stores.push(...eligible.filter((c) => c.platform === platform).slice(0, cap));
   const rank = { magento: 0, sfcc_or_custom: 1 };

@@ -38,6 +38,7 @@ export function wilson(k, n, z = 1.96) {
 const pct = (x) => (x == null ? 'n/a' : `${Math.round(x * 100)}%`);
 const num = (x) => (x == null ? null : Math.round(x * 10) / 10);
 const fmt = (x) => (x == null ? 'n/a' : Number.isInteger(x) ? String(x) : x.toFixed(1));
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const rate = (k, n) => (n ? Math.round((k / n) * 1000) / 1000 : null);
 
 // ---------------------------------------------------------------- per store
@@ -61,6 +62,14 @@ function keyboardOutcome(rec) {
   return 'no-atc';
 }
 
+/** A category page that refused or timed out on the way to a product counts as the store blocking the crawl. */
+function statusOf(rec) {
+  if (rec.status === 'no-product' && rec.pages?.category?.blocked) return { status: 'blocked', blockedAt: 'product' };
+  // sent away from the store (for example a "site closed in your country" page) to a path robots.txt disallows
+  if (rec.status === 'robots' && rec.pages?.home?.skipped === 'robots-after-redirect') return { status: 'blocked', blockedAt: 'home' };
+  return { status: rec.status, blockedAt: rec.blockedAt ?? null };
+}
+
 function storeMetrics(rec, platform) {
   const home = violationsOf(rec.pages?.home);
   const prod = violationsOf(rec.pages?.product);
@@ -73,8 +82,7 @@ function storeMetrics(rec, platform) {
   return {
     domainHash: rec.domainHash,
     platform,
-    status: rec.status,
-    blockedAt: rec.blockedAt ?? null,
+    ...statusOf(rec),
     homeViolations: home ? home.length : null,
     homeFailingNodes: nodes(home),
     productViolations: prod ? prod.length : null,
@@ -130,13 +138,15 @@ function aggregate(rows) {
     medianFailingNodesHome: num(median(withHome.map((r) => r.homeFailingNodes))),
     keyboardReachAddToCartRate: rate(reached, kbRows.length),
     keyboardReachDenominator: kbRows.length,
+    keyboardOutcomes: analysed.reduce((m, r) => ({ ...m, [r.keyboardOutcome]: (m[r.keyboardOutcome] ?? 0) + 1 }), {}),
     medianTabsToAddToCart: num(median(analysed.filter((r) => r.tabsToAddToCart != null).map((r) => r.tabsToAddToCart))),
     unnamedButtonsRate: rate(unnamedK, unnamedRows.length),
     productImagesMissingAltRate: rate(imgRows.filter((r) => r.productImagesNoAlt > 0).length, imgRows.length),
     priceExposedAsTextRate: rate(priceRows.filter((r) => r.priceExposedAsText).length, priceRows.length),
+    priceVisibleButNotExposed: priceRows.filter((r) => r.priceVisible && !r.priceExposedAsText).length,
     variantSelectorReachableRate: rate(varRows.filter((r) => r.variantSelectorReached).length, varRows.length),
     focusTrapRate: rate(trapRows.filter((r) => r.focusTrap === 'trapped').length, trapRows.length),
-    medianShareOfFocusStopsWithoutVisibleChange: num(median(focusShares) == null ? null : median(focusShares) * 100) == null ? null : num(median(focusShares) * 100) / 100,
+    medianShareOfFocusStopsWithoutVisibleChange: median(focusShares) == null ? null : Math.round(median(focusShares) * 1000) / 1000,
     cartAudited: rows.filter((r) => r.cartAudit === 'audited').length,
     cartSkippedByRobots: rows.filter((r) => r.cartAudit === 'robots' || r.cartAudit === 'robots-after-redirect').length,
   };
@@ -205,6 +215,7 @@ async function main() {
   const unnamedK = unnamedRows.filter((r) => (r.unnamedButtonsProduct ?? 0) + (r.unnamedButtonsHome ?? 0) > 0).length;
   const [unLo, unHi] = wilson(unnamedK, unnamedRows.length);
   const top = topRules[0];
+  const tied = top ? topRules.slice(1).filter((r) => r.storesAffected === top.storesAffected) : [];
   const [trLo, trHi] = top ? wilson(top.storesAffected, analysedRecs.length) : [null, null];
   const sampled = rows.length;
   const blocked = rows.filter((r) => r.status === 'blocked');
@@ -231,7 +242,7 @@ async function main() {
       interval: kbRows.length ? `95% Wilson ${pct(nrLo)}–${pct(nrHi)}` : undefined,
       n: kbRows.length,
       script: SCRIPT,
-      note: `Tab only from the top of the page, no Enter, Space or clicks; Escape pressed once if focus was trapped. Counted over product pages with an enabled add-to-cart control named "add to cart/bag/basket" or "buy now". ${trappedAmongNot} of the failures were focus traps. Not in the denominator: ${excludedOverlay} pages where a cookie or sign-up dialog held focus and Escape did not close it, ${excludedDisabled} whose add-to-cart button is disabled or hidden until a size is chosen, ${excludedNoAtc} with no control using that wording, ${excludedErr} traversal errors.`,
+      note: `Tab only from the top of the page, no Enter, Space or clicks; Escape pressed once if focus was trapped. Counted over product pages with an enabled add-to-cart control named "add to cart/bag/basket" or "buy now". Focus traps among the failures: ${trappedAmongNot}. Not in the denominator: ${plural(excludedOverlay, 'page')} where a cookie or sign-up dialog held focus and Escape did not close it, ${excludedDisabled} whose add-to-cart button is disabled or hidden until a size is chosen, ${excludedNoAtc} with no control using that wording, ${plural(excludedErr, 'traversal error')}.`,
     },
     {
       id: 'barrier-unnamed-buttons',
@@ -245,11 +256,13 @@ async function main() {
     top && {
       id: 'barrier-top-rule',
       label: `Most common failing rule: ${top.id}`,
-      value: `${top.id} (${top.storesAffected} of ${analysedRecs.length} stores)`,
+      value: `${pct(top.storesAffected / analysedRecs.length)} of stores (${top.storesAffected} of ${analysedRecs.length})`,
       interval: `95% Wilson ${pct(trLo)}–${pct(trHi)}`,
       n: analysedRecs.length,
       script: SCRIPT,
-      note: `${top.help}. Counted once per store if it fails on the home, product or cart page; ${top.totalNodes} failing elements in total.`,
+      note: `${top.help}. Counted once per store if it fails on the home, product or cart page; ${top.totalNodes} failing elements in total.${
+        tied.length ? ` Tied on store count with ${tied.map((r) => `${r.id} (${r.totalNodes} elements)`).join(', ')}; ranked first by failing elements.` : ''
+      }`,
     },
     {
       id: 'barrier-blocked',
@@ -258,7 +271,7 @@ async function main() {
       interval: sampled ? `95% Wilson ${pct(blLo)}–${pct(blHi)}` : undefined,
       n: sampled,
       script: SCRIPT,
-      note: `Blocked at the home page: ${blocked.filter((r) => r.blockedAt === 'home').length}; at the product page: ${blocked.filter((r) => r.blockedAt === 'product').length}. Also excluded: ${robotsOut} disallowed by robots.txt, ${noProduct} with no product page found from the home page, ${errors} crawler errors. Blocked stores are left out of every other number.`,
+      note: `Blocked at the home page: ${blocked.filter((r) => r.blockedAt === 'home').length}; at the product page: ${blocked.filter((r) => r.blockedAt === 'product').length}. Also excluded: ${robotsOut} disallowed by robots.txt, ${noProduct} with no product page found from the home page, ${plural(errors, 'crawler error')}. Blocked stores are left out of every other number.`,
     },
     N > 0 && {
       id: 'barrier-sightline-path',
@@ -272,23 +285,29 @@ async function main() {
 
   const finished = recs.map((r) => r.finishedAt).filter(Boolean).sort();
   const started = recs.map((r) => r.startedAt).filter(Boolean).sort();
-  let gitSha = 'unknown';
+  // Same rule as evals/lib/results.ts gitSha(): a commit is named only when evals/ and packages/
+  // match it; otherwise the result says "uncommitted", so it never points at code it didn't run.
+  let gitSha = 'uncommitted';
   try {
-    gitSha = execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim();
+    const head = execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim();
+    const dirty = execSync('git status --porcelain -- evals packages', { cwd: ROOT }).toString().trim();
+    if (head && !dirty) gitSha = head;
   } catch {}
 
   const limitations = [
     `Convenience sample: ${sampled} well-known stores selling everyday goods, picked from public knowledge and platform showcase pages, then grouped by the platform their pages actually showed. Not a random sample of all online stores, and platform groups are small, so per-platform numbers are indicative only.`,
-    `Crawled once between ${started[0]?.slice(0, 10) ?? '?'} and ${finished[finished.length - 1]?.slice(0, 10) ?? '?'} from a single location in India with headless Chromium at 1280×900. Stores change their pages often, and geo redirects, currency conversion and consent banners differ by country.`,
+    `Crawled between ${started[0]?.slice(0, 16).replace('T', ' ') ?? '?'} and ${finished[finished.length - 1]?.slice(0, 16).replace('T', ' ') ?? '?'} UTC from a single location in India with headless Chromium at 1280×900. Stores change their pages often, and geo redirects, currency conversion and consent banners differ by country: several large US retailers answered with a country selector or a global corporate page, which shows up here as no product page found.`,
+    'Stores that timed out or gave no product page on the first pass were crawled once more after product-link discovery was widened (a second category page and flat product URLs). Stores already measured were not crawled again, so a fresh run of the current code can pick different product pages.',
     `${blocked.length} stores refused or timed out and are excluded, so the measured set leans toward stores without aggressive bot defences.`,
     'Automated rules catch only part of WCAG. Zero axe violations would not mean a page is accessible; these counts are a floor, not a full audit. No screen reader was run.',
-    'One product page per store, found from links on the home page (or one category page). It may not represent the rest of the catalogue.',
+    'One product page per store, found from links on the home page (or up to two category pages). It may not represent the rest of the catalogue.',
     'Keyboard traversal presses Tab only (plus Escape once when trapped). It never presses Enter, Space or arrow keys, so it does not open menus, choose a size or dismiss dialogs that need a button press. Pages where a consent or sign-up dialog held focus, and pages whose add-to-cart button is disabled or hidden until a size is chosen, are left out of the reachability rate rather than counted as failures.',
     'Add to cart is matched by its accessible name in English ("add to cart/bag/basket", "buy now"). Stores that use other wording are counted as having no matching control, not as failures.',
     'Visible focus is a heuristic: computed styles of the focused element, its label, parent, next sibling, first child and pseudo-elements are compared focused versus blurred. It misses indicators drawn elsewhere and can count unrelated style changes.',
     'Product images, the price region and size or colour selectors are found by heuristics on class names, the main heading and structured data, and can miss or misclassify elements.',
-    'Cart pages are opened by direct URL only where robots.txt allows; most platforms disallow /cart by default, so cart coverage is partial. Checkout pages are never opened.',
+    `Cart pages are opened by direct URL only where robots.txt allows: ${all.cartAudited} stores had an (empty) cart page audited and ${all.cartSkippedByRobots} were skipped because robots.txt disallows it, so cart numbers are partial. Checkout pages are never opened.`,
     'The Sightline path line is a design property of the product, not a measurement on these stores.',
+    'Stores appear only as unsalted 12-character sha256 prefixes of their domain. That keeps names out of the published data but does not stop someone who guesses a domain from confirming it; the per-store rows exist for reproducibility, not for naming stores.',
   ];
 
   const out = {
@@ -305,8 +324,12 @@ async function main() {
 
   // A last guard: nothing that identifies a store may reach the committed file.
   const written = await fs.readFile(RESULT_FILE, 'utf8');
-  const leaks = sample.filter((s) => written.toLowerCase().includes(s.domain.toLowerCase().split('.')[0] + '.'));
-  if (leaks.length) throw new Error(`result mentions ${leaks.length} store domains; refusing to keep it`);
+  const lower = written.toLowerCase();
+  const leaks = sample.filter((s) => lower.includes(s.domain.toLowerCase()));
+  if (leaks.length || /https?:\/\//.test(lower)) {
+    await fs.rm(RESULT_FILE, { force: true });
+    throw new Error(`result mentions ${leaks.length} store domains or a URL; refusing to keep it`);
+  }
 
   console.log(JSON.stringify({ headlines: headlines.map((h) => `${h.label}: ${h.value} ${h.interval ?? ''} n=${h.n ?? ''}`), byPlatform: Object.fromEntries(Object.entries(byPlatform).map(([k, v]) => [k, { stores: v.stores, crawled: v.crawled, blocked: v.blocked }])), topRules: topRules.slice(0, 5).map((r) => `${r.id} ${r.storesAffected}`) }, null, 1));
 }

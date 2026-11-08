@@ -1,0 +1,19 @@
+{
+  "model": "ViT-B-32",
+  "pretrained": "openai",
+  "threshold": 0.880224,
+  "decision": "mismatch when cosine(listing image, delivered photo) < threshold, else match; never abstains",
+  "fitted_on": "dev",
+  "dev_manifest": "evals/sightbench/manifests/dev.json",
+  "dev_manifest_sha256": "8cbbba4238015b03cdd9779178362366cf596ce4e0f2790d9851781489dd63bc",
+  "rule": "maximise balanced accuracy on dev over midpoints of sorted dev scores; ties -> median tied candidate",
+  "dev": {
+    "pairs": 180,
+    "balanced_accuracy": 0.5444,
+    "mismatch_recall": "81 of 90",
+    "false_alarms": "73 of 90",
+    "tied_candidates": 1
+  },
+  "fitted_at": "2026-11-08T20:41:01+00:00",
+  "test_manifest_sha256_at_fit": "e7561f6ddae5b447e10fc6bb4e5eb29ec08dcb1082e58fcde0cc3c691bd78e73"
+}

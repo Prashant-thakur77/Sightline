@@ -103,6 +103,19 @@ def lab_to_srgb(lab: np.ndarray) -> np.ndarray:
     return linear_to_srgb(xyz_to_linear(lab_to_xyz(lab)))
 
 
+def same_brightness_delta_e(lab: np.ndarray | Sequence[float], reference: np.ndarray | Sequence[float], kL: float = 1.0) -> float:
+    """CIEDE2000 after scaling ``lab`` (in XYZ) to the luminance of ``reference``.
+
+    A camera's exposure scales all three channels together, so two colours that differ only by an
+    exposure gain (white and grey, a light colour photographed in a dark room) come out near 0. What
+    is left is a difference in hue and saturation that exposure cannot explain.
+    """
+    xyz = lab_to_xyz(np.asarray(lab, dtype=np.float64))
+    ref_xyz = lab_to_xyz(np.asarray(reference, dtype=np.float64))
+    scaled = xyz * (float(ref_xyz[1]) / max(float(xyz[1]), 1e-6))
+    return float(ciede2000(xyz_to_lab(scaled), np.asarray(reference, dtype=np.float64), kL=kL))
+
+
 def hex_to_rgb(hex_code: str) -> tuple[int, int, int]:
     h = hex_code.lstrip("#")
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
@@ -534,8 +547,16 @@ def compare(
     listing_colour: str | None,
     th: dict[str, Any],
     mask_reliable: bool = True,
+    photo_ok: bool = True,
 ) -> dict[str, Any]:
-    """Compare the delivered item's colour with the listing. Returns the module's raw output."""
+    """Compare the delivered item's colour with the listing. Returns the module's raw output.
+
+    Confidence drops one step each for dim or tinted light, an unreliable mask and (with
+    ``quality_issue_steps``) an item photo that failed the quality gate. Without a white reference
+    the exposure is unknown, so a "sure" disagreement also needs the colours to differ at the same
+    brightness (``sure_min_de_same_brightness``); a difference that exposure alone explains, such as
+    white read as grey, is at most "fairly sure".
+    """
     from . import colour_names
 
     kL = float(th["kL"])
@@ -544,6 +565,7 @@ def compare(
         "listing_images": [img.to_dict() for img in listing],
         "listing_lab": None,
         "delta_e": None,
+        "delta_e_same_brightness": None,
         "delta_e_name": None,
         "expected_name": None,
         "named_agreement": None,
@@ -551,8 +573,10 @@ def compare(
         "light_quality": delivered.light.level,
         "light_reasons": delivered.light.reasons,
         "reference_used": delivered.white_balance.reference_used,
+        "photo_ok": photo_ok,
         "finding": "unknown",
         "confidence": "not_sure",
+        "confidence_limits": [],
         "abstain_reason": None,
     }
     d_lab = np.array(delivered.dominant.lab)
@@ -575,6 +599,7 @@ def compare(
         out["listing_lab"] = [round(v, 2) for v in l_dom.lab]
         de = float(ciede2000(d_lab, np.array(l_dom.lab), kL=kL))
         out["delta_e"] = round(de, 3)
+        out["delta_e_same_brightness"] = round(same_brightness_delta_e(d_lab, l_dom.lab, kL=kL), 3)
         if de <= th["match_max_de"]:
             primary = "agree"
         elif de >= th["mismatch_min_de"]:
@@ -592,6 +617,7 @@ def compare(
         secondary = "agree" if agree else "disagree"
 
     de = out["delta_e"]
+    limits: list[str] = out["confidence_limits"]
     if primary is None and secondary is None:
         out["abstain_reason"] = "nothing_to_compare"
         return out
@@ -601,6 +627,10 @@ def compare(
     elif primary == "disagree":
         if secondary == "disagree" or de >= th["strong_mismatch_de"]:
             finding, conf = "disagree", "sure"
+            min_same = th.get("sure_min_de_same_brightness")
+            if min_same is not None and not delivered.white_balance.reference_used and out["delta_e_same_brightness"] < float(min_same):
+                conf = "fairly_sure"
+                limits.append("brightness_only")
         else:
             finding, conf = "disagree", "fairly_sure"
     elif primary == "agree":
@@ -620,8 +650,14 @@ def compare(
     steps = 0
     if delivered.light.level == "dim":
         steps += 1
+        limits.append("dim_light")
     if not mask_reliable:
         steps += 1
+        limits.append("mask_unreliable")
+    quality_steps = int(th.get("quality_issue_steps", 0))
+    if not photo_ok and quality_steps > 0:
+        steps += quality_steps
+        limits.append("photo_quality")
     out["finding"] = finding
     out["confidence"] = downgrade(conf, steps)
     return out

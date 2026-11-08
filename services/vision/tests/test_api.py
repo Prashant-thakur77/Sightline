@@ -12,7 +12,7 @@ from starlette.responses import PlainTextResponse
 from starlette.routing import Route
 
 from app import main, pipeline
-from app.config import Limits
+from app.config import Limits, load_thresholds
 from app.imageio import ImageError
 
 from fakes import FakeVlm, damage_answer, label_answer
@@ -59,7 +59,7 @@ def test_health(client):
     assert body["status"] == "ok"
     assert body["vlm"] == {"configured": False, "engine": "none"}
     assert body["ocr"]["engine"] in ("rapidocr", "none")
-    assert body["thresholds"]
+    assert body["thresholds"] == load_thresholds()["version"]
 
 
 def test_quality_endpoint_returns_a_hint(client):
@@ -91,6 +91,9 @@ def test_verify_match(client, fake_engines, photos):
         assert key in body["modules"]
     for key in ("decode", "quality", "mask", "colour", "size", "identity", "damage", "fusion", "total"):
         assert key in body["timings_ms"]
+    # Every response names the threshold set it was judged with, and colour sees the quality gate.
+    assert body["modules"]["engines"]["thresholds"] == load_thresholds()["version"]
+    assert body["modules"]["colour"]["photo_ok"] is (body["modules"]["quality"]["code"] == "OK")
     # Location stripped before processing; the capture time is kept.
     item_meta = body["modules"]["photos"]["item"][0]
     assert item_meta["gps_removed"] is True

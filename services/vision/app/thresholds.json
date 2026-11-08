@@ -1,6 +1,31 @@
 {
-  "version": "initial-unfitted",
-  "note": "Initial hand-set values. Refit on the SightBench dev split only; never on test.",
+  "version": "fitted-dev-2026-11-09",
+  "note": "Colour confidence rules fitted on the SightBench dev split only (synthetic renders), never on test. Everything not listed under fitted.changed keeps its hand-set value from threshold_sets/initial-unfitted.json.",
+  "fitted": {
+    "on": "SightBench dev split only: evals/sightbench/manifests/dev.json, 180 synthetic pairs (23 colour mismatches), sha256 8cbbba4238015b03cdd9779178362366cf596ce4e0f2790d9851781489dd63bc. No model key.",
+    "from": "initial-unfitted",
+    "date": "2026-11-09",
+    "goal": "No \"sure\" colour disagreement on items whose colour is right, keeping as many colour-mismatch calls as possible.",
+    "changed": {
+      "colour.quality_issue_steps": "0 -> 1. An item photo that fails the quality gate (blurry, too far, too close, too dark) lowers colour confidence one step, like dim light. On dev, all 5 \"sure\" disagreements on right-colour items came from such photos (3 blurry, 1 too far, 1 too close); the one sure-detectable colour swap was in a photo that passed.",
+      "colour.sure_min_de_same_brightness": "off -> 10. Without a white reference the exposure is unknown, so a \"sure\" disagreement also needs delta E >= 10 after matching the delivered colour to the listing colour's brightness. White read as grey comes out near 0. On dev, right-colour items in good light stay at or below 9.7 at matched brightness (one outlier, 14.7, in a too-close photo); navy delivered for black is 11.1.",
+      "colour.poor_bright_luma": "0.15 -> 0.30. Below it the colour check says it is too dark. On dev, under 0.30 a colour disagreement carried no information: 23 of 34 right-colour items \"disagreed\", against 3 of 6 wrong-colour ones; above it, 19 of 64 against 5 of 9."
+    },
+    "dev_before_after": {
+      "how": "evals/sightbench/run.ts --split dev against the service with each set, no model key (the runner never writes a result file for dev).",
+      "colour_sure_disagree_when_colour_right": "5 of 157 -> 0 of 157",
+      "colour_sure_disagree_when_colour_wrong": "1 of 23 -> 1 of 23",
+      "colour_any_disagree_when_colour_right": "42 of 157 -> 19 of 157",
+      "colour_any_disagree_when_colour_wrong": "8 of 23 -> 5 of 23",
+      "sightline_mismatch_recall": "3 of 90 -> 1 of 90 (the 2 lost were model swaps flagged by a wrong \"sure\" colour call)",
+      "sightline_false_alarms": "3 of 90 -> 0 of 90",
+      "names_the_difference": "32 of 90 -> 27 of 90",
+      "false_alarm_twin": "25 of 90 -> 11 of 90"
+    },
+    "unchanged": "The delta E cut-offs (12 to disagree, 25 to be sure without the colour name) still fall inside the range dev allows: right-colour items in photos that pass the quality gate, in good light, reach 10.1; the one sure-detectable swap is 12.2. The cast limits and the dim-light limit were scanned on dev and left as they were (moving them gained at most one dev pair). Name tolerances and the quality-gate, mask, label and fusion values were not refitted.",
+    "not_fixed": "Wood tables and plank floors: gray-world white balance reads the orange surface as orange light and the check abstains (heavy colour cast). The masks there are fine, so this is not a mask bug; it needs a white reference in the photo.",
+    "test_outcome": "Scored once on the frozen test split after fitting (evals/RESULTS.md, run 2): false alarms 6 -> 1 of 210 and false-alarm twin 45 -> 21 of 210, but mismatches flagged 7 -> 2 of 210, colour swaps 4 -> 1 of 53. The same-brightness cut held back navy for black (9.2), royal blue for navy (7.1) and black for sky blue (9.1, chroma squashed when matching to a near-black listing). Not refitted on test; the next fit needs more dev colour swaps."
+  },
   "quality": {
     "dark_mean_luma": 0.15,
     "dark_p99_luma": 0.3,
@@ -39,6 +64,7 @@
     "strong_match_de": 4.0,
     "mismatch_min_de": 12.0,
     "strong_mismatch_de": 25.0,
+    "sure_min_de_same_brightness": 10.0,
     "reference_min_area": 0.04,
     "reference_min_value": 0.5,
     "reference_max_saturation": 0.3,
@@ -56,11 +82,12 @@
     "gray_world_min_background": 0.1,
     "max_channel_gain": 2.0,
     "poor_scene_luma": 0.06,
-    "poor_bright_luma": 0.15,
+    "poor_bright_luma": 0.3,
     "dim_bright_luma": 0.45,
     "cast_warn": 0.2,
     "cast_max": 0.45,
     "glare_max_fraction": 0.2,
+    "quality_issue_steps": 1,
     "name_tolerance_default": 14.0,
     "name_tolerance": {
       "black": 9.0,
@@ -80,7 +107,11 @@
     "crop_padding": 0.15
   },
   "fusion": {
-    "match_required_modules": ["colour", "size", "identity"],
+    "match_required_modules": [
+      "colour",
+      "size",
+      "identity"
+    ],
     "match_min_confidence": {
       "colour": "fairly_sure",
       "size": "sure",

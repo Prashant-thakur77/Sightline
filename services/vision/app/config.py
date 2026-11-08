@@ -1,18 +1,24 @@
 """Thresholds and limits.
 
-Every decision threshold lives in ``thresholds.json`` so it can be refitted on the dev split
-without touching code. ``VISION_THRESHOLDS`` points at a different file (used by evals).
+Every decision threshold lives in ``thresholds.json`` (the default set, fitted on the SightBench dev
+split) so it can be refitted without touching code. Earlier complete sets are kept in
+``threshold_sets/`` by version name for reproducibility. ``VISION_THRESHOLDS`` is either a set name
+(``initial-unfitted``), which replaces the default, or a path to an override file, which is overlaid
+on the default and only needs the keys it changes.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 DEFAULT_THRESHOLDS_PATH = Path(__file__).with_name("thresholds.json")
+THRESHOLD_SETS_DIR = Path(__file__).with_name("threshold_sets")
+_SET_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -25,18 +31,37 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
     return out
 
 
-def load_thresholds(path: str | os.PathLike[str] | None = None) -> dict[str, Any]:
-    """Load the default thresholds, overlaid with ``path`` (or ``$VISION_THRESHOLDS``) if given.
+def threshold_set_names() -> list[str]:
+    """Version names that ``VISION_THRESHOLDS`` accepts: the default set and every kept set."""
+    with DEFAULT_THRESHOLDS_PATH.open(encoding="utf-8") as fh:
+        default = str(json.load(fh).get("version"))
+    return sorted({default, *(p.stem for p in THRESHOLD_SETS_DIR.glob("*.json"))})
 
-    An override file only needs the keys it changes.
+
+def load_thresholds(path: str | os.PathLike[str] | None = None) -> dict[str, Any]:
+    """Load the thresholds named or pointed to by ``path`` (or ``$VISION_THRESHOLDS``).
+
+    Nothing given: the default set. A set name (``initial-unfitted``): that complete set, in place
+    of the default. Anything else is a path to an override file overlaid on the default, which only
+    needs the keys it changes.
     """
     with DEFAULT_THRESHOLDS_PATH.open(encoding="utf-8") as fh:
         data: dict[str, Any] = json.load(fh)
-    override_path = path or os.environ.get("VISION_THRESHOLDS")
-    if override_path:
-        with Path(override_path).open(encoding="utf-8") as fh:
-            data = _deep_merge(data, json.load(fh))
-    return data
+    override = path or os.environ.get("VISION_THRESHOLDS")
+    if not override:
+        return data
+    name = str(override)
+    if _SET_NAME.match(name):
+        if name == data.get("version"):
+            return data
+        named = THRESHOLD_SETS_DIR / f"{name}.json"
+        if not named.is_file():
+            raise ValueError(f"Unknown threshold set {name!r}. Known sets: {', '.join(threshold_set_names())}.")
+        with named.open(encoding="utf-8") as fh:
+            named_data: dict[str, Any] = json.load(fh)
+        return named_data
+    with Path(override).open(encoding="utf-8") as fh:
+        return _deep_merge(data, json.load(fh))
 
 
 @lru_cache(maxsize=1)

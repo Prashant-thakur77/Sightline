@@ -212,7 +212,7 @@ The model client (`vlm.py`) uses JSON-schema structured output with enumerated f
 
 ### 4.4 Fusion and abstention
 
-`fuse` in `services/vision/app/fusion.py`, with thresholds in `services/vision/app/thresholds.json` (`"version": "initial-unfitted"`, hand-set, not fitted):
+`fuse` in `services/vision/app/fusion.py`, with thresholds in `services/vision/app/thresholds.json` (`"version": "fitted-dev-2026-11-09"`: the hand-set values with the colour confidence rules fitted on the synthetic SightBench dev split; the hand-set set is kept as `initial-unfitted`):
 
 - `mismatch` requires at least one `disagree` reason at `sure` confidence.
 - A disagreement below `sure` gives `unsure`.
@@ -367,7 +367,7 @@ Be exact here. "Live" means the code path calls the real service when its key is
 | Parcel photos | The judge run and the guided demo use `apps/web/public/demo-parcel/*.jpg`, rendered by `scripts/demo-parcel-photos.mjs` from SVG with noise and perspective. They are synthetic. Real camera photos work through the same route. |
 | Personas | Maya and Raj (`server/personas.ts`) are seeded demo users. `POST /api/demo/start` signs anyone in as one of them. There are no real accounts. |
 | Catalog | Demo Store catalog by default. Channel3 when `CHANNEL3_API_KEY` is set. |
-| Vision | Colour, mask, quality, fusion and OCR run locally in the service with no key. Size-tag read A, identity and damage need `VISION_MODEL` and `ANTHROPIC_API_KEY`. `services/vision/README.md` says the model client has only been exercised against a stubbed SDK and that thresholds are unfitted. No SightBench result file is in `evals/results/`, so there is no published accuracy number for the vision service. |
+| Vision | Colour, mask, quality, fusion and OCR run locally in the service with no key. Size-tag read A, identity and damage need `VISION_MODEL` and `ANTHROPIC_API_KEY`. `services/vision/README.md` says the model client has only been exercised against a stubbed SDK and that only the colour confidence rules are fitted, on synthetic dev renders. SightBench (`evals/results/sightbench.json`) measures the service on synthetic renders only, without model reads. |
 | Confirmation key 2 | Needs `ANTHROPIC_API_KEY`. Without it, two Confirm presses stand in. The confirmation eval ran key 1 only. |
 | Evals | `evals/RESULTS.md` states that no suite ran against the PayPal sandbox ledger or a live model. The duplicate suite simulates PayPal's documented `PayPal-Request-Id` behaviour. The grounding suite uses scripted answers. The red-team suite uses a local ledger. Held-out sets were written by the author of the code. |
 | Dev-only seed | `apps/web/scripts/dev-seed-order.ts` inserts an order in a chosen state for UI work. It refuses to run when `NODE_ENV=production`. |
