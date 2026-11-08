@@ -2017,3 +2017,44 @@ a {
     padding-left: 1.4em;
   }
 }
+
+@layer components {
+  .run-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .run-steps li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 3px solid var(--line);
+    border-radius: var(--radius-m);
+  }
+  .run-steps li[data-status='done'] .run-mark {
+    color: var(--match);
+  }
+  .run-steps li[data-status='failed'] .run-mark {
+    color: var(--mismatch);
+  }
+  .run-mark {
+    display: grid;
+    place-items: center;
+    width: 2.2em;
+    height: 2.2em;
+    border-radius: 50%;
+    border: 3px solid currentColor;
+    font-weight: 800;
+  }
+  .run-title {
+    font-weight: 800;
+    margin: 0;
+  }
+  .run-spoken {
+    font-family: var(--font-mono);
+    margin: var(--space-1) 0;
+  }
+}

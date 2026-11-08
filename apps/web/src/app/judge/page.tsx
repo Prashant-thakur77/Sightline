@@ -6,6 +6,7 @@ import { Wordmark } from '@/components/shell/mark';
 import { loadSuites } from '@/server/stats';
 import { db, INTEGRATIONS } from '@/server/runtime';
 import { JudgeStart } from './judge-start';
+import { LifecycleRun } from './lifecycle-run';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'For judges' };
@@ -91,6 +92,17 @@ export default async function Judge() {
               </div>
             </li>
           </ol>
+        </section>
+
+        <section aria-labelledby="run-all-h" className="grid gap-4">
+          <h2 id="run-all-h" className="lp-h2">
+            Watch the whole lifecycle run
+          </h2>
+          <p className="lp-lede">
+            One button runs every step for real on the PayPal sandbox: voice request, readback, two-key confirmation, PayPal hold, the wrong size shipped,
+            the camera check, and the money back. You hear what Maya hears.
+          </p>
+          <LifecycleRun />
         </section>
 
         <section id="numbers" aria-labelledby="num-h" className="grid gap-4">
