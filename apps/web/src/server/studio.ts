@@ -1,7 +1,7 @@
 import 'server-only';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import type { Confidence, ProductSnapshot, Verdict, VerdictReason } from '@sightline/core';
 import { centsText, durationText } from '@/components/studio/formats';
@@ -21,7 +21,6 @@ import type {
   VerifiedDeliveryData,
 } from '@/components/studio/types';
 import { db, ENV } from './runtime';
-import { paymentWord, shortRef, stageWord } from './merchant';
 
 /*
  * Data for the AG Studio dashboards. Every number on those pages, and every sentence in the summary
@@ -93,15 +92,46 @@ const SHIPPED: Record<string, string> = {
 
 type OrderRecord = typeof tables.orders.$inferSelect;
 
+/*
+ * The payment and case words below follow the merchant console's (server/merchant.ts). They are
+ * repeated here so the public Barrier Index dashboard never loads merchant or PayPal code.
+ */
+const PAST_PAYMENT = ['authorized', 'shipped', 'delivered', 'verified_mismatch', 'verified_unsure', 'case_open'];
+
 function moneyState(o: OrderRecord): MoneyState {
   if (o.status === 'voided') return 'Voided';
   if (o.status === 'resolved_refund') return 'Refunded';
   if (o.status === 'failed') return 'Not placed';
-  const word = paymentWord(o);
-  if (word.tone === 'held') return 'Held';
-  if (word.word === 'Paid') return 'Captured';
-  if (word.word === 'Waiting for buyer approval') return 'Awaiting approval';
+  if (['readback_pending', 'confirmed', 'approval_pending'].includes(o.status)) return 'Awaiting approval';
+  if (o.captureId || o.status === 'captured') return 'Captured';
+  if (o.intent === 'AUTHORIZE' && (o.authorizationId || PAST_PAYMENT.includes(o.status))) return 'Held';
   return 'Pending';
+}
+
+/** Short, speakable reference for an id: the last six characters, upper case. */
+const shortRef = (id: string) => id.slice(-6).toUpperCase();
+
+function stageText(stage: string, outcome: unknown): string {
+  switch (stage) {
+    case 'seller_contacted':
+      return 'Needs your reply';
+    case 'offer_received':
+      return 'Offer made, buyer deciding';
+    case 'accepted':
+      return 'Buyer accepted';
+    case 'declined':
+      return 'Buyer declined the offer';
+    case 'escalated':
+      return 'Escalated to PayPal';
+    case 'under_review':
+      return 'PayPal is reviewing';
+    case 'resolved': {
+      const kind = (outcome as { kind?: string } | null)?.kind;
+      return `Resolved${kind === 'voided' ? ': hold released' : kind === 'refunded' ? ': refunded' : ''}`;
+    }
+    default:
+      return stage.replace(/_/g, ' ');
+  }
 }
 
 /** The reason that decided a verdict: the first one that disagrees, else the first it could not tell. */
@@ -134,8 +164,17 @@ const iso = (t: string) => new Date(t).toISOString();
 // ---------------------------------------------------------------------------------------------
 // Demo Store: verified delivery
 
-export async function loadVerifiedDelivery(): Promise<VerifiedDeliveryData> {
-  const orders = await db().select().from(tables.orders).orderBy(desc(tables.orders.createdAt)).limit(1000);
+/**
+ * Each visitor plays both sides of the demo, so the dashboard shows only the orders of the demo
+ * shopper in this browser session, like the rest of the merchant console.
+ */
+export async function loadVerifiedDelivery(scopeUserId: string): Promise<VerifiedDeliveryData> {
+  const orders = await db()
+    .select()
+    .from(tables.orders)
+    .where(eq(tables.orders.userId, scopeUserId))
+    .orderBy(desc(tables.orders.createdAt))
+    .limit(1000);
   const ids = orders.map((o) => o.id);
   const none = ids.length === 0;
   const [users, snaps, ships, vers, kases, voidAudits, hooks] = await Promise.all([
@@ -164,23 +203,28 @@ export async function loadVerifiedDelivery(): Promise<VerifiedDeliveryData> {
       : db()
           .select()
           .from(tables.cases)
-          .where(sql`${tables.cases.stage} not in ('draft', 'evidence_built')`)
+          .where(and(eq(tables.cases.userId, scopeUserId), sql`${tables.cases.stage} not in ('draft', 'evidence_built')`))
           .orderBy(desc(tables.cases.createdAt)),
-    db()
-      .select({ subjectId: tables.auditLog.subjectId })
-      .from(tables.auditLog)
-      .where(eq(tables.auditLog.action, 'payment.voided_after_check')),
-    db()
-      .select({
-        id: tables.webhookEvents.id,
-        type: tables.webhookEvents.type,
-        receivedAt: tables.webhookEvents.receivedAt,
-        signatureOk: tables.webhookEvents.signatureOk,
-        processedAt: tables.webhookEvents.processedAt,
-      })
-      .from(tables.webhookEvents)
-      .orderBy(desc(tables.webhookEvents.receivedAt))
-      .limit(1000),
+    none
+      ? []
+      : db()
+          .select({ subjectId: tables.auditLog.subjectId })
+          .from(tables.auditLog)
+          .where(and(eq(tables.auditLog.action, 'payment.voided_after_check'), inArray(tables.auditLog.subjectId, ids))),
+    none
+      ? []
+      : db()
+          .select({
+            id: tables.webhookEvents.id,
+            type: tables.webhookEvents.type,
+            raw: tables.webhookEvents.raw,
+            receivedAt: tables.webhookEvents.receivedAt,
+            signatureOk: tables.webhookEvents.signatureOk,
+            processedAt: tables.webhookEvents.processedAt,
+          })
+          .from(tables.webhookEvents)
+          .orderBy(desc(tables.webhookEvents.receivedAt))
+          .limit(2000),
   ]);
 
   const nameOf = new Map(users.map((u) => [u.id, u.name]));
@@ -221,7 +265,9 @@ export async function loadVerifiedDelivery(): Promise<VerifiedDeliveryData> {
       confidence: deciding ? CONFIDENCE[deciding.confidence] : 'not sure',
       headline: verdict.headline,
       latencyMs: latencyOf(v.moduleOutputs),
+      isMatch: verdict.kind === 'match' ? 1 : 0,
       isMismatch: mismatch ? 1 : 0,
+      isUnsure: verdict.kind === 'unsure' ? 1 : 0,
       wrongColour: mismatch && disagree.has('colour') ? 1 : 0,
       wrongSize: mismatch && disagree.has('size') ? 1 : 0,
       wrongItem: mismatch && disagree.has('identity') ? 1 : 0,
@@ -286,7 +332,7 @@ export async function loadVerifiedDelivery(): Promise<VerifiedDeliveryData> {
         id: c.id,
         ref: shortRef(c.id),
         orderId: c.orderId,
-        stage: stageWord(c).word,
+        stage: stageText(c.stage, c.outcome),
         reason: CASE_REASON[c.reason] ?? c.reason.replace(/_/g, ' '),
         outcome: !resolved
           ? 'Still open'
@@ -302,7 +348,13 @@ export async function loadVerifiedDelivery(): Promise<VerifiedDeliveryData> {
       };
     });
 
-  const webhookEvents: StudioWebhookRow[] = hooks.map((h) => ({
+  // PayPal events carry PayPal's ids, not ours: keep only the ones about this shopper's payments.
+  const paypalIds = orders
+    .flatMap((o) => [o.paypalOrderId, o.captureId, o.authorizationId])
+    .filter((x): x is string => Boolean(x));
+  const webhookEvents: StudioWebhookRow[] = hooks
+    .filter((h) => paypalIds.some((pid) => h.raw.includes(pid)))
+    .map((h) => ({
     id: h.id,
     type: h.type,
     receivedAt: iso(h.receivedAt),
@@ -402,8 +454,11 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
     {
       id: 'median',
       label: 'Median time to resolution',
-      value: s.medianResolutionMs === null ? 'None yet' : durationText(s.medianResolutionMs),
-      detail: `Across ${plural(s.resolvedCases, 'resolved case')}. ${plural(s.openCases, 'case')} still open.`,
+      value: s.medianResolutionMs === null ? 'None yet' : `${(s.medianResolutionMs / 3_600_000).toFixed(1)} hours`,
+      detail:
+        s.medianResolutionMs === null
+          ? `No case resolved yet. ${plural(s.openCases, 'case')} still open.`
+          : `That is ${durationText(s.medianResolutionMs)}, across ${plural(s.resolvedCases, 'resolved case')}. ${plural(s.openCases, 'case')} still open.`,
     },
   ];
 }
@@ -449,6 +504,13 @@ const KEYBOARD: Record<string, string> = {
   'no-atc': 'No add-to-cart button found',
   error: 'Walk failed',
 };
+const STATUS: Record<string, string> = {
+  ok: 'Audited',
+  blocked: 'Refused the crawler',
+  robots: 'Disallowed by robots.txt',
+  'no-product': 'No product page found',
+  error: 'Crawler error',
+};
 const TRAP: Record<string, string> = {
   none: 'No trap',
   trapped: 'Trapped',
@@ -482,7 +544,8 @@ export async function loadBarrierIndex(): Promise<BarrierData | null> {
     return {
       id: String(r.domainHash ?? ''),
       platform: PLATFORM[platform] ?? platform,
-      status: String(r.status ?? 'unknown'),
+      status: STATUS[String(r.status)] ?? String(r.status ?? 'unknown'),
+      audited: numOrNull(r.productViolations) === null ? 0 : 1,
       productViolations: numOrNull(r.productViolations),
       homeViolations: numOrNull(r.homeViolations),
       productCriticalOrSerious: numOrNull(r.productCriticalOrSerious),
@@ -526,7 +589,7 @@ export async function loadBarrierIndex(): Promise<BarrierData | null> {
     summary: {
       stores: stores.length,
       crawled: crawled.length,
-      blocked: stores.filter((s) => s.status === 'blocked').length,
+      blocked: stores.filter((s) => s.status === STATUS.blocked).length,
       medianViolationsProduct: median(crawled.map((s) => s.productViolations!)),
       keyboardTested: stores.reduce((a, s) => a + s.keyboardTested, 0),
       keyboardReached: stores.reduce((a, s) => a + s.keyboardReached, 0),

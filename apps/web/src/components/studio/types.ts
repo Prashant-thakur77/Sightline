@@ -45,7 +45,9 @@ export interface StudioCheckRow {
   confidence: string;
   headline: string;
   latencyMs: number | null;
+  isMatch: number;
   isMismatch: number;
+  isUnsure: number;
   wrongColour: number;
   wrongSize: number;
   wrongItem: number;
@@ -118,6 +120,7 @@ export interface BarrierStoreRow {
   id: string;
   platform: string;
   status: string;
+  audited: number;
   productViolations: number | null;
   homeViolations: number | null;
   productCriticalOrSerious: number | null;

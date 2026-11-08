@@ -23,6 +23,8 @@ import type { StudioDashboardId } from './types';
 
 /** Claude's thinking travels with Studio's reasoning item, so a tool loop can hand it back verbatim. */
 export interface ClaudeThinking {
+  /** The thinking text exactly as Claude returned it, with the signature that vouches for it. */
+  thinking?: string;
   signature?: string;
   redacted?: string;
 }

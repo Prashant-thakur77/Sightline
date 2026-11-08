@@ -1,15 +1,6 @@
-import type {
-  AgDataSourcesDefinition,
-  AgExpressionFieldDefinition,
-  AgFieldDefinition,
-  AgFormat,
-  AgPageState,
-  AgRelationDefinition,
-  AgReportState,
-  AgWidgetFieldReference,
-  AgWidgetLayoutState,
-} from 'ag-studio';
-import { centsText, hoursText, msText, percentText } from './formats';
+import type { AgDataSourcesDefinition, AgPageState, AgReportState } from 'ag-studio';
+import { hoursText, msText } from './formats';
+import { at, count, field, flag, kpi, manyToOne, money, outlined, rate, sum, title, type Spec } from './report-kit';
 import type { VerifiedDeliveryData } from './types';
 
 /*
@@ -19,64 +10,6 @@ import type { VerifiedDeliveryData } from './types';
  */
 
 export const VERIFIED_DELIVERY_TITLE = 'Demo Store · Verified delivery';
-
-// --- Fields -------------------------------------------------------------------------------------
-
-type Spec = {
-  id: string;
-  name: string;
-  format: AgFormat;
-  description?: string;
-  hide?: boolean;
-  formatter?: (v: number) => string;
-};
-
-const field = ({ id, name, format, description, hide, formatter }: Spec): AgFieldDefinition => ({
-  id,
-  name,
-  format,
-  ...(description && { description }),
-  ...(hide && { hide }),
-  ...(formatter && { createValueFormatter: () => formatter as (v: unknown) => string }),
-});
-
-const money = (id: string, name: string, description: string): Spec => ({
-  id,
-  name,
-  format: 'currencyFormat',
-  description: `${description} Stored as integer US cents: divide by 100 for dollars.`,
-  formatter: centsText,
-});
-const flag = (id: string, name: string, description: string): Spec => ({
-  id,
-  name,
-  format: 'integerFormat',
-  description: `${description} 1 for yes, 0 for no; sum it to count.`,
-});
-
-const manyToOne = (id: string, from: string, to: string): AgRelationDefinition => {
-  const [sourceTable, sourceField] = from.split('.') as [string, string];
-  const [targetTable, targetField] = to.split('.') as [string, string];
-  return {
-    id,
-    source: { tableId: sourceTable, fieldId: sourceField },
-    target: { tableId: targetTable, fieldId: targetField },
-    type: 'many-to-one',
-  };
-};
-
-const sum = (id: string): AgWidgetFieldReference => ({ id, aggregation: 'sum' });
-const count = (id: string): AgWidgetFieldReference => ({ id, aggregation: 'count' });
-
-const rate = (id: string, name: string, description: string, top: AgWidgetFieldReference, bottom: AgWidgetFieldReference): AgExpressionFieldDefinition => ({
-  id,
-  name,
-  description,
-  format: 'percentageFormat',
-  isMeasure: true,
-  expression: { operator: 'divide', inputs: [top, bottom] },
-  createValueFormatter: () => percentText as (v: unknown) => string,
-});
 
 export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourcesDefinition {
   return {
@@ -149,8 +82,11 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
             format: 'integerFormat',
             description: 'Milliseconds the vision service took, from its module timings. Blank when not recorded.',
             formatter: msText,
+            blank: 'Not recorded',
           },
+          flag('isMatch', 'Match', 'The check matched the order.'),
           flag('isMismatch', 'Mismatch', 'The check found the wrong item.'),
+          flag('isUnsure', 'Not sure', 'The check could not tell.'),
           flag('wrongColour', 'Wrong colour', 'A mismatch on colour.'),
           flag('wrongSize', 'Wrong size', 'A mismatch on size.'),
           flag('wrongItem', 'Wrong item', 'A mismatch on which item it is.'),
@@ -195,6 +131,7 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
             format: 'decimalFormat',
             description: 'Hours from case opened to case resolved. Blank while open.',
             formatter: hoursText,
+            blank: 'Still open',
           },
           flag('open', 'Open case', 'The case is still open.'),
         ].map((f) => field(f as Spec)),
@@ -226,14 +163,27 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
       rate('wrongSizeRate', 'Wrong size', 'Checks that found the wrong size.', sum('checks.wrongSize'), count('checks.id')),
       rate('wrongItemTypeRate', 'Wrong item', 'Checks that found a different item.', sum('checks.wrongItem'), count('checks.id')),
       rate('damagedRate', 'Damaged', 'Checks that found damage.', sum('checks.damaged'), count('checks.id')),
+      { id: 'checkCount', name: 'Checks', description: 'Number of checks.', isMeasure: true, expression: count('checks.id') },
+      { id: 'matchCount', name: 'Matched', description: 'Checks that matched the order.', isMeasure: true, expression: sum('checks.isMatch') },
+      { id: 'mismatchCount', name: 'Wrong item', description: 'Checks that found a mismatch.', isMeasure: true, expression: sum('checks.isMismatch') },
+      { id: 'unsureCount', name: 'Not sure', description: 'Checks that could not tell.', isMeasure: true, expression: sum('checks.isUnsure') },
       {
         id: 'medianResolutionHours',
         name: 'Median time to resolution',
         description: 'Median hours from case opened to resolved, over resolved cases.',
         format: 'decimalFormat',
+        formatOptions: { format: '0.0" h"' },
         isMeasure: true,
         expression: { operator: 'median', inputs: [{ id: 'cases.hoursToResolution' }] },
-        createValueFormatter: () => hoursText as (v: unknown) => string,
+      },
+      {
+        id: 'orderValueDollars',
+        name: 'Order value',
+        description: 'Sum of order amounts in dollars, for charts. Computed from the integer cents in Order amount.',
+        format: 'currencyFormat',
+        formatOptions: { format: '$#,##0.00' },
+        isMeasure: true,
+        expression: { operator: 'divide', inputs: [sum('orders.amountCents'), { type: 'number', value: 100 }] },
       },
     ],
   };
@@ -241,37 +191,31 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
 
 // --- Report -------------------------------------------------------------------------------------
 
-const at = (xTrack: number, yTrack: number, xSpan: number, ySpan: number): AgWidgetLayoutState => ({ xTrack, yTrack, xSpan, ySpan });
-const title = (text: string, caption?: string) => ({
-  title: { enabled: true, text },
-  ...(caption && { caption: { enabled: true, text: caption } }),
-});
-
-const kpi = (text: string, value: AgWidgetFieldReference, caption: string) => ({
-  type: 'value' as const,
-  dataMapping: { value: [value] },
-  format: {
-    ...title(text, caption),
-    style: { verticalAlign: 'center' as const, textAlign: 'left' as const },
-  },
-});
-
 const overview: AgPageState = {
   id: 'verified-delivery',
   widgets: {
     'kpi-orders': kpi('Orders', count('orders.id'), 'Every order placed'),
     'kpi-verified': kpi('Verified-delivery rate', { id: 'verifiedDeliveryRate' }, 'Delivered and checked'),
-    'kpi-wrong': kpi('Wrong-item rate', { id: 'wrongItemRate' }, 'Checks that found a mismatch'),
-    'kpi-avoided': kpi('Cases avoided', sum('orders.voidedAfterMismatch'), 'Holds released after a mismatch'),
-    'kpi-median': kpi('Median time to resolution', { id: 'medianResolutionHours' }, 'Case opened to resolved'),
-    money: {
+    'kpi-wrong': kpi('Wrong-item rate', { id: 'wrongItemRate' }, 'Checks with a mismatch'),
+    'kpi-avoided': kpi('Cases avoided', sum('orders.voidedAfterMismatch'), 'Holds released on a mismatch'),
+    'kpi-median': kpi('Time to resolution', { id: 'medianResolutionHours' }, 'Median, opened to resolved'),
+    'kpi-held': kpi('Money held', sum('orders.heldCents'), 'Waiting for the check'),
+    'kpi-captured': kpi('Captured', sum('orders.capturedCents'), 'Paid to Demo Store'),
+    'kpi-voided': kpi('Voided', sum('orders.voidedCents'), 'Hold released, never charged'),
+    'kpi-refunded': kpi('Refunded', sum('orders.refundedCents'), 'Paid, then refunded'),
+    'check-counts': {
       type: 'multi-kpi',
-      dataMapping: {
-        values: [sum('orders.heldCents'), sum('orders.capturedCents'), sum('orders.voidedCents'), sum('orders.refundedCents')],
-      },
+      dataMapping: { values: [{ id: 'checkCount' }, { id: 'matchCount' }, { id: 'mismatchCount' }, { id: 'unsureCount' }] },
       format: {
-        ...title('Money held, captured and voided', 'Each order counted once, under its payment state now'),
-        style: { columns: 2, label: { enabled: true, position: 'above' }, textAlign: 'left', columnSeparator: { enabled: true }, rowSeparator: { enabled: true } },
+        ...title('Camera checks', 'Every check is a match, a mismatch or not sure'),
+        style: {
+          columns: 2,
+          typography: { fontSize: 30 },
+          label: { enabled: true, position: 'above' },
+          textAlign: 'left',
+          columnSeparator: { enabled: true },
+          rowSeparator: { enabled: true },
+        },
       },
     },
     reasons: {
@@ -281,7 +225,14 @@ const overview: AgPageState = {
       },
       format: {
         ...title('Wrong-item rate by reason', 'Share of all checks'),
-        style: { columns: 2, label: { enabled: true, position: 'above' }, textAlign: 'left', columnSeparator: { enabled: true }, rowSeparator: { enabled: true } },
+        style: {
+          columns: 2,
+          typography: { fontSize: 30 },
+          label: { enabled: true, position: 'above' },
+          textAlign: 'left',
+          columnSeparator: { enabled: true },
+          rowSeparator: { enabled: true },
+        },
       },
     },
     verdicts: {
@@ -294,17 +245,17 @@ const overview: AgPageState = {
       sort: [{ field: count('checks.id'), direction: 'desc' }],
       format: {
         ...title('Verdicts by mismatch type', 'Number of checks'),
-        style: { theme: { common: { legend: { enabled: true, position: 'bottom' } } } },
+        style: { theme: { common: { legend: { enabled: true, position: 'bottom' } } }, ...outlined },
       },
     },
     'money-state': {
       type: 'column-chart-grouped',
       dataMapping: {
         categoryKey: [{ id: 'orders.moneyState' }],
-        valueKey: [sum('orders.amountCents')],
+        valueKey: [{ id: 'orderValueDollars' }],
       },
-      sort: [{ field: sum('orders.amountCents'), direction: 'desc' }],
-      format: title('Where the money is', 'Order value by payment state'),
+      sort: [{ field: { id: 'orderValueDollars' }, direction: 'desc' }],
+      format: { ...title('Where the money is', 'Order value by payment state, in dollars'), style: outlined },
     },
     'recent-checks': {
       type: 'grid',
@@ -338,19 +289,23 @@ const overview: AgPageState = {
     'kpi-wrong': at(9, 0, 5, 9),
     'kpi-avoided': at(14, 0, 5, 9),
     'kpi-median': at(19, 0, 5, 9),
-    money: at(0, 9, 12, 13),
-    reasons: at(12, 9, 12, 13),
-    verdicts: at(0, 22, 14, 18),
-    'money-state': at(14, 22, 10, 18),
-    'recent-checks': at(0, 40, 24, 19),
-    cases: at(0, 59, 24, 15),
+    'kpi-held': at(0, 9, 6, 9),
+    'kpi-captured': at(6, 9, 6, 9),
+    'kpi-voided': at(12, 9, 6, 9),
+    'kpi-refunded': at(18, 9, 6, 9),
+    'check-counts': at(0, 18, 12, 16),
+    reasons: at(12, 18, 12, 16),
+    verdicts: at(0, 34, 14, 18),
+    'money-state': at(14, 34, 10, 18),
+    'recent-checks': at(0, 52, 24, 17),
+    cases: at(0, 69, 24, 16),
   },
 };
 
 export const verifiedDeliveryReport: AgReportState = {
   selectedPageId: overview.id,
   pages: [overview],
+  // Edit mode opens with the field list folded away, so the canvas keeps its width.
+  panels: { data: { collapsed: true } },
 };
 
-/** Rows of 18px the authored layout takes, so the page can size Studio without an inner scroll. */
-export const VERIFIED_DELIVERY_ROWS = 74;

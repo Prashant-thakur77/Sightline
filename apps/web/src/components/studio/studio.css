@@ -1,0 +1,379 @@
+/*
+ * AG Studio dashboards. Built from the design tokens in globals.css, so the frame, the receipt of
+ * figures and Studio itself follow the light, dark and high-contrast themes together.
+ */
+
+/* Chart series colours. None of them stands for a status; every series is named in its legend. */
+:root {
+  --sx-chart-1: #0b3fd9;
+  --sx-chart-2: #0b0b0c;
+  --sx-chart-3: #8a5a00;
+  --sx-chart-4: #5c6670;
+  --sx-chart-5: #6a3fc0;
+  --sx-chart-6: #0a6f78;
+  --sx-chart-stroke: #0b0b0c;
+  --sx-chart-label-inside: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='contrast']) {
+    --sx-chart-1: #8db4ff;
+    --sx-chart-2: #fbfbf8;
+    --sx-chart-3: #ffc56b;
+    --sx-chart-4: #b9bcc4;
+    --sx-chart-5: #c9a7ff;
+    --sx-chart-6: #6fd8e0;
+    --sx-chart-stroke: #0e1013;
+    --sx-chart-label-inside: #0b0b0c;
+  }
+}
+:root[data-theme='dark'] {
+  --sx-chart-1: #8db4ff;
+  --sx-chart-2: #fbfbf8;
+  --sx-chart-3: #ffc56b;
+  --sx-chart-4: #b9bcc4;
+  --sx-chart-5: #c9a7ff;
+  --sx-chart-6: #6fd8e0;
+  --sx-chart-stroke: #0e1013;
+  --sx-chart-label-inside: #0b0b0c;
+}
+:root[data-theme='contrast'] {
+  --sx-chart-1: #ffd60a;
+  --sx-chart-2: #ffffff;
+  --sx-chart-3: #7dffb0;
+  --sx-chart-4: #8db4ff;
+  --sx-chart-5: #ff9c94;
+  --sx-chart-6: #c9a7ff;
+  --sx-chart-stroke: #000000;
+  --sx-chart-label-inside: #000000;
+}
+
+/* ---------- Page ---------- */
+.sx-page {
+  display: grid;
+  gap: var(--space-7);
+  min-width: 0;
+}
+.sx-head {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+  min-width: 0;
+}
+@media (min-width: 1000px) {
+  .sx-head {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  }
+}
+.sx-head-copy {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  min-width: 0;
+}
+.sx-h2 {
+  font-size: var(--step-2);
+  margin: 0;
+}
+
+/* ---------- The figures, read out: a ticket, like the readback ---------- */
+.sx-receipt {
+  position: relative;
+  margin: 0 10px 10px 0;
+  padding: var(--space-5) var(--space-5) 0;
+  background: var(--receipt);
+  color: #0b0b0c;
+  font-family: var(--font-mono);
+  border: 3px solid #0b0b0c;
+  border-radius: var(--radius-m) var(--radius-m) 0 0;
+  box-shadow: 10px 10px 0 var(--ink);
+  min-width: 0;
+}
+:root[data-theme='contrast'] .sx-receipt {
+  color: var(--ink);
+  background: #000;
+  border-color: var(--ink);
+  box-shadow: none;
+}
+.sx-receipt-h {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-bottom: var(--space-3);
+}
+.sx-figures {
+  margin: 0;
+  display: grid;
+}
+.sx-figure {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-top: 2px dashed #8a8a84;
+}
+:root[data-theme='contrast'] .sx-figure {
+  border-top-color: var(--ink);
+}
+.sx-figure dt {
+  font-weight: 700;
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.sx-figure dd {
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+.sx-fig-value {
+  font-weight: 700;
+  font-size: var(--step-2);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.sx-fig-detail {
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+  line-height: 1.4;
+}
+.sx-stub {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 calc(var(--space-5) * -1);
+  padding: var(--space-3) var(--space-5);
+  border-top: 3px dashed currentColor;
+  background: var(--yellow);
+  color: var(--yellow-ink);
+  font-size: var(--step--1);
+  font-weight: 700;
+}
+:root[data-theme='contrast'] .sx-stub {
+  background: var(--yellow);
+  color: #000;
+  border-top-color: #000;
+}
+.sx-keep {
+  letter-spacing: 0.2em;
+}
+
+/* ---------- The dashboard frame ---------- */
+.sx-section {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.sx-section-head {
+  display: grid;
+  gap: var(--space-2);
+}
+.sx-frame {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.sx-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+}
+.sx-modes {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border: 2.5px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--paper);
+}
+.sx-mode {
+  min-height: 44px;
+  min-width: 88px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sx-mode:hover {
+  background: var(--paper-2);
+}
+.sx-mode[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.sx-notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--step--1);
+  color: var(--muted);
+  max-width: 78ch;
+}
+.sx-notes li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+.sx-note-mark {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.4em;
+  height: 1.4em;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.85em;
+  line-height: 1;
+  color: var(--ink);
+}
+.sx-skip {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.sx-skip:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-5);
+  background: var(--yellow);
+  color: var(--yellow-ink);
+  border: 3px solid var(--yellow-ink);
+  border-radius: var(--radius-m);
+  font-weight: 700;
+}
+.sx-canvas {
+  position: relative;
+  min-width: 0;
+  border-top: 3px solid var(--line);
+  padding-top: var(--space-3);
+  box-sizing: content-box;
+}
+.sx-canvas[data-mode='edit'] {
+  border: 3px solid var(--line);
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  padding: 0;
+}
+.sx-loading {
+  margin: 0;
+  padding: var(--space-5);
+  color: var(--muted);
+}
+.sx-after:focus {
+  outline: none;
+}
+
+/* One focus ring inside Studio too, drawn inside so a cell or tile never clips it. */
+.sx-canvas :where(button, [tabindex], [role='gridcell'], [role='columnheader'], input, select, textarea):focus-visible {
+  outline: 3px solid var(--focus-inner);
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 7px var(--focus-outer);
+}
+
+/* An empty state for a dashboard whose data is not there yet. */
+.sx-empty {
+  margin: 0;
+  padding: var(--space-5);
+  border: 3px dashed var(--line);
+  border-radius: var(--radius-l);
+  display: grid;
+  gap: var(--space-2);
+  max-width: 70ch;
+}
+.sx-empty p {
+  margin: 0;
+}
+.sx-empty-h {
+  font-weight: 800;
+  font-size: var(--step-1);
+}
+
+@media (forced-colors: active) {
+  .sx-mode[aria-pressed='true'] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* ---------- How each figure is counted ---------- */
+.sx-defs-wrap {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 3px solid var(--line);
+  max-width: 62ch;
+}
+.sx-defs-h {
+  font-size: var(--step-1);
+  margin: 0;
+}
+.sx-defs {
+  margin: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.sx-defs div {
+  display: grid;
+  gap: 2px;
+  padding-left: var(--space-4);
+  border-left: 6px solid var(--yellow);
+}
+:root[data-theme='contrast'] .sx-defs div {
+  border-left-color: var(--ink);
+}
+.sx-defs dt {
+  font-weight: 800;
+}
+.sx-defs dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* ---------- Public dashboard page (Barrier Index) ---------- */
+.sx-main {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--space-6) clamp(1rem, 3vw, 2.5rem) var(--space-8);
+}
+.sx-main:focus {
+  outline: none;
+}
+.sx-h1 {
+  font-size: var(--step-4);
+  max-width: 16ch;
+}
+.sx-lede {
+  max-width: 52ch;
+}
+.sx-small {
+  margin: 0;
+  font-size: var(--step--1);
+  max-width: 70ch;
+}
+.sx-small a {
+  font-weight: 700;
+}
