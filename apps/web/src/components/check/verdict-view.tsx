@@ -80,7 +80,8 @@ export function VerdictView({
   }, [verdict]);
 
   return (
-    <section aria-labelledby="verdict-h" className="verdict" data-kind={verdict.kind}>
+    // A short name for the region; the headline is the heading inside it, so it isn't read twice.
+    <section aria-label="Check result" className="verdict" data-kind={verdict.kind}>
       <p className="verdict-kind">
         <span aria-hidden="true" className="verdict-kind-glyph">
           {verdictStatus(verdict.kind).glyph}
@@ -153,7 +154,7 @@ export function VerdictView({
         </div>
       )}
       {note}
-      {actions && <div className="flex flex-col sm:flex-row gap-3">{actions}</div>}
+      {actions && <div className="btn-row">{actions}</div>}
     </section>
   );
 }

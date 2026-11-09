@@ -86,8 +86,10 @@ export interface StudioFrameProps {
 const STUDIO_WORDS = { widgetOverlayNoData: 'None yet.', valueNotApplicable: 'None yet' };
 
 /**
- * The grids and charts inside Studio have their own empty-state text ("No Rows To Show", "No data
- * to display"), which screen readers reach even under Studio's overlay: each says "None yet." too.
+ * The grid inside Studio has its own empty-state text ("No Rows To Show"): it says "None yet." too.
+ * (The grid falls back to its own words for every other key. The charts' locale can't be set the
+ * same way: a partial locale replaces all of their English, labels included. An empty chart's own
+ * text sits under Studio's overlay, which hides it; see studio.css.)
  */
 function inOurWords<T extends object>(config: T): T {
   const { widgets } = config as unknown as { widgets: { id: string; options?: Record<string, unknown> }[] };
@@ -96,7 +98,6 @@ function inOurWords<T extends object>(config: T): T {
       const localeText = { ...(w.options?.localeText as object | undefined), noRowsToShow: 'None yet.' };
       return { ...w, options: { ...w.options, localeText } };
     }
-    if (w.id.includes('chart')) return { ...w, options: { ...w.options, locale: { localeText: { overlayNoData: 'None yet.' } } } };
     return w;
   });
   return { ...config, widgets: words };

@@ -90,14 +90,16 @@ describe('verifiedDeliveryChartTables grids', () => {
     const data = {
       orders: [],
       checks: [
-        { id: '1', orderRef: 'AAA', item: 'Sweater', verdictLabel: '✕ Mismatch', mismatchType: 'Wrong size', checkedAt: '2026-11-08T10:00:00Z', latencyMs: 1100 },
-        { id: '2', orderRef: 'BBB', item: 'Mug', verdictLabel: '? Not sure', mismatchType: 'Could not check colour', checkedAt: '2026-11-09T10:00:00Z', latencyMs: null },
+        { id: '1', orderRef: 'AAA', item: 'Sweater', verdictLabel: '✕ Mismatch', mismatchType: 'Wrong size', confidence: 'Fairly sure', checkedAt: '2026-11-08T10:00:00Z', latencyMs: 1100 },
+        { id: '2', orderRef: 'BBB', item: 'Mug', verdictLabel: '? Not sure', mismatchType: 'Could not check colour', confidence: 'Not sure', checkedAt: '2026-11-09T10:00:00Z', latencyMs: 966 },
       ],
       cases: [{ id: 'c', ref: 'CCC', stage: 'Waiting for the store', reason: 'Wrong size', outcome: '', openedAt: '2026-11-09T11:00:00Z', resolvedAt: null }],
     } as unknown as VerifiedDeliveryData;
     const [, , checks, cases] = verifiedDeliveryChartTables(data);
     expect(checks!.rows.map((r) => r.cells[1])).toEqual(['BBB', 'AAA']);
-    expect(checks!.rows[1]!.cells[5]).toBe('1.1 s');
+    // Same words and formats as the grid: how sure, then the check time (ms under a second).
+    expect(checks!.rows[1]!.cells.slice(5)).toEqual(['Fairly sure', '1.1 s']);
+    expect(checks!.rows[0]!.cells.slice(5)).toEqual(['Not sure', '966 ms']);
     expect(cases!.rows[0]!.cells).toEqual(['CCC', 'Waiting for the store', 'Wrong size', '—', 'Nov 9, 11:00 AM UTC', 'Not yet']);
   });
 });

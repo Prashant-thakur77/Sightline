@@ -160,7 +160,7 @@ export function CheckFlow({
           {error}
         </p>
       )}
-      <CameraCheck itemName={itemName} onSubmit={submit} demoShots={demoShots} busy={busy} focusOnMount={cameBack} />
+      <CameraCheck itemName={itemName} onSubmit={submit} demoShots={demoShots} busy={busy} focusOnMount={cameBack} onRetake={() => setError(null)} />
     </div>
   );
 }

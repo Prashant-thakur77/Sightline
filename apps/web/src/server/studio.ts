@@ -449,7 +449,7 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
       value: s.delivered === 0 ? 'None delivered yet' : `${s.verifiedDeliveries} of ${s.delivered}`,
       detail:
         s.delivered === 0
-          ? 'No parcel has been delivered yet.'
+          ? 'Checks start once a parcel is delivered.'
           : 'Delivered orders the buyer checked with the camera. ' +
             (s.checks === 0
               ? 'No check has answered yet.'
@@ -461,7 +461,7 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
       value: pct(s.mismatches, s.checks),
       detail:
         s.checks === 0
-          ? 'No checks yet.'
+          ? 'The rate starts with the first camera check.'
           : `${s.mismatches} of ${plural(s.checks, 'check')} found the wrong item${
               reasons.length ? `: ${reasons.map((r) => `${r.reason.toLowerCase()} ${r.count}`).join(', ')}` : ''
             }. ${plural(s.unsure, 'check')} could not tell.`,
@@ -488,7 +488,7 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
       value: s.medianResolutionMs === null ? 'None yet' : durationText(s.medianResolutionMs),
       detail:
         s.medianResolutionMs === null
-          ? `No case resolved yet. ${plural(s.openCases, 'case')} still open.`
+          ? `Cases still open: ${s.openCases}.`
           : `Across ${plural(s.resolvedCases, 'resolved case')}. ${plural(s.openCases, 'case')} still open.`,
     },
   ];

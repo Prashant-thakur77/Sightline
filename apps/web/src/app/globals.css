@@ -392,6 +392,18 @@ a {
     background: var(--paper-2);
   }
 
+  /* A row of buttons that wraps by the room each label needs, not by the screen width: at any
+     text size a label keeps its words on one line, and a button alone on its line fills it. */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    max-inline-size: 46em;
+  }
+  .btn-row > * {
+    flex: 1 1 auto;
+  }
+
   /* Photos added so far, small, each named under it (the names say what they are). */
   .shots-so-far {
     list-style: none;
@@ -750,7 +762,8 @@ a {
      phone, or large text, stacks them, each with its caption under it. */
   .verdict-compare {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    /* Each picture at most 20rem, so the table below stays in view on a wide screen. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 20rem));
     gap: var(--space-4);
     align-items: start;
   }
@@ -1951,6 +1964,11 @@ a {
   :root[data-theme='contrast'] .case-folder[data-current] :is(.folder-tab, .folder-body) {
     border-width: 6px;
   }
+  /* On the yellow folder, muted words and the check marks take the folder's own dark ink: the
+     dark theme's light greys and greens are unreadable on yellow. The marks' shapes still differ. */
+  :root:not([data-theme='contrast']) .case-folder[data-current] :is(.muted, .reason-glyph) {
+    color: inherit;
+  }
   /* On the yellow folder the main action is filled with ink, so it is the strongest thing there. */
   :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary {
     background: var(--yellow-ink);
@@ -1960,6 +1978,16 @@ a {
   }
   :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary:hover {
     background: #26262a;
+  }
+  /* The other buttons there are outlined in the same ink, in light and dark themes alike, so the
+     filled one is the main action. */
+  :root:not([data-theme='contrast']) .case-folder[data-current] .btn:not(.btn-primary) {
+    background: transparent;
+    color: var(--yellow-ink);
+    border-color: var(--yellow-ink);
+  }
+  :root:not([data-theme='contrast']) .case-folder[data-current] .btn:not(.btn-primary):hover {
+    background: color-mix(in srgb, var(--yellow-ink) 10%, transparent);
   }
   /* Buttons of the usual size in a folder share one width, so a pair reads as a pair. */
   .case-body .btn:not(.btn-xl) {

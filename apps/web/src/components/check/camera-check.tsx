@@ -54,6 +54,7 @@ export function CameraCheck({
   demoShots,
   busy,
   focusOnMount = false,
+  onRetake,
 }: {
   itemName: string;
   onSubmit: (shots: CapturedShot[]) => void;
@@ -62,6 +63,8 @@ export function CameraCheck({
   busy?: boolean;
   /** Focus the heading on mount: used when the person comes back from a verdict ("Check again"). */
   focusOnMount?: boolean;
+  /** The photos are being taken again: anything said about the last attempt no longer applies. */
+  onRetake?: () => void;
 }) {
   const { announce, stop } = useAnnouncer();
   const [phase, setPhase] = useState<Phase>('intro');
@@ -73,8 +76,6 @@ export function CameraCheck({
   /** The last thing said, shown on the viewfinder. */
   const [caption, setCaption] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
-  /** Said when every photo was skipped: there is nothing to check yet. */
-  const [notice, setNotice] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const sampleRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -130,7 +131,6 @@ export function CameraCheck({
 
   const addShot = useCallback(
     (s: CapturedShot) => {
-      setNotice(null);
       setShots((prev) => [...prev.filter((p) => p.kind !== s.kind), s]);
       const next = index + 1;
       if (next >= SHOTS.length) {
@@ -247,19 +247,10 @@ export function CameraCheck({
     }
   }, [announce, index, loop, quiet]);
 
+  // The whole item (the first photo) is what the check compares, so only the later photos can be skipped.
   const skip = useCallback(() => {
-    if (!shot) return;
+    if (!shot || index === 0) return;
     const next = index + 1;
-    if (next >= SHOTS.length && shots.length === 0) {
-      // Every photo skipped: nothing to check. Start the photos again rather than offer an empty check.
-      const msg = 'No photos yet, so there is nothing to check. Add at least one: the whole item or the size tag.';
-      stopCamera();
-      setNotice(msg);
-      setIndex(0);
-      setPhase('intro');
-      announce(msg, { politeness: 'assertive', source: 'camera' });
-      return;
-    }
     announce(`Skipped ${shot.title.toLowerCase()}.`, { source: 'camera' });
     if (next >= SHOTS.length) {
       stopCamera();
@@ -269,7 +260,7 @@ export function CameraCheck({
       setIndex(next);
       announce(`Next: ${SHOTS[next]!.title}. ${SHOTS[next]!.prompt}`, { source: 'camera' });
     }
-  }, [announce, index, quiet, shot, shots.length, stopCamera]);
+  }, [announce, index, quiet, shot, stopCamera]);
 
   const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -289,7 +280,6 @@ export function CameraCheck({
         loaded.push({ kind: d.kind, blob: await res.blob(), url: d.url, source: 'demo' });
       }
       setShots(loaded);
-      setNotice(null);
       setPhase('review');
       announce('Loaded the demo parcel photos. Review what will be sent, then check it.', { source: 'camera' });
     } catch {
@@ -298,7 +288,7 @@ export function CameraCheck({
   };
 
   const restart = () => {
-    setNotice(null);
+    onRetake?.();
     setShots([]);
     setIndex(0);
     setPhase('intro');
@@ -329,7 +319,7 @@ export function CameraCheck({
             </li>
           ))}
         </ul>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="btn-row">
           <button
             type="button"
             className="btn btn-primary btn-xl"
@@ -362,15 +352,14 @@ export function CameraCheck({
       <h2 id="cam-h" ref={headingRef} tabIndex={-1} className="text-[length:var(--step-2)]">
         {phase === 'intro' && !started ? 'Check your parcel' : `Photo ${index + 1} of ${SHOTS.length}: ${shot?.title}`}
       </h2>
-      {notice && phase === 'intro' && <p className="card-refusal">{notice}</p>}
       {phase === 'intro' && (
         <div className="grid gap-4 max-w-[var(--measure)]">
           <p>
             {started
               ? shot?.prompt
-              : 'I’ll guide you with my voice while you point the camera, then take each photo for you. Three photos: the whole item, the size tag, and any damage. You can skip any of them.'}
+              : 'I’ll guide you with my voice while you point the camera, then take each photo for you. Three photos: the whole item, the size tag, and any damage. The size tag and damage photos can be skipped.'}
           </p>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="btn-row">
             <button type="button" className="btn btn-primary btn-xl" onClick={start}>
               Start the camera
             </button>
@@ -395,7 +384,7 @@ export function CameraCheck({
               {caption ?? (phase === 'starting' ? 'Starting the camera…' : 'Looking…')}
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="btn-row">
             <button
               type="button"
               className="btn btn-primary btn-xl"
@@ -406,9 +395,11 @@ export function CameraCheck({
             >
               Capture now
             </button>
-            <button type="button" className="btn btn-xl" onClick={skip}>
-              Skip this shot
-            </button>
+            {index > 0 && (
+              <button type="button" className="btn btn-xl" onClick={skip}>
+                Skip this shot
+              </button>
+            )}
             <button
               type="button"
               className="btn btn-xl"
@@ -463,7 +454,7 @@ export function CameraCheck({
               : `Or take or choose a photo of ${shot.title.toLowerCase()}`}
           </label>
           <input id="upload" type="file" accept="image/*" capture="environment" onChange={onUpload} className="file-input" />
-          {phase !== 'live' && (started || shot.optional || phase === 'denied') && (
+          {phase !== 'live' && index > 0 && (
             <button type="button" className="btn" onClick={skip}>
               Skip this shot
             </button>

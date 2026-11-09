@@ -280,7 +280,6 @@ const overview: AgPageState = {
         cols: [
           { id: 'checks.checkedAt' },
           { id: 'checks.orderRef' },
-          { id: 'checks.buyer' },
           { id: 'checks.item' },
           { id: 'checks.verdictLabel' },
           { id: 'checks.mismatchType' },
@@ -364,7 +363,8 @@ export function verifiedDeliveryChartTables(data: VerifiedDeliveryData): ChartTa
       id: 'recent-checks',
       title: 'Recent checks',
       caption: 'Newest first',
-      columns: ['Checked', 'Order', 'Item', 'Verdict', 'What differed', 'Check time'],
+      // The same columns as the grid above, in the same words and formats.
+      columns: ['Checked', 'Order', 'Item', 'Verdict', 'What differed', 'How sure (deciding reason)', 'Check time'],
       rows: [...data.checks]
         .sort((a, b) => (b.checkedAt ?? '').localeCompare(a.checkedAt ?? ''))
         .map((c) => ({
@@ -375,7 +375,8 @@ export function verifiedDeliveryChartTables(data: VerifiedDeliveryData): ChartTa
             c.item,
             c.verdictLabel,
             c.mismatchType,
-            c.latencyMs == null ? '—' : `${(c.latencyMs / 1000).toFixed(1)} s`,
+            c.confidence,
+            c.latencyMs == null ? '—' : msText(c.latencyMs),
           ],
         })),
       empty: 'No parcels have been checked yet.',

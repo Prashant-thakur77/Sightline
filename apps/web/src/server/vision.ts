@@ -11,6 +11,8 @@ export interface VisionResult {
 }
 
 export class VisionUnavailableError extends Error {}
+/** The checker answered but refused the request (a 4xx): retrying the same photos won't help. */
+export class VisionRefusedError extends Error {}
 
 type WireReason = {
   module: Verdict['reasons'][number]['module'];
@@ -116,6 +118,7 @@ export async function verifyDelivery(input: {
   } catch (e) {
     throw new VisionUnavailableError(`vision service unreachable: ${(e as Error).message}`);
   }
+  if (res.status >= 400 && res.status < 500) throw new VisionRefusedError(`vision service refused the photos (${res.status})`);
   if (!res.ok) throw new VisionUnavailableError(`vision service returned ${res.status}`);
   const json = (await res.json()) as { verdict: Parameters<typeof fromWire>[0]; modules: Record<string, unknown>; timings_ms: Record<string, number> };
   return { verdict: fromWire(json.verdict), modules: json.modules, timings_ms: json.timings_ms };

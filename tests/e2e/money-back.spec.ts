@@ -128,21 +128,33 @@ test.describe('money back after a wrong item', () => {
     await expectNoAxeViolations(page);
   });
 
-  test('skipping every photo says there is nothing to check yet, instead of an empty check', async ({ page }) => {
+  test('the whole-item photo is needed and the others can be skipped, also without a camera', async ({ page }) => {
     const orderId = await seededOrder(page);
     await page.goto(`/app/check/${orderId}`);
     await page.getByRole('button', { name: 'Start the camera' }).click();
-    // No camera in the test browser: the photo field and Skip are the way on.
+    // No camera in the test browser: the photo field is the way on, and the first photo has no Skip.
     await expect(page.getByRole('button', { name: 'Try the camera again' })).toBeVisible();
-    for (const next of ['Photo 2 of 3: The size tag', 'Photo 3 of 3: Any damage']) {
-      await page.getByRole('button', { name: 'Skip this shot' }).click();
-      await expect(page.getByRole('heading', { name: next })).toBeFocused();
-    }
+    await expect(page.getByRole('button', { name: 'Skip this shot' })).toHaveCount(0);
+    await page.getByLabel(/photo of the whole item/).setInputFiles(path.join(REPO, 'apps/web/public/demo-parcel/right-item.jpg'));
+    await expect(page.getByRole('heading', { name: 'Photo 2 of 3: The size tag' })).toBeFocused();
     await page.getByRole('button', { name: 'Skip this shot' }).click();
-    await expect(page.locator('#main .card-refusal').filter({ hasText: 'No photos yet' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Check your parcel' })).toBeFocused();
-    await expect(page.getByRole('button', { name: 'Check it now' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Photo 3 of 3: Any damage' })).toBeFocused();
+    await page.getByRole('button', { name: 'Skip this shot' }).click();
+    await expect(page.getByRole('heading', { name: 'Ready to check' })).toBeFocused();
+    await expect(page.getByRole('list', { name: 'Photos to send' }).getByRole('listitem')).toHaveCount(1);
     await expectNoAxeViolations(page);
+  });
+
+  test('a check sent without the whole-item photo is refused in plain words, not as the checker being down', async ({ page }) => {
+    const orderId = await seededOrder(page);
+    const base = test.info().project.use.baseURL ?? 'http://localhost:3100';
+    const tag = readFileSync(path.join(REPO, 'apps/web/public/demo-parcel/right-tag.jpg'));
+    const res = await page.request.post(`/api/orders/${orderId}/check`, {
+      multipart: { label: { name: 'label.jpg', mimeType: 'image/jpeg', buffer: tag } },
+      headers: { origin: new URL(base).origin },
+    });
+    expect(res.status()).toBe(400);
+    expect(((await res.json()) as { error: string }).error).toBe('I need a photo of the whole item to check it. Add one, then check again.');
   });
 
   test('check, then money back with focus on each step and one deadline', async ({ page }) => {

@@ -5,7 +5,7 @@ import { newId } from '@sightline/core';
 import { requireUser, HttpError } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { putBlob, sanitisePhoto } from '@/server/blobs';
-import { verifyDelivery, VisionUnavailableError } from '@/server/vision';
+import { verifyDelivery, VisionRefusedError, VisionUnavailableError } from '@/server/vision';
 import { db } from '@/server/runtime';
 import { audit } from '@/server/audit';
 import { afterVerdict } from '@/server/after-check';
@@ -23,6 +23,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const found = await orderForUser(id, user.id);
     if (!found || !found.snapshot) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
     const form = await req.formData();
+    // The check compares what arrived against the listing, so the whole item is needed; the size
+    // tag and damage photos are optional. Refused before anything is stored.
+    const item = form.get('item');
+    if (!(item instanceof File) || item.size === 0)
+      return NextResponse.json({ error: 'I need a photo of the whole item to check it. Add one, then check again.' }, { status: 400 });
     const photos: { kind: (typeof KINDS)[number]; bytes: Buffer; blobId: string; sha256: string; source?: string }[] = [];
     for (const kind of KINDS) {
       const f = form.get(kind);
@@ -52,6 +57,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       result = await verifyDelivery({ snapshot: found.snapshot, photos });
     } catch (e) {
       await db().update(tables.verifications).set({ status: 'failed', moduleOutputs: { error: (e as Error).message } }).where(eq(tables.verifications.id, verificationId));
+      if (e instanceof VisionRefusedError)
+        return NextResponse.json(
+          { error: 'The checker couldn’t use these photos. Retake them, with the whole item in the first one. Nothing about your payment changed.' },
+          { status: 422 },
+        );
       const msg =
         e instanceof VisionUnavailableError
           ? 'The checker is not reachable right now. Your photos are saved. Nothing about your payment changed. Try again in a minute.'
