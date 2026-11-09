@@ -1,75 +1,81 @@
-# Sightline: Devpost submission (draft)
+# Sightline: Devpost submission
 
-Fill the bracketed numbers from `evals/RESULTS.md` on the final commit. Every number below must match that file.
+Every number below is read from `evals/results/*.json` (rendered in `evals/RESULTS.md`). Re-check them against that file on the final commit.
 
 ## Tagline
 
-Voice-first shopping for blind and low-vision people: PayPal holds the money until your phone confirms the parcel is what you paid for.
+Shopping on your own when you can't see the screen: hear exactly what you pay, let PayPal hold the money, check the parcel with your phone, and get your money back from the store's own agent.
+
+## Live demo
+
+https://sightline.prashantthakur.dev (PayPal sandbox; no sign-up). Judges start at `/judge`: one press runs the whole lifecycle against the PayPal sandbox in about two minutes.
 
 ## Inspiration
 
-Blind people can already shop online with a screen reader, slowly. The part that still breaks is after checkout. A parcel arrives, and the only way to know if it's the navy medium you paid for, and not a black large, is to ask someone. Getting money back is worse: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven of them couldn't use the retailer's return method at all (Which? with RIDC). In a CHI 2026 study of 12 blind and low-vision people shopping with an AI agent (Shin et al., "Toward Independent Online Shopping of the Visually Impaired Through Voice-based Computer-Using Agent"), participants could not verify what the agent told them and did not trust it with payment.
+Blind people can already shop online with a screen reader, slowly. What still breaks is after checkout. A parcel arrives, and the only way to know whether it's the navy medium you paid for, and not a charcoal large, is to ask someone. Getting money back is worse: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven couldn't use the retailer's return method at all (Which? with RIDC). In a CHI 2026 study of 12 blind and low-vision people shopping with an AI agent (Shin et al.), participants couldn't verify what the agent told them and didn't trust it with payment.
 
-We wanted the whole money lifecycle to be something a blind person can do alone, with PayPal underneath it.
+So we built the whole money lifecycle to be something a blind person can do alone, with PayPal underneath it, and with an agent that can be checked at every step.
 
 ## What it does
 
-1. **Shop by voice.** At most three options at a time, each with colour, size, price and returns. If the listing doesn't say something, it says "the listing doesn't say".
-2. **Hear exactly what you pay for.** A template, not the AI, reads the item, colour, size, seller, total with tax and shipping, delivery date and return window. Paying needs two independent keys: your words (or the Confirm button) and a separate model check. "Wait" holds it open with no time limit.
-3. **Money waits for the check.** For stores that opt in, PayPal only authorizes the payment at purchase.
-4. **Check the parcel with your phone.** The camera talks you into frame and takes the photos. It compares colour in CIELAB colour space against the listing photo, reads the size tag twice with two different readers, and checks the product and any damage. It says "not sure" rather than guess, and can ask someone you trust to look through a private, view-only link.
-5. **Get your money back.** A match captures the payment. A wrong item goes to the store with a signed evidence pack while the money stays on hold: the store accepts the return, which voids the hold, or offers a replacement, and if it doesn't answer in three business days the hold is voided anyway. The money never left, and the store always sees the evidence first. If the buyer never checks, the store is paid a week after delivery, after a reminder. For payments already captured, a signed evidence pack goes to the seller, who can refund through PayPal from the cases desk; every update is read aloud.
+1. **Ask.** Talk or type. A Claude shopping agent searches Demo Store and Channel3's live catalogue, reads details, compares, and asks one question when it has to. You hear three options at most, each with colour, size, price and returns. Every line it speaks is checked against the listings first; a claim the listing doesn't make is never said.
+2. **It remembers, if you say yes.** "I'm a medium in sweaters" gets "Shall I remember that?" Later: "Using your usual size M." Settings shows everything it remembers; "forget my size" works by voice.
+3. **Hear it back.** Before any money moves, a fixed template (not the model) reads the item, colour, size, seller, total, delivery date and return window. Paying takes two independent keys: your words, and a separate model check. Saying yes twice can never charge you twice.
+4. **PayPal holds the money.** The payment is an authorization, made with your saved PayPal (Vault), so there's no popup after the first purchase. The store is paid only after your check passes; an unchecked delivery is paid a week later, after a reminder. Holds are reauthorized inside PayPal's 29 days.
+5. **Check it.** Your phone talks you into frame and takes the photos: the item, the size tag, any damage. Claude reads the tag and compares the product with what you bought; a second reader (OCR) must agree before it says it's sure. It says "not sure" rather than guess, and you can send a private link to someone you trust.
+6. **Get your money back.** Say it's wrong. Your agent builds a signed evidence pack and sends it to the store. The store's own agent checks the signature, then proposes a fix within the store's rules: a replacement, the hold released, part of the price back to keep it, or the item back first. Code computes every amount; the model only picks and explains. You hear the offer and its reasons and answer with two presses. Decline, and it revises once. PayPal then voids the hold, captures part of it, or refunds.
+7. **Money questions.** "What's on hold?" "When does it expire?" "Did I get my refund?" Answered from your orders and PayPal's records, never estimated.
+8. **What your agent did.** Every order shows each step: who acted (you, your agent, the store's agent, PayPal, the safety check), the tool, whether a model or fixed rules decided, and PayPal's real ids and statuses.
 
 ## How we built it
 
-**PayPal**
-- **Orders v2** with server-side order creation from the confirmed readback; `custom_id` carries the readback binding hash.
-- **`PayPal-Request-Id`** derived from the cart hash and readback id, so a repeated "yes", a double click or a network retry returns the original order.
-- **JS SDK v6** web component and one-time payment session for the first purchase, with **Vault** (`store_in_vault`) so later purchases need only the spoken confirmation.
-- **Payments v2 authorize, capture and void** for pay after check; **Refunds** from the merchant cases desk.
-- **Shipment tracking** on the order from the merchant console.
-- **Disputes API** on the cases desk: read a dispute, make an offer or accept the claim, each only when the dispute's HATEOAS links allow it. The client also covers evidence upload and escalation (spike scripts, not yet in the app).
-- **Webhooks** verified on the raw body, stored once per event id, processed after a fast 200.
+**PayPal (all running in the sandbox)**
+- Orders v2, created server-side from the confirmed readback; `custom_id` carries the readback's hash and `PayPal-Request-Id` is derived from it, so retries and repeated yeses return the same order.
+- Payments v2: authorize at purchase, capture on a match, void on a wrong item, partial capture with `final_capture` to keep it for less, refunds, repeated reauthorization.
+- Vault: the first purchase saves PayPal; later purchases pay with the vault id by voice alone.
+- JS SDK v6 for the first approval, with a spoken heads-up before PayPal's window opens.
+- Package tracking added to the PayPal order; webhooks verified by signature; Disputes read on the store's case desk.
 
 **AI**
-- **Claude Haiku 5.5** as the second confirmation key: an independent reading of what you said against the readback. It can only agree or veto.
-- **Claude Opus 5.5** for free questions about a listing (citations to listing fields or verbatim quotes, then a grounding guard removes unsupported claims), for unclear requests, for reading the size tag, product and damage in photos, and for drafting case text from the evidence (checked against the facts before use).
-- Model output never moves money: amounts, payee and confirmation come from frozen listing snapshots, the readback and an eight-guard payment gate that signs a receipt for every decision.
+- Claude Opus 5.5: the tool-using shopping agent (11 tools, capped and with a deterministic fallback), size-tag, product and damage reads in photos, the case summary, and the store's agent.
+- Claude Haiku 5.5: the second confirmation key, which can only agree or veto.
+- Model output never moves money: amounts, payees and confirmations come from frozen listing snapshots, the readback and an eight-guard payment gate that signs a receipt for every decision.
 
-**Also:** an MCP server so other shopping agents can use the accessible readback, delivery check and evidence packs; AG Grid and AG Studio for the Demo Store console and dashboards; Render for hosting.
+**Also:** Channel3 for live product data, AG Studio dashboards for the store with a Claude assistant, an MCP server so other agents can use the readback and the delivery check, and AWS for hosting.
 
-## Fair to stores too
+## Fair to stores
 
-Stores that opt in to pay after check should see fewer "not as described" disputes: the buyer checks before paying, and the store sees the signed evidence before anything is released. A store is never left unpaid by silence: an unchecked delivery is paid a week after it arrives, after a reminder to the buyer.
+Stores that offer pay-after-check see the evidence before anything is released, and their own agent settles clear cases inside rules they set. A store is never left unpaid by silence.
 
 ## Accessibility is the product
 
-One announcer for every live update, focus that moves only when it should, full keyboard control with shortcuts that can't clash with a screen reader, a high-contrast low-vision mode with text scaling, no colour-only status, and no deadline to decide: say "wait" and the order stays open, and a yes that comes much later just hears the order read again. Every page is checked with axe in light, dark and high-contrast themes at phone and desktop widths. The Speech Viewer shows sighted judges what a screen reader says.
+One announcer for every live update, focus that moves only when it should, full keyboard control, a high-contrast low-vision mode with text scaling, and no colour-only status. Every page is checked with axe in light, dark and high-contrast themes at phone and desktop widths (0 violations). The Speech Viewer shows sighted judges what a screen reader says.
 
-## Numbers (from scripts in the repo, with baselines)
+## Numbers (scripts in the repo, each with a baseline)
 
-- Payment breaches across 60 adversarial listings: **[0 of 60]**, naive agent **[50 of 60]** (local ledger simulation).
-- False confirmations on 266 spoken phrases: **[0]**, keyword matcher **[132]**.
-- Repeat confirmations ending in a second order: **[0 of 100]**, **[10 of 100]** before we fixed lost PayPal responses.
-- Grounding guard: catches **[62 of 75]** invented claims and wrongly blocks **[0 of 75]** true answers.
-- SightBench: **[mismatch recall / false alarms vs CLIP baseline]**.
-- Checkout Barrier Index: **[headline]** across **[N]** real stores.
-- **Negative results we publish:** negated false statements pass the grounding guard; dim-light navy vs black is unreliable, so the app says "not sure".
+- **Camera check** on a frozen 420-pair test set: when it gives an answer it's right **132 of 137** times (CLIP image similarity: 215 of 420). False alarms on matching items: **4 of 210** (CLIP: 189 of 210). It flags 121 of 210 wrong items and says "not sure" on 283 of 420.
+- **Payments:** **0 of 60** breaches across adversarial listings (naive agent: 50 of 60); **0 of 100** duplicate orders across retry scenarios (10 of 100 before we fixed lost PayPal answers).
+- **Confirmation:** **0 of 140** false confirmations on held-out phrases (keyword matching: 82 of 140).
+- **Grounding:** the guard catches **62 of 75** invented claims and wrongly blocks **0 of 75** true answers.
+- **Store agent:** **0 of 370** replies outside the store's policy; **0 of 218** invented facts reach the buyer.
+- **Shopping agent:** **0 of 15** wrong sizes in the top three (Channel3's own ranking: 1 of 15); 7 of 7 wrong model moves refused.
+- **Checkout Barrier Index:** in 33% (15 of 45) of sampled real stores, Tab alone couldn't reach "add to cart".
+- **Negative results we publish:** colour mismatches are caught only 2 of 53 times; the check abstains on two thirds of pairs; a false claim with no number, size or colour can pass the reason check.
 
 ## Challenges
 
-- Buyer-side dispute creation by API is a limited-release, sandbox-only path. We made the most common case not need a dispute at all: the money waits for the check. For payments already captured, the store gets the signed evidence on its cases desk.
-- Saying "nothing was charged" after a lost PayPal response is a lie that leads to double charges. Our duplicate evaluation found it; we now keep the hold, block repeats and reconcile with the same request id.
-- Making a camera check say "not sure" instead of guessing, and making that useful.
+- Buyer-side dispute creation by API is limited to approved partners, so we made the common case need no dispute: the money waits for the check.
+- Saying "nothing was charged" after a lost PayPal response leads to double charges. Our duplicates eval found it; we now keep the hold, block repeats and reconcile with the same request id.
+- Live sandbox runs found that PayPal rejects item image links without a file extension, which blocked every purchase of a Channel3 product. Such images are now left out.
 
 ## What we learned
 
-Accessibility and payment safety pull in the same direction: a readback that a blind person can trust is also a contract the payment gate can enforce.
+Accessibility and payment safety pull the same way: a readback a blind person can trust is also a contract the payment gate can enforce, and an agent whose every step is shown is one people can check.
 
 ## What's next
 
-Sessions with blind and low-vision testers (the consent form, task script and SUS questionnaire are in the repo), live product data from Channel3 and read-only store page reading on KERNEL (both written, not yet connected), Hindi voice and readback, a phone line, and a merchant program where stores opt in to pay after check.
+Sessions with blind and low-vision testers (consent form, task script and SUS questionnaire are in the repo), a better colour check, Hindi voice and readback, a phone line, and a store program for pay after check.
 
 ## What we do not claim
 
-Not yet tested with blind users. Buyer-side dispute creation by API is sandbox-only. Orders go to a sandbox Demo Store at the listed price. Colour in dim light is unreliable. Maya and Raj are personas.
+Not yet tested with blind users. Orders go to a sandbox Demo Store at the listed price. Colour checks are weak. Maya and Raj are personas.

@@ -6,6 +6,8 @@ Sightline is a voice-first shopping agent for blind and low-vision people. It sh
 
 Tools exist that help blind people find products. Checking what arrived and getting money back is still left to them. That last part is where shopping independence breaks today: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven of those could not use the retailer's return method ([Which? with RIDC](https://www.which.co.uk/policy-and-insight/article/retailers-and-returns-services-potentially-breaking-law-on-returns-for-disabled-consumers-which-finds-ac8dn1v6s5K7)).
 
+**Live:** https://sightline.prashantthakur.dev (no sign-up; judges start at `/judge`).
+
 All payments run on the **PayPal sandbox**. The app refuses to start if it is pointed anywhere else.
 
 ## The 60-second path for judges
@@ -117,6 +119,14 @@ Keys and what they switch on (details in `.env.example`):
 Missing keys switch features off honestly: the app says what is not connected instead of faking it. `/judge` lists what is connected on the server you are using.
 
 Tests: `pnpm check` (types, lint, unit tests) and `pnpm check:full` (adds Playwright end-to-end tests with axe on every flow).
+
+## Production
+
+One AWS EC2 host runs Postgres, the vision service, the web app (Next.js standalone image) and Caddy for HTTPS (`deploy/aws`). Migrations run as a one-off job, a cron entry calls the maintenance endpoint every 15 minutes, and PayPal webhooks are registered for the public address. Secrets live only in the host's `deploy/aws/.env`.
+
+```bash
+cd deploy/aws && docker compose build && docker compose run --rm migrate && docker compose up -d
+```
 
 ## What we do not claim
 
