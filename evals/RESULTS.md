@@ -7,14 +7,14 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 | Suite | Results | Negative results | Ran at (UTC) | Git |
 | --- | --- | --- | --- | --- |
 | Shopping agent, live model | 3 | 0 | 2026-11-09T07:57:18.981Z | 01e9149 |
-| Shopping agent | 8 | 1 | 2026-11-09T07:56:52.376Z | 01e9149 |
+| Shopping agent | 8 | 1 | 2026-11-09T13:26:42.295Z | 73ce251 |
 | Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | 0406ebe |
-| Spoken purchase confirmation | 5 | 2 | 2026-11-09T05:11:03.414Z | 0406ebe |
-| Duplicate orders | 8 | 2 | 2026-11-09T05:11:04.743Z | 0406ebe |
-| Grounded answers | 5 | 2 | 2026-11-09T05:11:05.072Z | 0406ebe |
-| Adversarial listings (red team) | 5 | 1 | 2026-11-09T05:11:03.754Z | 0406ebe |
-| SightBench: does the parcel match? | 12 | 5 | 2026-11-09T05:11:02.979Z | 0406ebe |
-| Store agent: policy, invented facts, choice | 6 | 1 | 2026-11-09T07:37:31.253Z | uncommitted |
+| Spoken purchase confirmation | 5 | 2 | 2026-11-09T13:26:39.274Z | 73ce251 |
+| Duplicate orders | 8 | 2 | 2026-11-09T13:26:40.806Z | 73ce251 |
+| Grounded answers | 5 | 2 | 2026-11-09T13:26:41.224Z | 73ce251 |
+| Adversarial listings (red team) | 5 | 1 | 2026-11-09T13:26:39.708Z | 73ce251 |
+| SightBench: does the parcel match? | 12 | 3 | 2026-11-09T13:24:31.985Z | 73ce251 |
+| Store agent: policy, invented facts, choice | 6 | 1 | 2026-11-09T13:26:41.663Z | 73ce251 |
 
 ## Shopping agent, live model
 
@@ -43,7 +43,7 @@ Full per-item data: `evals/results/agent-live.json` (`details`).
 
 ## Shopping agent
 
-Suite `agent` · ran 2026-11-09T07:56:52.376Z · git 01e9149
+Suite `agent` · ran 2026-11-09T13:26:42.295Z · git 73ce251
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -115,7 +115,7 @@ Full per-item data: `evals/results/barrier.json` (`details`).
 
 ## Spoken purchase confirmation
 
-Suite `confirmation` · ran 2026-11-09T05:11:03.414Z · git 0406ebe
+Suite `confirmation` · ran 2026-11-09T13:26:39.274Z · git 73ce251
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -144,7 +144,7 @@ Full per-item data: `evals/results/confirmation.json` (`details`).
 
 ## Duplicate orders
 
-Suite `duplicates` · ran 2026-11-09T05:11:04.743Z · git 0406ebe
+Suite `duplicates` · ran 2026-11-09T13:26:40.806Z · git 73ce251
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -182,7 +182,7 @@ Full per-item data: `evals/results/duplicates.json` (`details`).
 
 ## Grounded answers
 
-Suite `grounding` · ran 2026-11-09T05:11:05.072Z · git 0406ebe
+Suite `grounding` · ran 2026-11-09T13:26:41.224Z · git 73ce251
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -210,7 +210,7 @@ Full per-item data: `evals/results/grounding.json` (`details`).
 
 ## Adversarial listings (red team)
 
-Suite `redteam` · ran 2026-11-09T05:11:03.754Z · git 0406ebe
+Suite `redteam` · ran 2026-11-09T13:26:39.708Z · git 73ce251
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -240,43 +240,43 @@ Full per-item data: `evals/results/redteam.json` (`details`).
 
 ## SightBench: does the parcel match?
 
-Suite `sightbench` · ran 2026-11-09T05:11:02.979Z · git 0406ebe
+Suite `sightbench` · ran 2026-11-09T13:24:31.985Z · git 73ce251
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
-| Mismatches flagged on the frozen test split, Sightline without model reads **(negative result)** | 2 of 210 (1.0%) | CLIP ViT-B/32, dev-fitted: 194 of 210 (92.4%) | 95% Wilson 0.3%–3.4% | 210 | `evals/sightbench/run.ts` |
-| Matching items wrongly called a mismatch (false alarms), Sightline | 1 of 210 (0.5%) | CLIP: 189 of 210 (90.0%) | 95% Wilson 0.1%–2.6% | 210 | `evals/sightbench/run.ts` |
-| Pairs where Sightline answered "not sure" (abstained) | 417 of 420 (99.3%) | CLIP baseline never abstains | 95% Wilson 97.9%–99.8% | 420 | `evals/sightbench/run.ts` |
-| Accuracy when Sightline gives an answer (match or mismatch) | 2 of 3 (66.7%) | CLIP (always answers): 215 of 420 (51.2%) | 95% Wilson 20.8%–93.9% | 3 | `evals/sightbench/run.ts` |
-| Secondary metric, added after the first test run: mismatches where Sightline names the difference (mismatch, or "not sure" with the right module disagreeing) | 65 of 210 (31.0%) | first test run (unfitted): 76 of 210 | 95% Wilson 25.1%–37.5% | 210 | `evals/sightbench/run.ts` |
-| False-alarm twin of the secondary metric: matching items called a mismatch or given any disagreeing reason | 21 of 210 (10.0%) | first test run (unfitted): 45 of 210 | 95% Wilson 6.6%–14.8% | 210 | `evals/sightbench/run.ts` |
-| First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure | 7/210 · 6/210 · 407/420 | this run: 2/210 · 1/210 · 417/420 | — | 420 | `evals/sightbench/run.ts` |
+| Mismatches flagged on the frozen test split, Sightline | 121 of 210 (57.6%) | CLIP ViT-B/32, dev-fitted: 194 of 210 (92.4%) | 95% Wilson 50.9%–64.1% | 210 | `evals/sightbench/run.ts` |
+| Matching items wrongly called a mismatch (false alarms), Sightline | 4 of 210 (1.9%) | CLIP: 189 of 210 (90.0%) | 95% Wilson 0.7%–4.8% | 210 | `evals/sightbench/run.ts` |
+| Pairs where Sightline answered "not sure" (abstained) | 283 of 420 (67.4%) | CLIP baseline never abstains | 95% Wilson 62.8%–71.7% | 420 | `evals/sightbench/run.ts` |
+| Accuracy when Sightline gives an answer (match or mismatch) | 132 of 137 (96.4%) | CLIP (always answers): 215 of 420 (51.2%) | 95% Wilson 91.7%–98.4% | 137 | `evals/sightbench/run.ts` |
+| Secondary metric, added after the first test run: mismatches where Sightline names the difference (mismatch, or "not sure" with the right module disagreeing) | 148 of 210 (70.5%) | first test run (unfitted): 76 of 210 | 95% Wilson 64.0%–76.2% | 210 | `evals/sightbench/run.ts` |
+| False-alarm twin of the secondary metric: matching items called a mismatch or given any disagreeing reason **(negative result)** | 100 of 210 (47.6%) | first test run (unfitted): 45 of 210 | 95% Wilson 41.0%–54.4% | 210 | `evals/sightbench/run.ts` |
+| First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure | 7/210 · 6/210 · 407/420 | this run: 121/210 · 4/210 · 283/420 | — | 420 | `evals/sightbench/run.ts` |
 | Navy delivered for black (or black for navy) in dim light: mismatches caught by Sightline **(negative result)** | 0 of 7 | in daylight: 0 of 7; CLIP dim: 7 of 7 | 95% Wilson 0.0%–35.4% | 7 | `evals/sightbench/run.ts` |
-| Wrong size delivered: caught by Sightline without model reads **(negative result)** | 1 of 53 | size-tag OCR alone: 51 of 53 | 95% Wilson 0.3%–9.9% | 53 | `evals/sightbench/run.ts` |
-| Different model or damage marks: caught by Sightline without model reads **(negative result)** | model 0 of 52, damage 0 of 52 | CLIP: model 52 of 52, damage 48 of 52 | — | 104 | `evals/sightbench/run.ts` |
+| Wrong size delivered: caught by Sightline | 44 of 53 | size-tag OCR alone: 46 of 53 | 95% Wilson 70.8%–90.8% | 53 | `evals/sightbench/run.ts` |
+| Different model or damage marks: caught by Sightline | model 43 of 52, damage 32 of 52 | CLIP: model 52 of 52, damage 48 of 52 | — | 104 | `evals/sightbench/run.ts` |
 | Colour check gave up ("heavy colour cast") on wood tables and plank floors **(negative result)** | 109 of 113 | other surfaces: 42 of 307 | 95% Wilson 91.3%–98.6% | 113 | `evals/sightbench/run.ts` |
-| POST /verify latency on the dev laptop, p50 / p95 | 1.06 s / 1.25 s | — | — | 420 | `evals/sightbench/run.ts` |
+| POST /verify latency on the dev laptop, p50 / p95 | 6.11 s / 8.28 s | — | — | 420 | `evals/sightbench/run.ts` |
 
 Notes:
 
-- Mismatches flagged on the frozen test split, Sightline without model reads: Synthetic renders, not real photos. Stratified over colour, size, model and damage mismatches. No model reads in this run: identity and damage report unknown, so the service never says match. CLIP's dev-fitted threshold also flags 189 of 210 (90.0%) of matching pairs (dev balanced accuracy 0.5444), so its recall says little. The first test run (unfitted thresholds) flagged 7 of 210: the dev-fitted colour rules removed false alarms but also real colour catches (see "First test run").
-- Matching items wrongly called a mismatch (false alarms), Sightline: Synthetic renders, not real photos. A false alarm tells a buyer to return an item that is right. 1 of 1 came from a "sure" colour disagreement (listed: sky blue); see details.worstCases.sightlineFalseAlarms.
-- Pairs where Sightline answered "not sure" (abstained): Coverage 3 of 420 (0.7%). Accuracy when Sightline did answer: 2 of 3 (66.7%); CLIP accuracy: 215 of 420 (51.2%). No model reads in this run: identity and damage report unknown, so the service never says match.
-- Secondary metric, added after the first test run: mismatches where Sightline names the difference (mismatch, or "not sure" with the right module disagreeing): Synthetic renders, not real photos. What the buyer hears, for example "The size tag seems to read L, you ordered M, but I'm only fairly sure.", and the money-back path stays open for "not sure". Per type: colour 14 of 53, damage 0 of 52, model 0 of 52, size 51 of 53. Defined after the first test run's primary numbers were known, so it is reported next to them, never instead of them.
-- False-alarm twin of the secondary metric: matching items called a mismatch or given any disagreeing reason: Synthetic renders, not real photos. The buyer hears a difference that is not there, even if only as "not sure". Disagreeing modules on these pairs: colour 21.
-- First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure: The frozen test split has been run 3 times: first with the hand-set thresholds, then with thresholds fitted on the dev split only. Nothing was tuned on test. Every run's numbers are in details.testRuns. Mismatches flagged per type, first run -> this run: colour 4 -> 1 of 53, damage 2 -> 0 of 52, model 0 -> 0 of 52, size 1 -> 1 of 53. Secondary metric, first run -> this run: named 76 of 210 -> 65 of 210, twin false alarms 45 of 210 -> 21 of 210.
+- Mismatches flagged on the frozen test split, Sightline: Synthetic renders, not real photos. Stratified over colour, size, model and damage mismatches. CLIP's dev-fitted threshold also flags 189 of 210 (90.0%) of matching pairs (dev balanced accuracy 0.5444), so its recall says little.
+- Matching items wrongly called a mismatch (false alarms), Sightline: Synthetic renders, not real photos. A false alarm tells a buyer to return an item that is right. 1 of 4 came from a "sure" colour disagreement (listed: rust, burgundy, navy, sky blue); see details.worstCases.sightlineFalseAlarms.
+- Pairs where Sightline answered "not sure" (abstained): Coverage 137 of 420 (32.6%). Accuracy when Sightline did answer: 132 of 137 (96.4%); CLIP accuracy: 215 of 420 (51.2%).
+- Secondary metric, added after the first test run: mismatches where Sightline names the difference (mismatch, or "not sure" with the right module disagreeing): Synthetic renders, not real photos. What the buyer hears, for example "The size tag seems to read L, you ordered M, but I'm only fairly sure.", and the money-back path stays open for "not sure". Per type: colour 14 of 53, damage 47 of 52, model 43 of 52, size 44 of 53. Defined after the first test run's primary numbers were known, so it is reported next to them, never instead of them.
+- False-alarm twin of the secondary metric: matching items called a mismatch or given any disagreeing reason: Synthetic renders, not real photos. The buyer hears a difference that is not there, even if only as "not sure". Disagreeing modules on these pairs: damage 87, colour 21, identity 3.
+- First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure: The frozen test split has been run 4 times: first with the hand-set thresholds, then with thresholds fitted on the dev split only. Nothing was tuned on test. Every run's numbers are in details.testRuns. Mismatches flagged per type, first run -> this run: colour 4 -> 2 of 53, damage 2 -> 32 of 52, model 0 -> 43 of 52, size 1 -> 44 of 53. Secondary metric, first run -> this run: named 76 of 210 -> 148 of 210, twin false alarms 45 of 210 -> 100 of 210.
 - Navy delivered for black (or black for navy) in dim light: mismatches caught by Sightline: Synthetic renders, not real photos. In dim light the colour module disagreed on 0, but dim light lowers its confidence below "sure", so the verdict was "not sure"; it agreed (wrongly) on 0 and gave up on 7. CLIP's 7 of 7 means little: it flags 90.0% of matching pairs too. Only 7 pairs per light level, so intervals are wide.
-- Wrong size delivered: caught by Sightline without model reads: With OCR as the only tag read, a size is at most "fairly sure", and fusion needs "sure" to call a mismatch, so these end as "not sure". OCR alone called 0 of 210 matching pairs a mismatch (synthetic tags).
-- Different model or damage marks: caught by Sightline without model reads: Identity and damage checks need the vision model, which this run did not have.
+- Wrong size delivered: caught by Sightline: Size needs both tag reads (model and OCR) to agree before a mismatch is "sure".
+- Different model or damage marks: caught by Sightline: Identity and damage come from the vision-model reads.
 - Colour check gave up ("heavy colour cast") on wood tables and plank floors: Synthetic renders, not real photos. Without a sheet of white paper in view, white balance is gray world over the background, so an orange wood surface reads as a strong colour cast and the colour module abstains. Holds in daylight too. Checked on dev: the item masks on wood are tight and the background pixels are plain wood, so this is the gray-world assumption, not a mask bug; it was not fitted away.
-- POST /verify latency on the dev laptop, p50 / p95: Client wall time, one request at a time over localhost, CPU only, no model calls. Server-side total p50 1056 ms.
+- POST /verify latency on the dev laptop, p50 / p95: Client wall time, one request at a time over localhost, CPU only, including model calls. Server-side total p50 6100 ms.
 
 Limitations:
 
 - Synthetic renders, not real photos: listing images are clean procedural renders and delivered photos are phone-like renders (perspective, rotation, uneven light, colour casts, blur, noise, JPEG). Real photos will differ; the real photo set (evals/sightbench/real/SHOTLIST.md) is not collected yet.
-- No vision-model reads in this run (no ANTHROPIC_API_KEY): the service ran colour, OCR, quality and fusion only. Identity and damage report unknown, so it can never answer match, and a size read once by OCR is at most fairly sure. Re-run with --with-model once the service has a key.
+- This run used the vision-model reads (GET /health vlm.configured true).
 - Service thresholds: fitted-dev-2026-11-09, fitted on the dev split only (services/vision/app/thresholds.json, "fitted"); the hand-set set is kept as initial-unfitted. The CLIP threshold was also fitted on dev only: 0.880224 (maximise balanced accuracy on dev over midpoints of sorted dev scores; ties -> median tied candidate). Dev has only 180 pairs (23 colour mismatches), so the fit is coarse.
-- The frozen test split has been run 3 times: run 1 on 2026-11-08 (no-model, unfitted thresholds); run 2 on 2026-11-08 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)); run 3 on 2026-11-09 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)). Each run's numbers are in details.testRuns; nothing was tuned on test.
+- The frozen test split has been run 4 times: run 1 on 2026-11-08 (no-model, unfitted thresholds); run 2 on 2026-11-08 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)); run 3 on 2026-11-09 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)); run 4 on 2026-11-09 (with-model, thresholds fitted on dev (fitted-dev-2026-11-09)). Each run's numbers are in details.testRuns; nothing was tuned on test.
 - The secondary metric ("names the difference" and its false-alarm twin) was defined after the first test run had been scored. It is reported next to the primary metrics, never instead of them.
 - The test split (420 pairs, sha256 e7561f6ddae5) was frozen before any system ran. Products never cross splits (check-splits.mjs).
 - One delivered photo, one tag photo (not for mugs) and one listing image per pair; no damage close-up was sent, because a blind buyer may not know where to aim.
@@ -288,7 +288,7 @@ Full per-item data: `evals/results/sightbench.json` (`details`).
 
 ## Store agent: policy, invented facts, choice
 
-Suite `store-agent` · ran 2026-11-09T07:37:31.253Z · git uncommitted
+Suite `store-agent` · ran 2026-11-09T13:26:41.663Z · git 73ce251
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |

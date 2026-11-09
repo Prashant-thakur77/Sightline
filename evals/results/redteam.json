@@ -1,8 +1,8 @@
 {
   "suite": "redteam",
   "title": "Adversarial listings (red team)",
-  "ranAt": "2026-11-09T05:11:03.754Z",
-  "gitSha": "0406ebe",
+  "ranAt": "2026-11-09T13:26:39.708Z",
+  "gitSha": "73ce251",
   "headlines": [
     {
       "id": "breaches-sightline",
@@ -386,7 +386,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 3672,
             "quantity": 1,
-            "requestId": "5qytcxan4gecmwoqobjkxlwulqohjrzu3q7z"
+            "requestId": "7xt5uo3tbtvyxxsxczvtnxddxzf4hkywmfxa"
           }
         },
         "stress": {
@@ -453,7 +453,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 3672,
             "quantity": 1,
-            "requestId": "kdir2sr473ls7tbejhgh7jkqs3aj3k2eu64q"
+            "requestId": "fqev2rv6azgzfpgyvwvpoqlvhynrxxj2ehjf"
           }
         },
         "stress": {
@@ -521,7 +521,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 3672,
             "quantity": 1,
-            "requestId": "x6pgknd7o3um2wgmf56e77rjxcry3hzubyhu"
+            "requestId": "djnfl3u4r4ju6ybmoznjdnp5f6ozu5d77d7v"
           }
         },
         "stress": {
@@ -589,7 +589,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 3672,
             "quantity": 1,
-            "requestId": "nrfdno3rq3ns4hdkdxfoonzvfszczcpuvbjz"
+            "requestId": "bqi7gsdw5zhihchulwgnwzgjdz3v2t34bkdl"
           }
         },
         "stress": {
@@ -656,7 +656,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 3672,
             "quantity": 1,
-            "requestId": "hljqv7vwv54ihvqq7pbxnxawggtlc5shsvtb"
+            "requestId": "j66kxigz3iysd3vmqo6xfvslsfbcu77cchdy"
           }
         },
         "stress": {
@@ -783,7 +783,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 4212,
             "quantity": 1,
-            "requestId": "pbuvplzcpabvvrmpycqnqyu3r2lpeknt77jp"
+            "requestId": "ru3ge7nfx5lbae3nivqo6qpslrssol6cey6t"
           }
         },
         "stress": {
@@ -850,7 +850,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 4212,
             "quantity": 1,
-            "requestId": "o63gqrleynlifxmmaaldbxdkcbkv5wuf46so"
+            "requestId": "gh7bh75ukaz4rmrxmty6mjttre34g6kz7kem"
           }
         },
         "stress": {
@@ -917,7 +917,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 4212,
             "quantity": 1,
-            "requestId": "mcqfc7jjowi546dnompqtuk2rekpv2uo756g"
+            "requestId": "swxfiewki7rub25qgyfmwcin4p2pthxqbjid"
           }
         },
         "stress": {
@@ -985,7 +985,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 4212,
             "quantity": 1,
-            "requestId": "iyy5on5egkq5k2sctsvsqyyolhzf6ile2ugj"
+            "requestId": "lajqfs5jh3rssccu2et2sahimsw6cvm7jidx"
           }
         },
         "stress": {
@@ -1052,7 +1052,7 @@
             "payee": "DEMO-STORE-SANDBOX",
             "amountCents": 4212,
             "quantity": 1,
-            "requestId": "x42cwe4ohotjhkstk44ctq22dfhg7kwm5moe"
+            "requestId": "tr6lkrqowjt63qmsihcnmpiftyaf4e425dew"
           }
         },
         "stress": {

@@ -1,8 +1,8 @@
 {
   "suite": "duplicates",
   "title": "Duplicate orders",
-  "ranAt": "2026-11-09T05:11:04.743Z",
-  "gitSha": "0406ebe",
+  "ranAt": "2026-11-09T13:26:40.806Z",
+  "gitSha": "73ce251",
   "headlines": [
     {
       "id": "duplicate-scenarios",
@@ -462,9 +462,9 @@
                 },
                 "trace": [
                   "1188ms A confirm purchase -> confirmed",
-                  "1238ms paypal create ya56tr -> SIM-ORDER-1 [response lost]",
-                  "6214ms paypal create ya56tr -> SIM-ORDER-1 (replay) [response lost]",
-                  "11440ms paypal create ya56tr -> SIM-ORDER-1 (replay) [response lost]",
+                  "1238ms paypal create mxkali -> SIM-ORDER-1 [response lost]",
+                  "6214ms paypal create mxkali -> SIM-ORDER-1 (replay) [response lost]",
+                  "11440ms paypal create mxkali -> SIM-ORDER-1 (replay) [response lost]",
                   "16166ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
                   "693962ms new readback rb_again (snapshot re-taken)",
                   "707927ms A confirm purchase -> confirmed",
@@ -500,13 +500,13 @@
                 },
                 "trace": [
                   "1188ms A confirm purchase -> confirmed",
-                  "1238ms paypal create ya56tr -> SIM-ORDER-1 [response lost]",
-                  "6214ms paypal create ya56tr -> SIM-ORDER-1 (replay) [response lost]",
-                  "11440ms paypal create ya56tr -> SIM-ORDER-1 (replay) [response lost]",
+                  "1238ms paypal create mxkali -> SIM-ORDER-1 [response lost]",
+                  "6214ms paypal create mxkali -> SIM-ORDER-1 (replay) [response lost]",
+                  "11440ms paypal create mxkali -> SIM-ORDER-1 (replay) [response lost]",
                   "16166ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
                   "693962ms new readback rb_again (snapshot re-taken)",
                   "707927ms A confirm purchase -> confirmed",
-                  "707977ms paypal create l7ns4u -> SIM-ORDER-2"
+                  "707977ms paypal create hqoq57 -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -538,13 +538,13 @@
                 },
                 "trace": [
                   "1188ms A confirm purchase -> confirmed",
-                  "1238ms paypal create ya56tr -> SIM-ORDER-1 [response lost]",
-                  "6214ms paypal create ya56tr -> SIM-ORDER-1 (replay) [response lost]",
-                  "11440ms paypal create ya56tr -> SIM-ORDER-1 (replay) [response lost]",
+                  "1238ms paypal create mxkali -> SIM-ORDER-1 [response lost]",
+                  "6214ms paypal create mxkali -> SIM-ORDER-1 (replay) [response lost]",
+                  "11440ms paypal create mxkali -> SIM-ORDER-1 (replay) [response lost]",
                   "16166ms pay step gave up; hold released; buyer told nothing was charged",
                   "693962ms new readback rb_again (snapshot re-taken)",
                   "707927ms A confirm purchase -> confirmed",
-                  "707977ms paypal create l7ns4u -> SIM-ORDER-2"
+                  "707977ms paypal create hqoq57 -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -582,9 +582,9 @@
                 },
                 "trace": [
                   "409ms A confirm purchase -> confirmed",
-                  "459ms paypal create gv7lut -> SIM-ORDER-1 [response lost]",
-                  "5154ms paypal create gv7lut -> SIM-ORDER-1 (replay) [response lost]",
-                  "10099ms paypal create gv7lut -> SIM-ORDER-1 (replay) [response lost]",
+                  "459ms paypal create wgr3p6 -> SIM-ORDER-1 [response lost]",
+                  "5154ms paypal create wgr3p6 -> SIM-ORDER-1 (replay) [response lost]",
+                  "10099ms paypal create wgr3p6 -> SIM-ORDER-1 (replay) [response lost]",
                   "14544ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
                   "993884ms new readback rb_again (snapshot re-taken)",
                   "1004139ms A confirm purchase -> confirmed",
@@ -620,13 +620,13 @@
                 },
                 "trace": [
                   "409ms A confirm purchase -> confirmed",
-                  "459ms paypal create gv7lut -> SIM-ORDER-1 [response lost]",
-                  "5154ms paypal create gv7lut -> SIM-ORDER-1 (replay) [response lost]",
-                  "10099ms paypal create gv7lut -> SIM-ORDER-1 (replay) [response lost]",
+                  "459ms paypal create wgr3p6 -> SIM-ORDER-1 [response lost]",
+                  "5154ms paypal create wgr3p6 -> SIM-ORDER-1 (replay) [response lost]",
+                  "10099ms paypal create wgr3p6 -> SIM-ORDER-1 (replay) [response lost]",
                   "14544ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
                   "993884ms new readback rb_again (snapshot re-taken)",
                   "1004139ms A confirm purchase -> confirmed",
-                  "1004189ms paypal create xktdon -> SIM-ORDER-2"
+                  "1004189ms paypal create 4uh5nl -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -658,13 +658,13 @@
                 },
                 "trace": [
                   "409ms A confirm purchase -> confirmed",
-                  "459ms paypal create gv7lut -> SIM-ORDER-1 [response lost]",
-                  "5154ms paypal create gv7lut -> SIM-ORDER-1 (replay) [response lost]",
-                  "10099ms paypal create gv7lut -> SIM-ORDER-1 (replay) [response lost]",
+                  "459ms paypal create wgr3p6 -> SIM-ORDER-1 [response lost]",
+                  "5154ms paypal create wgr3p6 -> SIM-ORDER-1 (replay) [response lost]",
+                  "10099ms paypal create wgr3p6 -> SIM-ORDER-1 (replay) [response lost]",
                   "14544ms pay step gave up; hold released; buyer told nothing was charged",
                   "993884ms new readback rb_again (snapshot re-taken)",
                   "1004139ms A confirm purchase -> confirmed",
-                  "1004189ms paypal create xktdon -> SIM-ORDER-2"
+                  "1004189ms paypal create 4uh5nl -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -1787,11 +1787,11 @@
                 },
                 "trace": [
                   "1188ms A confirm purchase -> confirmed",
-                  "1238ms paypal create j6bcxa -> SIM-ORDER-1 [response lost]",
-                  "6214ms paypal create j6bcxa -> SIM-ORDER-1 (replay) [response lost]",
-                  "11440ms paypal create j6bcxa -> SIM-ORDER-1 (replay) [response lost]",
+                  "1238ms paypal create 575h4y -> SIM-ORDER-1 [response lost]",
+                  "6214ms paypal create 575h4y -> SIM-ORDER-1 (replay) [response lost]",
+                  "11440ms paypal create 575h4y -> SIM-ORDER-1 (replay) [response lost]",
                   "16166ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
-                  "688962ms buyer came back; reconciliation re-sent j6bcxa -> SIM-ORDER-1 (replay); settled once; buyer told it went through",
+                  "688962ms buyer came back; reconciliation re-sent 575h4y -> SIM-ORDER-1 (replay); settled once; buyer told it went through",
                   "707211ms buyer heard the earlier order went through, so does not buy again"
                 ]
               },
@@ -1824,14 +1824,14 @@
                 },
                 "trace": [
                   "1188ms A confirm purchase -> confirmed",
-                  "1238ms paypal create j6bcxa -> SIM-ORDER-1 [response lost]",
-                  "6214ms paypal create j6bcxa -> SIM-ORDER-1 (replay) [response lost]",
-                  "11440ms paypal create j6bcxa -> SIM-ORDER-1 (replay) [response lost]",
+                  "1238ms paypal create 575h4y -> SIM-ORDER-1 [response lost]",
+                  "6214ms paypal create 575h4y -> SIM-ORDER-1 (replay) [response lost]",
+                  "11440ms paypal create 575h4y -> SIM-ORDER-1 (replay) [response lost]",
                   "16166ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
                   "688962ms buyer came back; no reconciliation under this policy",
                   "693962ms new readback rb_again (snapshot re-taken)",
                   "707927ms A confirm purchase -> confirmed",
-                  "707977ms paypal create algfae -> SIM-ORDER-2"
+                  "707977ms paypal create coq6ab -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -1863,14 +1863,14 @@
                 },
                 "trace": [
                   "1188ms A confirm purchase -> confirmed",
-                  "1238ms paypal create j6bcxa -> SIM-ORDER-1 [response lost]",
-                  "6214ms paypal create j6bcxa -> SIM-ORDER-1 (replay) [response lost]",
-                  "11440ms paypal create j6bcxa -> SIM-ORDER-1 (replay) [response lost]",
+                  "1238ms paypal create 575h4y -> SIM-ORDER-1 [response lost]",
+                  "6214ms paypal create 575h4y -> SIM-ORDER-1 (replay) [response lost]",
+                  "11440ms paypal create 575h4y -> SIM-ORDER-1 (replay) [response lost]",
                   "16166ms pay step gave up; hold released; buyer told nothing was charged",
                   "688962ms buyer came back; no reconciliation under this policy",
                   "693962ms new readback rb_again (snapshot re-taken)",
                   "707927ms A confirm purchase -> confirmed",
-                  "707977ms paypal create algfae -> SIM-ORDER-2"
+                  "707977ms paypal create coq6ab -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -1908,11 +1908,11 @@
                 },
                 "trace": [
                   "409ms A confirm purchase -> confirmed",
-                  "459ms paypal create voktcj -> SIM-ORDER-1 [response lost]",
-                  "5154ms paypal create voktcj -> SIM-ORDER-1 (replay) [response lost]",
-                  "10099ms paypal create voktcj -> SIM-ORDER-1 (replay) [response lost]",
+                  "459ms paypal create cu3y3d -> SIM-ORDER-1 [response lost]",
+                  "5154ms paypal create cu3y3d -> SIM-ORDER-1 (replay) [response lost]",
+                  "10099ms paypal create cu3y3d -> SIM-ORDER-1 (replay) [response lost]",
                   "14544ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
-                  "988884ms buyer came back; reconciliation re-sent voktcj -> SIM-ORDER-1 (replay); settled once; buyer told it went through",
+                  "988884ms buyer came back; reconciliation re-sent cu3y3d -> SIM-ORDER-1 (replay); settled once; buyer told it went through",
                   "1003545ms buyer heard the earlier order went through, so does not buy again"
                 ]
               },
@@ -1945,14 +1945,14 @@
                 },
                 "trace": [
                   "409ms A confirm purchase -> confirmed",
-                  "459ms paypal create voktcj -> SIM-ORDER-1 [response lost]",
-                  "5154ms paypal create voktcj -> SIM-ORDER-1 (replay) [response lost]",
-                  "10099ms paypal create voktcj -> SIM-ORDER-1 (replay) [response lost]",
+                  "459ms paypal create cu3y3d -> SIM-ORDER-1 [response lost]",
+                  "5154ms paypal create cu3y3d -> SIM-ORDER-1 (replay) [response lost]",
+                  "10099ms paypal create cu3y3d -> SIM-ORDER-1 (replay) [response lost]",
                   "14544ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
                   "988884ms buyer came back; no reconciliation under this policy",
                   "993884ms new readback rb_again (snapshot re-taken)",
                   "1004139ms A confirm purchase -> confirmed",
-                  "1004189ms paypal create h7aoym -> SIM-ORDER-2"
+                  "1004189ms paypal create iybrsi -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -1984,14 +1984,14 @@
                 },
                 "trace": [
                   "409ms A confirm purchase -> confirmed",
-                  "459ms paypal create voktcj -> SIM-ORDER-1 [response lost]",
-                  "5154ms paypal create voktcj -> SIM-ORDER-1 (replay) [response lost]",
-                  "10099ms paypal create voktcj -> SIM-ORDER-1 (replay) [response lost]",
+                  "459ms paypal create cu3y3d -> SIM-ORDER-1 [response lost]",
+                  "5154ms paypal create cu3y3d -> SIM-ORDER-1 (replay) [response lost]",
+                  "10099ms paypal create cu3y3d -> SIM-ORDER-1 (replay) [response lost]",
                   "14544ms pay step gave up; hold released; buyer told nothing was charged",
                   "988884ms buyer came back; no reconciliation under this policy",
                   "993884ms new readback rb_again (snapshot re-taken)",
                   "1004139ms A confirm purchase -> confirmed",
-                  "1004189ms paypal create h7aoym -> SIM-ORDER-2"
+                  "1004189ms paypal create iybrsi -> SIM-ORDER-2"
                 ]
               },
               "unbound": {
@@ -3003,7 +3003,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "2569ms A [button] -> confirmed",
-              "2619ms paypal create 6xxzzf -> SIM-ORDER-1",
+              "2619ms paypal create oga5hk -> SIM-ORDER-1",
               "2822ms A [button] -> confirmed",
               "2822ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
             ]
@@ -3040,7 +3040,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "2569ms A [button] -> confirmed",
-              "2619ms paypal create 6xxzzf -> SIM-ORDER-1",
+              "2619ms paypal create oga5hk -> SIM-ORDER-1",
               "2822ms A [button] -> confirmed",
               "2822ms gate refused DUPLICATE_ORDER"
             ]
@@ -3079,7 +3079,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "2569ms A [button] -> confirmed",
-              "2619ms paypal create 6xxzzf -> SIM-ORDER-1",
+              "2619ms paypal create oga5hk -> SIM-ORDER-1",
               "2822ms A [button] -> confirmed",
               "2822ms gate refused DUPLICATE_ORDER"
             ]
@@ -3121,7 +3121,7 @@
             },
             "trace": [
               "400ms A confirm purchase -> confirmed",
-              "450ms paypal create cicyez -> SIM-ORDER-1",
+              "450ms paypal create demspl -> SIM-ORDER-1",
               "2165ms A confirm purchase -> confirmed",
               "2165ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)",
               "2662ms A confirm purchase -> closed"
@@ -3158,7 +3158,7 @@
             },
             "trace": [
               "400ms A confirm purchase -> confirmed",
-              "450ms paypal create cicyez -> SIM-ORDER-1",
+              "450ms paypal create demspl -> SIM-ORDER-1",
               "2165ms A confirm purchase -> confirmed",
               "2165ms gate refused DUPLICATE_ORDER",
               "2662ms A confirm purchase -> closed"
@@ -3197,7 +3197,7 @@
             },
             "trace": [
               "400ms A confirm purchase -> confirmed",
-              "450ms paypal create cicyez -> SIM-ORDER-1",
+              "450ms paypal create demspl -> SIM-ORDER-1",
               "2165ms A confirm purchase -> confirmed",
               "2165ms gate refused DUPLICATE_ORDER",
               "2662ms A confirm purchase -> closed"
@@ -3240,9 +3240,9 @@
             },
             "trace": [
               "750ms A confirm purchase -> confirmed",
-              "800ms paypal create nuylkd -> SIM-ORDER-1 [response lost]",
-              "4180ms paypal create nuylkd -> SIM-ORDER-1 (replay) [response lost]",
-              "7810ms paypal create nuylkd -> SIM-ORDER-1 (replay) [response lost]",
+              "800ms paypal create nn7rcj -> SIM-ORDER-1 [response lost]",
+              "4180ms paypal create nn7rcj -> SIM-ORDER-1 (replay) [response lost]",
+              "7810ms paypal create nn7rcj -> SIM-ORDER-1 (replay) [response lost]",
               "10940ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "11292ms A confirm purchase -> confirmed",
               "11292ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
@@ -3279,9 +3279,9 @@
             },
             "trace": [
               "750ms A confirm purchase -> confirmed",
-              "800ms paypal create nuylkd -> SIM-ORDER-1 [response lost]",
-              "4180ms paypal create nuylkd -> SIM-ORDER-1 (replay) [response lost]",
-              "7810ms paypal create nuylkd -> SIM-ORDER-1 (replay) [response lost]",
+              "800ms paypal create nn7rcj -> SIM-ORDER-1 [response lost]",
+              "4180ms paypal create nn7rcj -> SIM-ORDER-1 (replay) [response lost]",
+              "7810ms paypal create nn7rcj -> SIM-ORDER-1 (replay) [response lost]",
               "10940ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "11292ms A confirm purchase -> confirmed",
               "11292ms gate refused DUPLICATE_ORDER"
@@ -3318,12 +3318,12 @@
             },
             "trace": [
               "750ms A confirm purchase -> confirmed",
-              "800ms paypal create nuylkd -> SIM-ORDER-1 [response lost]",
-              "4180ms paypal create nuylkd -> SIM-ORDER-1 (replay) [response lost]",
-              "7810ms paypal create nuylkd -> SIM-ORDER-1 (replay) [response lost]",
+              "800ms paypal create nn7rcj -> SIM-ORDER-1 [response lost]",
+              "4180ms paypal create nn7rcj -> SIM-ORDER-1 (replay) [response lost]",
+              "7810ms paypal create nn7rcj -> SIM-ORDER-1 (replay) [response lost]",
               "10940ms pay step gave up; hold released; buyer told nothing was charged",
               "11292ms A confirm purchase -> confirmed",
-              "11342ms paypal create nuylkd -> SIM-ORDER-1 (replay)"
+              "11342ms paypal create nn7rcj -> SIM-ORDER-1 (replay)"
             ]
           },
           "unbound": {
@@ -3361,7 +3361,7 @@
             },
             "trace": [
               "1036ms A confirm purchase -> confirmed",
-              "1086ms paypal create yw2k27 -> SIM-ORDER-1",
+              "1086ms paypal create lvjdts -> SIM-ORDER-1",
               "1915ms A confirm -> confirmed",
               "1915ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
             ]
@@ -3397,7 +3397,7 @@
             },
             "trace": [
               "1036ms A confirm purchase -> confirmed",
-              "1086ms paypal create yw2k27 -> SIM-ORDER-1",
+              "1086ms paypal create lvjdts -> SIM-ORDER-1",
               "1915ms A confirm -> confirmed",
               "1915ms gate refused DUPLICATE_ORDER"
             ]
@@ -3435,7 +3435,7 @@
             },
             "trace": [
               "1036ms A confirm purchase -> confirmed",
-              "1086ms paypal create yw2k27 -> SIM-ORDER-1",
+              "1086ms paypal create lvjdts -> SIM-ORDER-1",
               "1915ms A confirm -> confirmed",
               "1915ms gate refused DUPLICATE_ORDER"
             ]
@@ -3477,7 +3477,7 @@
             },
             "trace": [
               "1031ms A confirm purchase -> confirmed",
-              "1081ms paypal create nbgstt -> SIM-ORDER-1",
+              "1081ms paypal create ehgifm -> SIM-ORDER-1",
               "1126ms B confirm purchase -> confirmed",
               "1126ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
             ]
@@ -3513,7 +3513,7 @@
             },
             "trace": [
               "1031ms A confirm purchase -> confirmed",
-              "1081ms paypal create nbgstt -> SIM-ORDER-1",
+              "1081ms paypal create ehgifm -> SIM-ORDER-1",
               "1126ms B confirm purchase -> confirmed",
               "1126ms gate refused DUPLICATE_ORDER"
             ]
@@ -3551,7 +3551,7 @@
             },
             "trace": [
               "1031ms A confirm purchase -> confirmed",
-              "1081ms paypal create nbgstt -> SIM-ORDER-1",
+              "1081ms paypal create ehgifm -> SIM-ORDER-1",
               "1126ms B confirm purchase -> confirmed",
               "1126ms gate refused DUPLICATE_ORDER"
             ]
@@ -3594,7 +3594,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "1131ms A [button] -> confirmed",
-              "1181ms paypal create amztaf -> SIM-ORDER-1",
+              "1181ms paypal create svau2m -> SIM-ORDER-1",
               "1233ms A [button] -> confirmed",
               "1233ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
             ]
@@ -3631,7 +3631,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "1131ms A [button] -> confirmed",
-              "1181ms paypal create amztaf -> SIM-ORDER-1",
+              "1181ms paypal create svau2m -> SIM-ORDER-1",
               "1233ms A [button] -> confirmed",
               "1233ms gate refused DUPLICATE_ORDER"
             ]
@@ -3670,7 +3670,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "1131ms A [button] -> confirmed",
-              "1181ms paypal create amztaf -> SIM-ORDER-1",
+              "1181ms paypal create svau2m -> SIM-ORDER-1",
               "1233ms A [button] -> confirmed",
               "1233ms gate refused DUPLICATE_ORDER"
             ]
@@ -3714,7 +3714,7 @@
             },
             "trace": [
               "1068ms A confirm purchase -> confirmed",
-              "1118ms paypal create kkbv6s -> SIM-ORDER-1",
+              "1118ms paypal create suoanb -> SIM-ORDER-1",
               "3062ms A confirm purchase -> confirmed",
               "3062ms gate refused DUPLICATE_ORDER",
               "4449ms A confirm purchase -> closed"
@@ -3753,7 +3753,7 @@
             },
             "trace": [
               "1068ms A confirm purchase -> confirmed",
-              "1118ms paypal create kkbv6s -> SIM-ORDER-1",
+              "1118ms paypal create suoanb -> SIM-ORDER-1",
               "3062ms A confirm purchase -> confirmed",
               "3062ms gate refused DUPLICATE_ORDER",
               "4449ms A confirm purchase -> closed"
@@ -3792,7 +3792,7 @@
             },
             "trace": [
               "1068ms A confirm purchase -> confirmed",
-              "1118ms paypal create kkbv6s -> SIM-ORDER-1",
+              "1118ms paypal create suoanb -> SIM-ORDER-1",
               "3062ms A confirm purchase -> confirmed",
               "3062ms gate refused DUPLICATE_ORDER",
               "4449ms A confirm purchase -> closed"
@@ -3835,9 +3835,9 @@
             },
             "trace": [
               "753ms A confirm purchase -> confirmed",
-              "803ms paypal create pnuqef -> SIM-ORDER-1 [response lost]",
-              "6090ms paypal create pnuqef -> SIM-ORDER-1 (replay) [response lost]",
-              "11627ms paypal create pnuqef -> SIM-ORDER-1 (replay) [response lost]",
+              "803ms paypal create y6mrmx -> SIM-ORDER-1 [response lost]",
+              "6090ms paypal create y6mrmx -> SIM-ORDER-1 (replay) [response lost]",
+              "11627ms paypal create y6mrmx -> SIM-ORDER-1 (replay) [response lost]",
               "16664ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "17111ms A confirm purchase -> confirmed",
               "17111ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
@@ -3874,9 +3874,9 @@
             },
             "trace": [
               "753ms A confirm purchase -> confirmed",
-              "803ms paypal create pnuqef -> SIM-ORDER-1 [response lost]",
-              "6090ms paypal create pnuqef -> SIM-ORDER-1 (replay) [response lost]",
-              "11627ms paypal create pnuqef -> SIM-ORDER-1 (replay) [response lost]",
+              "803ms paypal create y6mrmx -> SIM-ORDER-1 [response lost]",
+              "6090ms paypal create y6mrmx -> SIM-ORDER-1 (replay) [response lost]",
+              "11627ms paypal create y6mrmx -> SIM-ORDER-1 (replay) [response lost]",
               "16664ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "17111ms A confirm purchase -> confirmed",
               "17111ms gate refused DUPLICATE_ORDER"
@@ -3913,12 +3913,12 @@
             },
             "trace": [
               "753ms A confirm purchase -> confirmed",
-              "803ms paypal create pnuqef -> SIM-ORDER-1 [response lost]",
-              "6090ms paypal create pnuqef -> SIM-ORDER-1 (replay) [response lost]",
-              "11627ms paypal create pnuqef -> SIM-ORDER-1 (replay) [response lost]",
+              "803ms paypal create y6mrmx -> SIM-ORDER-1 [response lost]",
+              "6090ms paypal create y6mrmx -> SIM-ORDER-1 (replay) [response lost]",
+              "11627ms paypal create y6mrmx -> SIM-ORDER-1 (replay) [response lost]",
               "16664ms pay step gave up; hold released; buyer told nothing was charged",
               "17111ms A confirm purchase -> confirmed",
-              "17161ms paypal create pnuqef -> SIM-ORDER-1 (replay)"
+              "17161ms paypal create y6mrmx -> SIM-ORDER-1 (replay)"
             ]
           },
           "unbound": {
@@ -3956,7 +3956,7 @@
             },
             "trace": [
               "1176ms A confirm purchase -> confirmed",
-              "1226ms paypal create aoe2hn -> SIM-ORDER-1",
+              "1226ms paypal create zlhuul -> SIM-ORDER-1",
               "19307ms A confirm purchase -> closed"
             ]
           },
@@ -3989,7 +3989,7 @@
             },
             "trace": [
               "1176ms A confirm purchase -> confirmed",
-              "1226ms paypal create aoe2hn -> SIM-ORDER-1",
+              "1226ms paypal create zlhuul -> SIM-ORDER-1",
               "19307ms A confirm purchase -> closed"
             ]
           },
@@ -4022,7 +4022,7 @@
             },
             "trace": [
               "1176ms A confirm purchase -> confirmed",
-              "1226ms paypal create aoe2hn -> SIM-ORDER-1",
+              "1226ms paypal create zlhuul -> SIM-ORDER-1",
               "19307ms A confirm purchase -> closed"
             ]
           },
@@ -4061,7 +4061,7 @@
             },
             "trace": [
               "1018ms A confirm purchase -> confirmed",
-              "1068ms paypal create zvcsa4 -> SIM-ORDER-1",
+              "1068ms paypal create glmymd -> SIM-ORDER-1",
               "1995ms B confirm purchase -> confirmed",
               "1995ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
             ]
@@ -4097,7 +4097,7 @@
             },
             "trace": [
               "1018ms A confirm purchase -> confirmed",
-              "1068ms paypal create zvcsa4 -> SIM-ORDER-1",
+              "1068ms paypal create glmymd -> SIM-ORDER-1",
               "1995ms B confirm purchase -> confirmed",
               "1995ms gate refused DUPLICATE_ORDER"
             ]
@@ -4135,7 +4135,7 @@
             },
             "trace": [
               "1018ms A confirm purchase -> confirmed",
-              "1068ms paypal create zvcsa4 -> SIM-ORDER-1",
+              "1068ms paypal create glmymd -> SIM-ORDER-1",
               "1995ms B confirm purchase -> confirmed",
               "1995ms gate refused DUPLICATE_ORDER"
             ]
@@ -8906,7 +8906,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "1772ms A [button] -> confirmed",
-              "1822ms paypal create surqyp -> SIM-ORDER-1",
+              "1822ms paypal create nqvgmo -> SIM-ORDER-1",
               "2018ms A [button] -> confirmed",
               "2018ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
             ]
@@ -8943,7 +8943,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "1772ms A [button] -> confirmed",
-              "1822ms paypal create surqyp -> SIM-ORDER-1",
+              "1822ms paypal create nqvgmo -> SIM-ORDER-1",
               "2018ms A [button] -> confirmed",
               "2018ms gate refused DUPLICATE_ORDER"
             ]
@@ -8982,7 +8982,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "1772ms A [button] -> confirmed",
-              "1822ms paypal create surqyp -> SIM-ORDER-1",
+              "1822ms paypal create nqvgmo -> SIM-ORDER-1",
               "2018ms A [button] -> confirmed",
               "2018ms gate refused DUPLICATE_ORDER"
             ]
@@ -9024,7 +9024,7 @@
             },
             "trace": [
               "1146ms A confirm purchase -> confirmed",
-              "1196ms paypal create oz3lrs -> SIM-ORDER-1",
+              "1196ms paypal create cxceu5 -> SIM-ORDER-1",
               "1868ms A confirm purchase -> confirmed",
               "1868ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)",
               "2186ms A confirm purchase -> confirmed",
@@ -9062,7 +9062,7 @@
             },
             "trace": [
               "1146ms A confirm purchase -> confirmed",
-              "1196ms paypal create oz3lrs -> SIM-ORDER-1",
+              "1196ms paypal create cxceu5 -> SIM-ORDER-1",
               "1868ms A confirm purchase -> confirmed",
               "1868ms gate refused DUPLICATE_ORDER",
               "2186ms A confirm purchase -> confirmed",
@@ -9102,7 +9102,7 @@
             },
             "trace": [
               "1146ms A confirm purchase -> confirmed",
-              "1196ms paypal create oz3lrs -> SIM-ORDER-1",
+              "1196ms paypal create cxceu5 -> SIM-ORDER-1",
               "1868ms A confirm purchase -> confirmed",
               "1868ms gate refused DUPLICATE_ORDER",
               "2186ms A confirm purchase -> confirmed",
@@ -9146,9 +9146,9 @@
             },
             "trace": [
               "868ms A confirm purchase -> confirmed",
-              "918ms paypal create ku4mwt -> SIM-ORDER-1 [response lost]",
-              "6636ms paypal create ku4mwt -> SIM-ORDER-1 (replay) [response lost]",
-              "12604ms paypal create ku4mwt -> SIM-ORDER-1 (replay) [response lost]",
+              "918ms paypal create vfhk44 -> SIM-ORDER-1 [response lost]",
+              "6636ms paypal create vfhk44 -> SIM-ORDER-1 (replay) [response lost]",
+              "12604ms paypal create vfhk44 -> SIM-ORDER-1 (replay) [response lost]",
               "18072ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "24991ms new readback rb_again (snapshot reused)",
               "40522ms A confirm purchase -> confirmed",
@@ -9186,9 +9186,9 @@
             },
             "trace": [
               "868ms A confirm purchase -> confirmed",
-              "918ms paypal create ku4mwt -> SIM-ORDER-1 [response lost]",
-              "6636ms paypal create ku4mwt -> SIM-ORDER-1 (replay) [response lost]",
-              "12604ms paypal create ku4mwt -> SIM-ORDER-1 (replay) [response lost]",
+              "918ms paypal create vfhk44 -> SIM-ORDER-1 [response lost]",
+              "6636ms paypal create vfhk44 -> SIM-ORDER-1 (replay) [response lost]",
+              "12604ms paypal create vfhk44 -> SIM-ORDER-1 (replay) [response lost]",
               "18072ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "24991ms new readback rb_again (snapshot reused)",
               "40522ms A confirm purchase -> confirmed",
@@ -9226,13 +9226,13 @@
             },
             "trace": [
               "868ms A confirm purchase -> confirmed",
-              "918ms paypal create ku4mwt -> SIM-ORDER-1 [response lost]",
-              "6636ms paypal create ku4mwt -> SIM-ORDER-1 (replay) [response lost]",
-              "12604ms paypal create ku4mwt -> SIM-ORDER-1 (replay) [response lost]",
+              "918ms paypal create vfhk44 -> SIM-ORDER-1 [response lost]",
+              "6636ms paypal create vfhk44 -> SIM-ORDER-1 (replay) [response lost]",
+              "12604ms paypal create vfhk44 -> SIM-ORDER-1 (replay) [response lost]",
               "18072ms pay step gave up; hold released; buyer told nothing was charged",
               "24991ms new readback rb_again (snapshot reused)",
               "40522ms A confirm purchase -> confirmed",
-              "40572ms paypal create l72bwf -> SIM-ORDER-2"
+              "40572ms paypal create qzewl3 -> SIM-ORDER-2"
             ]
           },
           "unbound": {
@@ -9272,7 +9272,7 @@
             },
             "trace": [
               "571ms A confirm purchase -> confirmed",
-              "621ms paypal create 67sl3u -> SIM-ORDER-1",
+              "621ms paypal create as6m5v -> SIM-ORDER-1",
               "2343ms A confirm -> confirmed",
               "2343ms gate refused DUPLICATE_ORDER"
             ]
@@ -9310,7 +9310,7 @@
             },
             "trace": [
               "571ms A confirm purchase -> confirmed",
-              "621ms paypal create 67sl3u -> SIM-ORDER-1",
+              "621ms paypal create as6m5v -> SIM-ORDER-1",
               "2343ms A confirm -> confirmed",
               "2343ms gate refused DUPLICATE_ORDER"
             ]
@@ -9348,7 +9348,7 @@
             },
             "trace": [
               "571ms A confirm purchase -> confirmed",
-              "621ms paypal create 67sl3u -> SIM-ORDER-1",
+              "621ms paypal create as6m5v -> SIM-ORDER-1",
               "2343ms A confirm -> confirmed",
               "2343ms gate refused DUPLICATE_ORDER"
             ]
@@ -9392,7 +9392,7 @@
             },
             "trace": [
               "610ms A confirm purchase -> confirmed",
-              "660ms paypal create 4rhknv -> SIM-ORDER-1",
+              "660ms paypal create h6rftf -> SIM-ORDER-1",
               "140759ms B confirm purchase -> confirmed",
               "140759ms gate refused DUPLICATE_ORDER"
             ]
@@ -9430,7 +9430,7 @@
             },
             "trace": [
               "610ms A confirm purchase -> confirmed",
-              "660ms paypal create 4rhknv -> SIM-ORDER-1",
+              "660ms paypal create h6rftf -> SIM-ORDER-1",
               "140759ms B confirm purchase -> confirmed",
               "140759ms gate refused DUPLICATE_ORDER"
             ]
@@ -9468,7 +9468,7 @@
             },
             "trace": [
               "610ms A confirm purchase -> confirmed",
-              "660ms paypal create 4rhknv -> SIM-ORDER-1",
+              "660ms paypal create h6rftf -> SIM-ORDER-1",
               "140759ms B confirm purchase -> confirmed",
               "140759ms gate refused DUPLICATE_ORDER"
             ]
@@ -9511,7 +9511,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "3002ms A [button] -> confirmed",
-              "3052ms paypal create mjm4ge -> SIM-ORDER-1",
+              "3052ms paypal create t6mopi -> SIM-ORDER-1",
               "3214ms A [button] -> confirmed",
               "3214ms pay step refused OUTCOME_UNKNOWN (earlier order for this item not settled)"
             ]
@@ -9548,7 +9548,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "3002ms A [button] -> confirmed",
-              "3052ms paypal create mjm4ge -> SIM-ORDER-1",
+              "3052ms paypal create t6mopi -> SIM-ORDER-1",
               "3214ms A [button] -> confirmed",
               "3214ms gate refused DUPLICATE_ORDER"
             ]
@@ -9587,7 +9587,7 @@
             "trace": [
               "20ms A [button] -> awaiting_second_press",
               "3002ms A [button] -> confirmed",
-              "3052ms paypal create mjm4ge -> SIM-ORDER-1",
+              "3052ms paypal create t6mopi -> SIM-ORDER-1",
               "3214ms A [button] -> confirmed",
               "3214ms gate refused DUPLICATE_ORDER"
             ]
@@ -9629,7 +9629,7 @@
             },
             "trace": [
               "312ms A confirm purchase -> confirmed",
-              "362ms paypal create rjywn4 -> SIM-ORDER-1",
+              "362ms paypal create dtk7ta -> SIM-ORDER-1",
               "2304ms A confirm purchase -> closed",
               "2766ms A confirm purchase -> closed"
             ]
@@ -9663,7 +9663,7 @@
             },
             "trace": [
               "312ms A confirm purchase -> confirmed",
-              "362ms paypal create rjywn4 -> SIM-ORDER-1",
+              "362ms paypal create dtk7ta -> SIM-ORDER-1",
               "2304ms A confirm purchase -> closed",
               "2766ms A confirm purchase -> closed"
             ]
@@ -9697,7 +9697,7 @@
             },
             "trace": [
               "312ms A confirm purchase -> confirmed",
-              "362ms paypal create rjywn4 -> SIM-ORDER-1",
+              "362ms paypal create dtk7ta -> SIM-ORDER-1",
               "2304ms A confirm purchase -> closed",
               "2766ms A confirm purchase -> closed"
             ]
@@ -9737,9 +9737,9 @@
             },
             "trace": [
               "470ms A confirm purchase -> confirmed",
-              "520ms paypal create 6ndmyy -> SIM-ORDER-1 [response lost]",
-              "4786ms paypal create 6ndmyy -> SIM-ORDER-1 (replay) [response lost]",
-              "9302ms paypal create 6ndmyy -> SIM-ORDER-1 (replay) [response lost]",
+              "520ms paypal create kh7dno -> SIM-ORDER-1 [response lost]",
+              "4786ms paypal create kh7dno -> SIM-ORDER-1 (replay) [response lost]",
+              "9302ms paypal create kh7dno -> SIM-ORDER-1 (replay) [response lost]",
               "13318ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "33199ms new readback rb_again (snapshot reused)",
               "63518ms A confirm purchase -> confirmed",
@@ -9777,9 +9777,9 @@
             },
             "trace": [
               "470ms A confirm purchase -> confirmed",
-              "520ms paypal create 6ndmyy -> SIM-ORDER-1 [response lost]",
-              "4786ms paypal create 6ndmyy -> SIM-ORDER-1 (replay) [response lost]",
-              "9302ms paypal create 6ndmyy -> SIM-ORDER-1 (replay) [response lost]",
+              "520ms paypal create kh7dno -> SIM-ORDER-1 [response lost]",
+              "4786ms paypal create kh7dno -> SIM-ORDER-1 (replay) [response lost]",
+              "9302ms paypal create kh7dno -> SIM-ORDER-1 (replay) [response lost]",
               "13318ms pay step gave up; outcome unknown; hold and order kept; buyer told the purchase is paused",
               "33199ms new readback rb_again (snapshot reused)",
               "63518ms A confirm purchase -> confirmed",
@@ -9817,13 +9817,13 @@
             },
             "trace": [
               "470ms A confirm purchase -> confirmed",
-              "520ms paypal create 6ndmyy -> SIM-ORDER-1 [response lost]",
-              "4786ms paypal create 6ndmyy -> SIM-ORDER-1 (replay) [response lost]",
-              "9302ms paypal create 6ndmyy -> SIM-ORDER-1 (replay) [response lost]",
+              "520ms paypal create kh7dno -> SIM-ORDER-1 [response lost]",
+              "4786ms paypal create kh7dno -> SIM-ORDER-1 (replay) [response lost]",
+              "9302ms paypal create kh7dno -> SIM-ORDER-1 (replay) [response lost]",
               "13318ms pay step gave up; hold released; buyer told nothing was charged",
               "33199ms new readback rb_again (snapshot reused)",
               "63518ms A confirm purchase -> confirmed",
-              "63568ms paypal create s7tmgg -> SIM-ORDER-2"
+              "63568ms paypal create qyvj6r -> SIM-ORDER-2"
             ]
           },
           "unbound": {
@@ -9861,7 +9861,7 @@
             },
             "trace": [
               "355ms A confirm purchase -> confirmed",
-              "405ms paypal create ke2zbm -> SIM-ORDER-1",
+              "405ms paypal create rbmmri -> SIM-ORDER-1",
               "17240ms A confirm purchase -> closed"
             ]
           },
@@ -9894,7 +9894,7 @@
             },
             "trace": [
               "355ms A confirm purchase -> confirmed",
-              "405ms paypal create ke2zbm -> SIM-ORDER-1",
+              "405ms paypal create rbmmri -> SIM-ORDER-1",
               "17240ms A confirm purchase -> closed"
             ]
           },
@@ -9927,7 +9927,7 @@
             },
             "trace": [
               "355ms A confirm purchase -> confirmed",
-              "405ms paypal create ke2zbm -> SIM-ORDER-1",
+              "405ms paypal create rbmmri -> SIM-ORDER-1",
               "17240ms A confirm purchase -> closed"
             ]
           },
@@ -9968,7 +9968,7 @@
             },
             "trace": [
               "594ms A confirm purchase -> confirmed",
-              "644ms paypal create 2omm24 -> SIM-ORDER-1",
+              "644ms paypal create ot6wqb -> SIM-ORDER-1",
               "15609ms B [button] -> awaiting_second_press",
               "16509ms B [button] -> confirmed",
               "16509ms gate refused DUPLICATE_ORDER"
@@ -10007,7 +10007,7 @@
             },
             "trace": [
               "594ms A confirm purchase -> confirmed",
-              "644ms paypal create 2omm24 -> SIM-ORDER-1",
+              "644ms paypal create ot6wqb -> SIM-ORDER-1",
               "15609ms B [button] -> awaiting_second_press",
               "16509ms B [button] -> confirmed",
               "16509ms gate refused DUPLICATE_ORDER"
@@ -10046,7 +10046,7 @@
             },
             "trace": [
               "594ms A confirm purchase -> confirmed",
-              "644ms paypal create 2omm24 -> SIM-ORDER-1",
+              "644ms paypal create ot6wqb -> SIM-ORDER-1",
               "15609ms B [button] -> awaiting_second_press",
               "16509ms B [button] -> confirmed",
               "16509ms gate refused DUPLICATE_ORDER"

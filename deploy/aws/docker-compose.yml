@@ -1,0 +1,60 @@
+# Production on one EC2 host: Postgres, the vision service, the web app and Caddy (HTTPS).
+# Secrets come from deploy/aws/.env on the host (never committed).
+name: sightline
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sightline
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: sightline
+    volumes: [pg:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sightline"]
+      interval: 5s
+      retries: 20
+  vision:
+    build: ../../services/vision
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      PORT: "8011"
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: run
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgres://sightline:${POSTGRES_PASSWORD}@postgres:5432/sightline
+      VISION_SERVICE_URL: http://vision:8011
+    depends_on:
+      postgres: { condition: service_healthy }
+      vision: { condition: service_started }
+  # One-off: docker compose run --rm migrate
+  migrate:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: build
+    profiles: [tools]
+    environment:
+      DATABASE_URL: postgres://sightline:${POSTGRES_PASSWORD}@postgres:5432/sightline
+    command: ["pnpm", "--filter", "@sightline/db", "migrate"]
+    depends_on:
+      postgres: { condition: service_healthy }
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [web]
+volumes:
+  pg: {}
+  caddy-data: {}
+  caddy-config: {}

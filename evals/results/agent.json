@@ -1,8 +1,8 @@
 {
   "suite": "agent",
   "title": "Shopping agent",
-  "ranAt": "2026-11-09T07:56:52.376Z",
-  "gitSha": "01e9149",
+  "ranAt": "2026-11-09T13:26:42.295Z",
+  "gitSha": "73ce251",
   "headlines": [
     {
       "id": "guards",
