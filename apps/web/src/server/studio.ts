@@ -63,6 +63,17 @@ const MISMATCH_TYPE: Record<string, string> = {
   damage: 'Damaged',
   quality: 'Photo unclear',
 };
+/**
+ * What a check that was not sure was unsure of, in plain words: a difference it was not sure
+ * enough of to call a mismatch, or an aspect it could not check from the photos.
+ */
+const UNSURE_TYPE: Record<string, { maybe: string; unknown: string }> = {
+  colour: { maybe: 'Colour may be wrong', unknown: 'Could not check colour' },
+  size: { maybe: 'Size may be wrong', unknown: 'Could not check size' },
+  identity: { maybe: 'May be the wrong item', unknown: 'Could not check the item' },
+  damage: { maybe: 'May be damaged', unknown: 'Could not check for damage' },
+  quality: { maybe: 'Photos too unclear', unknown: 'Photos too unclear' },
+};
 const FINDING: Record<VerdictReason['finding'], string> = {
   agree: 'Agrees with the order',
   disagree: 'Does not match',
@@ -255,7 +266,8 @@ export async function loadVerifiedDelivery(scopeUserId: string): Promise<Verifie
         verdict.kind === 'match' || !deciding
           ? 'No mismatch'
           : verdict.kind === 'unsure'
-            ? `Unclear: ${ASPECT[deciding.module]?.toLowerCase() ?? deciding.module}`
+            ? (UNSURE_TYPE[deciding.module]?.[deciding.finding === 'disagree' ? 'maybe' : 'unknown'] ??
+              `Not sure: ${ASPECT[deciding.module]?.toLowerCase() ?? deciding.module}`)
             : (MISMATCH_TYPE[deciding.module] ?? deciding.module),
       confidence: deciding ? CONFIDENCE[deciding.confidence] : 'not sure',
       headline: verdict.headline,
@@ -385,6 +397,7 @@ export async function loadVerifiedDelivery(scopeUserId: string): Promise<Verifie
       delivered: sum(orderRows, 'delivered'),
       verifiedDeliveries: sum(orderRows, 'verifiedDelivery'),
       checks: checks.length,
+      matches: checks.filter((c) => c.isMatch).length,
       mismatches: checks.filter((c) => c.isMismatch).length,
       unsure: checks.filter((c) => c.verdict === 'Not sure').length,
       byReason: reasons,
@@ -427,10 +440,18 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
       detail: `${plural(s.delivered, 'order')} delivered so far.`,
     },
     {
+      // Says what it counts: a check that found the wrong item is still a check, so the figure is
+      // "2 of 2 checked", never a rate that reads as "all verified".
       id: 'verified',
-      label: 'Verified-delivery rate',
-      value: pct(s.verifiedDeliveries, s.delivered),
-      detail: `${s.verifiedDeliveries} of ${plural(s.delivered, 'delivered order')} checked by the buyer with the camera.`,
+      label: 'Delivered and checked',
+      value: s.delivered === 0 ? 'None delivered yet' : `${s.verifiedDeliveries} of ${s.delivered}`,
+      detail:
+        s.delivered === 0
+          ? 'No parcel has been delivered yet.'
+          : `${s.verifiedDeliveries} of ${plural(s.delivered, 'delivered order')} checked by the buyer with the camera. ` +
+            (s.checks === 0
+              ? 'No check has answered yet.'
+              : `Of ${plural(s.checks, 'check')}, ${s.matches} matched the order, ${s.mismatches} did not, and ${s.unsure} could not tell.`),
     },
     {
       id: 'wrong',

@@ -5,6 +5,7 @@ import { MomentsStrip } from '@/components/shell/moments';
 import { requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { existingBlobIds } from '@/server/blobs';
+import { paymentStatus } from '@sightline/core';
 import { eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { db } from '@/server/runtime';
@@ -18,7 +19,12 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
   if (!found || !found.snapshot) notFound();
   const s = found.snapshot;
   const [helper] = await db().select({ name: tables.helpers.name }).from(tables.helpers).where(eq(tables.helpers.userId, user.id)).limit(1);
-  const itemBlob = found.verification?.photos.find((p) => p.kind === 'item')?.blobId;
+  // The strip says Paid only when PayPal holds or took the money, never just because it arrived.
+  const pay = paymentStatus(found.order);
+  const paid = pay.word === 'Paid' || pay.word === 'On hold';
+  const itemRecord = found.verification?.photos.find((p) => p.kind === 'item') as { blobId: string; source?: string } | undefined;
+  const itemBlob = itemRecord?.blobId;
+  const itemSource = itemRecord?.source === 'camera' || itemRecord?.source === 'upload' || itemRecord?.source === 'demo' ? itemRecord.source : undefined;
   const itemPhotoKept = itemBlob ? (await existingBlobIds([itemBlob])).has(itemBlob) : false;
   const shipped = found.shipment?.shippedVariant;
   // Demo parcel photos match what the Demo Store merchant shipped (set with the demo controls).
@@ -42,7 +48,7 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
         </Link>
       </p>
       <header className="grid gap-2">
-        <MomentsStrip done={3} current="Checked" />
+        <MomentsStrip done={3} current="Checked" notDone={paid ? {} : { Paid: 'not paid' }} />
         <p className="eyebrow">Order {found.order.id.slice(-8).toUpperCase()}</p>
         <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title} you paid for?</h1>
         <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">
@@ -61,6 +67,7 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
             ? {
                 verdict: found.verification.verdict,
                 itemPhoto: itemBlob && itemPhotoKept ? `/api/blobs/${itemBlob}` : undefined,
+                itemPhotoSource: itemSource,
               }
             : null
         }

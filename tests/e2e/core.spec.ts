@@ -89,13 +89,26 @@ test.describe('other pages', () => {
     await expect(page.locator('#settings-status')).toContainText('Saved');
   });
 
+  test('an invalid limit gets the app’s own message on the field, not the browser’s bubble', async ({ page }) => {
+    await page.goto('/app/settings');
+    const field = page.getByLabel('Most for one order');
+    await field.fill('0');
+    await page.getByRole('button', { name: 'Save settings' }).click();
+    await expect(field).toBeFocused();
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    await expect(field).toHaveAccessibleDescription('Use an amount from 1 to 5,000 dollars.');
+    expect(await field.evaluate((el: HTMLInputElement) => el.validationMessage === '' || el.form?.noValidate === true)).toBe(true);
+    await expect.poll(async () => (await announcements(page)).at(-1)).toContain('Not saved. Please check most for one order');
+    await expectNoAxeViolations(page);
+  });
+
   test('delete everything asks first, can be cancelled, and announces what was kept', async ({ page }) => {
     await page.goto('/app/settings');
     const open = page.getByRole('button', { name: 'Delete everything' });
     await open.click();
     const question = page.getByRole('group', { name: /Delete your conversations/ });
     await expect(question.locator('p').first()).toBeFocused();
-    await page.getByRole('button', { name: 'Keep them' }).last().click();
+    await page.getByRole('button', { name: 'Keep everything' }).click();
     await expect(open).toBeFocused();
     await expect.poll(() => announcements(page)).toContain('Nothing was deleted.');
 
@@ -105,6 +118,8 @@ test.describe('other pages', () => {
     await expect(result).toBeFocused();
     await expect(result).toContainText('Your orders, payments and receipts are kept');
     await expect.poll(async () => (await announcements(page)).some((a) => a.startsWith('Done. I deleted your conversations'))).toBe(true);
+    // The server action re-renders the page; let its title come back before axe looks at it.
+    await expect(page).toHaveTitle(/\S/);
     await expectNoAxeViolations(page);
   });
 });

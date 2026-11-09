@@ -11,7 +11,10 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Verified delivery' };
 
 const DEFINITIONS = [
-  { term: 'Verified delivery', text: 'The carrier delivered the parcel and the buyer then checked it with the camera.' },
+  {
+    term: 'Delivered and checked',
+    text: 'The carrier delivered the parcel and the buyer then checked it with the camera. It counts every check, whatever it found. Matched and the wrong-item rate say what the checks found.',
+  },
   { term: 'Wrong-item rate', text: 'Checks that found a mismatch, out of all checks. A check that could not tell is not counted as wrong.' },
   {
     term: 'On hold, paid, released, refunded',

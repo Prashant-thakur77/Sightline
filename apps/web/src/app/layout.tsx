@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Atkinson_Hyperlegible_Mono, Atkinson_Hyperlegible_Next } from 'next/font/google';
 import { PRODUCT_NAME } from '@sightline/core';
 import { AnnouncerProvider } from '@/components/a11y/announcer';
+import { ThemeBoot } from '@/components/shell/theme-boot';
 import './globals.css';
 
 const sans = Atkinson_Hyperlegible_Next({
@@ -32,8 +33,11 @@ export const viewport: Viewport = {
   ],
 };
 
-/** Applies the saved theme and text scale before first paint so nothing flashes or shifts. */
-const themeScript = `(function(){try{var t=localStorage.getItem('sl-theme');if(t)document.documentElement.dataset.theme=t;var s=parseFloat(localStorage.getItem('sl-text-scale')||'1');if(s>1)document.documentElement.style.setProperty('--text-scale',String(s));}catch(e){}})();`;
+/**
+ * Applies the saved theme and text scale before first paint so nothing flashes or shifts. With no
+ * saved theme, a device set to more contrast gets the high-contrast theme.
+ */
+const themeScript = `(function(){try{var t=localStorage.getItem('sl-theme');if(t)document.documentElement.dataset.theme=t;else if(window.matchMedia&&matchMedia('(prefers-contrast: more)').matches)document.documentElement.dataset.theme='contrast';var s=parseFloat(localStorage.getItem('sl-text-scale')||'1');if(s>1)document.documentElement.style.setProperty('--text-scale',String(s));}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -45,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a className="skip-link" href="#main">
           Skip to main content
         </a>
+        <ThemeBoot />
         <AnnouncerProvider>{children}</AnnouncerProvider>
       </body>
     </html>

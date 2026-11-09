@@ -20,7 +20,9 @@ export default async function Settings() {
     <div className="grid gap-8 max-w-[760px]">
       <header className="grid gap-2">
         <h1 className="text-[length:var(--step-4)]">Settings</h1>
-        <p className="text-[length:var(--step-1)]">Every setting is optional. Changes are saved when you press Save.</p>
+        <p className="text-[length:var(--step-1)]">
+          Every setting is optional. Preferences are saved when you press Save settings. Notifications and Your data work on their own, straight away.
+        </p>
       </header>
       <SettingsForm
         initial={{
@@ -36,12 +38,14 @@ export default async function Settings() {
         }}
         helperName={helper?.name ?? null}
       />
-      <section aria-labelledby="notify-h" className="settings">
-        <fieldset>
-          <legend id="notify-h">Notifications</legend>
-          <p className="hint">Parcel arrived, refund landed, helper answered. Short and plain. You can stop them any time.</p>
-          <PushOptIn vapidKey={vapidPublicKey()} />
-        </fieldset>
+      {/* A named region with a heading, not also a fieldset with a legend, so its name is said once. */}
+      <section aria-labelledby="notify-h" className="settings settings-box">
+        <h2 id="notify-h" className="settings-h">
+          Notifications
+        </h2>
+        <p className="hint">Parcel arrived, refund landed, helper answered. Short and plain. You can stop them any time.</p>
+        <p className="hint">This button works on its own, straight away. Save settings doesn’t change it.</p>
+        <PushOptIn vapidKey={vapidPublicKey()} />
       </section>
       <DataControls photoCount={photos.total} neededByCase={photos.needed} retentionDays={PHOTO_RETENTION_DAYS} />
     </div>

@@ -297,6 +297,22 @@
   outline-offset: -3px;
   box-shadow: inset 0 0 0 7px var(--focus-outer);
 }
+/* A widget with keyboard focus inside it gets the page's double ring, ink and yellow, in place of
+   Studio's yellow-only edge, which is too faint on paper. The marker Studio focuses is 0 by 0
+   pixels, so the ring goes on the widget's card. */
+.sx-canvas .ag-studio-layout-widget.ag-studio-layout-widget-focus:has(:focus-visible),
+.sx-canvas .ag-studio-layout-widget.ag-studio-layout-widget-focus:has(:focus-visible) > .ag-studio-layout-widget-overlay {
+  box-shadow: none;
+}
+.sx-canvas .ag-studio-layout-widget.ag-studio-layout-widget-focus:has(:focus-visible) > .ag-studio-layout-widget-container {
+  outline: 3px solid var(--focus-inner);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 7px var(--focus-outer);
+}
+.sx-canvas .ag-studio-layout-widget-focus-container:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 
 /* An empty state for a dashboard whose data is not there yet. */
 .sx-empty {

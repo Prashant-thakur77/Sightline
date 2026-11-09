@@ -467,9 +467,13 @@ a {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3) var(--space-5);
-    padding: var(--space-3) clamp(1rem, 3vw, 2.5rem);
+    /* px floor, like the page under it, so Largest text on a phone keeps the width. */
+    padding: var(--space-3) clamp(16px, 3vw, 2.5rem);
     border-bottom: 3px solid var(--line);
     background: var(--paper);
+  }
+  .app-header .theme-switch select {
+    max-width: calc(100vw - 2 * clamp(16px, 3vw, 2.5rem));
   }
   .app-home {
     text-decoration: none;
@@ -696,10 +700,17 @@ a {
     max-width: 22ch;
     margin: 0;
   }
+  /* Side by side only when each picture gets at least 9rem; rem grows with the text size, so a
+     phone, or large text, stacks them, each with its caption under it. */
   .verdict-compare {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
     gap: var(--space-4);
+    align-items: start;
+  }
+  .verdict-compare figcaption {
+    overflow-wrap: break-word;
+    min-width: 0;
   }
   .verdict-compare figure {
     margin: 0;
@@ -798,9 +809,15 @@ a {
     gap: var(--space-6);
     grid-template-columns: minmax(0, 1fr);
   }
-  @media (min-width: 1024px) {
+  /* The transcript sits beside the conversation only when there is room for it at the chosen text
+     size: the query and the column are in rem, which grow with the text size setting. Larger text
+     gets one column, with the transcript under the conversation at full width. */
+  .convo-wrap {
+    container: convo / inline-size;
+  }
+  @container convo (min-width: 56rem) {
     .convo {
-      grid-template-columns: minmax(0, 1fr) 340px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
       align-items: start;
     }
     .transcript {
@@ -1120,6 +1137,7 @@ a {
   .composer {
     display: grid;
     gap: var(--space-3);
+    container: composer / inline-size;
   }
   .talk {
     display: flex;
@@ -1189,6 +1207,16 @@ a {
     width: 100%;
     min-width: 0;
   }
+  /* Narrow for its text size (a phone, or large text): the text box gets the full width and Send
+     goes under it, instead of the box shrinking to a few letters. */
+  @container composer (max-width: 20rem) {
+    .composer-type {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .composer-type .btn {
+      justify-self: start;
+    }
+  }
   .composer-label {
     grid-column: 1 / -1;
     font-weight: 700;
@@ -1209,9 +1237,12 @@ a {
     padding: 0;
     margin: 0;
   }
+  /* Half a one-line chip's height, not 999px: one line still looks like a pill, and a chip whose
+     words wrap at large text sizes gets rounded corners that don't cut into its text. */
   .suggestions .btn {
-    border-radius: 999px;
+    border-radius: 1.3em;
     font-weight: 700;
+    max-width: 100%;
   }
   .keys-hint {
     margin: 0;
@@ -1233,11 +1264,14 @@ a {
     padding: 0 0.4em;
     font-weight: 700;
   }
+  /* minmax(0, 1fr): the column is the box's width, not its longest word, so long words wrap whole
+     instead of running out of the box. Side padding in vw leaves large text the room on a phone. */
   .transcript {
     border: 3px solid var(--line);
     border-radius: var(--radius-l);
-    padding: var(--space-4);
+    padding: var(--space-4) min(var(--space-4), 3vw);
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
     max-height: 70vh;
     overflow-y: auto;
@@ -1245,21 +1279,25 @@ a {
   .transcript-h {
     font-size: var(--step-1);
     margin: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
+  /* position: relative keeps each message's hidden "You said:" inside the scrolling box; without it
+     those hidden words sat below the box and made the page much longer than its content. */
   .transcript li {
     min-width: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    position: relative;
   }
   .transcript ol {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
   }
   .transcript li {
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-2) min(var(--space-3), 2.5vw);
     border-radius: var(--radius-m);
     background: var(--paper-2);
   }
@@ -1358,8 +1396,9 @@ a {
 
 /* ---------- Landing ---------- */
 @layer components {
+  /* The floor is in px, not rem, so Largest text on a phone keeps the width for words. */
   .landing {
-    --gutter: clamp(1rem, 4vw, 3.5rem);
+    --gutter: clamp(16px, 4vw, 3.5rem);
   }
   .lp-header {
     display: flex;
@@ -1396,7 +1435,13 @@ a {
     padding: var(--space-6) var(--gutter) var(--space-8);
     align-items: center;
   }
-  @media (min-width: 1080px) {
+  /* Two columns only when the hero is wide for its text size. The query is in rem, which grows with
+     the text size setting, so Larger and Largest text keep one column with the heading and the
+     buttons first, instead of pushing them below the example. */
+  .lp-hero-wrap {
+    container: lp-hero / inline-size;
+  }
+  @container lp-hero (min-width: 67.5rem) {
     .lp-hero {
       grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
       min-height: min(860px, calc(100dvh - 80px));
@@ -1477,7 +1522,9 @@ a {
   .rbh-said {
     margin: 0;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-2);
+    overflow-wrap: break-word;
   }
   .rbh-who {
     font-family: var(--font-mono);
@@ -1492,7 +1539,8 @@ a {
     line-height: 1.7;
     background: var(--yellow);
     color: var(--yellow-ink);
-    padding: var(--space-2) var(--space-4);
+    /* vw, not rem: on a phone with large text the words get the room, not the padding. */
+    padding: var(--space-2) min(var(--space-4), 3vw);
     border-radius: var(--radius-m);
     border: 3px solid var(--yellow-ink);
   }
@@ -1506,6 +1554,7 @@ a {
     flex-wrap: wrap;
     gap: var(--space-2);
   }
+  /* A tag can wrap on a narrow screen with large text, so its corners are rounded, not a pill. */
   .rbh-tag {
     font-family: var(--font-mono);
     font-weight: 700;
@@ -1513,7 +1562,9 @@ a {
     background: var(--ink);
     color: var(--yellow);
     padding: 0.2em 0.6em;
-    border-radius: 999px;
+    border-radius: 0.8em;
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
   @keyframes rbh-underline {
     to {
@@ -1555,13 +1606,15 @@ a {
     }
   }
   .rbh-ticket {
+    /* Side padding in vw as well, so the words get the room on a phone with large text. */
+    --tk-pad: min(var(--space-5), 4vw);
     position: relative;
     min-width: 0;
     container-type: inline-size;
     background: var(--receipt);
     color: #0b0b0c;
     font-family: var(--font-mono);
-    padding: var(--space-5) var(--space-5) 0;
+    padding: var(--space-5) var(--tk-pad) 0;
     border: 3px solid #0b0b0c;
     border-radius: var(--radius-m) var(--radius-m) 0 0;
     box-shadow: 10px 10px 0 var(--ink);
@@ -1596,21 +1649,29 @@ a {
     border-top: 2px dashed #a9a9a2;
     font-weight: 700;
   }
+  /* break-word, not anywhere: a word moves to the next line whole, and is only split when it is
+     wider than the whole ticket. */
   .rbh-k,
   .rbh-v {
     min-width: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
-  /* A narrow ticket (a phone with large text): the value goes under its label instead of being
-     squeezed into a column a few letters wide. */
+  /* A narrow ticket (a phone with large text): the label goes beside its number when it fits and
+     under it when it doesn't, and the value goes under both, across the full width of the ticket,
+     instead of being squeezed into a column a few letters wide. */
   @container (max-width: 22ch) {
     .rbh-ticket li {
-      grid-template-columns: 2.4ch minmax(0, 1fr);
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: var(--space-2);
       row-gap: 0;
     }
     .rbh-v {
-      grid-column: 2;
+      flex-basis: 100%;
     }
+  }
+  .rbh-say {
+    overflow-wrap: break-word;
   }
   .rbh-ticket li[data-key='total'] {
     font-size: var(--step-1);
@@ -1633,9 +1694,11 @@ a {
   }
   .rbh-stub {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    margin: 0 calc(var(--space-5) * -1);
-    padding: var(--space-3) var(--space-5);
+    gap: var(--space-1) var(--space-3);
+    margin: 0 calc(var(--tk-pad) * -1);
+    padding: var(--space-3) var(--tk-pad);
     border-top: 3px dashed currentColor;
     background: var(--yellow);
     color: #0b0b0c;
@@ -1673,12 +1736,15 @@ a {
     display: grid;
     gap: var(--space-2);
     align-content: start;
+    container-type: inline-size;
+    min-width: 0;
   }
   .lp-numbers p {
     margin: 0;
   }
+  /* Never wider than its card: at large text sizes the figure shrinks with the card (cqi). */
   .lp-figure {
-    font-size: var(--step-5);
+    font-size: min(var(--step-5), 30cqi);
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.04em;
@@ -1773,7 +1839,7 @@ a {
     display: inline-block;
     margin: 0 0 -3px calc(var(--k) * clamp(8px, 4vw, 5rem));
     max-width: 100%;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     padding: var(--space-2) var(--space-6) var(--space-2) var(--space-5);
     background: var(--tint);
     border: 3px solid var(--line);
@@ -1792,11 +1858,20 @@ a {
   :root[data-theme='contrast'] .folder:last-child .folder-body {
     color: var(--ink);
   }
+  /* The side padding shrinks on a narrow screen (vw, not rem), so large text keeps the room. */
+  /* A phone: the tabs step in less and pad less, so a tab's words fit whole at large text sizes. */
+  @media (max-width: 480px) {
+    .folder-tab {
+      margin-left: calc(var(--k) * 6px);
+      padding-inline: min(var(--space-5), 3vw) min(var(--space-6), 4vw);
+    }
+  }
   .folder-body {
     background: var(--tint);
     border: 3px solid var(--line);
     border-radius: 0 var(--radius-l) var(--radius-l) var(--radius-l);
-    padding: var(--space-5) var(--space-5) var(--space-7);
+    padding: var(--space-5) min(var(--space-5), 3.5vw) var(--space-7);
+    overflow-wrap: break-word;
     display: grid;
     gap: var(--space-3);
     grid-template-columns: minmax(0, 1fr);
@@ -1820,11 +1895,13 @@ a {
     margin: 0;
     max-width: 52ch;
   }
+  /* Capped by the screen width too: a quoted phrase in this wide font keeps its words whole on a
+     phone at the largest text size. */
   .folder-said {
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: var(--step-1);
+    font-size: min(var(--step-1), 9vw);
     align-self: start;
     border-left: 6px solid currentColor;
     padding-left: var(--space-4);
@@ -2202,32 +2279,52 @@ a {
   }
   /* min-width: 0 undoes the fieldset's built-in min-content width, which with large text made the
      whole page wider than a phone screen. */
-  .settings fieldset {
+  /* The side padding shrinks on a narrow screen (vw, not rem), so large text keeps its room. */
+  .settings fieldset,
+  .settings-box {
     border: 3px solid var(--line);
     border-radius: var(--radius-l);
-    padding: var(--space-4) var(--space-5) var(--space-5);
+    padding: var(--space-4) min(var(--space-5), 3.5vw) var(--space-5);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
     margin: 0;
     min-width: 0;
   }
-  .settings legend {
+  /* A legend or heading as wide as the box: whole words wrap, and a word is only split when it is
+     wider than the box itself (break-word, not anywhere). */
+  /* Capped by the screen width too, so a one-word heading ("Notifications") fits whole on a phone
+     at the largest text size. */
+  .settings legend,
+  .settings-h {
     font-weight: 800;
-    font-size: var(--step-1);
+    font-size: min(var(--step-1), 11.5vw);
     padding: 0 var(--space-2);
     max-width: 100%;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+  }
+  .settings-h {
+    padding: 0;
+    margin: 0;
+    line-height: 1.2;
   }
   .settings label,
   .settings .hint,
   .settings p {
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    min-width: 0;
+  }
+  .field-error {
+    margin: 0;
+    font-weight: 700;
+    color: var(--mismatch);
+    border-left: 6px solid var(--mismatch);
+    padding-left: var(--space-3);
   }
   .choice {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
-    column-gap: var(--space-3);
+    column-gap: min(var(--space-3), 3vw);
     align-items: center;
   }
   .choice input {
@@ -2314,9 +2411,16 @@ a {
 }
 
 @layer components {
-  /* Keep the floating Speech Viewer toggle from covering the last controls on the page. */
+  /* Keep the floating Speech Viewer toggle from covering the last controls on the page. In rem as
+     well, because the toggle grows with the text size. */
   #app-root {
-    padding-bottom: 96px;
+    padding-bottom: max(96px, 6.5rem);
+  }
+  /* A control reached with Tab is scrolled clear of the floating toggle, not under it. */
+  @media (min-width: 641px) {
+    html:has(:where(#app-root)) {
+      scroll-padding-bottom: max(96px, 6.5rem);
+    }
   }
   @media (max-width: 640px) {
     .speech-viewer-panel {
@@ -2624,12 +2728,12 @@ a {
   }
   .lp-mlist li {
     min-width: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     container-type: inline-size;
     display: grid;
     gap: var(--space-2);
     align-content: start;
-    padding: var(--space-5);
+    padding: var(--space-5) min(var(--space-5), 4vw);
     border: 3px solid var(--line);
     border-radius: var(--radius-l);
     background: var(--receipt);
@@ -2750,12 +2854,16 @@ a {
     padding: 0;
     display: grid;
     gap: var(--space-2);
+    container-type: inline-size;
   }
+  /* minmax(0, 1fr): a plain 1fr column grows to its longest word, which at large text pushed the
+     reasons past the folder's border. */
   .reason-list li {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: var(--space-3);
     align-items: start;
+    overflow-wrap: break-word;
   }
   .reason-glyph {
     display: grid;
@@ -2772,12 +2880,40 @@ a {
   .reason-list li[data-tone='good'] .reason-glyph {
     color: var(--match);
   }
+  /* Narrow for the text size (a phone, or large text): the mark sits at the start of the first line
+     and the words use the full width under it, instead of a column a few letters wide. */
+  @container (max-width: 18rem) {
+    .reason-list li {
+      display: block;
+    }
+    .reason-list .reason-glyph {
+      display: inline-grid;
+      vertical-align: middle;
+      margin-right: var(--space-2);
+    }
+  }
+  /* inline-flex drops the browser's own disclosure triangle, so the summary draws its own: ▸ when
+     closed, ▾ when open. It is hidden from screen readers, which say expanded or collapsed. */
   .tech summary {
     cursor: pointer;
     font-weight: 700;
     min-height: var(--target);
     display: inline-flex;
-    align-items: center;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-block: var(--space-2);
+    list-style: none;
+    overflow-wrap: break-word;
+    min-width: 0;
+  }
+  .tech summary::-webkit-details-marker {
+    display: none;
+  }
+  .tech-marker::before {
+    content: '▸';
+  }
+  .tech[open] > summary .tech-marker::before {
+    content: '▾';
   }
 }
 
@@ -2887,19 +3023,51 @@ a {
     display: grid;
     font-weight: 700;
   }
-  .helper-photo {
+  .helper-photos li {
     display: grid;
     gap: var(--space-2);
-    font-weight: 700;
-    min-height: var(--target);
+    align-content: start;
+    min-width: 0;
   }
-  .helper-photo img {
+  .helper-photos figcaption,
+  .helper-photos .link-target {
+    overflow-wrap: break-word;
+  }
+  .helper-photo-img {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: var(--radius-m);
     border: 2.5px solid var(--line);
     background: var(--paper-2);
+  }
+  .helper-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+  }
+  .helper-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    min-width: 0;
+  }
+  .helper-display .theme-switch select {
+    max-width: 100%;
+  }
+  /* A helper's page has only these two controls, so their labels stay visible on phones too. */
+  .helper-display .theme-switch {
+    flex-wrap: wrap;
+  }
+  .helper-display .theme-switch span {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
   .helper-answers {
     display: grid;

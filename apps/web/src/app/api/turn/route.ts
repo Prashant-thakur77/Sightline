@@ -11,7 +11,7 @@ const Req = z.union([
   z.object({ action: z.enum(['choose', 'details', 'buy']), index: z.number().int().min(1).max(3) }),
   z.object({ action: z.enum(['confirm-button', 'hold']), readbackId: z.string().min(1) }),
   z.object({ action: z.literal('paypal-approved'), readbackId: z.string().min(1), paypalOrderId: z.string().min(1) }),
-  z.object({ action: z.enum(['cancel', 'repeat', 'start']) }),
+  z.object({ action: z.enum(['cancel', 'repeat', 'start', 'offer']) }),
 ]);
 
 export async function POST(req: Request) {

@@ -1,5 +1,7 @@
 'use client';
 
+import { useId } from 'react';
+import { useScrollsSideways } from '@/components/a11y/scroll-region';
 import type { MerchantOrderRow } from '@/server/merchant';
 import { StatusChip } from './status-chip';
 
@@ -35,9 +37,19 @@ export function OrdersTable({
   onSelect: (id: string) => void;
 }) {
   const label = (text: string) => <span className="mx-t-label">{text}</span>;
+  const hintId = useId();
+  const [wrapRef, scrolls] = useScrollsSideways();
+  // Only a table that scrolls sideways is a region in the Tab order, named apart from the section
+  // around it ("All orders table, scrolls sideways"). On a phone each row is a card and nothing
+  // scrolls, so there is no extra landmark and no extra Tab stop.
+  const region = scrolls
+    ? ({ role: 'region', tabIndex: 0, 'aria-labelledby': `${labelledBy} ${hintId}` } as const)
+    : {};
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1)
-    <div className="mx-table-wrap" tabIndex={0} role="region" aria-labelledby={labelledBy}>
+    <div ref={wrapRef} className="mx-table-wrap" {...region}>
+      <span id={hintId} hidden>
+        table, scrolls sideways
+      </span>
       <table className="mx-table" aria-labelledby={labelledBy}>
         <thead>
           <tr>

@@ -856,11 +856,13 @@
 .mx-case-evidence,
 .mx-case-act {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
   min-width: 0;
 }
 .mx-block {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
   min-width: 0;
 }
@@ -932,6 +934,7 @@
 }
 .mx-suggest {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
   border: 3px dashed var(--line);
@@ -953,15 +956,22 @@
 }
 .mx-reply {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
 }
 .mx-reply-actions {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
 }
+/* The Suggested tag stays inside its button at every text size: when the label and the tag do not
+   fit on one line, the tag wraps under the label instead of sticking out past the button. */
 .mx-reply-actions .mx-btn {
   width: 100%;
+  min-width: 0;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
 }
 .mx-suggested-tag {
   font-family: var(--font-mono);
@@ -971,6 +981,8 @@
   border-radius: 999px;
   padding: 0 0.6em;
   flex: none;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .mx-confirm {
   display: grid;
@@ -1035,6 +1047,49 @@
   .mx-result {
     margin-left: var(--space-4);
     margin-right: var(--space-4);
+  }
+  /* With the largest text on a small phone one long word can be wider than the case: it breaks
+     onto the next line instead of running off the screen. */
+  .mx-case-body {
+    overflow-wrap: break-word;
+  }
+  .mx-suggest,
+  .mx-readback {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+  /* On a phone each reply is a block of text, so with the largest text a long word can wrap
+     inside the button; the Suggested tag sits on its own line under the label. */
+  .mx-reply-actions .mx-btn {
+    display: block;
+    padding-left: 12px;
+    padding-right: 12px;
+    hyphens: auto;
+  }
+  .mx-suggested-tag {
+    display: block;
+    width: fit-content;
+    margin-top: var(--space-2);
+    padding: 0 0.3em;
+  }
+  /* The page gutter stops growing with the text, like the spacing tokens, so the words get the room. */
+  .mx-main {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+  /* Each finding is a small card: the check and its result share a line when they fit and wrap
+     when the text is large, so the table never pushes the case past the screen. */
+  .mx-reasons tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .mx-reasons td:nth-child(3),
+  .mx-reasons td:nth-child(4) {
+    flex-basis: 100%;
+  }
+  .mx-finding {
+    flex-wrap: wrap;
   }
 }
 

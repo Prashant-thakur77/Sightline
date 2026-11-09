@@ -6,6 +6,9 @@ import { useAnnouncer } from '@/components/a11y/announcer';
 type Theme = 'system' | 'light' | 'dark' | 'contrast';
 const LABEL: Record<Theme, string> = { system: 'Match device', light: 'Light', dark: 'Dark', contrast: 'High contrast' };
 
+/** "Match device" follows the device's contrast setting too: more contrast gets the high-contrast theme. */
+const deviceWantsContrast = () => typeof window.matchMedia === 'function' && window.matchMedia('(prefers-contrast: more)').matches;
+
 export function ThemeSwitch() {
   const [theme, setTheme] = useState<Theme>('system');
   const { announce } = useAnnouncer();
@@ -22,7 +25,8 @@ export function ThemeSwitch() {
     try {
       if (t === 'system') {
         localStorage.removeItem('sl-theme');
-        delete document.documentElement.dataset.theme;
+        if (deviceWantsContrast()) document.documentElement.dataset.theme = 'contrast';
+        else delete document.documentElement.dataset.theme;
       } else {
         localStorage.setItem('sl-theme', t);
         document.documentElement.dataset.theme = t;

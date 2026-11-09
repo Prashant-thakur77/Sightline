@@ -104,14 +104,17 @@ describe('HelperAnswer', () => {
   it('shows and announces a network failure and clears busy', async () => {
     fetchMock.mockImplementation(offline);
     wrap(<HelperAnswer token="t" answered={false} buyerName="Maya" />);
-    const yes = screen.getByRole('button', { name: 'It matches' });
-    yes.focus();
-    fireEvent.click(yes);
+    fireEvent.click(screen.getByRole('button', { name: 'It matches' }));
+    await settle();
+    // The tap is checked first; sending is the second step.
+    const send = screen.getByRole('button', { name: 'Send my answer' });
+    send.focus();
+    fireEvent.click(send);
     await settle();
     expect(shownError()).toBe(OFFLINE);
     expect(announced()).toContain(OFFLINE);
-    expect(yes.getAttribute('aria-disabled')).toBeNull();
-    expect(document.activeElement).toBe(yes);
+    expect(send.getAttribute('aria-disabled')).toBeNull();
+    expect(document.activeElement).toBe(send);
   });
 
   it('names the answer buttons without their glyphs', () => {
@@ -123,6 +126,8 @@ describe('HelperAnswer', () => {
     fetchMock.mockImplementation(() => json({ ok: true }));
     wrap(<HelperAnswer token="t" answered={false} buyerName="Maya" />);
     fireEvent.click(screen.getByRole('button', { name: 'It matches' }));
+    await settle();
+    fireEvent.click(screen.getByRole('button', { name: 'Send my answer' }));
     await settle();
     const done = screen.getByText(/Thank you\. Maya has your answer/);
     expect(document.activeElement).toBe(done);

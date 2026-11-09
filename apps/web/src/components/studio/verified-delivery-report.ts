@@ -59,7 +59,7 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
           { id: 'shipped', name: 'What was shipped', format: 'textFormat', description: 'What the demo controls shipped: right item, wrong colour, wrong size, damaged, nothing.' },
           flag('delivered', 'Delivered', 'Whether the carrier delivered the parcel.'),
           flag('checked', 'Checked', 'Whether the buyer checked the parcel with the camera.'),
-          flag('verifiedDelivery', 'Verified delivery', 'Delivered and checked by the buyer.'),
+          flag('verifiedDelivery', 'Delivered and checked', 'Delivered and checked by the buyer with the camera, whatever the check found.'),
           flag('heldForCheck', 'Held for the check', 'PayPal held the money while the buyer checked the parcel.'),
           flag('voidedAfterMismatch', 'Case avoided', 'The hold was released after the check found the wrong item, so no dispute was needed.'),
         ].map((f) => field(f as Spec)),
@@ -83,7 +83,8 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
             id: 'mismatchType',
             name: 'Mismatch type',
             format: 'textFormat',
-            description: 'What decided the verdict: Wrong colour, Wrong size, Wrong item, Damaged, Unclear: <aspect> for a check that could not tell, or No mismatch.',
+            description:
+              'What decided the verdict: Wrong colour, Wrong size, Wrong item or Damaged for a mismatch; for a check that was not sure, what it was not sure of, such as Size may be wrong or Could not check colour; or No mismatch.',
           },
           { id: 'confidence', name: 'Confidence', format: 'textFormat', description: 'How sure the deciding finding was, in words: sure, fairly sure, not sure.' },
           { id: 'headline', name: 'What the buyer heard', format: 'textFormat' },
@@ -168,7 +169,7 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
       manyToOne('finding-check', 'checkReasons.checkId', 'checks.id'),
     ],
     expressions: [
-      rate('verifiedDeliveryRate', 'Verified-delivery rate', 'Delivered orders the buyer checked with the camera.', sum('orders.verifiedDelivery'), sum('orders.delivered')),
+      rate('verifiedDeliveryRate', 'Checked on delivery', 'Delivered orders the buyer checked with the camera, whatever the check found. It does not say how many matched: see Matched.', sum('orders.verifiedDelivery'), sum('orders.delivered')),
       rate('wrongItemRate', 'Wrong-item rate', 'Checks that found the wrong item.', sum('checks.isMismatch'), count('checks.id')),
       rate('wrongColourRate', 'Wrong colour', 'Checks that found the wrong colour.', sum('checks.wrongColour'), count('checks.id')),
       rate('wrongSizeRate', 'Wrong size', 'Checks that found the wrong size.', sum('checks.wrongSize'), count('checks.id')),
@@ -206,7 +207,7 @@ const overview: AgPageState = {
   id: 'verified-delivery',
   widgets: {
     'kpi-orders': kpi('Orders', count('orders.id'), 'Every order placed'),
-    'kpi-verified': kpi('Verified-delivery rate', { id: 'verifiedDeliveryRate' }, 'Delivered and checked'),
+    'kpi-verified': kpi('Checked on delivery', { id: 'verifiedDeliveryRate' }, 'Delivered orders checked, match or not'),
     'kpi-wrong': kpi('Wrong-item rate', { id: 'wrongItemRate' }, 'Checks with a mismatch'),
     'kpi-avoided': kpi('Cases avoided', sum('orders.voidedAfterMismatch'), 'Holds released on a mismatch'),
     'kpi-median': kpi('Time to resolution', { id: 'medianResolutionHours' }, 'Median, opened to resolved'),
@@ -306,10 +307,12 @@ const overview: AgPageState = {
     'kpi-refunded': at(18, 9, 6, 9),
     'check-counts': at(0, 18, 12, 16),
     reasons: at(12, 18, 12, 16),
-    verdicts: at(0, 34, 14, 18),
-    'money-state': at(14, 34, 10, 18),
-    'recent-checks': at(0, 52, 24, 17),
-    cases: at(0, 69, 24, 16),
+    // Each chart has the full width, so the plain-word labels on the verdicts chart's category axis
+    // ("Could not check the item") get the room to show in full.
+    verdicts: at(0, 34, 24, 16),
+    'money-state': at(0, 50, 24, 16),
+    'recent-checks': at(0, 66, 24, 17),
+    cases: at(0, 83, 24, 16),
   },
 };
 

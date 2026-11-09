@@ -23,6 +23,7 @@ interface Preview {
 export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: string; canStart: boolean; sent?: boolean; done?: string | null }) {
   const { announce } = useAnnouncer();
   const router = useRouter();
+  const justSent = useRef(false);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [result, setResult] = useState<string | null>(done ?? null);
   const [busy, setBusy] = useState(false);
@@ -89,8 +90,11 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
       const said = data.say ?? 'Sent.';
       focusNext.current = 'result';
       setResult(said);
+      justSent.current = true;
       cue('paid');
-      // Focus moves to the result, which says the same thing: no live announcement on top of it.
+      // Focus is on the result, which reads it once (so it is not also sent live). After the
+      // refresh the page's own Money back section shows the new state (one copy on screen) and
+      // focus moves to its heading.
       announce(said, { politeness: 'assertive', source: 'money back', live: false });
       router.refresh();
     } catch (e) {
@@ -100,13 +104,14 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
     }
   };
 
+  // The refreshed page shows a sent case itself; this component only moves focus there.
+  if (sent) return <SentFocus active={justSent.current} />;
   if (result)
     return (
       <p ref={resultRef} tabIndex={-1} className="mb-result">
         {result}
       </p>
     );
-  if (sent) return null;
 
   return (
     <div className="grid gap-4">
@@ -158,4 +163,16 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
       )}
     </div>
   );
+}
+
+/** Once the refreshed page shows the sent case, move focus to the Money back heading. */
+function SentFocus({ active }: { active: boolean }) {
+  useEffect(() => {
+    if (!active) return;
+    const h = document.querySelector<HTMLElement>('#money-back .folder-h');
+    if (!h) return;
+    h.tabIndex = -1;
+    h.focus();
+  }, [active]);
+  return null;
 }

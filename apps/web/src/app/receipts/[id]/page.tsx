@@ -4,6 +4,7 @@ import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { utcWhen } from '@/lib/when';
 import { loadReceipt, receiptContext, type ConfirmationKey, type ReceiptOrder } from '@/server/receipts';
 import { demoSeller, INTEGRATIONS } from '@/server/runtime';
+import '../../proof-pages.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,18 @@ const GUARD_LABEL: Record<string, string> = {
   DuplicateGuard: 'Not a repeat of a recent order',
   RateLimitGuard: 'Not too many orders this hour',
   FreshnessGuard: 'Listing checked recently',
+  Reservation: 'Amount set aside from your limits',
 };
+
+/**
+ * The gate's own words, kept in the signed receipt, said plainly where they are jargon. Only a
+ * passed budget hold is reworded; every other reason is shown as signed.
+ */
+function whyText(r: { guard: string; ok: boolean; message: string }): string {
+  if (r.guard === 'Reservation' && r.ok)
+    return 'Set aside from your spending limits until PayPal takes the payment, so a second order at the same moment cannot go over them. If the payment never goes through, it is freed again.';
+  return r.message;
+}
 
 interface GateBody {
   allowed?: boolean;
@@ -223,7 +235,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
                         <span className="sr-only">{r.ok ? 'Passed' : 'Failed'}</span>
                       </span>
                     </td>
-                    <td>{r.message}</td>
+                    <td>{whyText(r)}</td>
                   </tr>
                 ))}
               </tbody>

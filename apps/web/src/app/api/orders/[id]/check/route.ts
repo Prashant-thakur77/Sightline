@@ -14,6 +14,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const KINDS = ['item', 'label', 'damage'] as const;
+const SOURCES = new Set(['camera', 'upload', 'demo']);
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
@@ -22,13 +23,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const found = await orderForUser(id, user.id);
     if (!found || !found.snapshot) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
     const form = await req.formData();
-    const photos: { kind: (typeof KINDS)[number]; bytes: Buffer; blobId: string; sha256: string }[] = [];
+    const photos: { kind: (typeof KINDS)[number]; bytes: Buffer; blobId: string; sha256: string; source?: string }[] = [];
     for (const kind of KINDS) {
       const f = form.get(kind);
       if (!(f instanceof File) || f.size === 0) continue;
       const clean = await sanitisePhoto(Buffer.from(await f.arrayBuffer()), f.type || 'image/jpeg');
       const blob = await putBlob(clean, 'image/jpeg', user.id);
-      photos.push({ kind, bytes: clean, blobId: blob.id, sha256: blob.sha256 });
+      // Where the page says the photo came from (camera, an added file, or the demo parcel photos),
+      // so a demo photo is never presented as the buyer's or shown to a helper as theirs.
+      const source = String(form.get(`${kind}-source`) ?? '');
+      photos.push({ kind, bytes: clean, blobId: blob.id, sha256: blob.sha256, ...(SOURCES.has(source) ? { source } : {}) });
     }
     if (photos.length === 0) return NextResponse.json({ error: 'No photos were received.' }, { status: 400 });
 
@@ -39,7 +43,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         id: verificationId,
         orderId: id,
         status: 'analysing',
-        photos: photos.map((p) => ({ kind: p.kind, blobId: p.blobId, sha256: p.sha256 })),
+        photos: photos.map((p) => ({ kind: p.kind, blobId: p.blobId, sha256: p.sha256, ...(p.source ? { source: p.source } : {}) })),
       });
     await audit({ userId: user.id, actor: 'user', action: 'check.photos_sent', subjectId: id, payload: { verificationId, photos: photos.map((p) => ({ kind: p.kind, sha256: p.sha256 })) } });
 

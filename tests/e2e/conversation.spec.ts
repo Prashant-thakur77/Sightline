@@ -47,6 +47,56 @@ test.describe('conversation: focus, honesty and dead ends', () => {
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   });
 
+  test('typed words come back in the text box when the request fails, and the transcript does not keep them', async ({ page }) => {
+    const input = page.getByLabel('Or type what you need');
+    // The next request fails on the server's side; nothing reaches the conversation.
+    await page.route('**/api/turn', (route) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"x"}' }), { times: 1 });
+    await say(page, 'navy crew-neck sweater');
+    await expect(input).toHaveValue('navy crew-neck sweater');
+    await expect(page.locator('#convo-status')).toContainText('Your words are still in the text box.');
+    await expect.poll(async () => (await announcements(page)).at(-1)).toContain('Your words are still in the text box.');
+    await expect(page.locator('.transcript')).not.toContainText('navy crew-neck sweater');
+    // Sending again works and clears the box.
+    await input.press('Enter');
+    await expect(page.getByRole('list', { name: /options/ })).toBeVisible();
+    await expect(input).toHaveValue('');
+  });
+
+  test('the transcript keeps the newest message in view without moving focus', async ({ page }) => {
+    const transcript = page.locator('.transcript');
+    const input = page.getByLabel('Or type what you need');
+    for (const t of ['navy crew-neck sweater', 'tell me more about one', 'compare them', 'why these', 'more']) {
+      await say(page, t);
+      await expect(page.locator('#convo-status')).not.toHaveAttribute('data-state', 'busy');
+      await expect(transcript.locator('li').last()).not.toHaveText(t);
+      if (await transcript.evaluate((el) => el.scrollHeight > el.clientHeight + 10)) break;
+    }
+    expect(await transcript.evaluate((el) => el.scrollHeight > el.clientHeight + 10)).toBe(true);
+    await expect.poll(() => transcript.evaluate((el) => Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop))).toBeLessThanOrEqual(2);
+    await expect(input).toBeFocused();
+  });
+
+  test('Alt+Shift shortcuts work from the text box; Shift+Enter there never confirms', async ({ page }) => {
+    const input = page.getByLabel('Or type what you need');
+    await say(page, 'navy crew-neck sweater');
+    await expect(page.getByRole('list', { name: /options/ })).toBeVisible();
+    await expect(input).toBeFocused();
+    await input.press('Alt+Shift+Digit1');
+    await expect(page.getByRole('heading', { level: 2, name: /^Option 1/ })).toBeVisible();
+    // A single key typed in the box is just text.
+    await input.press('Digit2');
+    await expect(input).toHaveValue('2');
+    await input.fill('');
+
+    await page.getByRole('button', { name: 'Buy this', exact: true }).first().click();
+    await expect(page.getByRole('button', { name: /^Confirm and pay \$/ })).toBeVisible();
+    await input.focus();
+    await input.press('Shift+Enter');
+    await expect(page.getByRole('button', { name: /^Press again to pay \$/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Confirm and pay \$/ })).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  });
+
   test('another kind of thing is never offered: black jeans finds no cables, T-shirts or shoes', async ({ page }) => {
     await say(page, 'black jeans size 32');
     await expect.poll(async () => (await announcements(page)).at(-1)).toBe("I couldn't find jeans in Demo Store. Want me to look for something else?");

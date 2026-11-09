@@ -506,8 +506,27 @@ function payReply(ctx: Ctx, outcome: PayOutcome, cart: Cart): Reply {
         card: { kind: 'link', heading: 'Checking with PayPal', text: outcome.say, href: `/app/orders/${outcome.orderId}`, label: 'See this order' },
         suggestions: [{ label: "Where's my order?", utterance: "where's my order" }],
       };
-    case 'declined':
     case 'error':
+      // No PayPal keys on this server: paying can't work, so the reply says what still can, and
+      // where to see what is connected, instead of suggesting the next step of a purchase.
+      if (outcome.notConnected) {
+        const say = `${outcome.say} You can keep browsing and hear readbacks, but paying needs PayPal. To see what's connected, open the judge page.`;
+        return {
+          say,
+          politeness: 'assertive',
+          cue: 'error',
+          card: { kind: 'link', heading: 'PayPal isn’t connected', text: 'Nothing was charged. You can keep browsing and hear readbacks, but paying needs PayPal.', href: '/judge', label: 'See what’s connected on the judge page' },
+          suggestions: ctx.state.options?.length
+            ? [
+                { label: 'More options', utterance: 'more' },
+                { label: 'Shop for something else', utterance: 'help' },
+                { label: "Where's my order?", utterance: "where's my order" },
+              ]
+            : suggestionsFor('browsing', false),
+        };
+      }
+      return { say: outcome.say, politeness: 'assertive', cue: 'error', card: { kind: 'refusal', heading: 'Nothing was charged', reason: outcome.say, code: outcome.kind }, suggestions: suggestionsFor('browsing', true) };
+    case 'declined':
       return { say: outcome.say, politeness: 'assertive', cue: 'error', card: { kind: 'refusal', heading: 'Nothing was charged', reason: outcome.say, code: outcome.kind }, suggestions: suggestionsFor('browsing', true) };
   }
 }
@@ -1074,6 +1093,11 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
         ctx.state = { phase: 'browsing', ...(pending ? { pending: [{ kind: 'check', said: 'check it now' }] } : {}) };
         break;
       }
+      case 'offer':
+        // A fresh page, like 'start', that goes straight to the offer the order page pointed to.
+        ctx.state = { phase: 'browsing' };
+        reply = await offerTurn(ctx);
+        break;
       case 'choose':
       case 'details':
         reply = await details(ctx, req.index, 'general');

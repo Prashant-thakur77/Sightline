@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { eq } from 'drizzle-orm';
@@ -10,13 +11,43 @@ import { receiptKeyPair } from '@/server/keys';
 import { currentUser } from '@/server/session';
 import { existingBlobIds } from '@/server/blobs';
 import { utcWhen } from '@/lib/when';
+import '../../proof-pages.css';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Evidence pack' };
+
+async function loadPack(id: string) {
+  const [pack] = await db().select().from(tables.evidencePacks).where(eq(tables.evidencePacks.id, id)).limit(1);
+  return pack ?? null;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  // A missing pack gets the not-found page, so it must not keep this page's title.
+  return { title: (await loadPack(id)) ? 'Evidence pack' : 'Evidence pack not found' };
+}
+
+/**
+ * Why a "not sure" verdict is not "does not match", when the check did find differences: a
+ * mismatch needs at least one difference the check is sure of (the vision service's
+ * mismatch_min_confidence is "sure"), and these were all less sure than that.
+ */
+function whyNotMismatch(v: Verdict): string | null {
+  if (v.kind !== 'unsure') return null;
+  const differences = v.reasons.filter((r) => r.finding === 'disagree');
+  if (differences.length === 0 || differences.some((r) => r.confidence === 'sure')) return null;
+  const allFairly = differences.every((r) => r.confidence === 'fairly_sure');
+  const how = allFairly ? 'only fairly sure' : 'not sure enough';
+  const found =
+    differences.length === 1
+      ? `The check found one difference but is ${how} of it.`
+      : `The check found ${differences.length} differences but is ${how} of each.`;
+  const mismatch = verdictStatus('mismatch').word.toLowerCase();
+  return `Why it is not “${mismatch}”: ${found} It says “${mismatch}” only when it is sure of at least one difference.`;
+}
 
 export default async function EvidencePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [pack] = await db().select().from(tables.evidencePacks).where(eq(tables.evidencePacks.id, id)).limit(1);
+  const pack = await loadPack(id);
   if (!pack) notFound();
   const user = await currentUser();
   const [ver] = pack.verificationId ? await db().select().from(tables.verifications).where(eq(tables.verifications.id, pack.verificationId)).limit(1) : [];
@@ -36,6 +67,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
     narrative: string;
   };
   const v = 'reasons' in m.verification ? m.verification : null;
+  const notMismatch = v ? whyNotMismatch(v) : null;
   return (
     <>
     <SiteHeader />
@@ -114,6 +146,7 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
                 <li key={i}>{reasonForSeller(r)}</li>
               ))}
             </ul>
+            {notMismatch && <p>{notMismatch}</p>}
           </>
         ) : (
           <p>No photo check was run.</p>

@@ -11,26 +11,30 @@ export function MomentsStrip({
   current,
   currentNote = 'now',
   label = 'Where this order is',
+  notDone = {},
 }: {
   done: number;
   current?: Moment;
   currentNote?: string;
   label?: string;
+  /** Moments inside `done` that did not happen, with what to say instead (e.g. Paid: 'not paid'). */
+  notDone?: Partial<Record<Moment, string>>;
 }) {
   return (
     <nav aria-label={label} className="moments">
       <ol>
         {MOMENTS.map((m, i) => {
-          const isDone = i < done;
+          const skipped = notDone[m];
+          const isDone = i < done && !skipped;
           const isCurrent = current === m;
           return (
             <li key={m} data-done={isDone || undefined} aria-current={isCurrent ? 'step' : undefined}>
               <span className="moments-dot" aria-hidden="true">
-                {isDone ? '✓' : i + 1}
+                {isDone ? '✓' : skipped ? '–' : i + 1}
               </span>
               <span>
                 {m}
-                <span className="sr-only">{isDone ? ', done' : isCurrent ? `, ${currentNote}` : ', not yet'}</span>
+                <span className="sr-only">{isDone ? ', done' : skipped ? `, ${skipped}` : isCurrent ? `, ${currentNote}` : ', not yet'}</span>
               </span>
             </li>
           );

@@ -3,7 +3,8 @@ import { requireUser } from '@/server/session';
 
 export const metadata = { title: 'Shop' };
 
-export default async function Shop() {
+export default async function Shop({ searchParams }: { searchParams: Promise<{ hear?: string }> }) {
   const user = await requireUser();
-  return <Conversation firstName={user.displayName} />;
+  const { hear } = await searchParams;
+  return <Conversation firstName={user.displayName} opening={hear === 'offer' ? 'offer' : undefined} />;
 }

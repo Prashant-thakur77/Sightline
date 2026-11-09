@@ -33,6 +33,39 @@ function Radio({ name, value, label, hint, checked }: { name: string; value: str
 }
 
 type Answer = NonNullable<SaveState>;
+
+/** What each field takes, shown under it when it is the one to fix. */
+const RULE: Record<string, string> = {
+  speechRate: 'Use a whole number from 50 to 250.',
+  tops: 'Use 8 letters or numbers at most.',
+  bottoms: 'Use 8 letters or numbers at most.',
+  shoes: 'Use 8 letters or numbers at most.',
+  avoidColours: 'Use 200 characters at most.',
+  perOrderCap: 'Use an amount from 1 to 5,000 dollars.',
+  dailyCap: 'Use an amount from 1 to 10,000 dollars, and at least the most for one order.',
+};
+
+/**
+ * The number limits, checked here first so a mistake is caught at once, even offline, with the
+ * same words the server uses. The server checks everything again when the form is saved.
+ */
+function checkNumbers(fd: FormData): Answer | null {
+  const num = (k: string) => (String(fd.get(k) ?? '').trim() === '' ? NaN : Number(fd.get(k)));
+  const ask = (field: string, what: string): Answer => ({
+    ok: false,
+    field,
+    message: `Not saved. Please check ${what}, then press Save again. Your other changes are still here.`,
+  });
+  const rate = num('speechRate');
+  if (!Number.isInteger(rate) || rate < 50 || rate > 250) return ask('speechRate', 'speech rate (50 to 250)');
+  const perOrder = num('perOrderCap');
+  if (!(perOrder >= 1 && perOrder <= 5000)) return ask('perOrderCap', 'most for one order (1 to 5,000 dollars)');
+  const daily = num('dailyCap');
+  if (!(daily >= 1 && daily <= 10000)) return ask('dailyCap', 'most in one day (1 to 10,000 dollars)');
+  if (daily < perOrder)
+    return { ok: false, field: 'dailyCap', message: 'Not saved. The most in one day must be at least the most for one order. Change one of them, then press Save again.' };
+  return null;
+}
 const OFFLINE: Answer = { ok: false, message: "You're offline, so nothing was saved. Your changes are still here. Press Save again when you're back online." };
 const FAILED: Answer = { ok: false, message: 'Something went wrong on our side, so nothing was saved. Your changes are still here. Press Save to try again.' };
 
@@ -76,7 +109,16 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
     else statusRef.current?.focus();
   }, [state, announce]);
 
-  const invalid = (name: string) => (state && !state.ok && state.field === name ? { 'aria-invalid': true as const, 'aria-errormessage': 'settings-status' } : {});
+  const badField = state && !state.ok ? state.field : undefined;
+  /** The field to fix is marked invalid and described by what it takes, shown under it. */
+  const invalid = (name: string) => (badField === name ? { 'aria-invalid': true as const, 'aria-describedby': `${name}-err` } : {});
+  const fieldError = (name: string) =>
+    badField === name ? (
+      <p id={`${name}-err`} className="field-error">
+        <span aria-hidden="true">✕ </span>
+        {RULE[name] ?? state?.message}
+      </p>
+    ) : null;
 
   const applyLocal = (fd: FormData) => {
     const mode = String(fd.get('voiceMode'));
@@ -109,6 +151,11 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
     e.preventDefault();
     if (pending) return;
     const fd = new FormData(e.currentTarget);
+    const wrong = checkNumbers(fd);
+    if (wrong) {
+      setClientState({ ...wrong });
+      return;
+    }
     if (!navigator.onLine) {
       setClientState({ ...OFFLINE });
       return;
@@ -126,7 +173,17 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
   };
 
   return (
-    <form action={formAction} className="settings" onSubmit={submit} aria-describedby="settings-status">
+    // noValidate: the app's own message, under the field and in the status line, replaces the
+    // browser's bubble, which screen readers and magnifiers often miss.
+    <form action={formAction} className="settings" onSubmit={submit} aria-labelledby="prefs-h" aria-describedby="prefs-hint settings-status" noValidate>
+      <div className="grid gap-2">
+        <h2 id="prefs-h" className="settings-h">
+          Preferences
+        </h2>
+        <p id="prefs-hint" className="hint">
+          Everything from here to the Save settings button is saved together when you press it.
+        </p>
+      </div>
       <fieldset>
         <legend>How should I talk?</legend>
         <Radio name="verbosity" value="brief" label="Brief" hint="Just the facts. Colour, size, price and total are always included." checked={initial.verbosity === 'brief'} />
@@ -142,6 +199,7 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
         <div className="field">
           <label htmlFor="speechRate">Speech rate for the app's own voice, in percent</label>
           <input id="speechRate" name="speechRate" {...invalid('speechRate')} type="number" min={50} max={250} step={10} defaultValue={initial.speechRate} inputMode="numeric" />
+          {fieldError('speechRate')}
         </div>
       </fieldset>
 
@@ -163,19 +221,23 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
           <div className="field">
             <label htmlFor="tops">Tops</label>
             <input id="tops" name="tops" {...invalid('tops')} type="text" defaultValue={initial.sizes.tops ?? ''} autoComplete="off" />
+            {fieldError('tops')}
           </div>
           <div className="field">
             <label htmlFor="bottoms">Bottoms</label>
             <input id="bottoms" name="bottoms" {...invalid('bottoms')} type="text" defaultValue={initial.sizes.bottoms ?? ''} autoComplete="off" />
+            {fieldError('bottoms')}
           </div>
           <div className="field">
             <label htmlFor="shoes">Shoes</label>
             <input id="shoes" name="shoes" {...invalid('shoes')} type="text" defaultValue={initial.sizes.shoes ?? ''} autoComplete="off" />
+            {fieldError('shoes')}
           </div>
         </div>
         <div className="field">
           <label htmlFor="avoidColours">Colours to avoid, separated by commas</label>
           <input id="avoidColours" name="avoidColours" {...invalid('avoidColours')} type="text" defaultValue={initial.avoidColours} autoComplete="off" />
+          {fieldError('avoidColours')}
         </div>
       </fieldset>
 
@@ -186,10 +248,12 @@ export function SettingsForm({ initial, helperName }: { initial: Initial; helper
           <div className="field">
             <label htmlFor="perOrderCap">Most for one order</label>
             <input id="perOrderCap" name="perOrderCap" {...invalid('perOrderCap')} type="number" min={1} step={1} defaultValue={initial.perOrderCap} inputMode="decimal" />
+            {fieldError('perOrderCap')}
           </div>
           <div className="field">
             <label htmlFor="dailyCap">Most in one day</label>
             <input id="dailyCap" name="dailyCap" {...invalid('dailyCap')} type="number" min={1} step={1} defaultValue={initial.dailyCap} inputMode="decimal" />
+            {fieldError('dailyCap')}
           </div>
         </div>
         <div className="choice">

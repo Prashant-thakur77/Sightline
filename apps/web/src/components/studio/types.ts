@@ -98,6 +98,7 @@ export interface VerifiedDeliverySummary {
   delivered: number;
   verifiedDeliveries: number;
   checks: number;
+  matches: number;
   mismatches: number;
   unsure: number;
   byReason: { reason: string; count: number }[];

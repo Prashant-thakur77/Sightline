@@ -41,7 +41,7 @@ export function paymentStatus(o: PaymentFacts): StatusWord {
 export function verdictStatus(kind: VerdictKind | null | undefined): StatusWord {
   if (kind === 'match') return { word: 'Matches the order', glyph: '✓', tone: 'good' };
   if (kind === 'mismatch') return { word: 'Does not match', glyph: '✕', tone: 'bad' };
-  if (kind === 'unsure') return { word: 'Not sure yet', glyph: '?', tone: 'unsure' };
+  if (kind === 'unsure') return { word: 'Not sure', glyph: '?', tone: 'unsure' };
   return { word: 'Not checked', glyph: '–', tone: 'neutral' };
 }
 

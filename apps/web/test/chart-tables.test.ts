@@ -11,7 +11,7 @@ const check = (id: string, mismatchType: string, verdict: StudioCheckRow['verdic
 describe('verifiedDeliveryChartTables', () => {
   const data = {
     orders: [order('a', 'Paid', 3672), order('b', 'On hold', 3672), order('c', 'Paid', 2999), order('d', 'Hold released', 4100)],
-    checks: [check('1', 'No mismatch', 'Match'), check('2', 'Wrong size', 'Mismatch'), check('3', 'No mismatch', 'Match'), check('4', 'Unclear: colour', 'Not sure')],
+    checks: [check('1', 'No mismatch', 'Match'), check('2', 'Wrong size', 'Mismatch'), check('3', 'No mismatch', 'Match'), check('4', 'Could not check colour', 'Not sure')],
   } as VerifiedDeliveryData;
   const [verdicts, money] = verifiedDeliveryChartTables(data);
 
@@ -20,7 +20,7 @@ describe('verifiedDeliveryChartTables', () => {
     expect(verdicts!.columns).toEqual(['Mismatch type', 'Verdict', 'Checks']);
     expect(verdicts!.rows.map((r) => r.cells)).toEqual([
       ['No mismatch', 'Match', '2'],
-      ['Unclear: colour', 'Not sure', '1'],
+      ['Could not check colour', 'Not sure', '1'],
       ['Wrong size', 'Mismatch', '1'],
     ]);
   });

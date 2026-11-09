@@ -37,8 +37,14 @@ export default async function Judge() {
     ['Claude (agent, confirmation check, vision, case writing)', INTEGRATIONS.anthropic, 'Second confirmation key, free questions, size-tag reading'],
     ['Channel3 product data', INTEGRATIONS.channel3, 'Real products and variants; Demo Store catalog otherwise'],
     ['Deepgram speech to text', INTEGRATIONS.deepgram, 'Streaming voice input; browser speech otherwise'],
-    ['KERNEL cloud browsers', INTEGRATIONS.kernel, 'Reading store pages and the Barrier Index'],
-    ['Vision service', INTEGRATIONS.vision, 'Colour, size tag, identity and damage checks'],
+    ['KERNEL cloud browsers', INTEGRATIONS.kernel, 'Reading store pages (the Barrier Index crawl ran on a local browser)'],
+    [
+      'Vision service',
+      INTEGRATIONS.vision,
+      INTEGRATIONS.anthropic
+        ? 'Colour, the size tag read twice, the product and damage'
+        : 'Colour and one size-tag reader only; the product, damage and the second size reader need the Claude key',
+    ],
   ];
   return (
     <div className="judge">
@@ -124,7 +130,7 @@ export default async function Judge() {
 
         <section id="numbers" aria-labelledby="num-h" className="grid gap-4">
           <h2 id="num-h" className="lp-h2">
-            Numbers, recomputed on load
+            Numbers, read from the result files
           </h2>
           {headlines.length === 0 ? (
             <p className="text-[length:var(--step-1)]">No evaluation has been run on this build yet. Nothing on this page is typed in by hand, so this stays empty until the scripts run.</p>
@@ -142,6 +148,16 @@ export default async function Judge() {
                   </li>
                 ))}
               </ul>
+              <p>
+                <Link className="link-target" href="/barrier-index">
+                  The Checkout Barrier Index
+                </Link>{' '}
+                and{' '}
+                <Link className="link-target" href="/barrier-index/dashboard">
+                  its dashboard
+                </Link>
+                .
+              </p>
               <details className="jall">
                 <summary className="btn">All {headlines.length} results, with intervals, scripts and negative results</summary>
                 <ol className="jcards">

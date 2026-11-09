@@ -54,7 +54,10 @@ function confirmCopy(c: MerchantCase, a: CaseAction): { title: string; body: str
     case 'return':
       return {
         title: `Ask ${c.buyer} for the item back first?`,
-        body: `${c.buyer} is asked to send the ${c.item} back. Demo Store refunds ${c.amount} when it arrives. Nothing changes until ${c.buyer} answers.`,
+        body:
+          c.refundPath === 'void' && !c.dispute
+            ? `${c.buyer} is asked to send the ${c.item} back. The ${c.amount} payment hold is released when it arrives; nothing was taken from ${c.buyer}. Nothing changes until ${c.buyer} answers.`
+            : `${c.buyer} is asked to send the ${c.item} back. Demo Store refunds ${c.amount} when it arrives. Nothing changes until ${c.buyer} answers.`,
         yes: 'Yes, ask for it back',
       };
     default:
@@ -412,7 +415,9 @@ function CaseCard({
                   </h4>
                   <div className="mx-reply-actions">
                     {ACTIONS.map((a) => {
-                      const blocked = a.action === 'refund' && refundBlocked;
+                      // An offer is waiting for the buyer: a second offer would contradict it.
+                      const waiting = c.stage === 'offer_received' && (a.action === 'replacement' || a.action === 'return');
+                      const blocked = (a.action === 'refund' && refundBlocked) || (a.action === 'return' && refundBlocked) || waiting;
                       const unavailable = anyBusy || blocked;
                       return (
                         <Fragment key={a.action}>
@@ -424,7 +429,7 @@ function CaseCard({
                             className={
                               a.action === 'refund' && !blocked ? 'btn btn-primary mx-btn' : 'btn mx-btn'
                             }
-                            aria-describedby={blocked ? `${h}-norefund` : `${h}-tab`}
+                            aria-describedby={waiting ? `${h}-waiting` : blocked ? `${h}-norefund` : `${h}-tab`}
                             aria-expanded={pending === a.action}
                             aria-disabled={unavailable || undefined}
                             onClick={() => {
@@ -438,9 +443,14 @@ function CaseCard({
                               </span>
                             )}
                           </button>
-                          {blocked && (
+                          {blocked && a.action === 'refund' && (
                             <p id={`${h}-norefund`} className="mx-demo-note">
                               This order has no PayPal payment to refund.
+                            </p>
+                          )}
+                          {waiting && a.action === 'replacement' && (
+                            <p id={`${h}-waiting`} className="mx-demo-note">
+                              Your offer is waiting for {c.buyer}&rsquo;s answer, so no second offer can be made.
                             </p>
                           )}
                         </Fragment>

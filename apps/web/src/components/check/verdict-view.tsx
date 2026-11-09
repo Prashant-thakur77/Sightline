@@ -12,16 +12,40 @@ function Mark({ finding }: { finding: VerdictReason['finding'] }) {
   );
 }
 
+/** Where the photo of what arrived came from, as recorded when it was sent. */
+export type PhotoSource = 'camera' | 'upload' | 'demo';
+
+const ARRIVED_ALT: Record<PhotoSource | 'unknown', string> = {
+  camera: 'What arrived, from your camera.',
+  upload: 'What arrived, from the photo you added.',
+  demo: 'What arrived, from the demo parcel photos (not your camera).',
+  unknown: 'What arrived, in the photo that was checked.',
+};
+
+/**
+ * The reason without its own "how sure" clause, for the table, whose How sure column already says
+ * it in a word. What made it less sure (dim light, a tint, glare) stays as a plain fact.
+ */
+export function withoutConfidence(sentence: string): string {
+  return sentence
+    .replace(/,? but (the light is \w+|there['’]s glare on it) so I['’]m less sure\./i, (_m, why: string) => `. ${why.charAt(0).toUpperCase()}${why.slice(1)}.`)
+    .replace(/,? but I['’]m (only fairly|not) sure\./i, '.')
+    .replace(/\.? I['’]m (fairly )?sure( about that)?\./i, '.')
+    .trim();
+}
+
 export function VerdictView({
   verdict,
   ordered,
   arrivedPhotoUrl,
+  arrivedPhotoSource,
   actions,
   focusOnMount = true,
 }: {
   verdict: Verdict;
   ordered: { title: string; imageUrl?: string; colour?: string; size?: string };
   arrivedPhotoUrl?: string;
+  arrivedPhotoSource?: PhotoSource;
   actions?: React.ReactNode;
   focusOnMount?: boolean;
 }) {
@@ -59,7 +83,7 @@ export function VerdictView({
           </figcaption>
         </figure>
         <figure>
-          {arrivedPhotoUrl && <img src={arrivedPhotoUrl} alt="What arrived, from your camera." />}
+          {arrivedPhotoUrl && <img src={arrivedPhotoUrl} alt={ARRIVED_ALT[arrivedPhotoSource ?? 'unknown']} />}
           <figcaption>
             <span className="verdict-cap">What arrived</span>
             <span>
@@ -89,7 +113,7 @@ export function VerdictView({
               <td>
                 <Mark finding={r.finding} />
               </td>
-              <td>{r.sentence}</td>
+              <td>{withoutConfidence(r.sentence)}</td>
               <td>{CONFIDENCE_WORD[r.confidence]}</td>
             </tr>
           ))}

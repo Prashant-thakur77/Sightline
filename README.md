@@ -22,7 +22,7 @@ All payments run on the **PayPal sandbox**. The app refuses to start if it is po
 
 1. **Shop by voice.** "I need a navy crew-neck sweater, medium, under forty dollars." You hear at most three options with the facts that matter. If the listing does not say something, you hear "the listing doesn't say", never a guess.
 2. **Readback before paying.** A template (not the model) reads the item, colour, size, seller, total with tax and shipping, delivery date and return window. Paying needs two independent keys: your words or the Confirm button, and a second check by a separate model call. "Wait" holds it open with no time limit.
-3. **Money waits for the check.** For stores that opt in, PayPal only authorizes the payment. The camera check decides: a match captures it. A wrong item goes to the store with the evidence while the money stays on hold; the store accepts the return, which voids the hold, or offers a replacement, and if it doesn't answer in 3 business days the hold is voided anyway. If the buyer never checks, the store is paid a week after delivery, after a reminder. Holds kept past PayPal's three-day honour period are reauthorized once, and failed captures are retried (`apps/web/src/server/holds.ts`, run every 15 minutes).
+3. **Money waits for the check.** For stores that opt in, PayPal only authorizes the payment. The camera check decides: a match captures it. A wrong item goes to the store with the evidence while the money stays on hold; the store accepts the return, which voids the hold, or offers a replacement, and if it doesn't answer in 3 business days the hold is voided anyway. If the store offers to take it back or replace it, the hold keeps a deadline (10 business days for a return); an agreed replacement pays the store a week later. If the buyer never checks, the store is paid a week after delivery, after a reminder. Holds kept past PayPal's three-day honour period are reauthorized once, and failed captures are retried (`apps/web/src/server/holds.ts`, run every 15 minutes).
 4. **Unboxing check.** The phone camera talks you into frame ("move back a little", "there's a glare") and takes the photos. It compares colour in CIELAB colour space, reads the size tag twice with two different readers, and checks the product and any damage. When it is not sure it says so, and you can ask someone you trust to look through a private, view-only link.
 5. **Money back.** "This is wrong" builds a signed evidence pack (order, the readback you heard, the listing as it was, your photos, the check), reads you a two-sentence summary, and only then sends the case to the store with the evidence. For a held payment the money stays on hold until the store takes the item back; for a payment already captured, the store can refund through PayPal from its cases desk.
 
@@ -93,13 +93,22 @@ Requirements: Node 22, pnpm, Docker, Python 3.12 with uv.
 
 ```bash
 pnpm install
-cp .env.example .env.local        # fill the PayPal sandbox and API keys you have
+cp .env.example .env.local        # every key is explained in the file; generate the secrets with openssl
 pnpm db:up && pnpm db:migrate
 (cd services/vision && uv run uvicorn app.main:app --port 8011) &
 pnpm dev                          # http://localhost:3100
 ```
 
-Missing keys switch features off honestly: the app says what is not connected instead of faking it.
+Keys and what they switch on (details in `.env.example`):
+
+| Key | Where to get it | Without it |
+|---|---|---|
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MERCHANT_ID` | developer.paypal.com → Apps & Credentials → Sandbox (free) | You can shop, hear the readback and confirm, but nothing is bought: the app says PayPal isn't connected. |
+| `ANTHROPIC_API_KEY` | console.anthropic.com | Questions about a listing and the second confirmation key are off (two Confirm presses stand in), and the camera check has one size reader, so it says "not sure" instead of "doesn't match". |
+| `DEMO_VAULT_ID` | `packages/paypal/spikes/run.ts s2-vault` with a sandbox buyer | The first purchase opens the PayPal window; later ones still need it. |
+| `PAYPAL_WEBHOOK_ID` | Create a webhook for `<APP_URL>/api/webhooks/paypal` (public URL only) | Payments still work; updates PayPal sends later (refunds, disputes) are not received. |
+
+Missing keys switch features off honestly: the app says what is not connected instead of faking it. `/judge` lists what is connected on the server you are using.
 
 Tests: `pnpm check` (types, lint, unit tests) and `pnpm check:full` (adds Playwright end-to-end tests with axe on every flow).
 

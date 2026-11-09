@@ -8,9 +8,22 @@ type Action = (prev: DeleteState, form: FormData) => Promise<DeleteState>;
 
 /**
  * One delete control: a first press asks, a second press deletes. Focus moves to the question,
- * then to the result, and both are spoken through the announcer. "Keep them" puts focus back.
+ * then to the result, and both are spoken through the announcer. The keep button puts focus back.
  */
-function DeleteControl({ action, label, question, confirmLabel }: { action: Action; label: string; question: string; confirmLabel: string }) {
+function DeleteControl({
+  action,
+  label,
+  question,
+  confirmLabel,
+  keepLabel,
+}: {
+  action: Action;
+  label: string;
+  question: string;
+  confirmLabel: string;
+  /** Says what is kept: "Keep my photos", "Keep everything". */
+  keepLabel: string;
+}) {
   const [state, run, pending] = useActionState<DeleteState, FormData>(action, null);
   const [asking, setAsking] = useState(false);
   const { announce } = useAnnouncer();
@@ -52,7 +65,7 @@ function DeleteControl({ action, label, question, confirmLabel }: { action: Acti
                 requestAnimationFrame(() => openRef.current?.focus());
               }}
             >
-              Keep them
+              {keepLabel}
             </button>
           </div>
         </form>
@@ -73,30 +86,33 @@ export function DataControls({ photoCount, neededByCase, retentionDays }: { phot
   const photoWord = (n: number) => `${n} parcel photo${n === 1 ? '' : 's'}`;
   const kept = neededByCase ? ` ${photoWord(neededByCase)} stay${neededByCase === 1 ? 's' : ''} until your open money-back case is resolved.` : '';
   return (
-    <section aria-labelledby="data-h" className="settings">
-      <fieldset>
-        <legend id="data-h">Your data</legend>
-        <p className="hint">
-          Parcel photos are deleted on their own after {retentionDays} days, unless a money-back case still needs them. Location data is removed from every photo before
-          it is stored. You have {photoWord(photoCount)} stored now.
-        </p>
-        {deletable > 0 ? (
-          <DeleteControl
-            action={deletePhotosAction}
-            label="Delete my photos"
-            question={`Delete ${photoWord(deletable)}? This can't be undone. Any helper links to them stop working.${kept}`}
-            confirmLabel="Yes, delete my photos"
-          />
-        ) : (
-          <p>No photos to delete right now.{kept}</p>
-        )}
+    <section aria-labelledby="data-h" className="settings settings-box">
+      <h2 id="data-h" className="settings-h">
+        Your data
+      </h2>
+      <p className="hint">These buttons work on their own, straight away, and each asks before it deletes anything. Save settings doesn’t change them.</p>
+      <p className="hint">
+        Parcel photos are deleted on their own after {retentionDays} days, unless a money-back case still needs them. Location data is removed from every photo before
+        it is stored. You have {photoWord(photoCount)} stored now.
+      </p>
+      {deletable > 0 ? (
         <DeleteControl
-          action={deleteDataAction}
-          label="Delete everything"
-          question={`Delete your conversations, saved sizes and colours, helper contact, notifications and photos? This can't be undone. Orders, payments and receipts are kept, because refunds need them.${kept}`}
-          confirmLabel="Yes, delete everything"
+          action={deletePhotosAction}
+          label="Delete my photos"
+          question={`Delete ${photoWord(deletable)}? This can't be undone. Any helper links to them stop working.${kept}`}
+          confirmLabel="Yes, delete my photos"
+          keepLabel="Keep my photos"
         />
-      </fieldset>
+      ) : (
+        <p>No photos to delete right now.{kept}</p>
+      )}
+      <DeleteControl
+        action={deleteDataAction}
+        label="Delete everything"
+        question={`Delete your conversations, saved sizes and colours, helper contact, notifications and photos? This can't be undone. Orders, payments and receipts are kept, because refunds need them.${kept}`}
+        confirmLabel="Yes, delete everything"
+        keepLabel="Keep everything"
+      />
     </section>
   );
 }

@@ -12,7 +12,7 @@ import { extractTokens } from '@sightline/agent';
 import { isHeld } from './after-check';
 import { sendPush } from './push';
 
-export type CaseReasonCode = 'wrong_colour' | 'wrong_size' | 'wrong_item' | 'damaged' | 'not_received';
+export type CaseReasonCode = 'wrong_colour' | 'wrong_size' | 'wrong_item' | 'damaged' | 'not_received' | 'unclear';
 
 function reasonFromVerdict(v: Verdict | null): CaseReasonCode {
   if (!v) return 'not_received';
@@ -20,22 +20,38 @@ function reasonFromVerdict(v: Verdict | null): CaseReasonCode {
   if (bad.some((r) => r.module === 'damage')) return 'damaged';
   if (bad.some((r) => r.module === 'size')) return 'wrong_size';
   if (bad.some((r) => r.module === 'colour')) return 'wrong_colour';
-  return 'wrong_item';
+  if (bad.some((r) => r.module === 'identity')) return 'wrong_item';
+  // The check was not sure and found no difference: say exactly that, not "wrong item".
+  return 'unclear';
 }
 
 /** Template narrative used when no model is available, and as the facts given to the model. */
-function templateNarrative(title: string, v: Verdict | null, amount: string): { summary: string; seller: string } {
+/** What the buyer asks for depends on where the money is: a hold is released, a payment is refunded. */
+type Remedy = 'release' | 'refund' | 'none';
+const ASK: Record<Remedy, (amount: string) => string> = {
+  release: (a) => `Please accept the return; the ${a} payment hold is released when you do, and nothing was taken from the buyer.`,
+  refund: (a) => `Please refund ${a}; the buyer can return the item.`,
+  none: () => 'No payment was taken; please send the right item or cancel the order.',
+};
+
+function templateNarrative(title: string, v: Verdict | null, amount: string, remedy: Remedy = 'refund'): { summary: string; seller: string } {
   const disagreements = (v?.reasons ?? []).filter((r) => r.finding === 'disagree');
   const what = disagreements.length ? disagreements.map((r) => r.sentence).join(' ') : 'The item that arrived does not look like the listing.';
   const forSeller = disagreements.length ? disagreements.map(reasonForSeller).join(' ') : 'The delivered item does not look like the listing.';
   const sure = v?.kind === 'mismatch';
   return {
-    summary: sure
-      ? `The ${title} that arrived does not match what you ordered. ${what} I'll ask Demo Store for your ${amount} back.`
-      : `The ${title} that arrived may not be what you ordered. ${what} I'll ask Demo Store to look at the evidence and refund your ${amount} if it's wrong.`,
+    summary:
+      (sure ? `The ${title} that arrived does not match what you ordered. ${what} ` : `The ${title} that arrived may not be what you ordered. ${what} `) +
+      (remedy === 'release'
+        ? `I'll send Demo Store the evidence. Your ${amount} stays on hold until they take it back.`
+        : remedy === 'refund'
+          ? sure
+            ? `I'll ask Demo Store for your ${amount} back.`
+            : `I'll ask Demo Store to look at the evidence and refund your ${amount} if it's wrong.`
+          : `I'll send Demo Store the evidence and ask them to make it right. No money was taken.`),
     seller: sure
-      ? `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${forSeller} The buyer checked the parcel with photos and a size-tag reading; the evidence pack is attached with its signature. Please refund ${amount}; the buyer can return the item.`
-      : `Hello. The ${title} delivered for this order may not match the listing. ${forSeller} The photos and the check are attached with a signature. Please look at the evidence and reply to the buyer; if it is the wrong item, please refund ${amount}.`,
+      ? `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${forSeller} The buyer checked the parcel with photos and a size-tag reading; the evidence pack is attached with its signature. ${ASK[remedy](amount)}`
+      : `Hello. The ${title} delivered for this order may not match the listing. ${forSeller} The photos and the check are attached with a signature. Please look at the evidence and reply to the buyer; if it is the wrong item: ${ASK[remedy](amount).charAt(0).toLowerCase()}${ASK[remedy](amount).slice(1)}`,
   };
 }
 
@@ -82,12 +98,28 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
   const verdict = (ver?.verdict ?? null) as Verdict | null;
   if (!verdict || verdict.kind === 'match')
     throw new Error('Money back needs a check that says the item does not match, or is not sure. Check the parcel first.');
-  const tpl = templateNarrative(o.title, verdict, amount);
+  // "Not now", then "Get my money back" again: the same signed pack is still valid unless the
+  // parcel was checked again since, so it is reused instead of signed twice.
+  if (existing?.stage === 'evidence_built' && existing.evidencePackId) {
+    const [pack] = await db().select().from(tables.evidencePacks).where(eq(tables.evidencePacks.id, existing.evidencePackId)).limit(1);
+    if (pack && pack.verificationId === (ver?.id ?? null) && pack.narrative)
+      return { caseId: existing.id, evidencePackId: pack.id, summary: pack.narrative, path: isHeld(o) ? 'void' : 'refund-request', amount };
+  }
+  const remedy: Remedy = isHeld(o) ? 'release' : o.captureId ? 'refund' : 'none';
+  const tpl = templateNarrative(o.title, verdict, amount, remedy);
   let narrative = tpl;
-  const ai = await writeCaseNarrative({ item: o.title, amount, findings: verdict?.reasons, merchant: 'Demo Store' }).catch(() => null);
+  const ai = await writeCaseNarrative({
+    item: o.title,
+    amount,
+    findings: verdict?.reasons,
+    merchant: 'Demo Store',
+    what_buyer_asks_for: ASK[remedy](amount),
+  }).catch(() => null);
   // The model's text may only use facts we hold: every amount, size and colour it mentions must
-  // appear in the facts; otherwise the template text is used instead.
-  if (ai && narrativeGrounded(`${ai.summary_for_buyer} ${ai.message_to_seller}`, { amountCents: o.amountCents, verdict, snapshot: snapRow?.body as never })) {
+  // appear in the facts, and it may not ask for a refund when the money is only on hold or was
+  // never taken; otherwise the template text is used instead.
+  const wrongAsk = remedy !== 'refund' && /\brefund/i.test(`${ai?.summary_for_buyer ?? ''} ${ai?.message_to_seller ?? ''}`);
+  if (ai && !wrongAsk && narrativeGrounded(`${ai.summary_for_buyer} ${ai.message_to_seller}`, { amountCents: o.amountCents, verdict, snapshot: snapRow?.body as never })) {
     narrative = { summary: ai.summary_for_buyer, seller: ai.message_to_seller };
   }
 

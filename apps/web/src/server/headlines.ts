@@ -13,8 +13,6 @@ const baselineValue = (b?: string) => b?.split(':').pop()?.trim() || undefined;
 /** The first clause of a note, up to ";" or ".", e.g. "Local ledger simulation". */
 const firstClause = (note?: string) => note?.split(/[;.]/)[0]?.trim() ?? '';
 
-const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
-
 /** "417 of 420 (99.3%)" + "pairs" -> "417 of 420 pairs (99.3%)"; any other shape is left as it is. */
 const counted = (value: string, noun: string) => {
   const m = /^(\d+ of \d+)(\s*\(.*\))?$/.exec(value.trim());
@@ -28,6 +26,8 @@ interface Pick {
   label: (h: Headline, s: SuiteResult) => string;
   /** Who the baseline is, in our words. The baseline's value always comes from the file. */
   baselineLabel?: string;
+  /** Compare with another result in the same file (its value) instead of this headline's declared baseline. */
+  baselineFromId?: string;
   /** One or two plain sentences of context, built from the result file. */
   context?: (h: Headline, s: SuiteResult) => string | undefined;
 }
@@ -38,22 +38,26 @@ const PICKS: Pick[] = [
     id: 'breaches-sightline',
     label: (h) => {
       const how = firstClause(h.note);
-      return `payments that went wrong across ${h.n ?? 'the'} listings written to trick the app${/simulation/i.test(how) ? `, in a ${lowerFirst(how)}` : ''}`;
+      return `payments with a wrong amount, payee or quantity, or sent without the buyer’s confirmation, across ${h.n ?? 'the'} listings written to trick the app${/simulation/i.test(how) ? ', simulated without calling PayPal' : ''}`;
     },
     baselineLabel: 'A shopping agent without the payment check',
   },
   {
     suite: 'confirmation',
-    id: 'combined-false-confirm',
-    label: (h) => `times something that was not a “yes” was taken as one, out of ${h.n ?? 'the'} typed phrases`,
+    // Held-out phrases only: the matcher was tuned on the other set, so that one would flatter it.
+    id: 'heldout-false-confirm',
+    label: (h) => `times something that was not a “yes” passed the first of the two confirmation checks, out of ${h.n ?? 'the'} phrases written after it was built`,
     baselineLabel: 'Listening only for key words',
   },
   {
     suite: 'duplicates',
     id: 'duplicate-scenarios',
     label: (h) => `double-charge tests (double taps, retries, lost replies) that ended with more than one order${/no PayPal call is made/i.test(h.note ?? '') ? ', simulated without calling PayPal' : ''}`,
-    // The baseline the suite declares on this headline, not a hand-picked comparison.
-    baselineLabel: 'Sending every retry as a new payment',
+    // The declared baseline (random request ids) also scores 0, because the other guards still
+    // catch every duplicate; the comparison that shows what the protection changed is the same
+    // 100 scenarios run before lost PayPal answers were handled, from the same file.
+    baselineFromId: 'duplicate-scenarios-before-fix',
+    baselineLabel: 'Before we handled lost PayPal answers',
   },
   {
     suite: 'grounding',
@@ -113,7 +117,7 @@ export async function featuredHeadlines(max = 4): Promise<Featured[]> {
         console.warn(`[headlines] featured result ${p.suite}/${p.id} is missing from evals/results; its card is not shown.`);
       continue;
     }
-    const base = baselineValue(h.baseline);
+    const base = p.baselineFromId ? suite.headlines.find((x) => x.id === p.baselineFromId)?.value : baselineValue(h.baseline);
     out.push({
       id: p.id,
       value: h.value,

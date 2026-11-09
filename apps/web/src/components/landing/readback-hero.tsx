@@ -172,7 +172,8 @@ export function ReadbackHero() {
         </span>
         <span className="rbh-buttons">
           {canSpeak && !failed && (
-            <button ref={hearRef} type="button" className="btn rbh-hear" onClick={hear} aria-pressed={speaking}>
+            // One pattern: the name says what pressing does now ("Hear it" or "Stop"), so it is not also a toggle button.
+            <button ref={hearRef} type="button" className="btn rbh-hear" onClick={hear}>
               <span aria-hidden="true">{speaking ? '■' : '▶'}</span> {speaking ? 'Stop' : 'Hear it'}
             </button>
           )}

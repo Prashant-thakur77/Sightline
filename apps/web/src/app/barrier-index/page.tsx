@@ -1,8 +1,11 @@
+import Link from 'next/link';
 import { PRODUCT_NAME } from '@sightline/core';
+import { ScrollRegion } from '@/components/a11y/scroll-region';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { loadSuites } from '@/server/stats';
 import { platformName, sentence } from '@/server/studio';
 import { utcWhen } from '@/lib/when';
+import '../proof-pages.css';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Checkout Barrier Index' };
@@ -22,6 +25,21 @@ interface Details {
 
 const pct = (x?: number) => (typeof x === 'number' ? `${Math.round(x * 100)}%` : '—');
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/**
+ * A headline value as the results file wrote it, split so the number can be large and the rest
+ * stays small: "60% of stores (36 of 60)" becomes "60%" and "of stores (36 of 60)". The words are
+ * the file's own; only the brackets around a bare count are dropped.
+ */
+function splitValue(value: string): { figure: string; rest: string | null } {
+  const m = /^([\d.,]+%?)\s*(.*)$/.exec(value.trim());
+  if (!m || !m[2]) return { figure: value, rest: null };
+  const rest = m[2].replace(/^\((.*)\)$/, '$1');
+  return { figure: m[1]!, rest };
+}
+
+/** A headline that describes how the product is built, not something measured on the stores. */
+const isDesignProperty = (h: { value: string }) => h.value.trim().toLowerCase() === 'by design';
 
 /** The interval as the results file wrote it, named: an IQR is a spread, not a 95% interval. */
 function intervalText(interval: string): string {
@@ -52,6 +70,13 @@ export default async function BarrierIndex() {
               Measured {utcWhen(suite.ranAt)} · build {suite.gitSha}
             </p>
           )}
+          {suite && (
+            <p>
+              <Link className="btn" href="/barrier-index/dashboard">
+                Open the results as a dashboard
+              </Link>
+            </p>
+          )}
         </section>
 
         {!suite ? (
@@ -62,21 +87,44 @@ export default async function BarrierIndex() {
               <h2 id="bi-head-h" className="lp-h2">
                 Headline results
               </h2>
+              {/* Label first, so a screen reader hears what a number is before the number. */}
               <ul className="bi-heads">
-                {suite.headlines.map((h) => (
-                  <li key={h.id}>
-                    <p className="bi-fig">{h.value}</p>
-                    <p>{h.label}</p>
-                    {h.interval && (
-                      <p className="muted">
-                        {intervalText(h.interval)}
-                        {h.n ? `, n = ${h.n}` : ''}
-                      </p>
-                    )}
-                    {h.note && <p className="muted">{h.note}</p>}
-                  </li>
-                ))}
+                {suite.headlines
+                  .filter((h) => !isDesignProperty(h))
+                  .map((h) => {
+                    const { figure, rest } = splitValue(h.value);
+                    return (
+                      <li key={h.id}>
+                        <p className="bi-label">{h.label}</p>
+                        <p className="bi-value">
+                          <span className="bi-fig">{figure}</span>
+                          {rest && <span className="bi-count"> {rest}</span>}
+                        </p>
+                        {h.interval && (
+                          <p className="bi-interval">
+                            {intervalText(h.interval)}
+                            {h.n ? `, n = ${h.n}` : ''}
+                          </p>
+                        )}
+                        {h.note && (
+                          <details className="bi-note">
+                            <summary>How this was counted</summary>
+                            <p>{h.note}</p>
+                          </details>
+                        )}
+                      </li>
+                    );
+                  })}
               </ul>
+              {suite.headlines.filter(isDesignProperty).map((h) => (
+                <section key={h.id} aria-labelledby={`${h.id}-h`} className="bi-design">
+                  <h3 id={`${h.id}-h`} className="bi-design-h">
+                    Not a measurement: a design property
+                  </h3>
+                  <p className="bi-design-label">{h.label}</p>
+                  {h.note && <p>{h.note}</p>}
+                </section>
+              ))}
             </section>
 
             {details?.byPlatform && (
@@ -84,9 +132,8 @@ export default async function BarrierIndex() {
                 <h2 id="bi-plat-h" className="lp-h2">
                   By store platform
                 </h2>
-                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}
-                <div className="table-wrap" tabIndex={0} role="region" aria-label="Results by store platform, scrolls sideways">
-                  <table className="verdict-table">
+                <ScrollRegion className="table-wrap" label="Results by store platform">
+                  <table className="verdict-table bi-table">
                     <caption className="sr-only">Accessibility failures and keyboard reach by store platform</caption>
                     <thead>
                       <tr>
@@ -114,7 +161,7 @@ export default async function BarrierIndex() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </ScrollRegion>
               </section>
             )}
 

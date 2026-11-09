@@ -3,6 +3,7 @@ import { randomInt } from 'node:crypto';
 import { asc, desc, eq, inArray, sql, and } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import {
+  addBusinessDays,
   CONFIDENCE_WORD,
   FINDING,
   MODULE_LABEL,
@@ -156,8 +157,17 @@ function storeCaseStatus(stage: string | null | undefined, buyer: string): Statu
 function verdictSummary(v: Verdict | null): string | null {
   if (!v) return null;
   if (v.kind === 'match') return 'Every check matched the order.';
-  const lead = v.reasons.find((r) => r.finding === 'disagree') ?? v.reasons.find((r) => r.finding !== 'agree');
-  return lead ? reasonForSeller(lead) : null;
+  // Differences first, then what matched and what could not be checked, so one unknown module
+  // never reads as the whole story.
+  const names = (f: VerdictReason['finding']) => v.reasons.filter((r) => r.finding === f).map((r) => MODULE_LABEL[r.module].toLowerCase());
+  const list = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
+  const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+  const parts = v.reasons.filter((r) => r.finding === 'disagree').map(reasonForSeller);
+  const agreed = names('agree');
+  const unknown = names('unknown');
+  if (agreed.length) parts.push(`${cap(list(agreed))} matched.`);
+  if (unknown.length) parts.push(`${cap(list(unknown))} could not be checked.`);
+  return parts.length ? parts.join(' ') : null;
 }
 
 const REASON_MODULE: Record<string, VerdictReason['module'] | undefined> = {
@@ -181,6 +191,7 @@ const REASON_PHRASE: Record<string, string> = {
  */
 function caseTitle(reason: string, item: string, buyer: string, v: Verdict | null): string {
   if (reason === 'not_received') return `${buyer} says the ${item} has not arrived`;
+  if (reason === 'unclear') return `${buyer} isn't sure the ${item} is what was ordered`;
   const phrase = REASON_PHRASE[reason] ?? reason.replace(/_/g, ' ');
   const module = REASON_MODULE[reason];
   const bad = v?.reasons.filter((r) => r.finding === 'disagree') ?? [];
@@ -639,7 +650,7 @@ export function suggestResponse(
   return {
     action: 'return',
     title: 'Ask for the item back first',
-    why: `${check}${record ? ` ${record}` : ''} Seeing the item settles it: you refund ${amount} when it is back.`,
+    why: `${check}${record ? ` ${record}` : ''} Seeing the item settles it: ${opts.refundPath === 'void' && !opts.dispute ? `you release the ${amount} hold` : `you refund ${amount}`} when it is back.`,
   };
 }
 
@@ -1073,12 +1084,21 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
     };
   }
 
-  // Offers: a replacement, or a refund once the item is back.
+  // Offers: a replacement, or the money back once the item is back. On a held payment "money
+  // back" means releasing the hold (nothing was ever taken), so the words say that.
+  // Held: PayPal authorized at purchase and nothing captured yet (same rule as after-check isHeld).
+  const held = o.intent === 'AUTHORIZE' && Boolean(o.authorizationId) && !o.captureId && o.status !== 'voided';
+  if (action === 'return' && !held && !o.captureId && !c.paypalDisputeId)
+    return { ok: false, paypal: 'not-needed', message: 'This order has no PayPal payment, so there is nothing to give back. Offer a replacement instead.' };
   const offerType: OfferType = action === 'replacement' ? 'REPLACEMENT_WITHOUT_REFUND' : 'REFUND_WITH_RETURN';
   const note =
     action === 'replacement'
       ? `Demo Store will send a replacement ${o.title} at no cost.`
-      : `Demo Store will refund ${amount} as soon as the ${o.title} is back with us.`;
+      : held
+        ? `Demo Store will release the ${amount} payment hold as soon as the ${o.title} is back with us.`
+        : `Demo Store will refund ${amount} as soon as the ${o.title} is back with us.`;
+  // A held payment keeps a deadline while an offer is open: time for a return to arrive.
+  const offerDue = held ? addBusinessDays(new Date(now), 10).toISOString() : c.dueAt;
   let via: 'paypal' | 'local' = 'local';
   if (c.paypalDisputeId) {
     try {
@@ -1111,7 +1131,7 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
   };
   await db()
     .update(tables.cases)
-    .set({ stage: 'offer_received', offers: [...((c.offers as unknown[]) ?? []), offer], updatedAt: now })
+    .set({ stage: 'offer_received', offers: [...((c.offers as unknown[]) ?? []), offer], dueAt: offerDue, updatedAt: now })
     .where(eq(tables.cases.id, c.id));
   await audit({
     userId: o.userId,
@@ -1125,7 +1145,9 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
     'case',
     action === 'replacement'
       ? `Demo Store offered to send a replacement ${o.title}. Nothing changes until you answer.`
-      : `Demo Store asked for the ${o.title} back first. They will refund ${amount} once it arrives. Nothing changes until you answer.`,
+      : held
+        ? `Demo Store asked for the ${o.title} back first. They release the ${amount} hold once it arrives, and if it isn't settled by ${spokenDate(offerDue!)}, I'll cancel the hold myself. Nothing changes until you answer.`
+        : `Demo Store asked for the ${o.title} back first. They will refund ${amount} once it arrives. Nothing changes until you answer.`,
     orderLink,
   );
   return {

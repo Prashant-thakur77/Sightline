@@ -6,7 +6,7 @@ import type { Verdict } from '@sightline/core';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import { cue } from '@/lib/feedback';
 import { CameraCheck, type CapturedShot, type ShotKind } from './camera-check';
-import { VerdictView } from './verdict-view';
+import { VerdictView, type PhotoSource } from './verdict-view';
 
 interface Next {
   kind: 'captured' | 'match' | 'money-back' | 'unsure' | 'capture-failed';
@@ -27,13 +27,15 @@ export function CheckFlow({
   itemName: string;
   ordered: { title: string; imageUrl?: string; colour?: string; size?: string };
   demoShots?: { kind: ShotKind; url: string }[];
-  initial?: { verdict: Verdict; itemPhoto?: string } | null;
+  initial?: { verdict: Verdict; itemPhoto?: string; itemPhotoSource?: PhotoSource } | null;
   /** The buyer's trusted helper, if they have one; the "ask" action is shown only then. */
   helperName?: string | null;
 }) {
   const { announce } = useAnnouncer();
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ verdict: Verdict; next?: Next; itemPhoto?: string; fresh?: boolean } | null>(initial ?? null);
+  const [result, setResult] = useState<{ verdict: Verdict; next?: Next; itemPhoto?: string; itemPhotoSource?: PhotoSource; fresh?: boolean } | null>(
+    initial ?? null,
+  );
   const [error, setError] = useState<string | null>(null);
   // Set when the person leaves a verdict to check again, so the camera step takes focus.
   const [cameBack, setCameBack] = useState(false);
@@ -48,12 +50,17 @@ export function CheckFlow({
     announce('Checking. This takes a few seconds.', { source: 'check' });
     cue('thinking');
     const form = new FormData();
-    for (const s of shots) form.append(s.kind, s.blob, `${s.kind}.jpg`);
+    for (const s of shots) {
+      form.append(s.kind, s.blob, `${s.kind}.jpg`);
+      // Recorded with the photo, so demo photos are never shown as the buyer's own.
+      form.append(`${s.kind}-source`, s.source);
+    }
     try {
       const res = await fetch(`/api/orders/${orderId}/check`, { method: 'POST', body: form });
       const data = (await res.json().catch(() => ({}))) as { verdict?: Verdict; next?: Next; itemPhoto?: string; error?: string };
       if (!res.ok || !data.verdict) throw new Error(data.error ?? 'Something went wrong on my side. Your photos are still here. Try again.');
-      setResult({ verdict: data.verdict, next: data.next, itemPhoto: data.itemPhoto, fresh: true });
+      const sent = shots.find((s) => s.kind === 'item') ?? shots[0];
+      setResult({ verdict: data.verdict, next: data.next, itemPhoto: data.itemPhoto, itemPhotoSource: sent?.source, fresh: true });
       cue(data.verdict.kind === 'match' ? 'done' : 'attention');
       announce(data.next?.say ?? data.verdict.headline, { politeness: 'assertive', source: 'check' });
     } catch (e) {
@@ -75,6 +82,7 @@ export function CheckFlow({
         verdict={v}
         ordered={ordered}
         arrivedPhotoUrl={result.itemPhoto}
+        arrivedPhotoSource={result.itemPhotoSource}
         actions={
           v.kind === 'mismatch' ? (
             <>

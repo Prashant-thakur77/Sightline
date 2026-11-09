@@ -21,7 +21,8 @@ export default async function BuyerLayout({ children }: { children: React.ReactN
     <div id="app-root" className="min-h-dvh grid grid-rows-[auto_1fr]">
       <script dangerouslySetInnerHTML={{ __html: prefScript }} />
       <AppHeader userName={user.displayName} />
-      <main id="main" tabIndex={-1} className="w-full max-w-[1200px] mx-auto px-[clamp(1rem,3vw,2.5rem)] py-[var(--space-6)]">
+      {/* The side padding's floor is in px, not rem, so Largest text on a phone keeps the width for words. */}
+      <main id="main" tabIndex={-1} className="w-full max-w-[1200px] mx-auto px-[clamp(16px,3vw,2.5rem)] py-[var(--space-6)]">
         {children}
       </main>
       <SpeechViewer />

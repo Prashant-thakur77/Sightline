@@ -8,7 +8,7 @@ import { requireUser } from '@/server/session';
 import { ordersPageData } from '@/server/orders-read';
 import { isHeld } from '@/server/after-check';
 import { buildMoneyTimeline } from '@/lib/money-timeline';
-import { utcWhen } from '@/lib/when';
+import { spokenWhen } from '@/lib/when';
 import { StatusChip } from '@/components/shell/status-chip';
 
 export const dynamic = 'force-dynamic';
@@ -19,10 +19,17 @@ export const metadata = { title: 'Orders and money' };
  * the same item was ordered more than once in the same minute.
  */
 function orderRefs(orders: { id: string; title: string; createdAt: string }[]): Map<string, string> {
-  const when = (o: { createdAt: string }) => `ordered ${utcWhen(o.createdAt)}`;
+  const when = (o: { createdAt: string }) => `ordered ${spokenWhen(o.createdAt)}`;
   const seen = new Map<string, number>();
   for (const o of orders) seen.set(`${o.title}|${when(o)}`, (seen.get(`${o.title}|${when(o)}`) ?? 0) + 1);
   return new Map(orders.map((o) => [o.id, seen.get(`${o.title}|${when(o)}`)! > 1 ? `${when(o)}, order ${o.id.slice(-8).toUpperCase()}` : when(o)]));
+}
+
+/** Titles that more than one order shares; only those links need more than the title to tell them apart. */
+function sharedTitles(orders: { title: string }[]): Set<string> {
+  const n = new Map<string, number>();
+  for (const o of orders) n.set(o.title, (n.get(o.title) ?? 0) + 1);
+  return new Set([...n].filter(([, k]) => k > 1).map(([t]) => t));
 }
 
 export default async function Orders() {
@@ -30,8 +37,12 @@ export default async function Orders() {
   const { orders, verdictOf, caseOf, cases, entries } = await ordersPageData(user.id);
   const held = orders.filter((o) => isHeld(o)).reduce((a, o) => a + o.amountCents, 0);
   const refs = orderRefs(orders);
+  const shared = sharedTitles(orders);
   const titleOf = new Map(orders.map((o) => [o.id, o.title]));
   const timeline = buildMoneyTimeline({ orders, cases, entries, now: new Date() });
+  // One link per order in the timeline, on its newest line; its older lines name the order in plain text.
+  const linked = new Set<string>();
+  const linkHere = new Set(timeline.filter((e) => !linked.has(e.orderId) && linked.add(e.orderId)).map((e) => e.key));
   return (
     <div className="grid gap-8">
       <header className="grid gap-3">
@@ -75,12 +86,12 @@ export default async function Orders() {
                   return (
                     <tr role="row" key={o.id}>
                       <th role="rowheader" scope="row">
+                        {/* The row's cells already say the amount, status and date, so the link is just the item,
+                            plus when it was ordered if another order has the same item. */}
                         <Link className="link-target" href={`/app/orders/${o.id}`}>
                           <span>
                             {o.title}
-                            <span className="sr-only">
-                              , {refs.get(o.id)}, {pay.word}
-                            </span>
+                            {shared.has(o.title) && <span className="sr-only">, {refs.get(o.id)}</span>}
                           </span>
                         </Link>
                       </th>
@@ -113,7 +124,7 @@ export default async function Orders() {
                         <span className="cell-label" aria-hidden="true">
                           Ordered
                         </span>
-                        <time dateTime={new Date(o.createdAt).toISOString()}>{utcWhen(o.createdAt)}</time>
+                        <time dateTime={new Date(o.createdAt).toISOString()}>{spokenWhen(o.createdAt)}</time>
                       </td>
                     </tr>
                   );
@@ -139,15 +150,19 @@ export default async function Orders() {
                     <li key={e.key} data-upcoming={e.upcoming ? '' : undefined}>
                       <p className="mt-head">
                         <StatusChip s={e.status} />
-                        <time dateTime={e.at}>{utcWhen(e.at)}</time>
+                        <time dateTime={e.at}>{spokenWhen(e.at)}</time>
                       </p>
                       <p>{e.sentence}</p>
                       <p className="mt-order">
                         Order:{' '}
-                        <Link href={`/app/orders/${e.orderId}`}>
-                          {titleOf.get(e.orderId)}
-                          <span className="sr-only">, {refs.get(e.orderId)}</span>
-                        </Link>
+                        {linkHere.has(e.key) ? (
+                          <Link href={`/app/orders/${e.orderId}`}>
+                            {titleOf.get(e.orderId)}
+                            {shared.has(titleOf.get(e.orderId) ?? '') && <span className="sr-only">, {refs.get(e.orderId)}</span>}
+                          </Link>
+                        ) : (
+                          titleOf.get(e.orderId)
+                        )}
                       </p>
                     </li>
                   ))}

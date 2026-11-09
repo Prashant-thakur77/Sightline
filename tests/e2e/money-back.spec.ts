@@ -66,13 +66,17 @@ test.describe('money back after a wrong item', () => {
     expect((await announcements(page)).some((a) => a.includes('already open'))).toBe(false);
 
     await page.getByRole('button', { name: /^Send it/ }).click();
-    const result = page.locator('.mb-result').filter({ hasText: /^(Done|I sent your case)/ });
-    await expect(result).toBeFocused({ timeout: 30_000 });
-    // The page refreshed underneath: the Money back folder no longer offers to start.
+    // Spoken once; the refreshed Money back section is the single copy on screen and takes focus.
+    await expect.poll(async () => (await announcements(page)).some((a) => /^(Done|I sent your case)/.test(a))).toBe(true);
+    const heading = page.locator('#money-back .folder-h');
+    await expect(heading).toBeFocused({ timeout: 30_000 });
     await expect(page.getByRole('heading', { name: 'Get your money back' })).toHaveCount(0);
-    const said = await result.textContent();
-    const day = said?.match(/until (\w+ \d+ \w+)/)?.[1];
+    await expect(page.locator('#money-back .mb-result')).toHaveCount(0);
+    const said = (await announcements(page)).find((a) => /^(Done|I sent your case)/.test(a)) ?? '';
+    const day = said.match(/until (\w+ \d+ \w+)/)?.[1];
     if (day) await expect(page.locator('#money-back')).toContainText(`until ${day}`);
+    // "Not now" then starting again reuses the same signed pack.
+    await expect(page.locator('.history li', { hasText: 'The evidence pack was signed.' })).toHaveCount(1);
     // The refresh after sending re-renders the page; let it settle (title included) before axe.
     await page.waitForLoadState('networkidle').catch(() => undefined);
     await expect(page).toHaveTitle(/\S/);

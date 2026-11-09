@@ -48,7 +48,19 @@ function isTyping(el: EventTarget | null): boolean {
   return el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
 }
 
-export function Conversation({ firstName, initial }: { firstName: string; initial?: TurnResponse | null }) {
+/** Typed words that did not reach the server go back in the text box, and the message says so. */
+const KEPT = ' Your words are still in the text box.';
+
+export function Conversation({
+  firstName,
+  initial,
+  opening,
+}: {
+  firstName: string;
+  initial?: TurnResponse | null;
+  /** What the page was opened to do, instead of the usual greeting: "offer" reads the store's waiting offer. */
+  opening?: 'offer';
+}) {
   const { announce, stop: stopSpeaking, ownVoice, setOwnVoice } = useAnnouncer();
   const [messages, setMessages] = useState<ChatMessage[]>(initial?.messages ?? []);
   const [card, setCard] = useState<Card | null>(initial?.card ?? null);
@@ -66,26 +78,33 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
   const cardRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const transcriptRef = useRef<HTMLElement>(null);
   const spaceDown = useRef(false);
 
   const busyRef = useRef(false);
+  /**
+   * Sends one turn. True when the server answered; false when nothing was sent (offline, or another
+   * request still running) or the request failed, so a caller can give typed words back.
+   */
   const send = useCallback(
-    async (req: TurnRequest) => {
-      if (busyRef.current) return;
+    async (req: TurnRequest, opts: { typed?: boolean } = {}): Promise<boolean> => {
+      if (busyRef.current) return false;
+      const kept = opts.typed ? KEPT : '';
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        const msg = "You're offline, so I can't do that right now. Nothing was sent or charged.";
+        const msg = `You're offline, so I can't do that right now. Nothing was sent or charged.${kept}`;
         setError(msg);
         announce(msg, { politeness: 'assertive', source: 'network' });
-        return;
+        return false;
       }
       busyRef.current = true;
       setBusy(true);
       setError(null);
       cue('thinking');
-      if (!('action' in req && req.action === 'start')) setCompact(true);
+      const greeting = 'action' in req && req.action === 'start';
+      if (!greeting) setCompact(true);
       // Focus inside the card is about to disappear with the card; remember to move it.
       const focusWasInCard =
-        !('action' in req && req.action === 'start') &&
+        !greeting &&
         (Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body);
       // The card control that had focus (Confirm, Wait, Cancel), so the same control in the card
       // that comes back keeps it, instead of sending a screen reader back to the heading.
@@ -136,12 +155,18 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
               inputRef.current;
             target?.focus({ preventScroll: false });
           });
+        return true;
       } catch {
         clearTimeout(slow);
-        const msg = 'Something went wrong on my side. Nothing was charged. Please try that again.';
+        // The words never reached a reply, so they are not left in the transcript as if they had.
+        setMessages((m) => m.filter((x) => !x.id.startsWith('local-')));
+        const msg = opts.typed
+          ? `Something went wrong on my side, so that wasn't sent. Nothing was charged.${KEPT} Press Send to try again.`
+          : 'Something went wrong on my side. Nothing was charged. Please try that again.';
         setError(msg);
         cue('error');
         announce(msg, { politeness: 'assertive', source: 'assistant' });
+        return false;
       } finally {
         busyRef.current = false;
         setBusy(false);
@@ -256,17 +281,22 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
         setShowKeys(false);
         return;
       }
-      if (isTyping(e.target) || e.metaKey || e.ctrlKey) return;
+      if (e.metaKey || e.ctrlKey) return;
+      // Alt+Shift (Option+Shift) chords work everywhere, the text box included: they don't type
+      // text there. Single keys and Shift+Enter never act from a text box, so typing can't trigger them.
+      const chord = e.altKey && e.shiftKey;
+      const typing = isTyping(e.target);
+      if (typing && !chord) return;
       // Confirming by keyboard never happens from inside the text box, so a stray key while typing can't pay.
-      if (e.key === 'Enter' && e.shiftKey && !e.altKey && card?.kind === 'readback') {
+      if (!typing && e.key === 'Enter' && e.shiftKey && !e.altKey && card?.kind === 'readback') {
         e.preventDefault();
         void send({ action: 'confirm-button', readbackId: card.readbackId });
         return;
       }
-      // Single-character shortcuts only when switched on; otherwise Alt+Shift (Option+Shift), which
-      // browsers and screen readers leave free.
-      if (singleKeys ? e.altKey : !(e.altKey && e.shiftKey)) return;
-      if (singleKeys && e.code === 'Space' && !e.repeat && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLAnchorElement)) {
+      // Single-character shortcuts only when switched on; Alt+Shift, which browsers and screen
+      // readers leave free, always works.
+      if (!chord && !(singleKeys && !e.altKey)) return;
+      if (!chord && singleKeys && e.code === 'Space' && !e.repeat && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLAnchorElement)) {
         e.preventDefault();
         spaceDown.current = true;
         startListening();
@@ -318,210 +348,225 @@ export function Conversation({ firstName, initial }: { firstName: string; initia
   useEffect(() => {
     if (started.current || initial) return;
     started.current = true;
-    void send({ action: 'start' });
-  }, [initial, send]);
+    if (opening === 'offer') {
+      // Opened from an order's "Hear the offer" link: read the offer straight away. The address goes
+      // back to plain /app, so reloading the page greets as usual.
+      window.history.replaceState(null, '', '/app');
+      void send({ action: 'offer' });
+    } else void send({ action: 'start' });
+  }, [initial, opening, send]);
 
-  const submit = (e: React.FormEvent) => {
+  // The newest message stays in view. Only the box scrolls: focus and the page stay where they are.
+  useEffect(() => {
+    const box = transcriptRef.current;
+    if (box) box.scrollTop = box.scrollHeight;
+  }, [messages]);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const t = text.trim();
-    if (!t) return;
+    if (!t || busyRef.current) return;
     setText('');
-    void send({ text: t, source: 'keyboard' });
+    const sent = await send({ text: t, source: 'keyboard' }, { typed: true });
+    // Nothing reached the server: the words come back, unless something new was typed meanwhile.
+    if (!sent) setText((now) => now || t);
   };
 
   return (
-    <div className="convo">
-      <div className="convo-main">
-        {/* Same heading and text for screen readers; only its size changes after the first request. */}
-        <h1 className="convo-h" data-compact={compact || undefined}>
-          What do you need today, {firstName}?
-        </h1>
+    <div className="convo-wrap">
+      <div className="convo">
+        <div className="convo-main">
+          {/* Same heading and text for screen readers; only its size changes after the first request. */}
+          <h1 className="convo-h" data-compact={compact || undefined}>
+            What do you need today, {firstName}?
+          </h1>
 
-        <div ref={cardRef} className="convo-card" aria-busy={busy || undefined}>
-          {card && (
-            <CardView
-              card={card}
-              onChoose={(i) => void send({ action: 'details', index: i })}
-              onBuy={(i) => void send({ action: 'buy', index: i })}
-              onConfirm={(id) => void send({ action: 'confirm-button', readbackId: id })}
-              onHold={(id) => void send({ action: 'hold', readbackId: id })}
-              onCancel={() => void send({ action: 'cancel' })}
-              paypalSlot={
-                card.kind === 'paypal' ? (
-                  <PayPalCheckout
-                    clientId={card.clientId}
-                    paypalOrderId={card.paypalOrderId}
-                    onApproved={(paypalOrderId) => void send({ action: 'paypal-approved', readbackId: card.readbackId, paypalOrderId })}
-                    onError={(m) => announce(m, { politeness: 'assertive', source: 'PayPal' })}
-                  />
-                ) : null
-              }
-            />
+          <div ref={cardRef} className="convo-card" aria-busy={busy || undefined}>
+            {card && (
+              <CardView
+                card={card}
+                onChoose={(i) => void send({ action: 'details', index: i })}
+                onBuy={(i) => void send({ action: 'buy', index: i })}
+                onConfirm={(id) => void send({ action: 'confirm-button', readbackId: id })}
+                onHold={(id) => void send({ action: 'hold', readbackId: id })}
+                onCancel={() => void send({ action: 'cancel' })}
+                paypalSlot={
+                  card.kind === 'paypal' ? (
+                    <PayPalCheckout
+                      clientId={card.clientId}
+                      paypalOrderId={card.paypalOrderId}
+                      onApproved={(paypalOrderId) => void send({ action: 'paypal-approved', readbackId: card.readbackId, paypalOrderId })}
+                      onError={(m) => announce(m, { politeness: 'assertive', source: 'PayPal' })}
+                    />
+                  ) : null
+                }
+              />
+            )}
+          </div>
+
+          <form className="composer" onSubmit={submit} aria-label="Talk or type">
+            <button
+              type="button"
+              className="talk"
+              aria-pressed={micOn}
+              aria-describedby="talk-hint"
+              onPointerDown={(e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                if (micOn) {
+                  press.current = { at: performance.now(), started: false };
+                  return;
+                }
+                press.current = { at: performance.now(), started: true };
+                setToggleTalk(false);
+                startListening();
+              }}
+              onPointerUp={() => {
+                const p = press.current;
+                press.current = null;
+                if (!p) return;
+                if (!p.started) {
+                  // A second press while listening sends.
+                  stopListening();
+                  setToggleTalk(false);
+                } else if (performance.now() - p.at < 350) {
+                  // A quick tap (and touch screen readers' double tap) starts listening and keeps it on.
+                  setToggleTalk(true);
+                } else {
+                  // Held, then released: send.
+                  stopListening();
+                }
+              }}
+              onPointerLeave={() => {
+                if (press.current?.started && !toggleTalk) {
+                  press.current = null;
+                  stopListening();
+                }
+              }}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+                  e.preventDefault();
+                  lastKeyPress.current = performance.now();
+                  toggleListening();
+                }
+              }}
+              onClick={(e) => {
+                // Assistive tech that sends only a click (no pointer or key events) has detail 0.
+                if (e.detail !== 0 || performance.now() - lastKeyPress.current < 500) return;
+                toggleListening();
+              }}
+            >
+              <span className="talk-dots" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
+              <span>
+                {arming ? 'Getting ready…' : speech.listening ? (toggleTalk ? 'Listening… press again to send' : 'Listening… let go to send') : 'Talk'}
+              </span>
+            </button>
+            {/* Read as the Talk button's description; hidden here so browse mode doesn't read it twice. */}
+            <p id="talk-hint" className="hint talk-hint" aria-hidden="true">
+              Hold to talk, or press once to start and again to send.
+            </p>
+            {ownVoice.enabled && (
+              <button type="button" className="btn" onClick={() => stopSpeaking()}>
+                Stop speaking
+              </button>
+            )}
+            <div className="composer-type">
+              <label htmlFor="say" className="composer-label">
+                Or type what you need
+              </label>
+              <input
+                ref={inputRef}
+                id="say"
+                type="text"
+                autoComplete="off"
+                placeholder="For example: navy crew-neck sweater, medium, under $40"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                readOnly={busy}
+                aria-describedby="convo-status"
+              />
+              <button type="submit" className="btn btn-primary" aria-disabled={busy || !text.trim() || undefined}>
+                Send
+              </button>
+            </div>
+            {speech.listening && speech.interim && (
+              <p className="interim" aria-hidden="true">
+                {speech.interim}
+              </p>
+            )}
+            <p id="convo-status" className="convo-status" data-state={!online ? 'offline' : error ? 'error' : busy ? 'busy' : 'idle'}>
+              {!online ? "You're offline. Nothing will be sent until you're back online." : error ? error : busy ? 'Thinking…' : ''}
+            </p>
+          </form>
+
+          {suggestions.length > 0 && (
+            <div className="suggestions" ref={suggestionsRef}>
+              <h2 className="sr-only">Things you can say</h2>
+              <ul>
+                {suggestions.map((s) => (
+                  <li key={s.label}>
+                    <button type="button" className="btn" onClick={() => void send({ text: s.utterance, source: 'keyboard' })} aria-disabled={busy || undefined}>
+                      {s.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <p className="keys-hint">
+            <button type="button" className="btn btn-quiet" aria-expanded={showKeys} onClick={() => setShowKeys((s) => !s)}>
+              Keyboard shortcuts
+            </button>
+          </p>
+          {showKeys && (
+            <div className="grid gap-3">
+            <div className="choice">
+              <input type="checkbox" id="single-keys" checked={singleKeys} onChange={(e) => toggleSingleKeys(e.target.checked)} aria-describedby="single-keys-h" />
+              <label htmlFor="single-keys">Use single-key shortcuts</label>
+              <p id="single-keys-h" className="hint">
+                Off by default, so they never clash with your screen reader's own keys. When off, hold Alt and Shift (Option and Shift on a Mac) with the key.
+              </p>
+            </div>
+            <table className="keys">
+              <caption className="sr-only">Keyboard shortcuts</caption>
+              <tbody>
+                {shortcutRows(singleKeys).map(([k, v]) => (
+                  <tr key={k}>
+                    <th scope="row">
+                      <kbd>{k}</kbd>
+                    </th>
+                    <td>{v}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
           )}
         </div>
 
-        <form className="composer" onSubmit={submit} aria-label="Talk or type">
-          <button
-            type="button"
-            className="talk"
-            aria-pressed={micOn}
-            aria-describedby="talk-hint"
-            onPointerDown={(e) => {
-              if (e.button !== 0) return;
-              e.preventDefault();
-              if (micOn) {
-                press.current = { at: performance.now(), started: false };
-                return;
-              }
-              press.current = { at: performance.now(), started: true };
-              setToggleTalk(false);
-              startListening();
-            }}
-            onPointerUp={() => {
-              const p = press.current;
-              press.current = null;
-              if (!p) return;
-              if (!p.started) {
-                // A second press while listening sends.
-                stopListening();
-                setToggleTalk(false);
-              } else if (performance.now() - p.at < 350) {
-                // A quick tap (and touch screen readers' double tap) starts listening and keeps it on.
-                setToggleTalk(true);
-              } else {
-                // Held, then released: send.
-                stopListening();
-              }
-            }}
-            onPointerLeave={() => {
-              if (press.current?.started && !toggleTalk) {
-                press.current = null;
-                stopListening();
-              }
-            }}
-            onKeyDown={(e) => {
-              if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
-                e.preventDefault();
-                lastKeyPress.current = performance.now();
-                toggleListening();
-              }
-            }}
-            onClick={(e) => {
-              // Assistive tech that sends only a click (no pointer or key events) has detail 0.
-              if (e.detail !== 0 || performance.now() - lastKeyPress.current < 500) return;
-              toggleListening();
-            }}
-          >
-            <span className="talk-dots" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-            <span>
-              {arming ? 'Getting ready…' : speech.listening ? (toggleTalk ? 'Listening… press again to send' : 'Listening… let go to send') : 'Talk'}
-            </span>
-          </button>
-          {/* Read as the Talk button's description; hidden here so browse mode doesn't read it twice. */}
-          <p id="talk-hint" className="hint talk-hint" aria-hidden="true">
-            Hold to talk, or press once to start and again to send.
-          </p>
-          {ownVoice.enabled && (
-            <button type="button" className="btn" onClick={() => stopSpeaking()}>
-              Stop speaking
-            </button>
-          )}
-          <div className="composer-type">
-            <label htmlFor="say" className="composer-label">
-              Or type what you need
-            </label>
-            <input
-              ref={inputRef}
-              id="say"
-              type="text"
-              autoComplete="off"
-              placeholder="For example: navy crew-neck sweater, medium, under $40"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              readOnly={busy}
-              aria-describedby="convo-status"
-            />
-            <button type="submit" className="btn btn-primary" aria-disabled={busy || !text.trim() || undefined}>
-              Send
-            </button>
-          </div>
-          {speech.listening && speech.interim && (
-            <p className="interim" aria-hidden="true">
-              {speech.interim}
-            </p>
-          )}
-          <p id="convo-status" className="convo-status" data-state={!online ? 'offline' : error ? 'error' : busy ? 'busy' : 'idle'}>
-            {!online ? "You're offline. Nothing will be sent until you're back online." : error ? error : busy ? 'Thinking…' : ''}
-          </p>
-        </form>
-
-        {suggestions.length > 0 && (
-          <div className="suggestions" ref={suggestionsRef}>
-            <h2 className="sr-only">Things you can say</h2>
-            <ul>
-              {suggestions.map((s) => (
-                <li key={s.label}>
-                  <button type="button" className="btn" onClick={() => void send({ text: s.utterance, source: 'keyboard' })} aria-disabled={busy || undefined}>
-                    {s.label}
-                  </button>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}
+        <section ref={transcriptRef} className="transcript" aria-labelledby="transcript-h" tabIndex={0}>
+          <h2 id="transcript-h" className="transcript-h">
+            Conversation
+          </h2>
+          {messages.length === 0 ? (
+            <p className="muted">Nothing yet.</p>
+          ) : (
+            <ol>
+              {messages.map((m) => (
+                <li key={m.id} data-role={m.role}>
+                  <span className="sr-only">{m.role === 'user' ? 'You said: ' : `${PRODUCT_NAME} said: `}</span>
+                  {m.text}
                 </li>
               ))}
-            </ul>
-          </div>
-        )}
-        <p className="keys-hint">
-          <button type="button" className="btn btn-quiet" aria-expanded={showKeys} onClick={() => setShowKeys((s) => !s)}>
-            Keyboard shortcuts
-          </button>
-        </p>
-        {showKeys && (
-          <div className="grid gap-3">
-          <div className="choice">
-            <input type="checkbox" id="single-keys" checked={singleKeys} onChange={(e) => toggleSingleKeys(e.target.checked)} aria-describedby="single-keys-h" />
-            <label htmlFor="single-keys">Use single-key shortcuts</label>
-            <p id="single-keys-h" className="hint">
-              Off by default, so they never clash with your screen reader's own keys. When off, hold Alt and Shift (Option and Shift on a Mac) with the key.
-            </p>
-          </div>
-          <table className="keys">
-            <caption className="sr-only">Keyboard shortcuts</caption>
-            <tbody>
-              {shortcutRows(singleKeys).map(([k, v]) => (
-                <tr key={k}>
-                  <th scope="row">
-                    <kbd>{k}</kbd>
-                  </th>
-                  <td>{v}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-        )}
+            </ol>
+          )}
+        </section>
       </div>
-
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}
-      <section className="transcript" aria-labelledby="transcript-h" tabIndex={0}>
-        <h2 id="transcript-h" className="transcript-h">
-          Conversation
-        </h2>
-        {messages.length === 0 ? (
-          <p className="muted">Nothing yet.</p>
-        ) : (
-          <ol>
-            {messages.map((m) => (
-              <li key={m.id} data-role={m.role}>
-                <span className="sr-only">{m.role === 'user' ? 'You said: ' : `${PRODUCT_NAME} said: `}</span>
-                {m.text}
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
     </div>
   );
 }

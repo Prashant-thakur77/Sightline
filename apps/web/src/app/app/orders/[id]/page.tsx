@@ -22,6 +22,7 @@ import { db } from '@/server/runtime';
 import { MoneyBack } from '@/components/orders/money-back';
 import { AskHelper } from '@/components/orders/ask-helper';
 import { FocusFromHash } from '@/components/orders/focus-from-hash';
+import { spokenWhen } from '@/lib/when';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +54,8 @@ function Section({ n, id, tab, state, children }: { n: number; id: string; tab: 
   );
 }
 
-/** Times on this page are UTC and say so, so they never disagree with what was said aloud. */
-const when = (iso: string) => `${new Date(iso).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })} UTC`;
+/** Times on this page are UTC and say so, in the same words as the orders page and what is said aloud. */
+const when = spokenWhen;
 
 /** Each audit action as a plain sentence; unknown ones fall back to their words. */
 const HAPPENED: Record<string, string> = {
@@ -95,7 +96,10 @@ function Technical({ step, rows }: { step: string; rows: [string, string | null 
   if (!shown.length) return null;
   return (
     <details className="tech">
-      <summary>Technical details: {step}</summary>
+      <summary>
+        <span className="tech-marker" aria-hidden="true" />
+        Technical details: {step}
+      </summary>
       <dl className="hashes">
         {shown.map(([k, v]) => (
           <div key={k}>
@@ -158,7 +162,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </p>
           {rb?.text && (
             <details className="tech">
-              <summary>The full readback, word for word</summary>
+              <summary>
+                <span className="tech-marker" aria-hidden="true" />
+                The full readback, word for word
+              </summary>
               <p className="folder-said">{rb.text}</p>
             </details>
           )}
@@ -255,8 +262,17 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 : `${caseState.word}.`
               : verdict && verdict.kind !== 'match'
                 ? 'Get your money back'
-                : 'Nothing to do here unless something is wrong.'}
+                : verdict
+                  ? 'Nothing to do. Your check matched.'
+                  : 'Nothing to do yet.'}
           </h3>
+          {!caseSent && !canMoneyBack && (
+            <p>
+              {verdict
+                ? 'If you change your mind, or find something wrong later, check the parcel again. If the new check finds a problem, you can get your money back here.'
+                : 'Check the parcel with your camera when it arrives. If it is not what you paid for, you can get your money back here.'}
+            </p>
+          )}
           {caseSent && kase!.stage === 'seller_contacted' && kase!.dueAt && (
             <p>
               Demo Store has until {spokenDate(kase!.dueAt)} to reply. If they
@@ -264,13 +280,14 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             </p>
           )}
           {kase?.stage === 'offer_received' && (
-            <p>
-              Demo Store made an offer, and nothing changes until you answer. To hear it and answer by voice, go to{' '}
-              <Link className="link-target" href="/app">
-                Shop
-              </Link>{' '}
-              and say “what did they offer”.
-            </p>
+            <>
+              <p>Demo Store made an offer, and nothing changes until you answer. I read the offer and what accepting it means, then you say accept or decline.</p>
+              <p>
+                <Link className="btn btn-primary btn-xl" href="/app?hear=offer">
+                  Hear Demo Store’s offer and answer it
+                </Link>
+              </p>
+            </>
           )}
           {pack && (
             <p>

@@ -74,11 +74,14 @@ describe('featured results', () => {
     const abstained = sbFile.headlines.find((h) => h.id === 'abstention')!.value.split(' (')[0]!;
     expect(sb.context).toContain(abstained);
 
-    expect(byId.get('breaches-sightline')!.label).toContain('local ledger simulation');
+    expect(byId.get('breaches-sightline')!.label).toContain('simulated without calling PayPal');
 
-    const dup = (await file('duplicates')).headlines.find((h) => h.id === 'duplicate-scenarios')!;
-    // The baseline the suite declares on that headline, whatever words introduce it.
-    expect(byId.get('duplicate-scenarios')!.baseline).toMatch(new RegExp(`: ${dup.baseline!.split(':').pop()!.trim()}$`));
-    expect(dup.baseline).toMatch(/random request id/);
+    const dups = (await file('duplicates')).headlines;
+    // Compared with the same scenarios before lost PayPal answers were handled, read from the file;
+    // the card never compares a result with an equal baseline.
+    const before = dups.find((h) => h.id === 'duplicate-scenarios-before-fix')!;
+    const card = byId.get('duplicate-scenarios')!;
+    expect(card.baseline).toBe(`Before we handled lost PayPal answers: ${before.value}`);
+    expect(card.baseline!.endsWith(`: ${card.value}`)).toBe(false);
   });
 });

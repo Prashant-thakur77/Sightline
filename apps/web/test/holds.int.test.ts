@@ -149,6 +149,31 @@ describe.skipIf(!hasDb)('payment holds over time (Postgres, fake PayPal)', () =>
     expect((await order(orderId)).status).toBe('case_open');
   });
 
+  it('an offer nobody settled by its deadline still releases the hold; a fresh offer keeps it', async () => {
+    const late = await heldOrder({ status: 'case_open' });
+    await rt.db().insert(t.cases).values({ id: id('cas'), orderId: late.orderId, userId: late.userId, kind: 'void', stage: 'offer_received', status: 'open', reason: 'size', dueAt: new Date(Date.now() - 60_000).toISOString() });
+    const fresh = await heldOrder({ status: 'case_open' });
+    await rt.db().insert(t.cases).values({ id: id('cas'), orderId: fresh.orderId, userId: fresh.userId, kind: 'void', stage: 'accepted', status: 'open', reason: 'size', dueAt: new Date(Date.now() + 5 * DAY).toISOString() });
+    await holds.sweepHolds(new Date(), fake, { orderIds: [late.orderId, fresh.orderId] });
+    expect(opsFor(late.auth)).toEqual(['void']);
+    expect(opsFor(fresh.auth)).toEqual([]);
+    expect((await notes(late.userId)).some((n) => n.includes("wasn't settled by the deadline"))).toBe(true);
+  });
+
+  it('pays the store a week after a replacement was agreed, not before', async () => {
+    const agreed = async (daysAgo: number) => {
+      const o = await heldOrder({ status: 'resolved_replacement', deliveredDaysAgo: 10, createdDaysAgo: 2 });
+      await rt.db().insert(t.verifications).values({ id: id('ver'), orderId: o.orderId, status: 'done', verdict: { kind: 'mismatch', headline: 'x', reasons: [] } });
+      await rt.db().insert(t.cases).values({ id: id('cas'), orderId: o.orderId, userId: o.userId, kind: 'void', stage: 'resolved', status: 'resolved', reason: 'size', updatedAt: new Date(Date.now() - daysAgo * DAY).toISOString() });
+      return o;
+    };
+    const old = await agreed(8);
+    const recent = await agreed(2);
+    await holds.sweepHolds(new Date(), fake, { orderIds: [old.orderId, recent.orderId] });
+    expect(opsFor(old.auth)).toEqual(['capture']);
+    expect(opsFor(recent.auth)).toEqual([]);
+  });
+
   it('reauthorizes once after the three-day honour period', async () => {
     const { orderId, auth } = await heldOrder({ createdDaysAgo: 4 });
     await holds.sweepHolds(new Date(), fake, { orderIds: [orderId] });

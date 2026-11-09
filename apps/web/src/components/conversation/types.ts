@@ -81,4 +81,6 @@ export type TurnRequest =
   | { action: 'cancel' }
   | { action: 'paypal-approved'; readbackId: string; paypalOrderId: string }
   | { action: 'repeat' }
-  | { action: 'start' };
+  | { action: 'start' }
+  /** Opened from an order page to hear the store's waiting offer, instead of the greeting. */
+  | { action: 'offer' };

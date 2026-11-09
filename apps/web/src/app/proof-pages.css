@@ -1,0 +1,135 @@
+/*
+ * The proof pages: the Barrier Index write-up, the judges' page, receipts and evidence packs.
+ * Imported by those pages after globals.css, in the same layer, so these rules win ties.
+ */
+@layer components {
+  /* ---------- Barrier Index: headline results ---------- */
+
+  /* Each card reads label, number, count, interval, with the method note folded away. The number
+     has its own line, so a long count never breaks it up. */
+  .bi-heads {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+  .bi-heads li {
+    align-content: start;
+    gap: var(--space-2);
+  }
+  .bi-label {
+    font-weight: 700;
+    max-width: 40ch;
+  }
+  .bi-value {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .bi-heads .bi-fig {
+    font-size: var(--step-4);
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  .bi-count {
+    font-size: var(--step-1);
+    font-weight: 700;
+  }
+  .bi-interval {
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  .bi-note {
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+  .bi-note summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target);
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.09em;
+    text-underline-offset: 0.18em;
+  }
+  .bi-note p {
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  /* A design property sits apart from the measurements, in a dashed box, so it never reads as one. */
+  .bi-design {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    gap: var(--space-2);
+    max-width: 70ch;
+    padding: var(--space-4) var(--space-5);
+    border: 3px dashed var(--line);
+    border-radius: var(--radius-l);
+  }
+  .bi-design p {
+    margin: 0;
+  }
+  .bi-design-h {
+    margin: 0;
+    font-size: var(--step-1);
+  }
+  .bi-design-label {
+    font-weight: 700;
+  }
+
+  /* ---------- Barrier Index: the platform table ---------- */
+
+  /* The table keeps its header row on a phone. It is wider than a phone, so it scrolls sideways
+     inside its region, and every number still sits under the heading that says what it is. */
+  .verdict-table.bi-table {
+    min-width: 40rem;
+  }
+  @media (max-width: 560px) {
+    .verdict-table.bi-table thead {
+      display: table-header-group;
+    }
+    .verdict-table.bi-table tr {
+      display: table-row;
+      padding: 0;
+      border: 0;
+    }
+    .verdict-table.bi-table th,
+    .verdict-table.bi-table td {
+      display: table-cell;
+      padding: var(--space-3);
+      border-bottom: 2px solid var(--hairline);
+    }
+    .verdict-table.bi-table thead th {
+      border-bottom: 3px solid var(--line);
+    }
+  }
+
+  /* ---------- Judges: the 60-second path ---------- */
+
+  /* Cards in a row stretch to the tallest one; their contents stay at the top, so every heading
+     lines up with its neighbour's. */
+  .jpath > li {
+    align-content: start;
+  }
+
+  /* ---------- Site header on the smallest phones ---------- */
+
+  /* At 320 pixels the three links share one row and the theme menu and Try it the next, instead of
+     spreading over three rows. In rem, so Larger and Largest text still wrap as they need to. */
+  @media (max-width: 360px) {
+    .lp-nav {
+      gap: var(--space-1);
+      font-size: 0.86rem;
+    }
+    .lp-nav a:not(.btn) {
+      padding: 0 2px;
+    }
+    .lp-nav select {
+      padding-inline: var(--space-2);
+    }
+  }
+}

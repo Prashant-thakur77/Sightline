@@ -31,30 +31,19 @@ const EnvSchema = z.object({
   AGENT_MODEL: optional,
   VISION_MODEL: optional,
   FAST_MODEL: optional,
-  GEMINI_API_KEY: optional,
 
   DEEPGRAM_API_KEY: optional,
   CHANNEL3_API_KEY: optional,
   KERNEL_API_KEY: optional,
 
   DATABASE_URL: optional,
-  S3_ENDPOINT: optional,
-  S3_REGION: optional,
-  S3_BUCKET: optional,
-  S3_ACCESS_KEY_ID: optional,
-  S3_SECRET_ACCESS_KEY: optional,
   VISION_SERVICE_URL: optional,
 
-  RESEND_API_KEY: optional,
-  EMAIL_FROM: optional,
   WEB_PUSH_VAPID_PUBLIC: optional,
   WEB_PUSH_VAPID_PRIVATE: optional,
 
   AG_STUDIO: optional,
   RENDER_API_KEY: optional,
-  TWILIO_ACCOUNT_SID: optional,
-  TWILIO_AUTH_TOKEN: optional,
-  TWILIO_PHONE_NUMBER: optional,
 });
 
 export type Env = z.infer<typeof EnvSchema> & { PAYPAL_API_BASE: string };
@@ -97,11 +86,8 @@ export interface Integrations {
   deepgram: boolean;
   channel3: boolean;
   kernel: boolean;
-  s3: boolean;
-  email: boolean;
   webPush: boolean;
   agStudio: boolean;
-  gemini: boolean;
   vision: boolean;
 }
 
@@ -113,11 +99,8 @@ export function integrations(e: Env = env()): Integrations {
     deepgram: Boolean(e.DEEPGRAM_API_KEY),
     channel3: Boolean(e.CHANNEL3_API_KEY),
     kernel: Boolean(e.KERNEL_API_KEY),
-    s3: Boolean(e.S3_ENDPOINT && e.S3_ACCESS_KEY_ID && e.S3_SECRET_ACCESS_KEY && e.S3_BUCKET),
-    email: Boolean(e.RESEND_API_KEY && e.EMAIL_FROM),
     webPush: Boolean(e.WEB_PUSH_VAPID_PUBLIC && e.WEB_PUSH_VAPID_PRIVATE),
     agStudio: Boolean(e.AG_STUDIO),
-    gemini: Boolean(e.GEMINI_API_KEY),
     vision: Boolean(e.VISION_SERVICE_URL),
   };
 }

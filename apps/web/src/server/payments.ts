@@ -28,7 +28,8 @@ export type PayOutcome =
   | { kind: 'needs-approval'; paypalOrderId: string; orderId: string; intent: 'CAPTURE' | 'AUTHORIZE'; receiptId?: string }
   | { kind: 'paid'; orderId: string; status: 'captured' | 'authorized'; amount: Money; receiptId?: string }
   | { kind: 'declined'; say: string }
-  | { kind: 'error'; say: string }
+  /** notConnected: no PayPal keys on this server, so no payment can be made at all. */
+  | { kind: 'error'; say: string; notConnected?: boolean }
   /** PayPal may or may not have taken the payment (timeout, network, 5xx). The hold stays. */
   | { kind: 'unknown'; say: string; orderId: string };
 
@@ -175,7 +176,7 @@ export async function payForReadback(input: { userId: string; readbackId: string
     pp = paypal();
   } catch {
     if (decision.reservation) await dbReservations.release(decision.reservation.id, 'paypal_not_configured', new Date());
-    return { kind: 'error', say: "PayPal isn't connected yet, so I didn't charge anything." };
+    return { kind: 'error', say: "PayPal isn't connected yet, so I didn't charge anything.", notConnected: true };
   }
   if (!existing)
     await db()

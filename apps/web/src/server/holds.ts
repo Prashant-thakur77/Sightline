@@ -30,6 +30,8 @@ export const AUTO_CAPTURE_DAYS = 7;
 export const HONOR_PERIOD_DAYS = 3;
 export const MAX_CAPTURE_ATTEMPTS = 5;
 const DAY = 86_400_000;
+/** Case stages in which a wrong-item case on a held payment is still open and its deadline applies. */
+const OPEN_STAGES = new Set(['seller_contacted', 'offer_received', 'accepted', 'declined']);
 
 type Payments = Pick<PayPalClient['payments'], 'captureAuthorization' | 'voidAuthorization' | 'reauthorize'>;
 type Order = typeof tables.orders.$inferSelect;
@@ -98,8 +100,9 @@ export async function sweepHolds(now: Date, pp: Payments = paypal().payments, op
     const verdict = (checks.find((v) => v.orderId === o.id)?.verdict as { kind?: string } | null)?.kind ?? null;
     const delivered = shipments.find((s) => s.orderId === o.id)?.deliveredAt;
     try {
-      // 1. The store did not answer a return request in time: void, the buyer is never charged.
-      if (kase && kase.kind === 'void' && kase.stage === 'seller_contacted' && kase.dueAt && Date.parse(kase.dueAt) < now.getTime()) {
+      // 1. A wrong-item case on a held payment that is still open when its deadline passes (no
+      //    answer, an offer nobody settled, a return that never came back): void, never charge.
+      if (kase && kase.kind === 'void' && OPEN_STAGES.has(kase.stage) && kase.dueAt && Date.parse(kase.dueAt) < now.getTime()) {
         await pp.voidAuthorization(o.authorizationId!, { requestId: paypalRequestId('void', o.authorizationId!) });
         await db().update(tables.orders).set({ status: 'voided', updatedAt: now.toISOString() }).where(eq(tables.orders.id, o.id));
         await db()
@@ -108,8 +111,25 @@ export async function sweepHolds(now: Date, pp: Payments = paypal().payments, op
           .where(eq(tables.cases.id, kase.id));
         await settleHold(o, 'release', 'voided_no_reply', now);
         await audit({ userId: o.userId, actor: 'paypal', action: 'payment.voided_no_reply', subjectId: o.id, payload: { caseId: kase.id } });
-        await notify(o.userId, 'case', `Demo Store didn't answer in time, so I cancelled the payment hold. Your ${amount} is released. You were never charged.`, link);
+        await notify(
+          o.userId,
+          'case',
+          kase.stage === 'seller_contacted'
+            ? `Demo Store didn't answer in time, so I cancelled the payment hold. Your ${amount} is released. You were never charged.`
+            : `Your case with Demo Store wasn't settled by the deadline, so I cancelled the payment hold. Your ${amount} is released. You were never charged.`,
+          link,
+        );
         report.voidedNoReply.push(o.id);
+        continue;
+      }
+      // 2a. A replacement was agreed: the buyer keeps the order, so the store is paid a week later,
+      //     like any delivery nobody reports a problem with.
+      if (kase && kase.stage === 'resolved' && o.status === 'resolved_replacement') {
+        if ((now.getTime() - Date.parse(kase.updatedAt)) / DAY >= AUTO_CAPTURE_DAYS) {
+          await capture(o, pp, now, 'payment.captured_after_replacement', 'The buyer agreed to a replacement a week ago.');
+          await notify(o.userId, 'payment', `You agreed to a replacement for your ${o.title} a week ago, so Demo Store is now paid ${amount}.`, link);
+          report.captured.push(o.id);
+        }
         continue;
       }
       // An open case or a wrong-item verdict keeps the money on hold; nothing else applies.

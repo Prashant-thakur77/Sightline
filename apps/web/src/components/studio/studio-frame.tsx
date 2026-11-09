@@ -99,6 +99,48 @@ export function StudioFrame({ id, title, data, report, licenseKey, agent, harnes
   const modules = useMemo(() => (ai ? [AgStudioAiModule] : undefined), [ai]);
   const api = useRef<AgStudioApi | null>(null);
   const folded = useRef(false);
+  const canvasEl = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      canvasEl.current = el;
+      return boxRef(el);
+    },
+    [boxRef],
+  );
+
+  // Studio makes every widget one Tab stop: a pair of tab guards that pass focus to an empty marker,
+  // which a screen reader hears as "Orders, group" with none of the numbers. In View mode that is
+  // 15 Tab stops giving nothing the ticket and the chart tables do not already say in full, so in
+  // View mode nothing inside the dashboard is in the Tab order. It stays on screen, for the mouse
+  // and for a screen reader's reading keys. Edit mode puts Studio's own keyboard model back, for
+  // moving, resizing and exporting widgets. AG Studio has no option for this, so a MutationObserver
+  // keeps it true as Studio redraws, and switching modes restores what Studio had set.
+  useEffect(() => {
+    const root = canvasEl.current;
+    if (!root || !inBrowser || mode !== 'view') return;
+    // Scrolling boxes too: with nothing focusable inside, the browser would make each one a Tab stop.
+    const FOCUSABLE = '[tabindex], button, input, select, textarea, a[href], .ag-studio-layout, [class*="ag-"][class*="viewport"]';
+    const apply = () => {
+      for (const el of root.querySelectorAll<HTMLElement>(FOCUSABLE)) {
+        const was = el.getAttribute('tabindex');
+        if (was === '-1') continue;
+        if (!('sxTabindex' in el.dataset)) el.dataset.sxTabindex = was ?? 'none';
+        el.setAttribute('tabindex', '-1');
+      }
+    };
+    apply();
+    const mo = new MutationObserver(apply);
+    mo.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['tabindex'] });
+    return () => {
+      mo.disconnect();
+      for (const el of root.querySelectorAll<HTMLElement>('[data-sx-tabindex]')) {
+        const was = el.dataset.sxTabindex;
+        if (was === 'none') el.removeAttribute('tabindex');
+        else el.setAttribute('tabindex', was ?? '0');
+        delete el.dataset.sxTabindex;
+      }
+    };
+  }, [mode, inBrowser]);
 
   // The first time edit mode opens, fold the field list away so the canvas keeps its width. The
   // panels are only built on entering edit mode, so this is applied once they exist.
@@ -136,6 +178,14 @@ export function StudioFrame({ id, title, data, report, licenseKey, agent, harnes
           </button>
         </div>
         <ul className="sx-notes">
+          {mode === 'view' && (
+            <li>
+              <span className="sx-note-mark" aria-hidden="true">
+                –
+              </span>
+              {`In View mode the dashboard is not in the Tab order. Every number is in The figures and in the tables under the dashboard. Choose ${ai ? 'Edit and ask' : 'Edit'} to reach each widget with the keyboard.`}
+            </li>
+          )}
           <li>
             <span className="sx-note-mark" aria-hidden="true">
               {ai ? '✓' : '–'}
@@ -154,10 +204,13 @@ export function StudioFrame({ id, title, data, report, licenseKey, agent, harnes
           )}
         </ul>
       </div>
-      <a className="sx-skip" href={`#${id}-after`}>
-        Skip past the dashboard
-      </a>
-      <div className="sx-canvas" ref={boxRef} style={{ height }} data-mode={mode}>
+      {/* Only Edit mode puts the dashboard in the Tab order, so only Edit mode needs a way past it. */}
+      {mode === 'edit' && (
+        <a className="sx-skip" href={`#${id}-after`}>
+          Skip past the dashboard
+        </a>
+      )}
+      <div className="sx-canvas" ref={canvasRef} style={{ height }} data-mode={mode}>
         {inBrowser ? (
           <AgStudioProvider licenseKey={licenseKey} modules={modules}>
             <AgStudio

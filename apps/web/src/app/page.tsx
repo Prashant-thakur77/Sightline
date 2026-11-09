@@ -72,27 +72,29 @@ export default async function Landing() {
       <SiteHeader current="home" />
 
       <main id="main" tabIndex={-1}>
-        <section className="lp-hero" aria-labelledby="hero-h">
-          <div className="lp-hero-copy">
-            <p className="lp-kicker">For blind and low-vision shoppers</p>
-            <h1 id="hero-h" className="lp-h1">
-              Is this the one <span className="lp-band">I paid for?</span>
-            </h1>
-            <p className="lp-lede">
-              {PRODUCT_NAME} shops by voice, reads back exactly what you will pay, checks the parcel with your phone camera, and gets your money back
-              through PayPal when it is wrong.
-            </p>
-            <div className="lp-ctas">
-              <Link href="/start" className="btn btn-primary btn-xl">
-                Try it as Maya
-              </Link>
-              <Link href="/judge" className="btn btn-xl">
-                The 60-second tour
-              </Link>
+        <section className="lp-hero-wrap" aria-labelledby="hero-h">
+          <div className="lp-hero">
+            <div className="lp-hero-copy">
+              <p className="lp-kicker">For blind and low-vision shoppers</p>
+              <h1 id="hero-h" className="lp-h1">
+                Is this the one <span className="lp-band">I paid for?</span>
+              </h1>
+              <p className="lp-lede">
+                {PRODUCT_NAME} shops by voice, reads back exactly what you will pay, checks the parcel with your phone camera, and gets your money back
+                through PayPal when it is wrong.
+              </p>
+              <div className="lp-ctas">
+                <Link href="/start" className="btn btn-primary btn-xl">
+                  Try it as Maya
+                </Link>
+                <Link href="/judge" className="btn btn-xl">
+                  The 60-second tour
+                </Link>
+              </div>
+              <p className="lp-fine">No sign-up. Payments go to a PayPal sandbox test store, so no real money moves.</p>
             </div>
-            <p className="lp-fine">No sign-up. Payments go to a PayPal sandbox test store, so no real money moves.</p>
+            <ReadbackHero />
           </div>
-          <ReadbackHero />
         </section>
 
         <section className="lp-problem" aria-labelledby="problem-h">
