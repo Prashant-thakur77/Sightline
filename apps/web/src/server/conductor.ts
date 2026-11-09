@@ -43,7 +43,7 @@ import { appUrl, db, demoSeller, ENV, INTEGRATIONS } from './runtime';
 import { aiAvailable, answerAboutListing, confirmationClassifier, extractShoppingQuery } from './ai';
 import { payForReadback, completeApprovedOrder, reconcileUnknownOrders, type PayOutcome } from './payments';
 import { audit } from './audit';
-import { answerOffer, findOpenOffer, type OpenOffer } from './offers';
+import { answerOffer, findOpenOffer, isOfferNotice, markOfferNoticesRead, type OpenOffer } from './offers';
 import { offerKind, type OfferAnswer } from './offer-plan';
 
 const SNAPSHOT_MAX_AGE_MS = 12 * 60 * 1000;
@@ -55,6 +55,8 @@ interface StoredOption extends OptionContext {
   why: string[];
   /** The caveats within why, so "why these?" can lead with the reasons. */
   caveats?: string[];
+  /** False when the asked-for size was out of stock, so a restored card keeps "Buy this" off. */
+  available?: boolean;
 }
 
 /**
@@ -79,13 +81,20 @@ interface ConvoState {
   /** The offers in the question just asked; cleared on every turn that does not answer it. */
   pending?: Pending[];
   /** The store's offer that was just read out, while phase is 'offer'. */
-  offer?: { caseId: string; offerId: string };
+  offer?: {
+    caseId: string;
+    offerId: string;
+    /** When Accept was first pressed; only the very next turn can be the second press. */
+    armedAt?: number;
+  };
 }
 
 interface Ctx {
   userId: string;
   firstName: string;
   conversationId: string;
+  /** When the conversation last changed, so a stale one isn't picked up again. */
+  updatedAt: string;
   state: ConvoState;
   prefs: typeof tables.preferences.$inferSelect;
   out: { messages: ChatMessage[] };
@@ -158,10 +167,10 @@ function suggestionsFor(phase: ConvoState['phase'], hasOptions: boolean): Reply[
       { label: 'When does it arrive?', utterance: 'when does it arrive' },
       { label: 'Read it again', utterance: 'read it again' },
     ];
+  // The offer card has its own Accept and Decline buttons; these leave the offer open.
   if (phase === 'offer')
     return [
-      { label: 'Accept the offer', utterance: 'accept the offer' },
-      { label: 'Decline the offer', utterance: 'decline the offer' },
+      { label: 'Hear the offer again', utterance: 'what did they offer' },
       { label: 'Not now', utterance: 'not now' },
     ];
   if (hasOptions)
@@ -228,6 +237,7 @@ async function search(ctx: Ctx, query: ShoppingQuery, offset = 0): Promise<Reply
     selection: Object.fromEntries(o.snapshot.variantId.split(';').filter(Boolean).map((kv) => kv.split('=') as [string, string])),
     why: o.why,
     caveats: o.caveats,
+    available: o.sizeInStock !== false,
   }));
   return {
     say: presentation.text,
@@ -413,6 +423,12 @@ async function startReadback(ctx: Ctx, index: number | undefined, changes?: { si
   return readbackReply(composed.text, composed.fields, readbackId, cart, Boolean(vault[0]), false, false);
 }
 
+/**
+ * Said with a readback, before any press, when this server has no PayPal keys. Not part of the
+ * readback text: that text is the signed record of what was read, so the note goes beside it.
+ */
+const PAYPAL_OFF = "PayPal isn't connected on this server, so confirming won't charge anything.";
+
 function readbackReply(
   text: string,
   fields: { key: string; label: string; value: string }[],
@@ -423,8 +439,9 @@ function readbackReply(
   held: boolean,
   sayOverride?: string,
 ): Reply {
+  const paypalConnected = INTEGRATIONS.paypal;
   return {
-    say: sayOverride ?? text,
+    say: sayOverride ?? (paypalConnected ? text : `${text} ${PAYPAL_OFF}`),
     politeness: 'polite',
     cue: 'attention',
     card: {
@@ -435,6 +452,7 @@ function readbackReply(
       text,
       total: formatMoney(cart.totals.total),
       payWith: vaulted ? 'your saved PayPal' : 'PayPal (you log in once)',
+      paypalConnected,
       needsSecondPress,
       held,
     },
@@ -720,6 +738,19 @@ function offerChoice(open: OpenOffer): OfferChoice {
   };
 }
 
+/** The offer as a card: what was offered, what accepting means, and its Accept and Decline buttons. */
+function offerCard(open: OpenOffer, needsSecondPress: boolean): Card {
+  const choice = offerChoice(open);
+  return {
+    kind: 'offer',
+    heading: `${choice.merchant}’s offer`,
+    offerId: open.offer.id,
+    orderId: open.orderId,
+    text: presentOfferChoice(choice).sentences.slice(0, 3).join(' '),
+    needsSecondPress,
+  };
+}
+
 /** Read the open offer like a readback: what it is, what accepting means, how to answer. */
 async function offerTurn(ctx: Ctx): Promise<Reply> {
   const open = await findOpenOffer(ctx.userId);
@@ -727,23 +758,37 @@ async function offerTurn(ctx: Ctx): Promise<Reply> {
     leaveOffer(ctx);
     return { say: en.offers.none, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', Boolean(ctx.state.options?.length)) };
   }
-  const choice = offerChoice(open);
-  const spoken = presentOfferChoice(choice);
+  const spoken = presentOfferChoice(offerChoice(open));
   ctx.state.phase = 'offer';
   ctx.state.offer = { caseId: open.caseId, offerId: open.offer.id };
-  return {
-    say: spoken.text,
-    politeness: 'polite',
-    cue: 'attention',
-    card: {
-      kind: 'link',
-      heading: `${choice.merchant}’s offer`,
-      text: spoken.sentences.slice(0, 3).join(' '),
-      href: `/app/orders/${open.orderId}#money-back`,
-      label: 'See the order',
-    },
-    suggestions: suggestionsFor('offer', false),
+  // Heard now, so the greeting doesn't read its notice again.
+  await markOfferNoticesRead(ctx.userId, open.orderId);
+  return { say: spoken.text, politeness: 'polite', cue: 'attention', card: offerCard(open, false), suggestions: suggestionsFor('offer', false) };
+}
+
+/** A second press sooner than this after the first is a double-click, not a second decision. */
+const SECOND_PRESS_MIN_MS = 500;
+
+const OFFER_PRESS_AGAIN = "Press Accept again to accept. You can't undo accepting. To leave the offer open, say 'not now'.";
+
+/**
+ * The offer card's buttons. Decline answers at once and keeps the case open. Accepting can't be
+ * undone, so like paying it takes two presses: the first only asks for the second.
+ */
+async function offerButton(ctx: Ctx, answer: OfferAnswer, offerId: string, armedAt: number | undefined): Promise<Reply> {
+  const gone = (): Reply => {
+    leaveOffer(ctx);
+    return { say: en.offers.gone, politeness: 'assertive', cue: 'error', card: null, suggestions: suggestionsFor('browsing', Boolean(ctx.state.options?.length)) };
   };
+  if (ctx.state.phase !== 'offer' || ctx.state.offer?.offerId !== offerId) return gone();
+  if (answer === 'decline') return answerTheOffer(ctx, 'decline');
+  const now = Date.now();
+  if (armedAt !== undefined && now - armedAt >= SECOND_PRESS_MIN_MS) return answerTheOffer(ctx, 'accept');
+  const open = await findOpenOffer(ctx.userId);
+  if (!open || open.offer.id !== offerId) return gone();
+  // A double-click is one press: the first press keeps its time.
+  ctx.state.offer.armedAt = armedAt ?? now;
+  return { say: OFFER_PRESS_AGAIN, politeness: 'polite', cue: 'attention', card: offerCard(open, true), suggestions: suggestionsFor('offer', false) };
 }
 
 function leaveOffer(ctx: Ctx) {
@@ -775,7 +820,12 @@ async function answerTheOffer(ctx: Ctx, answer: OfferAnswer): Promise<Reply> {
  * answers it; "no", "wait" or "cancel" leave it open. Returns null to route the turn normally.
  */
 async function offerPhase(ctx: Ctx, parsed: ParsedIntent, raw: string): Promise<Reply | null> {
-  const stay = (say: string): Reply => ({ say, politeness: 'polite', card: null, suggestions: suggestionsFor('offer', false) });
+  // The offer stays open and its card stays, so its buttons are still there to answer with.
+  const stay = async (say: string): Promise<Reply> => {
+    const open = await findOpenOffer(ctx.userId);
+    const card = open && open.offer.id === ctx.state.offer?.offerId ? offerCard(open, false) : null;
+    return { say, politeness: 'polite', card, suggestions: suggestionsFor('offer', false) };
+  };
   const notAnswered = (): Reply => {
     leaveOffer(ctx);
     return { say: en.offers.notAnswered, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', Boolean(ctx.state.options?.length)) };
@@ -1016,6 +1066,144 @@ async function route(ctx: Ctx, parsed: ParsedIntent, raw: string, pending?: Pend
   }
 }
 
+// ---------------------------------------------------------------------------------------------
+// The greeting, and picking up where the conversation left off
+
+/** How long after the last turn a readback or the options shown are still brought back. */
+const RESUME_MS = 30 * 60 * 1000;
+
+type Restored =
+  | { kind: 'readback'; card: Card; suggestions: Reply['suggestions']; say: string; readbackHash: string; held: boolean }
+  | { kind: 'options'; card: Card; suggestions: Reply['suggestions']; say: string };
+
+/**
+ * What a reload, or a trip to another page and back, should find again: a readback still waiting
+ * for its confirmation, or the options last shown. Read-only. A restored readback always starts
+ * from its first press: a reload never counts as one, and the card says so.
+ */
+async function restoredTurn(state: ConvoState): Promise<Restored | null> {
+  if (state.phase === 'readback' && state.readbackId) {
+    const loaded = await loadReadbackRow(state.readbackId);
+    if (loaded && !loaded.rb.invalidatedAt && !loaded.rb.confirmedAt) {
+      const { rb, cart } = loaded;
+      const total = formatMoney(cart.totals.total);
+      const title = cart.lines[0]?.snapshot.title ?? 'your item';
+      const say = `Your readback is still here: ${title}, ${total}. Nothing is paid until you confirm. Say 'read it again' to hear it all, or 'cancel' to stop.${
+        INTEGRATIONS.paypal ? '' : ` ${PAYPAL_OFF}`
+      }`;
+      const r = readbackReply(rb.text, rb.fields as never, rb.id, cart, rb.text.includes('saved PayPal'), false, Boolean(rb.holdOpen), say);
+      return { kind: 'readback', card: r.card!, suggestions: r.suggestions, say, readbackHash: rb.textHash, held: Boolean(rb.holdOpen) };
+    }
+  }
+  const opts = state.options ?? [];
+  if (opts.length && state.query) {
+    const snaps = await loadSnapshots(opts.map((o) => o.snapshotId));
+    const items = opts.filter((o) => snaps.has(o.snapshotId)).map((o) => optionItem(o.index, snaps.get(o.snapshotId)!, o.why, o.available !== false));
+    if (items.length) {
+      const n = items.length;
+      return {
+        kind: 'options',
+        card: { kind: 'options', heading: `${n === 1 ? 'One option' : `${n} options`}: ${describeQuery(state.query)}`, items },
+        suggestions: suggestionsFor('browsing', true),
+        say: `Your ${n === 1 ? 'option' : `${n} options`} from before ${n === 1 ? 'is' : 'are'} still here. Say a number to hear more, or say what else you need.`,
+      };
+    }
+  }
+  return null;
+}
+
+/** Unread updates to say in the greeting, newest first, at most three; marks them read. */
+async function unreadUpdates(userId: string) {
+  const n = tables.notifications;
+  const rows = await db().select().from(n).where(and(eq(n.userId, userId), isNull(n.readAt))).orderBy(desc(n.createdAt)).limit(6);
+  if (!rows.length) return [];
+  // A store's offer that was answered (or has gone) since its notice was sent is old news.
+  const open = rows.some(isOfferNotice) ? await findOpenOffer(userId) : null;
+  const stale = rows.filter((r) => isOfferNotice(r) && !(open && r.link?.startsWith(`/app/orders/${open.orderId}`)));
+  const said = rows.filter((r) => !stale.includes(r)).slice(0, 3);
+  const spent = [...stale, ...said];
+  if (spent.length) await db().update(n).set({ readAt: new Date().toISOString() }).where(inArray(n.id, spent.map((r) => r.id)));
+  return said;
+}
+
+/**
+ * Hello, then any updates, then where things stand: a readback or options brought back from
+ * before, a parcel to check, or the opening question. The welcome is said on the first visit only.
+ */
+async function greet(ctx: Ctx): Promise<Reply> {
+  const userId = ctx.userId;
+  const [earlier] = await db().select({ id: tables.messages.id }).from(tables.messages).where(eq(tables.messages.conversationId, ctx.conversationId)).limit(1);
+  const pending = (await latestOrders(userId)).find((o) => o.status === 'delivered');
+  const unread = await unreadUpdates(userId);
+  const settled = await reconcileUnknownOrders(userId).catch(() => [] as string[]);
+  const lines = [...settled, ...unread.map((n) => n.text)];
+  const updates = lines.length ? ` ${lines.length === 1 ? 'One update' : `${lines.length} updates`}. ${lines.join(' ')}` : '';
+  // Updates come first; the first-visit welcome would sound odd after them.
+  const hello = updates ? `Hi ${ctx.firstName}.${updates}${earlier ? '' : " Say 'help' any time."}` : `Hi ${ctx.firstName}.${earlier ? '' : ` ${en.general.welcome()}`}`;
+  const fresh = Date.now() - Date.parse(ctx.updatedAt) < RESUME_MS;
+  const restored = fresh ? await restoredTurn(ctx.state) : null;
+  const { query, offset, options, focus } = ctx.state;
+  const kept = restored ? { query, offset, options, focus } : {};
+
+  if (restored?.kind === 'readback') {
+    ctx.state = {
+      ...kept,
+      phase: 'readback',
+      readbackId: ctx.state.readbackId,
+      confirm: { kind: 'open', readbackHash: restored.readbackHash, held: restored.held },
+    };
+    return { say: `${hello} ${restored.say}`, politeness: 'polite', cue: 'attention', card: restored.card, suggestions: restored.suggestions };
+  }
+
+  // A delivery told about in this greeting comes first; otherwise the options from before do.
+  const deliveryIsNews = unread.some((n) => n.kind === 'delivery');
+  if (pending && (deliveryIsNews || !restored)) {
+    const card: Card = { kind: 'link', heading: 'Your parcel arrived', text: `The ${pending.title} from Demo Store was delivered.`, href: `/app/check/${pending.id}`, label: 'Check it now' };
+    ctx.state = { phase: 'browsing', pending: [{ kind: 'check', said: 'check it now' }] };
+    return {
+      say: deliveryIsNews ? `${hello} What do you need today?` : `${hello} Your parcel from Demo Store was delivered. Want to check it now?`,
+      politeness: 'polite',
+      card,
+      suggestions: suggestionsFor('browsing', false),
+    };
+  }
+  if (restored) {
+    ctx.state = { ...kept, phase: 'browsing' };
+    return { say: `${hello} ${restored.say}`, politeness: 'polite', card: restored.card, suggestions: restored.suggestions };
+  }
+  ctx.state = { phase: 'browsing' };
+  return { say: `${hello} What do you need today?`, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
+}
+
+/**
+ * The conversation so far, for the page to show before its greeting arrives: recent messages, and
+ * the readback or options still waiting. Read-only; the greeting turn that follows brings the
+ * same card back and resets the readback to its first press. Null on a first visit.
+ */
+export async function resumeTurn(userId: string): Promise<TurnResponse | null> {
+  const c = tables.conversations;
+  const [convo] = await db().select().from(c).where(eq(c.userId, userId)).orderBy(desc(c.updatedAt)).limit(1);
+  if (!convo) return null;
+  const m = tables.messages;
+  const rows = await db()
+    .select({ id: m.id, role: m.role, text: m.text })
+    .from(m)
+    .where(eq(m.conversationId, convo.id))
+    .orderBy(desc(m.createdAt), desc(m.id))
+    .limit(40);
+  if (!rows.length) return null;
+  const state = { phase: 'browsing', ...(convo.state as Partial<ConvoState>) } as ConvoState;
+  const restored = Date.now() - Date.parse(convo.updatedAt) < RESUME_MS ? await restoredTurn(state) : null;
+  return {
+    messages: rows.reverse().map((r) => ({ id: r.id, role: r.role === 'user' ? 'user' : 'agent', text: r.text })),
+    say: '',
+    politeness: 'polite',
+    card: restored?.card ?? null,
+    suggestions: restored?.suggestions ?? [],
+    phase: restored?.kind === 'readback' ? 'readback' : 'browsing',
+  };
+}
+
 async function loadContext(userId: string): Promise<Ctx> {
   const [user] = await db().select().from(tables.users).where(eq(tables.users.id, userId)).limit(1);
   const [prefs] = await db().select().from(tables.preferences).where(eq(tables.preferences.userId, userId)).limit(1);
@@ -1029,6 +1217,7 @@ async function loadContext(userId: string): Promise<Ctx> {
     userId,
     firstName: user?.displayName ?? 'there',
     conversationId: convo!.id,
+    updatedAt: convo!.updatedAt,
     state: { phase: 'browsing', ...(convo!.state as Partial<ConvoState>) } as ConvoState,
     prefs: prefs!,
     out: { messages: [] },
@@ -1046,6 +1235,9 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
   // A question is only answered by the very next turn; anything else drops it.
   const asked = ctx.state.pending;
   ctx.state.pending = undefined;
+  // Likewise a first press of Accept: only the very next turn can be its second press.
+  const armedAt = ctx.state.offer?.armedAt;
+  if (ctx.state.offer) ctx.state.offer.armedAt = undefined;
   let reply: Reply;
   if ('text' in req) {
     const text = req.text.trim().slice(0, 500);
@@ -1054,45 +1246,9 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
     reply = await route(ctx, parsed, text, asked);
   } else {
     switch (req.action) {
-      case 'start': {
-        const pending = (await latestOrders(userId)).find((o) => o.status === 'delivered');
-        const unread = await db()
-          .select()
-          .from(tables.notifications)
-          .where(and(eq(tables.notifications.userId, userId), isNull(tables.notifications.readAt)))
-          .orderBy(desc(tables.notifications.createdAt))
-          .limit(3);
-        if (unread.length)
-          await db()
-            .update(tables.notifications)
-            .set({ readAt: new Date().toISOString() })
-            .where(inArray(tables.notifications.id, unread.map((n) => n.id)));
-        const settled = await reconcileUnknownOrders(userId).catch(() => [] as string[]);
-        for (const t of settled) unread.unshift({ text: t } as (typeof unread)[number]);
-        const updates = unread.length
-          ? ` ${unread.length === 1 ? 'One update' : `${unread.length} updates`}. ${unread.map((n) => n.text).join(' ')}`
-          : '';
-        // Updates come first; the first-visit welcome would sound odd after them.
-        const greet = updates ? `Hi ${ctx.firstName}.${updates} Say 'help' any time.` : `Hi ${ctx.firstName}. ${en.general.welcome()}`;
-        const alreadyTold = unread.some((n) => n.kind === 'delivery');
-        reply = pending && !alreadyTold
-          ? {
-              say: `${greet} Your parcel from Demo Store was delivered. Want to check it now?`,
-              politeness: 'polite',
-              card: { kind: 'link', heading: 'Your parcel arrived', text: `The ${pending.title} from Demo Store was delivered.`, href: `/app/check/${pending.id}`, label: 'Check it now' },
-              suggestions: suggestionsFor('browsing', false),
-            }
-          : {
-              say: `${greet} What do you need today?`,
-              politeness: 'polite',
-              card: pending
-                ? { kind: 'link', heading: 'Your parcel arrived', text: `The ${pending.title} from Demo Store was delivered.`, href: `/app/check/${pending.id}`, label: 'Check it now' }
-                : null,
-              suggestions: suggestionsFor('browsing', false),
-            };
-        ctx.state = { phase: 'browsing', ...(pending ? { pending: [{ kind: 'check', said: 'check it now' }] } : {}) };
+      case 'start':
+        reply = await greet(ctx);
         break;
-      }
       case 'offer':
         // A fresh page, like 'start', that goes straight to the offer the order page pointed to.
         ctx.state = { phase: 'browsing' };
@@ -1117,6 +1273,10 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
           reply = { say: en.offers.notAnswered, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
         } else
           reply = ctx.state.phase === 'readback' ? await confirmStep(ctx, { phrase: 'cancel', button: false }) : { say: 'Okay. Nothing was charged.', politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
+        break;
+      case 'offer-accept':
+      case 'offer-decline':
+        reply = await offerButton(ctx, req.action === 'offer-accept' ? 'accept' : 'decline', req.offerId, armedAt);
         break;
       case 'paypal-approved': {
         const loaded = await loadReadbackRow(req.readbackId);

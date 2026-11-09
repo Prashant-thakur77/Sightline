@@ -167,11 +167,12 @@ export default async function Landing() {
                   <p className="lp-mval">{keepCountTogether(h.value)}</p>
                   <p>{h.label}</p>
                   {h.baseline && <p className="lp-mbase">Baseline: {h.baseline}</p>}
+                  {h.context && <p className="lp-mbase">{h.context}</p>}
                 </li>
               ))}
             </ul>
             <p>
-              Every number comes from a script in the repository and is recomputed on the <Link href="/judge#numbers">judge page</Link>, with the
+              Every number comes from a script in the repository, is read from its result file, and is listed on the <Link href="/judge#numbers">judge page</Link> with the
               negative results we found.
             </p>
           </section>

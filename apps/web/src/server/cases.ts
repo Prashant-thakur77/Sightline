@@ -50,8 +50,8 @@ function templateNarrative(title: string, v: Verdict | null, amount: string, rem
             : `I'll ask Demo Store to look at the evidence and refund your ${amount} if it's wrong.`
           : `I'll send Demo Store the evidence and ask them to make it right. No money was taken.`),
     seller: sure
-      ? `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${forSeller} The buyer checked the parcel with photos and a size-tag reading; the evidence pack is attached with its signature. ${ASK[remedy](amount)}`
-      : `Hello. The ${title} delivered for this order may not match the listing. ${forSeller} The photos and the check are attached with a signature. Please look at the evidence and reply to the buyer; if it is the wrong item: ${ASK[remedy](amount).charAt(0).toLowerCase()}${ASK[remedy](amount).slice(1)}`,
+      ? `Hello. The ${title} delivered for this order does not match the listing the buyer paid for. ${forSeller} The buyer checked the parcel with photos and a size-tag reading. The signed evidence pack has the findings and each photo's fingerprint, so the photos can be verified when the buyer shares them. ${ASK[remedy](amount)}`
+      : `Hello. The ${title} delivered for this order may not match the listing. ${forSeller} The signed evidence pack has the check's findings and each photo's fingerprint. Please look at the evidence and reply to the buyer; if it is the wrong item: ${ASK[remedy](amount).charAt(0).toLowerCase()}${ASK[remedy](amount).slice(1)}`,
   };
 }
 

@@ -36,23 +36,24 @@ const PICKS: Pick[] = [
   {
     suite: 'redteam',
     id: 'breaches-sightline',
-    label: (h) => {
-      const how = firstClause(h.note);
-      return `payments with a wrong amount, payee or quantity, or sent without the buyer’s confirmation, across ${h.n ?? 'the'} listings written to trick the app${/simulation/i.test(how) ? ', simulated without calling PayPal' : ''}`;
-    },
+    label: () => 'trick listings that got a wrong or unconfirmed payment through',
     baselineLabel: 'A shopping agent without the payment check',
+    context: (h) =>
+      `Wrong means the amount, payee or quantity.${/simulation/i.test(firstClause(h.note)) ? ' Simulated, without calling PayPal.' : ''}`,
   },
   {
     suite: 'confirmation',
     // Held-out phrases only: the matcher was tuned on the other set, so that one would flatter it.
     id: 'heldout-false-confirm',
-    label: (h) => `times something that was not a “yes” passed the first of the two confirmation checks, out of ${h.n ?? 'the'} phrases written after it was built`,
+    label: () => 'phrases that were not a “yes” but passed as one',
     baselineLabel: 'Listening only for key words',
+    context: () => 'The first of the two confirmation checks, on phrases written after it was built.',
   },
   {
     suite: 'duplicates',
     id: 'duplicate-scenarios',
-    label: (h) => `double-charge tests (double taps, retries, lost replies) that ended with more than one order${/no PayPal call is made/i.test(h.note ?? '') ? ', simulated without calling PayPal' : ''}`,
+    label: () => 'double taps, retries and lost replies that charged twice',
+    context: (h) => (/no PayPal call is made/i.test(h.note ?? '') ? 'Simulated, without calling PayPal.' : undefined),
     // The declared baseline (random request ids) also scores 0, because the other guards still
     // catch every duplicate; the comparison that shows what the protection changed is the same
     // 100 scenarios run before lost PayPal answers were handled, from the same file.
@@ -62,8 +63,9 @@ const PICKS: Pick[] = [
   {
     suite: 'grounding',
     id: 'catch-rate',
-    label: (h) => `made-up product facts caught before you heard them${/^simulated: scripted answers/i.test(h.note ?? '') ? ', in scripted test answers' : ''}`,
+    label: () => 'made-up product facts caught before you heard them',
     baselineLabel: 'With no fact check',
+    context: (h) => (/^simulated: scripted answers/i.test(h.note ?? '') ? 'Measured on scripted test answers.' : undefined),
   },
   {
     suite: 'sightbench',
@@ -89,7 +91,8 @@ const PICKS: Pick[] = [
   {
     suite: 'barrier',
     id: 'barrier-keyboard-blocked-incl-dialogs',
-    label: () => 'stores where pressing Tab could not reach “Add to cart”, counting dialogs that trap focus',
+    label: () => 'stores where Tab alone could not reach “Add to cart”',
+    context: () => 'A dialog that traps keyboard focus counts as blocked.',
   },
 ];
 

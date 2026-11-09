@@ -238,5 +238,35 @@ export function barrierChartTables(data: BarrierData): ChartTable[] {
       rows: rules.map((r) => ({ key: r.name, cells: [r.name, String(r.value)] })),
       empty: 'No rule failed on any store.',
     },
+    {
+      id: 'rule-detail',
+      title: 'What each rule checks',
+      caption: 'Every failing rule: what it checks, stores failing and failing elements',
+      columns: ['Rule', 'What it checks', 'Stores failing', 'Failing elements'],
+      rows: [...data.rules]
+        .sort((a, b) => b.storesAffected - a.storesAffected || b.totalNodes - a.totalNodes)
+        .map((r) => ({ key: r.id, cells: [r.id, r.help, String(r.storesAffected), String(r.totalNodes)] })),
+      empty: 'No rule failed on any store.',
+    },
+    {
+      id: 'stores',
+      title: 'Stores',
+      caption: 'Every audited store, named only by a hash of its domain',
+      columns: ['Store', 'Platform', 'Product page failures', 'Home page failures', 'Keyboard walk', 'Tabs to add to cart'],
+      rows: data.stores
+        .filter((st) => st.productViolations != null)
+        .map((st) => ({
+          key: st.id,
+          cells: [
+            st.id,
+            st.platform,
+            String(st.productViolations ?? '—'),
+            String(st.homeViolations ?? '—'),
+            st.keyboardOutcome,
+            st.tabsToAddToCart == null ? 'Not reached' : String(st.tabsToAddToCart),
+          ],
+        })),
+      empty: 'No store page was audited.',
+    },
   ];
 }

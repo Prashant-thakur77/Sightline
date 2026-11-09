@@ -36,8 +36,8 @@ function confirmCopy(c: MerchantCase, a: CaseAction): { title: string; body: str
         };
       if (c.refundPath === 'void')
         return {
-          title: `Release ${c.buyer}'s ${c.amount} hold?`,
-          body: `PayPal releases the payment hold. Demo Store is never paid, and the case closes. This cannot be undone.`,
+          title: `Accept the return and release ${c.buyer}'s ${c.amount} hold?`,
+          body: `PayPal releases the payment hold now, so Demo Store is never paid. ${c.buyer} is asked to send the ${c.item} back, and the case closes. This cannot be undone.`,
           yes: `Yes, release ${c.amount}`,
         };
       return {
@@ -185,6 +185,7 @@ function CaseCard({
   const triggerRefs = useRef<Partial<Record<CaseAction, HTMLButtonElement | null>>>({});
   const h = `case-${c.id}-h`;
   const suggested = c.suggestion.action;
+  const waitingForBuyer = c.stage === 'offer_received';
 
   useEffect(() => {
     if (pending) confirmRef.current?.focus();
@@ -400,11 +401,23 @@ function CaseCard({
             <div className="mx-case-act">
               {c.open && (
                 <div className="mx-suggest">
-                  <p className="mx-suggest-tag">Suggestion · never sent automatically</p>
-                  <h4 id={`${h}-sg`} className="mx-suggest-h">
-                    {c.suggestion.title}
-                  </h4>
-                  <p>{c.suggestion.why}</p>
+                  {waitingForBuyer ? (
+                    <>
+                      <p className="mx-suggest-tag">Waiting</p>
+                      <h4 id={`${h}-sg`} className="mx-suggest-h">
+                        Waiting for {c.buyer}&rsquo;s answer
+                      </h4>
+                      <p>Your offer is with {c.buyer}. Nothing else needs a reply until they answer; you&rsquo;ll see it here.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mx-suggest-tag">Suggestion · never sent automatically</p>
+                      <h4 id={`${h}-sg`} className="mx-suggest-h">
+                        {c.suggestion.title}
+                      </h4>
+                      <p>{c.suggestion.why}</p>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -413,10 +426,18 @@ function CaseCard({
                   <h4 id={`${h}-reply`} className="mx-h4">
                     Your reply
                   </h4>
+                  {/* Why some replies are off, said once, before the buttons. */}
+                  {(refundBlocked || waitingForBuyer) && (
+                    <p id={`${h}-off`} className="mx-demo-note">
+                      {waitingForBuyer
+                        ? `Your offer is waiting for ${c.buyer}'s answer, so another offer or no reply can't be chosen now.`
+                        : 'This order has no PayPal payment, so there is nothing to refund or give back: offer a replacement instead.'}
+                    </p>
+                  )}
                   <div className="mx-reply-actions">
                     {ACTIONS.map((a) => {
-                      // An offer is waiting for the buyer: a second offer would contradict it.
-                      const waiting = c.stage === 'offer_received' && (a.action === 'replacement' || a.action === 'return');
+                      // An offer is waiting for the buyer: a second offer or "no reply" would contradict it.
+                      const waiting = waitingForBuyer && a.action !== 'refund';
                       const blocked = (a.action === 'refund' && refundBlocked) || (a.action === 'return' && refundBlocked) || waiting;
                       const unavailable = anyBusy || blocked;
                       return (
@@ -429,30 +450,23 @@ function CaseCard({
                             className={
                               a.action === 'refund' && !blocked ? 'btn btn-primary mx-btn' : 'btn mx-btn'
                             }
-                            aria-describedby={waiting ? `${h}-waiting` : blocked ? `${h}-norefund` : `${h}-tab`}
+                            aria-describedby={`${h}-tab`}
                             aria-expanded={pending === a.action}
                             aria-disabled={unavailable || undefined}
                             onClick={() => {
-                              if (!unavailable) setPending(a.action);
+                              if (unavailable) return;
+                              // Pressing the open one again takes you to its question.
+                              if (pending === a.action) confirmRef.current?.focus();
+                              else setPending(a.action);
                             }}
                           >
                             {a.action === 'refund' && c.refundPath === 'void' ? 'Accept the return and release the hold' : a.label}
-                            {suggested === a.action && (
+                            {suggested === a.action && !waitingForBuyer && !blocked && (
                               <span className="mx-suggested-tag">
                                 <span className="sr-only">, </span>Suggested
                               </span>
                             )}
                           </button>
-                          {blocked && a.action === 'refund' && (
-                            <p id={`${h}-norefund`} className="mx-demo-note">
-                              This order has no PayPal payment to refund.
-                            </p>
-                          )}
-                          {waiting && a.action === 'replacement' && (
-                            <p id={`${h}-waiting`} className="mx-demo-note">
-                              Your offer is waiting for {c.buyer}&rsquo;s answer, so no second offer can be made.
-                            </p>
-                          )}
                         </Fragment>
                       );
                     })}

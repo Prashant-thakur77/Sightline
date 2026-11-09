@@ -10,6 +10,15 @@ test.describe('landing and start', () => {
     await expectNoAxeViolations(page);
   });
 
+  test("Raj's saved low-vision and voice settings apply straight away, without a reload", async ({ page }) => {
+    await page.goto('/start');
+    await page.getByRole('button', { name: 'Shop as Raj' }).click();
+    await expect(page).toHaveURL(/\/app$/);
+    await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe('contrast');
+    await expect.poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue('--text-scale'))).toBe('1.5');
+    await expect(page.getByRole('button', { name: 'Stop speaking' })).toBeVisible();
+  });
+
   test('start page signs in as Maya without sign-up', async ({ page }) => {
     await page.goto('/start');
     await page.getByRole('button', { name: 'Shop as Maya' }).click();

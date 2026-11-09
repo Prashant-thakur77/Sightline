@@ -56,6 +56,7 @@ export function CardView({
   onConfirm,
   onHold,
   onCancel,
+  onOffer,
   paypalSlot,
 }: {
   card: Card;
@@ -64,6 +65,8 @@ export function CardView({
   onConfirm: (readbackId: string) => void;
   onHold: (readbackId: string) => void;
   onCancel: () => void;
+  /** Accept (two presses) or decline the store's offer on the card. */
+  onOffer: (answer: 'accept' | 'decline', offerId: string) => void;
   paypalSlot?: React.ReactNode;
 }) {
   switch (card.kind) {
@@ -187,6 +190,7 @@ export function CardView({
                 className="btn btn-primary btn-xl"
                 onClick={() => onConfirm(card.readbackId)}
                 aria-keyshortcuts="Shift+Enter"
+                aria-describedby={card.paypalConnected ? undefined : 'paypal-off'}
                 data-action="confirm"
               >
                 {card.needsSecondPress ? `Press again to pay ${card.total}` : `Confirm and pay ${card.total}`}
@@ -198,8 +202,37 @@ export function CardView({
                 Cancel
               </button>
             </div>
-            <p className="receipt-note">Paying with {card.payWith}. To change something, say what to change.</p>
+            {card.paypalConnected ? (
+              <p className="receipt-note">Paying with {card.payWith}. To change something, say what to change.</p>
+            ) : (
+              // Also the Confirm button's description, so it is heard before the first press.
+              <p id="paypal-off" className="receipt-note receipt-warn">
+                PayPal isn’t connected on this server, so confirming won’t charge anything. To change something, say what to change.
+              </p>
+            )}
           </div>
+        </section>
+      );
+    case 'offer':
+      return (
+        <section aria-labelledby="card-h" className="card card-offer">
+          <h2 id="card-h" tabIndex={-1} className="card-h">
+            {card.heading}
+          </h2>
+          <p className="max-w-[var(--measure)]">{card.text}</p>
+          {/* data-action keeps focus on Accept between its two presses, as with Confirm. */}
+          <div className="confirm-row">
+            <button type="button" className="btn btn-primary btn-xl" onClick={() => onOffer('accept', card.offerId)} data-action="offer-accept">
+              {card.needsSecondPress ? 'Press again to accept' : 'Accept the offer'}
+            </button>
+            <button type="button" className="btn btn-xl" onClick={() => onOffer('decline', card.offerId)} data-action="offer-decline">
+              Decline
+            </button>
+          </div>
+          <p className="receipt-note">
+            Nothing changes until you choose. Declining keeps your case open.{' '}
+            <Link href={`/app/orders/${card.orderId}#money-back`}>See the order</Link>
+          </p>
         </section>
       );
     case 'paypal':

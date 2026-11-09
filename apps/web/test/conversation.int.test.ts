@@ -219,6 +219,155 @@ describe.skipIf(!hasDb)('conversation turns (Postgres)', () => {
     expect(c!.status).toBe('open');
   });
 
+  /** An order with a store's replacement offer waiting, and the store's notice of it unread. */
+  async function offerWaiting(userId: string) {
+    const orderId = newId('ord');
+    await rt.db().insert(t.orders).values({
+      id: orderId,
+      userId,
+      cartId: newId('crt'),
+      readbackId: newId('rdb'),
+      snapshotId: newId('snap'),
+      paypalRequestId: newId('req'),
+      intent: 'AUTHORIZE',
+      paymentSource: 'vault',
+      status: 'case_open',
+      amountCents: 3672,
+      merchantId: 'demo-store',
+      title: 'Harbor knit crew-neck sweater',
+    });
+    const caseId = newId('cas');
+    const offer = { id: newId('ofr'), type: 'REPLACEMENT_WITHOUT_REFUND', note: 'A new one.', at: new Date().toISOString(), via: 'local' };
+    await rt.db().insert(t.cases).values({ id: caseId, orderId, userId, kind: 'inquiry', stage: 'offer_received', status: 'open', reason: 'wrong_size', offers: [offer] });
+    await rt.db().insert(t.notifications).values({
+      id: newId('ntf'),
+      userId,
+      kind: 'case',
+      text: 'Demo Store offered to send a replacement Harbor knit crew-neck sweater. Nothing changes until you answer.',
+      link: `/app/orders/${orderId}`,
+    });
+    return { orderId, caseId, offerId: offer.id };
+  }
+
+  it('Accept on the offer card takes two presses, and a double-click counts as one', async () => {
+    const userId = await personas.ensurePersona('maya');
+    const { caseId, offerId } = await offerWaiting(userId);
+    const heard = await conductor.handleTurn(userId, { action: 'offer' });
+    expect(heard.card).toMatchObject({ kind: 'offer', offerId, needsSecondPress: false });
+    // The card's own buttons answer; the chips never repeat them.
+    expect(heard.suggestions.map((s) => s.label)).toEqual(['Hear the offer again', 'Not now']);
+
+    const first = await conductor.handleTurn(userId, { action: 'offer-accept', offerId });
+    expect(first.card).toMatchObject({ kind: 'offer', needsSecondPress: true });
+    expect(first.say).toBe("Press Accept again to accept. You can't undo accepting. To leave the offer open, say 'not now'.");
+    // Straight away is a double-click: still the first press, and nothing is answered.
+    const bounce = await conductor.handleTurn(userId, { action: 'offer-accept', offerId });
+    expect(bounce.card).toMatchObject({ kind: 'offer', needsSecondPress: true });
+    expect((await rt.db().select().from(t.cases).where(eq(t.cases.id, caseId)))[0]!.stage).toBe('offer_received');
+
+    await new Promise((r) => setTimeout(r, 550));
+    const second = await conductor.handleTurn(userId, { action: 'offer-accept', offerId });
+    expect(second.say).toBe('Accepted. Demo Store sends a new sweater next, and your case is closed.');
+    expect((await rt.db().select().from(t.cases).where(eq(t.cases.id, caseId)))[0]!.stage).toBe('resolved');
+  });
+
+  it('any other turn between the two presses starts Accept over', async () => {
+    const userId = await personas.ensurePersona('maya');
+    const { caseId, offerId } = await offerWaiting(userId);
+    await conductor.handleTurn(userId, { action: 'offer' });
+    await conductor.handleTurn(userId, { action: 'offer-accept', offerId });
+    const yes = await say(userId, 'yes');
+    expect(yes.card).toMatchObject({ kind: 'offer', needsSecondPress: false });
+    await new Promise((r) => setTimeout(r, 550));
+    const again = await conductor.handleTurn(userId, { action: 'offer-accept', offerId });
+    expect(again.card).toMatchObject({ kind: 'offer', needsSecondPress: true });
+    expect((await rt.db().select().from(t.cases).where(eq(t.cases.id, caseId)))[0]!.stage).toBe('offer_received');
+  });
+
+  it('the greeting never reads an offer that was already answered', async () => {
+    const userId = await personas.ensurePersona('maya');
+    await conductor.handleTurn(userId, { action: 'start' });
+    const { offerId } = await offerWaiting(userId);
+    // Answered by voice from the order page's link: the notice is spent.
+    await conductor.handleTurn(userId, { action: 'offer' });
+    await say(userId, 'accept the offer');
+    const hello = await conductor.handleTurn(userId, { action: 'start' });
+    expect(hello.say).not.toMatch(/offer|until you answer/i);
+    expect(offerId).toBeTruthy();
+  });
+
+  it('the greeting drops an offer notice whose offer has gone, even if it was never read', async () => {
+    const userId = await personas.ensurePersona('maya');
+    await conductor.handleTurn(userId, { action: 'start' });
+    const { caseId } = await offerWaiting(userId);
+    // Settled elsewhere (the store's desk, PayPal) without the buyer hearing it here.
+    await rt.db().update(t.cases).set({ stage: 'resolved', status: 'resolved' }).where(eq(t.cases.id, caseId));
+    const hello = await conductor.handleTurn(userId, { action: 'start' });
+    expect(hello.say).not.toMatch(/until you answer/);
+    const unread = await rt.db().select().from(t.notifications).where(eq(t.notifications.userId, userId));
+    expect(unread.every((n) => n.readAt)).toBe(true);
+  });
+
+  it('an offer still open is read in the greeting once, then not again', async () => {
+    const userId = await personas.ensurePersona('maya');
+    await conductor.handleTurn(userId, { action: 'start' });
+    await offerWaiting(userId);
+    expect((await conductor.handleTurn(userId, { action: 'start' })).say).toMatch(/One update\. Demo Store offered to send a replacement/);
+    expect((await conductor.handleTurn(userId, { action: 'start' })).say).not.toMatch(/until you answer/);
+  });
+
+  it('welcomes on the first visit only', async () => {
+    const userId = await personas.ensurePersona('maya');
+    const first = await conductor.handleTurn(userId, { action: 'start' });
+    expect(first.say).toMatch(/^Hi Maya\. Welcome to /);
+    const again = await conductor.handleTurn(userId, { action: 'start' });
+    expect(again.say).toBe('Hi Maya. What do you need today?');
+  });
+
+  it('a reload brings a waiting readback back at its first press, and the options too', async () => {
+    const userId = await personas.ensurePersona('maya');
+    await conductor.handleTurn(userId, { action: 'start' });
+    const found = await say(userId, 'navy crew-neck sweater');
+    expect(found.card?.kind).toBe('options');
+    // Options come back after a reload.
+    const page1 = await conductor.resumeTurn(userId);
+    expect(page1?.card?.kind).toBe('options');
+    expect(page1?.messages.some((m) => m.role === 'user' && m.text === 'navy crew-neck sweater')).toBe(true);
+    const back1 = await conductor.handleTurn(userId, { action: 'start' });
+    expect(back1.card?.kind).toBe('options');
+    expect(back1.say).toMatch(/options from before are still here/);
+
+    const rb = await conductor.handleTurn(userId, { action: 'buy', index: 1 });
+    const readbackId = rb.card?.kind === 'readback' ? rb.card.readbackId : '';
+    const first = await conductor.handleTurn(userId, { action: 'confirm-button', readbackId });
+    expect(first.card?.kind === 'readback' && first.card.needsSecondPress).toBe(true);
+
+    // The page shows the readback again before the greeting arrives, at its first press.
+    const page2 = await conductor.resumeTurn(userId);
+    expect(page2?.card).toMatchObject({ kind: 'readback', readbackId, needsSecondPress: false });
+    const back2 = await conductor.handleTurn(userId, { action: 'start' });
+    expect(back2.card).toMatchObject({ kind: 'readback', readbackId, needsSecondPress: false });
+    expect(back2.phase).toBe('readback');
+    expect(back2.say).toMatch(/Your readback is still here: .+, \$\d+\.\d\d\. Nothing is paid until you confirm\./);
+    // The reload was not a press: the next press is a first press again, and nothing is paid.
+    const after = await conductor.handleTurn(userId, { action: 'confirm-button', readbackId });
+    expect(after.card?.kind === 'readback' && after.card.needsSecondPress).toBe(true);
+    expect(await rt.db().select().from(t.orders).where(eq(t.orders.userId, userId))).toHaveLength(0);
+    await say(userId, 'cancel');
+    // A cancelled readback is not brought back.
+    expect((await conductor.resumeTurn(userId))?.card?.kind).not.toBe('readback');
+  });
+
+  it('without PayPal keys the readback says so before the first press, outside the signed text', async () => {
+    if (rt.INTEGRATIONS.paypal) return;
+    const userId = await personas.ensurePersona('maya');
+    await say(userId, 'navy crew-neck sweater');
+    const rb = await conductor.handleTurn(userId, { action: 'buy', index: 1 });
+    expect(rb.card).toMatchObject({ kind: 'readback', paypalConnected: false });
+    expect(rb.say.endsWith("PayPal isn't connected on this server, so confirming won't charge anything.")).toBe(true);
+    expect(rb.card?.kind === 'readback' && rb.card.text).not.toContain('connected');
+  });
+
   it('"check it now" points to the camera check link without claiming to open it', async () => {
     const userId = await personas.ensurePersona('maya');
     const orderId = newId('ord');

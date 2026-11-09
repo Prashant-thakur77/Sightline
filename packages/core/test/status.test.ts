@@ -17,6 +17,8 @@ describe('shared status vocabulary', () => {
     expect(verdictStatus('unsure').glyph).toBe('?');
     expect(verdictStatus(null).word).toBe('Not checked');
     expect(caseStatus('seller_contacted').word).toBe('Waiting for the store');
+    expect(caseStatus('accepted').word).toBe('Offer accepted');
+    expect(caseStatus('declined').word).toBe('Offer declined');
   });
   it('writes reasons in the third person for sellers', () => {
     const s = reasonForSeller({ module: 'size', finding: 'disagree', confidence: 'fairly_sure', expected: 'M', observed: 'L', sentence: '' });

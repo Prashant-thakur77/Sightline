@@ -91,6 +91,31 @@ function happened(action: string): string {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
+/**
+ * What a closed case ended with, from its recorded outcome, or from the order's own state when
+ * the outcome has no kind (a PayPal decision gives a code instead).
+ */
+function resolvedOutcome(outcome: unknown, orderStatus: string, currency: string, amount: string): { head: string; detail: string | null } {
+  const out = (outcome ?? {}) as { kind?: string; by?: string; amountCents?: number; outcome_code?: string };
+  if (out.kind === 'replacement' || orderStatus === 'resolved_replacement')
+    return { head: 'Resolved: you accepted a replacement.', detail: 'Demo Store sends a new one. No refund comes with it.' };
+  if (out.kind === 'voided' || orderStatus === 'voided')
+    return {
+      head: 'Resolved: the payment hold was released.',
+      detail:
+        out.by === 'deadline'
+          ? `The case wasn’t settled by its deadline, so I cancelled the hold. You were never charged ${amount}.`
+          : `Demo Store released the hold. You were never charged ${amount}.`,
+    };
+  if (out.kind === 'refunded' || orderStatus === 'resolved_refund') {
+    const refunded = typeof out.amountCents === 'number' ? formatMoney({ cents: out.amountCents, currency }) : amount;
+    return { head: `Resolved: refunded ${refunded}.`, detail: 'It goes back to your PayPal account.' };
+  }
+  if (out.outcome_code === 'RESOLVED_BUYER_FAVOUR') return { head: 'Resolved: PayPal decided in your favour.', detail: 'Your refund comes through PayPal.' };
+  if (out.outcome_code === 'RESOLVED_SELLER_FAVOUR') return { head: 'Resolved: PayPal decided for Demo Store.', detail: null };
+  return { head: 'Resolved. The case is closed.', detail: null };
+}
+
 function Technical({ step, rows }: { step: string; rows: [string, string | null | undefined][] }) {
   const shown = rows.filter((r): r is [string, string] => Boolean(r[1]));
   if (!shown.length) return null;
@@ -135,6 +160,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const moneyBack: StatusWord = verdict?.kind === 'match' && !kase ? { word: 'Nothing to do', glyph: '–', tone: 'neutral' } : caseState;
   const canMoneyBack = Boolean(verdict && verdict.kind !== 'match') && (!kase || kase.stage === 'evidence_built' || kase.stage === 'draft');
   const caseSent = Boolean(kase && kase.stage !== 'draft' && kase.stage !== 'evidence_built');
+  const resolved = kase?.stage === 'resolved' ? resolvedOutcome(kase.outcome, o.status, o.currency, amount) : null;
 
   return (
     <div className="grid gap-8">
@@ -248,7 +274,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <AskHelper orderId={o.id} helperName={helper.name} />
           ) : null}
           <p>
-            <Link className={verdict ? 'btn' : 'btn btn-primary'} href={`/app/check/${o.id}`}>
+            <Link className={verdict ? 'btn' : 'btn btn-primary btn-xl'} href={`/app/check/${o.id}`}>
               {verdict ? 'Check again' : 'Check the parcel with your camera'}
             </Link>
           </p>
@@ -257,8 +283,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <Section n={5} id="money-back" tab="Money back" state={moneyBack}>
           <h3 className="folder-h">
             {caseSent
-              ? kase!.stage === 'resolved'
-                ? 'Resolved.'
+              ? resolved
+                ? resolved.head
                 : `${caseState.word}.`
               : verdict && verdict.kind !== 'match'
                 ? 'Get your money back'
@@ -270,18 +296,21 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <p>
               {verdict
                 ? 'If you change your mind, or find something wrong later, check the parcel again. If the new check finds a problem, you can get your money back here.'
-                : 'Check the parcel with your camera when it arrives. If it is not what you paid for, you can get your money back here.'}
+                : shipment?.deliveredAt
+                  ? 'Your parcel was delivered. Check it with your camera. If it is not what you paid for, you can get your money back here.'
+                  : 'When the parcel arrives, check it with your camera. If it is not what you paid for, you can get your money back here.'}
             </p>
           )}
+          {resolved?.detail && <p>{resolved.detail}</p>}
           {caseSent && kase!.stage === 'seller_contacted' && kase!.dueAt && (
-            <p>
+            <p className="mb-server-sent">
               Demo Store has until {spokenDate(kase!.dueAt)} to reply. If they
               don’t, you can open a case with PayPal yourself and attach the signed evidence pack. I’ll tell you when anything changes.
             </p>
           )}
           {kase?.stage === 'offer_received' && (
             <>
-              <p>Demo Store made an offer, and nothing changes until you answer. I read the offer and what accepting it means, then you say accept or decline.</p>
+              <p>Demo Store made an offer, and nothing changes until you answer. I read the offer and what accepting it means, then you accept or decline it.</p>
               <p>
                 <Link className="btn btn-primary btn-xl" href="/app?hear=offer">
                   Hear Demo Store’s offer and answer it

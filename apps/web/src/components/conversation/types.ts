@@ -42,8 +42,20 @@ export type Card =
       text: string;
       total: string;
       payWith: string;
+      /** False when this server has no PayPal keys: confirming can't pay, and the card says so. */
+      paypalConnected: boolean;
       needsSecondPress: boolean;
       held: boolean;
+    }
+  | {
+      /** A store's offer on an open case, with Accept (two presses) and Decline in the card. */
+      kind: 'offer';
+      heading: string;
+      offerId: string;
+      orderId: string;
+      /** What was offered, what accepting means, and that it can't be undone. */
+      text: string;
+      needsSecondPress: boolean;
     }
   | { kind: 'paypal'; heading: string; readbackId: string; paypalOrderId: string; total: string; clientId: string; orderIntent: 'CAPTURE' | 'AUTHORIZE' }
   | {
@@ -80,6 +92,9 @@ export type TurnRequest =
   | { action: 'hold'; readbackId: string }
   | { action: 'cancel' }
   | { action: 'paypal-approved'; readbackId: string; paypalOrderId: string }
+  /** The offer card's buttons. Accept needs two presses; the first only asks for the second. */
+  | { action: 'offer-accept'; offerId: string }
+  | { action: 'offer-decline'; offerId: string }
   | { action: 'repeat' }
   | { action: 'start' }
   /** Opened from an order page to hear the store's waiting offer, instead of the greeting. */

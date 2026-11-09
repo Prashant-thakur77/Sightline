@@ -44,7 +44,6 @@ export default async function Settings() {
           Notifications
         </h2>
         <p className="hint">Parcel arrived, refund landed, helper answered. Short and plain. You can stop them any time.</p>
-        <p className="hint">This button works on its own, straight away. Save settings doesn’t change it.</p>
         <PushOptIn vapidKey={vapidPublicKey()} />
       </section>
       <DataControls photoCount={photos.total} neededByCase={photos.needed} retentionDays={PHOTO_RETENTION_DAYS} />

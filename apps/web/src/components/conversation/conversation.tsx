@@ -57,6 +57,10 @@ export function Conversation({
   opening,
 }: {
   firstName: string;
+  /**
+   * The conversation so far, from the server: messages, and a readback or options still waiting.
+   * Shown at once; the greeting turn that follows says hello and brings the same card back.
+   */
   initial?: TurnResponse | null;
   /** What the page was opened to do, instead of the usual greeting: "offer" reads the store's waiting offer. */
   opening?: 'offer';
@@ -77,6 +81,9 @@ export function Conversation({
   const lastSay = useRef(initial?.say ?? '');
   const cardRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  /** Where focus should go once the reply's card is on screen; applied by the effect below. */
+  const pendingFocus = useRef<{ inCard: boolean; inSuggestions: boolean; action: string | null } | null>(null);
+  const [focusTick, setFocusTick] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLElement>(null);
   const spaceDown = useRef(false);
@@ -103,9 +110,12 @@ export function Conversation({
       const greeting = 'action' in req && req.action === 'start';
       if (!greeting) setCompact(true);
       // Focus inside the card is about to disappear with the card; remember to move it.
+      // An offer opened from an order page's link always lands on the offer card: focus may still be
+      // on the link that navigated here, so it can't be used to decide.
+      const openedOffer = 'action' in req && req.action === 'offer';
       const focusWasInCard =
-        !greeting &&
-        (Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body);
+        openedOffer ||
+        (!greeting && (Boolean(cardRef.current?.contains(document.activeElement)) || document.activeElement === document.body));
       // The card control that had focus (Confirm, Wait, Cancel), so the same control in the card
       // that comes back keeps it, instead of sending a screen reader back to the heading.
       const actionHadFocus =
@@ -137,24 +147,12 @@ export function Conversation({
         if (data.cue) cue(data.cue);
         else cue('done');
         clearTimeout(slow);
-        if (focusWasInCard || focusWasInSuggestions)
-          requestAnimationFrame(() => {
-            const active = document.activeElement;
-            if (!focusWasInCard && active && active !== document.body && suggestionsRef.current?.contains(active)) return;
-            const sameControl = actionHadFocus
-              ? cardRef.current?.querySelector<HTMLElement>(`[data-action="${CSS.escape(actionHadFocus)}"]`)
-              : null;
-            if (sameControl) {
-              // Usually the very same button, still focused: leave it be so nothing is read twice.
-              if (sameControl !== active) sameControl.focus({ preventScroll: false });
-              return;
-            }
-            const target =
-              cardRef.current?.querySelector<HTMLElement>('.card-h') ??
-              (focusWasInSuggestions ? suggestionsRef.current?.querySelector<HTMLElement>('button') : null) ??
-              inputRef.current;
-            target?.focus({ preventScroll: false });
-          });
+        // Moved after React has drawn the new card (see the effect on focusTick), never on a timer,
+        // so a slow render can't send focus to the text box instead of the card.
+        if (focusWasInCard || focusWasInSuggestions) {
+          pendingFocus.current = { inCard: focusWasInCard, inSuggestions: focusWasInSuggestions, action: actionHadFocus ?? null };
+          setFocusTick((t) => t + 1);
+        }
         return true;
       } catch {
         clearTimeout(slow);
@@ -346,7 +344,7 @@ export function Conversation({
 
   const started = useRef(false);
   useEffect(() => {
-    if (started.current || initial) return;
+    if (started.current) return;
     started.current = true;
     if (opening === 'offer') {
       // Opened from an order's "Hear the offer" link: read the offer straight away. The address goes
@@ -354,7 +352,26 @@ export function Conversation({
       window.history.replaceState(null, '', '/app');
       void send({ action: 'offer' });
     } else void send({ action: 'start' });
-  }, [initial, opening, send]);
+  }, [opening, send]);
+
+  useEffect(() => {
+    const p = pendingFocus.current;
+    if (!p) return;
+    pendingFocus.current = null;
+    const active = document.activeElement;
+    if (!p.inCard && active && active !== document.body && suggestionsRef.current?.contains(active)) return;
+    const sameControl = p.action ? cardRef.current?.querySelector<HTMLElement>(`[data-action="${CSS.escape(p.action)}"]`) : null;
+    if (sameControl) {
+      // Usually the very same button, still focused: leave it be so nothing is read twice.
+      if (sameControl !== active) sameControl.focus({ preventScroll: false });
+      return;
+    }
+    const target =
+      cardRef.current?.querySelector<HTMLElement>('.card-h') ??
+      (p.inSuggestions ? suggestionsRef.current?.querySelector<HTMLElement>('button') : null) ??
+      inputRef.current;
+    target?.focus({ preventScroll: false });
+  }, [focusTick]);
 
   // The newest message stays in view. Only the box scrolls: focus and the page stay where they are.
   useEffect(() => {
@@ -390,6 +407,7 @@ export function Conversation({
                 onConfirm={(id) => void send({ action: 'confirm-button', readbackId: id })}
                 onHold={(id) => void send({ action: 'hold', readbackId: id })}
                 onCancel={() => void send({ action: 'cancel' })}
+                onOffer={(answer, offerId) => void send({ action: answer === 'accept' ? 'offer-accept' : 'offer-decline', offerId })}
                 paypalSlot={
                   card.kind === 'paypal' ? (
                     <PayPalCheckout
@@ -503,49 +521,52 @@ export function Conversation({
             </p>
           </form>
 
-          {suggestions.length > 0 && (
-            <div className="suggestions" ref={suggestionsRef}>
-              <h2 className="sr-only">Things you can say</h2>
-              <ul>
-                {suggestions.map((s) => (
-                  <li key={s.label}>
-                    <button type="button" className="btn" onClick={() => void send({ text: s.utterance, source: 'keyboard' })} aria-disabled={busy || undefined}>
-                      {s.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <p className="keys-hint">
-            <button type="button" className="btn btn-quiet" aria-expanded={showKeys} onClick={() => setShowKeys((s) => !s)}>
-              Keyboard shortcuts
-            </button>
-          </p>
-          {showKeys && (
-            <div className="grid gap-3">
-            <div className="choice">
-              <input type="checkbox" id="single-keys" checked={singleKeys} onChange={(e) => toggleSingleKeys(e.target.checked)} aria-describedby="single-keys-h" />
-              <label htmlFor="single-keys">Use single-key shortcuts</label>
-              <p id="single-keys-h" className="hint">
-                Off by default, so they never clash with your screen reader's own keys. When off, hold Alt and Shift (Option and Shift on a Mac) with the key.
-              </p>
-            </div>
-            <table className="keys">
-              <caption className="sr-only">Keyboard shortcuts</caption>
-              <tbody>
-                {shortcutRows(singleKeys).map(([k, v]) => (
-                  <tr key={k}>
-                    <th scope="row">
-                      <kbd>{k}</kbd>
-                    </th>
-                    <td>{v}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-          )}
+          {/* Close under the composer: what you can say next, and the shortcuts. */}
+          <div className="convo-extras">
+            {suggestions.length > 0 && (
+              <div className="suggestions" ref={suggestionsRef}>
+                <h2 className="sr-only">Things you can say</h2>
+                <ul>
+                  {suggestions.map((s) => (
+                    <li key={s.label}>
+                      <button type="button" className="btn" onClick={() => void send({ text: s.utterance, source: 'keyboard' })} aria-disabled={busy || undefined}>
+                        {s.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <p className="keys-hint">
+              <button type="button" className="btn btn-quiet" aria-expanded={showKeys} onClick={() => setShowKeys((s) => !s)}>
+                Keyboard shortcuts
+              </button>
+            </p>
+            {showKeys && (
+              <div className="grid gap-3">
+                <div className="choice">
+                  <input type="checkbox" id="single-keys" checked={singleKeys} onChange={(e) => toggleSingleKeys(e.target.checked)} aria-describedby="single-keys-h" />
+                  <label htmlFor="single-keys">Use single-key shortcuts</label>
+                  <p id="single-keys-h" className="hint">
+                    Off by default, so they never clash with your screen reader's own keys. When off, hold Alt and Shift (Option and Shift on a Mac) with the key.
+                  </p>
+                </div>
+                <table className="keys">
+                  <caption className="sr-only">Keyboard shortcuts</caption>
+                  <tbody>
+                    {shortcutRows(singleKeys).map(([k, v]) => (
+                      <tr key={k}>
+                        <th scope="row">
+                          <kbd>{k}</kbd>
+                        </th>
+                        <td>{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be reachable by keyboard (WCAG 2.1.1) */}

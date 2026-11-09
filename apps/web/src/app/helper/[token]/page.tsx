@@ -44,7 +44,10 @@ export default async function HelperPage({ params }: { params: Promise<{ token: 
         <section className="grid gap-3">
           {/* An expired, cancelled and mistyped link all look the same from here, so the page doesn't guess which. */}
           <h1 className="text-[length:var(--step-4)]">This link doesn’t work any more</h1>
-          <p className="text-[length:var(--step-1)]">Links for helpers last 48 hours and can be cancelled at any time. Nothing else is needed from you.</p>
+          <p className="text-[length:var(--step-1)]">
+            Links for helpers last 48 hours and can be cancelled at any time. Nothing else is needed from you. If you still want to help, ask the
+            person who sent it for a new link.
+          </p>
         </section>
       ) : (
         <>
@@ -70,7 +73,7 @@ export default async function HelperPage({ params }: { params: Promise<{ token: 
                   </figcaption>
                 </figure>
                 <a className="link-target" href={r.snapshot.images[0].url}>
-                  Open the listing photo full size (opens in this tab)
+                  Listing photo, full size<span className="sr-only"> (opens in this tab)</span>
                 </a>
               </li>
             )}
@@ -87,7 +90,7 @@ export default async function HelperPage({ params }: { params: Promise<{ token: 
                     </figcaption>
                   </figure>
                   <a className="link-target" href={src}>
-                    Open the {what} photo full size (opens in this tab)
+                    {what.charAt(0).toUpperCase() + what.slice(1)} photo, full size<span className="sr-only"> (opens in this tab)</span>
                   </a>
                 </li>
               );

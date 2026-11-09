@@ -83,4 +83,47 @@ describe('buildMoneyTimeline', () => {
     expect(events[0]!.amount).toBe('$10.00');
     expect(events[0]!.sentence).toBe('Demo Store refunded $10.00 through PayPal.');
   });
+
+  it('says what was offered as a record, then how the buyer answered it', () => {
+    const events = buildMoneyTimeline({
+      orders: [order('o1', { status: 'resolved_replacement' })],
+      cases: [],
+      entries: [
+        entry('case.offer_made', 'o1', '2026-11-08T10:00:00Z', { offerType: 'REPLACEMENT_WITHOUT_REFUND' }),
+        entry('case.offer_accepted', 'o1', '2026-11-08T11:00:00Z', { type: 'REPLACEMENT_WITHOUT_REFUND', via: 'local' }),
+      ],
+      now,
+    });
+    expect(events.map((e) => [e.status.word, e.sentence])).toEqual([
+      ['Offer accepted', 'You accepted a replacement from Demo Store. No money moved.'],
+      ['Offer made', 'Demo Store offered a replacement instead of a refund.'],
+    ]);
+    expect(events.some((e) => /until you answer/.test(e.sentence))).toBe(false);
+  });
+
+  it('records a declined offer, and that no money moved', () => {
+    const events = buildMoneyTimeline({
+      orders: [order('o1', { status: 'case_open' })],
+      cases: [],
+      entries: [entry('case.offer_declined', 'o1', '2026-11-08T11:00:00Z', { type: 'REFUND_WITH_RETURN' })],
+      now,
+    });
+    expect(events[0]!.status.word).toBe('Offer declined');
+    expect(events[0]!.sentence).toBe("You declined Demo Store's offer. No money moved, and your case stayed open.");
+  });
+
+  it('shows the hold sweep’s payments and releases', () => {
+    const o = order('o1', { authorizationId: 'A1' });
+    const events = buildMoneyTimeline({
+      orders: [o],
+      cases: [],
+      entries: [
+        entry('payment.voided_no_reply', 'o1', '2026-11-08T10:00:00Z'),
+        entry('payment.captured_no_check', 'o1', '2026-11-07T10:00:00Z'),
+      ],
+      now,
+    });
+    expect(events.map((e) => e.status.word)).toEqual(['Hold released', 'Paid']);
+    expect(events[0]!.sentence).toContain('You were never charged.');
+  });
 });

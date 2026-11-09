@@ -1142,7 +1142,8 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
   });
   await notify(
     o.userId,
-    'case',
+    // Its own kind, so the app can tell an offer notice apart without reading its words.
+    'offer',
     action === 'replacement'
       ? `Demo Store offered to send a replacement ${o.title}. Nothing changes until you answer.`
       : held

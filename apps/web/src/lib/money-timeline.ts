@@ -54,9 +54,14 @@ export const MONEY_ACTIONS = [
   'payment.authorized',
   'payment.captured',
   'payment.captured_after_check',
+  'payment.captured_after_replacement',
+  'payment.captured_no_check',
   'payment.voided_after_check',
+  'payment.voided_no_reply',
   'case.sent_to_seller',
   'case.offer_made',
+  'case.offer_accepted',
+  'case.offer_declined',
   'case.no_response',
   'case.hold_released',
   'case.refunded',
@@ -71,6 +76,14 @@ const OFFER: Record<string, string> = {
   REFUND_WITH_RETURN: 'a refund when you send the item back',
   REFUND_WITH_REPLACEMENT: 'a refund and a replacement',
   REPLACEMENT_WITHOUT_REFUND: 'a replacement instead of a refund',
+};
+
+/** What accepting each kind of offer meant for the money, in the buyer's words. */
+const ACCEPTED: Record<string, string> = {
+  REFUND: `You accepted a refund from ${STORE}. The refund shows here when it is sent.`,
+  REFUND_WITH_RETURN: `You accepted: send the item back, then ${STORE} refunds you. The refund shows here when it is sent.`,
+  REFUND_WITH_REPLACEMENT: `You accepted a refund and a replacement from ${STORE}. The refund shows here when it is sent.`,
+  REPLACEMENT_WITHOUT_REFUND: `You accepted a replacement from ${STORE}. No money moved.`,
 };
 
 type Line = { status: MoneyEvent['status']; sentence: (amount: string, p: Record<string, unknown>) => string; amount: boolean };
@@ -101,9 +114,24 @@ const LINES: Record<(typeof MONEY_ACTIONS)[number], Line> = {
     sentence: (a) => `Your check matched, so PayPal paid ${a} to ${STORE}.`,
     amount: true,
   },
+  'payment.captured_after_replacement': {
+    status: { word: 'Paid', glyph: '✓', tone: 'good' },
+    sentence: (a) => `A week after you agreed to a replacement, PayPal paid ${a} to ${STORE}.`,
+    amount: true,
+  },
+  'payment.captured_no_check': {
+    status: { word: 'Paid', glyph: '✓', tone: 'good' },
+    sentence: (a) => `A week after delivery, with no problem reported, PayPal paid ${a} to ${STORE}.`,
+    amount: true,
+  },
   'payment.voided_after_check': {
     status: { word: 'Hold released', glyph: '✓', tone: 'good' },
     sentence: (a) => `PayPal released the hold on ${a}. ${STORE} was never paid.`,
+    amount: true,
+  },
+  'payment.voided_no_reply': {
+    status: { word: 'Hold released', glyph: '✓', tone: 'good' },
+    sentence: (a) => `Your case wasn't settled by its deadline, so the hold on ${a} was cancelled. You were never charged.`,
     amount: true,
   },
   'case.sent_to_seller': {
@@ -111,9 +139,20 @@ const LINES: Record<(typeof MONEY_ACTIONS)[number], Line> = {
     sentence: () => `You asked ${STORE} for your money back, with the evidence.`,
     amount: false,
   },
+  // A record of what happened, true however the offer was answered later.
   'case.offer_made': {
-    status: { word: 'Offer to answer', glyph: '!', tone: 'waiting' },
-    sentence: (_a, p) => `${STORE} offered ${OFFER[String(p.offerType)] ?? 'something'}. Nothing changes until you answer.`,
+    status: { word: 'Offer made', glyph: '–', tone: 'neutral' },
+    sentence: (_a, p) => (OFFER[String(p.offerType)] ? `${STORE} offered ${OFFER[String(p.offerType)]}.` : `${STORE} made an offer.`),
+    amount: false,
+  },
+  'case.offer_accepted': {
+    status: { word: 'Offer accepted', glyph: '✓', tone: 'good' },
+    sentence: (_a, p) => ACCEPTED[String(p.type)] ?? `You accepted ${STORE}'s offer.`,
+    amount: false,
+  },
+  'case.offer_declined': {
+    status: { word: 'Offer declined', glyph: '–', tone: 'neutral' },
+    sentence: () => `You declined ${STORE}'s offer. No money moved, and your case stayed open.`,
     amount: false,
   },
   'case.no_response': {

@@ -158,7 +158,13 @@ export default async function EvidencePage({ params }: { params: Promise<{ id: s
             {ver.photos.map((p) => (
               <li key={p.blobId}>
                 {present.has(p.blobId) ? (
-                  <img src={`/api/blobs/${p.blobId}`} alt={`What arrived: ${p.kind === 'label' ? 'the size tag' : p.kind === 'item' ? 'the item' : 'the damage'}.`} />
+                  <figure>
+                    <img
+                      src={`/api/blobs/${p.blobId}`}
+                      alt={`What arrived: ${p.kind === 'label' ? 'the size tag' : p.kind === 'item' ? 'the item' : 'the damage'}${(p as { source?: string }).source === 'demo' ? ', a demo photo, not taken by the buyer' : ''}.`}
+                    />
+                    {(p as { source?: string }).source === 'demo' && <figcaption className="hint">Demo photo</figcaption>}
+                  </figure>
                 ) : (
                   <p className="hint">Photo of {p.kind === 'label' ? 'the size tag' : p.kind === 'item' ? 'the item' : 'the damage'} deleted. Its fingerprint is still in the signed pack.</p>
                 )}

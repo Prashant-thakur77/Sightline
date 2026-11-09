@@ -74,7 +74,8 @@ describe('featured results', () => {
     const abstained = sbFile.headlines.find((h) => h.id === 'abstention')!.value.split(' (')[0]!;
     expect(sb.context).toContain(abstained);
 
-    expect(byId.get('breaches-sightline')!.label).toContain('simulated without calling PayPal');
+    // The simulation is said on the card (its context line), not hidden in a note.
+    expect(byId.get('breaches-sightline')!.context).toContain('Simulated, without calling PayPal.');
 
     const dups = (await file('duplicates')).headlines;
     // Compared with the same scenarios before lost PayPal answers were handled, read from the file;

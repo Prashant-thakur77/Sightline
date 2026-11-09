@@ -67,7 +67,7 @@ export default async function BarrierIndex() {
           </p>
           {suite && (
             <p className="muted">
-              Measured {utcWhen(suite.ranAt)} · build {suite.gitSha}
+              Crawl finished {utcWhen(suite.ranAt)} · analysed at commit {suite.gitSha}
             </p>
           )}
           {suite && (
@@ -168,7 +168,7 @@ export default async function BarrierIndex() {
             {details?.topRules && (
               <section aria-labelledby="bi-rules-h" className="grid gap-4">
                 <h2 id="bi-rules-h" className="lp-h2">
-                  The most common failures, and how {PRODUCT_NAME} routes around them
+                  The most common failures
                 </h2>
                 <ol className="bi-rules">
                   {details.topRules.slice(0, 10).map((r) => (
@@ -177,9 +177,10 @@ export default async function BarrierIndex() {
                     </li>
                   ))}
                 </ol>
+                <h3 className="text-[length:var(--step-1)]">How {PRODUCT_NAME} avoids them</h3>
                 <p>
-                  {PRODUCT_NAME} never asks a blind shopper to use the store’s pages: product facts come from structured catalog data, the readback is
-                  spoken text, and payment happens through PayPal with a spoken confirmation.
+                  {PRODUCT_NAME} never asks a blind shopper to use the store’s pages, so none of these failures sit on its path: product facts come
+                  from structured catalog data, the readback is spoken text, and payment happens through PayPal with a spoken confirmation.
                 </p>
               </section>
             )}

@@ -133,3 +133,11 @@
     }
   }
 }
+
+@layer components {
+  /* Judge numbers: six cards as 3 + 3 on desktop, each its own height (no stretched gaps). */
+  .judge-main .lp-mlist {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20em), 1fr));
+    align-items: start;
+  }
+}

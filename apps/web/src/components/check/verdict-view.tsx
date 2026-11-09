@@ -34,12 +34,20 @@ export function withoutConfidence(sentence: string): string {
     .trim();
 }
 
+/** The check's generic "ask a helper" steps, with the buyer's own helper named when they have one. */
+export function namedSteps(steps: string[], helperName: string | null | undefined): string[] {
+  if (!helperName) return steps;
+  return steps.map((s) => s.replace(/\b(A|a)sk a helper\b/g, (_m, a: string) => `${a}sk ${helperName}`));
+}
+
 export function VerdictView({
   verdict,
   ordered,
   arrivedPhotoUrl,
   arrivedPhotoSource,
   actions,
+  note,
+  helperName,
   focusOnMount = true,
 }: {
   verdict: Verdict;
@@ -47,6 +55,10 @@ export function VerdictView({
   arrivedPhotoUrl?: string;
   arrivedPhotoSource?: PhotoSource;
   actions?: React.ReactNode;
+  /** Shown just before the actions, e.g. what the helper answered. */
+  note?: React.ReactNode;
+  /** The buyer's helper, named in the steps instead of "a helper". */
+  helperName?: string | null;
   focusOnMount?: boolean;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -90,7 +102,7 @@ export function VerdictView({
               {verdict.reasons
                 .filter((r) => r.observed && (r.module === 'colour' || r.module === 'size'))
                 .map((r) => (r.module === 'size' ? `size ${r.observed}` : r.observed))
-                .join(', ') || 'See the reasons below'}
+                .join(', ') || 'No colour or size read from the photo'}
             </span>
           </figcaption>
         </figure>
@@ -124,12 +136,13 @@ export function VerdictView({
         <div>
           <h3 className="text-[length:var(--step-1)]">What you can do</h3>
           <ul className="list-disc pl-6">
-            {verdict.nextSteps.map((s) => (
+            {namedSteps(verdict.nextSteps, helperName).map((s) => (
               <li key={s}>{s}</li>
             ))}
           </ul>
         </div>
       )}
+      {note}
       {actions && <div className="flex flex-col sm:flex-row gap-3">{actions}</div>}
     </section>
   );

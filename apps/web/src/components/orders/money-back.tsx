@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import { cue } from '@/lib/feedback';
 
+const SEND_LABEL = 'Send it to Demo Store';
+
 interface Preview {
   caseId: string;
   evidencePackId: string;
@@ -23,7 +25,6 @@ interface Preview {
 export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: string; canStart: boolean; sent?: boolean; done?: string | null }) {
   const { announce } = useAnnouncer();
   const router = useRouter();
-  const justSent = useRef(false);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [result, setResult] = useState<string | null>(done ?? null);
   const [busy, setBusy] = useState(false);
@@ -68,8 +69,9 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
       focusNext.current = 'preview';
       setPreview(data);
       cue('attention');
+      // The button's own words, so what is said is what is found.
       announce(
-        `${data.summary} ${data.path === 'void' ? `Your ${data.amount} stays on hold while Demo Store looks. To send it, press Send it.` : 'To send this to Demo Store, press Send it.'}`,
+        `${data.summary} ${data.path === 'void' ? `Your ${data.amount} stays on hold while Demo Store looks. ` : ''}To send it, press ${SEND_LABEL}.`,
         { source: 'money back' },
       );
     } catch (e) {
@@ -90,11 +92,8 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
       const said = data.say ?? 'Sent.';
       focusNext.current = 'result';
       setResult(said);
-      justSent.current = true;
       cue('paid');
-      // Focus is on the result, which reads it once (so it is not also sent live). After the
-      // refresh the page's own Money back section shows the new state (one copy on screen) and
-      // focus moves to its heading.
+      // Focus is on the result, which reads it once, so it is not also sent live.
       announce(said, { politeness: 'assertive', source: 'money back', live: false });
       router.refresh();
     } catch (e) {
@@ -104,14 +103,16 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
     }
   };
 
-  // The refreshed page shows a sent case itself; this component only moves focus there.
-  if (sent) return <SentFocus active={justSent.current} />;
+  // Just sent: the focused result stays put through the page refresh (no focus jump), and the
+  // page's own sent-state paragraph is hidden while it shows (CSS :has), so there is one copy.
   if (result)
     return (
       <p ref={resultRef} tabIndex={-1} className="mb-result">
         {result}
       </p>
     );
+  // A case sent before this page loaded: the page shows it; nothing to start here.
+  if (sent) return null;
 
   return (
     <div className="grid gap-4">
@@ -132,9 +133,10 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
         </div>
       ) : (
         <div className="grid gap-4">
-          <h3 ref={headRef} tabIndex={-1} className="text-[length:var(--step-2)]">
+          {/* Inside the Money back folder, under its "Get your money back" heading. */}
+          <h4 ref={headRef} tabIndex={-1} className="text-[length:var(--step-2)]">
             Before I send it
-          </h3>
+          </h4>
           <p className="text-[length:var(--step-1)]">{preview.summary}</p>
           <p>
             <Link className="link-target" href={`/evidence/${preview.evidencePackId}`}>
@@ -143,7 +145,7 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button type="button" className="btn btn-primary btn-xl" onClick={send} aria-disabled={busy || undefined}>
-              {busy ? 'Sending…' : 'Send it to Demo Store'}
+              {busy ? 'Sending…' : SEND_LABEL}
             </button>
             <button
               type="button"
@@ -165,14 +167,3 @@ export function MoneyBack({ orderId, canStart, sent = false, done }: { orderId: 
   );
 }
 
-/** Once the refreshed page shows the sent case, move focus to the Money back heading. */
-function SentFocus({ active }: { active: boolean }) {
-  useEffect(() => {
-    if (!active) return;
-    const h = document.querySelector<HTMLElement>('#money-back .folder-h');
-    if (!h) return;
-    h.tabIndex = -1;
-    h.focus();
-  }, [active]);
-  return null;
-}

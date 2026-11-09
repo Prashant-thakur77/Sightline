@@ -99,6 +99,11 @@ export function caseStatus(stage: string | null | undefined): StatusWord {
       return { word: 'Waiting for the store', glyph: '…', tone: 'waiting' };
     case 'offer_received':
       return { word: 'Offer to answer', glyph: '!', tone: 'waiting' };
+    // Accepted refunds stay open until the money has moved; a declined offer keeps the case open.
+    case 'accepted':
+      return { word: 'Offer accepted', glyph: '…', tone: 'waiting' };
+    case 'declined':
+      return { word: 'Offer declined', glyph: '…', tone: 'waiting' };
     case 'escalated':
     case 'under_review':
       return { word: 'With PayPal', glyph: '…', tone: 'waiting' };

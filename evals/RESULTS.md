@@ -6,16 +6,16 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 
 | Suite | Results | Negative results | Ran at (UTC) | Git |
 | --- | --- | --- | --- | --- |
-| Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | d8d06cb |
-| Spoken purchase confirmation | 5 | 2 | 2026-11-08T23:39:01.240Z | d8d06cb |
-| Duplicate orders | 8 | 2 | 2026-11-08T23:39:02.560Z | d8d06cb |
-| Grounded answers | 5 | 2 | 2026-11-08T23:39:02.895Z | d8d06cb |
-| Adversarial listings (red team) | 5 | 1 | 2026-11-08T23:39:01.554Z | d8d06cb |
-| SightBench: does the parcel match? | 12 | 5 | 2026-11-08T23:39:00.781Z | d8d06cb |
+| Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | 76879c9 |
+| Spoken purchase confirmation | 5 | 2 | 2026-11-09T00:57:26.571Z | 76879c9 |
+| Duplicate orders | 8 | 2 | 2026-11-09T00:57:27.887Z | 76879c9 |
+| Grounded answers | 5 | 2 | 2026-11-09T00:57:28.220Z | 76879c9 |
+| Adversarial listings (red team) | 5 | 1 | 2026-11-09T00:57:26.917Z | 76879c9 |
+| SightBench: does the parcel match? | 12 | 5 | 2026-11-09T00:57:26.037Z | 76879c9 |
 
 ## Checkout Barrier Index
 
-Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git d8d06cb
+Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git 76879c9
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -57,7 +57,7 @@ Full per-item data: `evals/results/barrier.json` (`details`).
 
 ## Spoken purchase confirmation
 
-Suite `confirmation` · ran 2026-11-08T23:39:01.240Z · git d8d06cb
+Suite `confirmation` · ran 2026-11-09T00:57:26.571Z · git 76879c9
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -86,7 +86,7 @@ Full per-item data: `evals/results/confirmation.json` (`details`).
 
 ## Duplicate orders
 
-Suite `duplicates` · ran 2026-11-08T23:39:02.560Z · git d8d06cb
+Suite `duplicates` · ran 2026-11-09T00:57:27.887Z · git 76879c9
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -124,7 +124,7 @@ Full per-item data: `evals/results/duplicates.json` (`details`).
 
 ## Grounded answers
 
-Suite `grounding` · ran 2026-11-08T23:39:02.895Z · git d8d06cb
+Suite `grounding` · ran 2026-11-09T00:57:28.220Z · git 76879c9
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -152,7 +152,7 @@ Full per-item data: `evals/results/grounding.json` (`details`).
 
 ## Adversarial listings (red team)
 
-Suite `redteam` · ran 2026-11-08T23:39:01.554Z · git d8d06cb
+Suite `redteam` · ran 2026-11-09T00:57:26.917Z · git 76879c9
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -182,7 +182,7 @@ Full per-item data: `evals/results/redteam.json` (`details`).
 
 ## SightBench: does the parcel match?
 
-Suite `sightbench` · ran 2026-11-08T23:39:00.781Z · git d8d06cb
+Suite `sightbench` · ran 2026-11-09T00:57:26.037Z · git 76879c9
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |

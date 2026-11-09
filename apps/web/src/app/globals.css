@@ -1085,6 +1085,13 @@ a {
     color: var(--muted);
     margin: 0;
   }
+  /* Said before the first press: confirming here can't pay. */
+  .receipt-warn {
+    color: var(--ink);
+    font-weight: 700;
+    border-left: 6px solid var(--unsure);
+    padding-left: var(--space-3);
+  }
   /* The KEEP stub, as on the landing ticket: the readback is kept as evidence. */
   .receipt-stub {
     display: flex;
@@ -1244,8 +1251,21 @@ a {
     font-weight: 700;
     max-width: 100%;
   }
+  /* Suggestions and the shortcuts sit close under the composer (whose last line is the status
+     line), not a whole section's gap away. */
+  .convo-extras {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    margin-top: calc(var(--space-3) - var(--space-6));
+  }
   .keys-hint {
     margin: 0;
+  }
+  /* A text-only toggle: its words line up with the content edge, like the text around it. */
+  .keys-hint .btn-quiet {
+    padding-inline: 0;
+    border-inline-width: 0;
   }
   .keys {
     border-collapse: collapse;
@@ -2665,7 +2685,7 @@ a {
 }
 
 @layer components {
-  .moments ol {
+  ol.moments {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -3005,14 +3025,16 @@ a {
 
 /* ---------- Helper page ---------- */
 @layer components {
-  /* One photo per row on a phone, full width; two or three side by side when there is room. */
+  /* One photo per row on a phone, full width; three side by side from about 900px wide, so the
+     listing, the item and the size tag sit in one row. The column floor is in rem, so larger text
+     gets fewer, wider columns. */
   .helper-photos {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     gap: var(--space-5);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14.5rem), 1fr));
   }
   .helper-photos figure {
     margin: 0;
@@ -3161,4 +3183,10 @@ a {
     margin: 0;
     font-weight: 700;
   }
+}
+
+/* Money back, just sent: the focused result says it all, so the page's own sent-state paragraph
+   is hidden while the result is on screen (after a reload only the page's copy shows). */
+#money-back:has(.mb-result) .mb-server-sent {
+  display: none;
 }

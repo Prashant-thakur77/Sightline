@@ -355,5 +355,45 @@ export function verifiedDeliveryChartTables(data: VerifiedDeliveryData): ChartTa
       rows: money.map((m) => ({ key: m.name, cells: [m.name, centsText(m.value)] })),
       empty: 'No orders yet.',
     },
+    {
+      id: 'recent-checks',
+      title: 'Recent checks',
+      caption: 'Newest first',
+      columns: ['Checked', 'Order', 'Item', 'Verdict', 'What differed', 'Check time'],
+      rows: [...data.checks]
+        .sort((a, b) => (b.checkedAt ?? '').localeCompare(a.checkedAt ?? ''))
+        .map((c) => ({
+          key: c.id,
+          cells: [
+            c.checkedAt ? `${c.checkedAt.slice(0, 16).replace('T', ' ')} UTC` : '—',
+            c.orderRef,
+            c.item,
+            c.verdictLabel,
+            c.mismatchType,
+            c.latencyMs == null ? '—' : `${(c.latencyMs / 1000).toFixed(1)} s`,
+          ],
+        })),
+      empty: 'No parcels have been checked yet.',
+    },
+    {
+      id: 'cases',
+      title: 'Cases',
+      caption: 'Opened after a check, newest first',
+      columns: ['Case', 'Stage', 'Reason', 'Outcome', 'Opened', 'Resolved'],
+      rows: [...data.cases]
+        .sort((a, b) => (b.openedAt ?? '').localeCompare(a.openedAt ?? ''))
+        .map((c) => ({
+          key: c.id,
+          cells: [
+            c.ref,
+            c.stage,
+            c.reason,
+            c.outcome || '—',
+            c.openedAt ? `${c.openedAt.slice(0, 16).replace('T', ' ')} UTC` : '—',
+            c.resolvedAt ? `${c.resolvedAt.slice(0, 16).replace('T', ' ')} UTC` : 'Not yet',
+          ],
+        })),
+      empty: 'No cases yet.',
+    },
   ];
 }

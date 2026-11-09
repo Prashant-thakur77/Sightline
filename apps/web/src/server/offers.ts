@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull, like, or } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { paypalRequestId } from '@sightline/evidence';
 import { db, ENV, INTEGRATIONS } from './runtime';
@@ -11,7 +11,7 @@ import { planOfferAnswer, type OfferAnswer, type OfferPlan } from './offer-plan'
 /**
  * The buyer's side of a store's offer on a case: find the offer waiting for an answer, and answer
  * it. The conversation reads the offer and what accepting means first; only a spoken "accept" or
- * "decline" after that reaches answerOffer.
+ * "decline" after that, or the offer card's buttons (Accept takes two presses), reach answerOffer.
  */
 
 export interface OpenOffer {
@@ -49,6 +49,33 @@ export async function findOpenOffer(userId: string): Promise<OpenOffer | null> {
     offer,
     disputeId: c.paypalDisputeId ?? null,
   };
+}
+
+/**
+ * Every notice of a store's offer ends "Nothing changes until you answer." Once the offer has been
+ * read out or answered, that notice is spent: the greeting must not read it again.
+ */
+const OFFER_NOTICE_MARK = 'until you answer';
+
+export function isOfferNotice(n: { kind: string; text: string }): boolean {
+  // New offer notices have their own kind; older ones (kind 'case') are matched by their wording.
+  return n.kind === 'offer' || (n.kind === 'case' && n.text.includes(OFFER_NOTICE_MARK));
+}
+
+/** Mark this order's unread offer notices read: the offer was just read out or answered. */
+export async function markOfferNoticesRead(userId: string, orderId: string): Promise<void> {
+  const n = tables.notifications;
+  await db()
+    .update(n)
+    .set({ readAt: new Date().toISOString() })
+    .where(
+      and(
+        eq(n.userId, userId),
+        isNull(n.readAt),
+        like(n.link, `/app/orders/${orderId}%`),
+        or(eq(n.kind, 'offer'), and(eq(n.kind, 'case'), like(n.text, `%${OFFER_NOTICE_MARK}%`))),
+      ),
+    );
 }
 
 export type OfferAnswerResult =
@@ -98,5 +125,6 @@ export async function answerOffer(userId: string, caseId: string, offerId: strin
     subjectId: open.orderId,
     payload: { caseId, offerId, type: open.offer.type, via: open.offer.via },
   });
+  await markOfferNoticesRead(userId, open.orderId);
   return { ok: true, plan, offer: open };
 }

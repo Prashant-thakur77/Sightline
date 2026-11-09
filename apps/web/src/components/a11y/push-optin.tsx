@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from './announcer';
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
@@ -9,10 +9,20 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
 
+const BLOCKED = 'Notifications are blocked in this browser. You can allow them in the browser’s site settings.';
+
 /** "Tell me on this phone": delivery, refund and helper updates as notifications. */
 export function PushOptIn({ vapidKey }: { vapidKey: string | null }) {
   const { announce } = useAnnouncer();
   const [state, setState] = useState<'unsupported' | 'off' | 'on' | 'blocked' | 'working'>('off');
+  // When the browser blocks notifications after a press, the button goes: focus its replacement.
+  const blockedRef = useRef<HTMLParagraphElement>(null);
+  const focusBlocked = useRef(false);
+  useEffect(() => {
+    if (state !== 'blocked' || !focusBlocked.current) return;
+    focusBlocked.current = false;
+    blockedRef.current?.focus();
+  }, [state]);
 
   useEffect(() => {
     if (!vapidKey || !('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -33,8 +43,10 @@ export function PushOptIn({ vapidKey }: { vapidKey: string | null }) {
       const reg = await navigator.serviceWorker.register('/sw.js');
       const perm = await Notification.requestPermission();
       if (perm !== 'granted') {
+        focusBlocked.current = true;
         setState('blocked');
-        announce('Notifications are blocked in this browser. You can allow them in the browser settings.', { source: 'settings' });
+        // Focus moves to the same words, which the screen reader reads; not also sent live.
+        announce(BLOCKED, { source: 'settings', live: false });
         return;
       }
       const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource });
@@ -60,14 +72,24 @@ export function PushOptIn({ vapidKey }: { vapidKey: string | null }) {
   };
 
   if (state === 'unsupported') return <p className="hint">This browser can’t show notifications from the app. Updates are read out when you open it.</p>;
-  if (state === 'blocked') return <p className="hint">Notifications are blocked in this browser. You can allow them in the browser’s site settings.</p>;
-  return state === 'on' ? (
-    <button type="button" className="btn" onClick={disable}>
-      Stop notifications on this device
-    </button>
-  ) : (
-    <button type="button" className="btn" onClick={enable} aria-disabled={state === 'working' || undefined}>
-      {state === 'working' ? 'Turning on…' : 'Tell me on this device'}
-    </button>
+  if (state === 'blocked')
+    return (
+      <p ref={blockedRef} tabIndex={-1} className="hint">
+        {BLOCKED}
+      </p>
+    );
+  return (
+    <>
+      <p className="hint">This button works on its own, straight away. Save settings doesn’t change it.</p>
+      {state === 'on' ? (
+        <button type="button" className="btn" onClick={disable}>
+          Stop notifications on this device
+        </button>
+      ) : (
+        <button type="button" className="btn" onClick={enable} aria-disabled={state === 'working' || undefined}>
+          {state === 'working' ? 'Turning on…' : 'Tell me on this device'}
+        </button>
+      )}
+    </>
   );
 }

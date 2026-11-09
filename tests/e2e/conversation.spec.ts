@@ -25,7 +25,7 @@ test.describe('conversation: focus, honesty and dead ends', () => {
       expect(receipt!.y).toBeLessThan(viewport.height);
     }
     // Nothing is called paid while the readback waits.
-    await expect(page.getByRole('navigation', { name: 'Where this order is' })).toContainText('Paid, not yet, waiting for you to confirm');
+    await expect(page.getByRole('list', { name: 'Where this order is' })).toContainText('Paid, not yet, waiting for you to confirm');
 
     await confirm.focus();
     await confirm.press('Enter');
@@ -45,6 +45,30 @@ test.describe('conversation: focus, honesty and dead ends', () => {
     await say(page, "what's the total");
     await expect.poll(async () => (await announcements(page)).at(-1)).toMatch(/^The total is \$\d+\.\d\d, with shipping and tax\. To pay, say 'confirm purchase'\./);
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  });
+
+  test('a reload keeps a waiting readback, at its first press', async ({ page }) => {
+    await say(page, 'navy crew-neck sweater');
+    await page.getByRole('button', { name: 'Buy this', exact: true }).first().click();
+    const confirm = page.getByRole('button', { name: /^Confirm and pay \$/ });
+    await confirm.click();
+    await expect(page.getByRole('button', { name: /^Press again to pay \$/ })).toBeVisible();
+
+    await page.reload();
+    // Still there, with the conversation so far, and the reload did not count as a press.
+    await expect(page.getByRole('group', { name: 'Readback' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Confirm and pay \$/ })).toBeVisible();
+    await expect(page.locator('.transcript')).toContainText('navy crew-neck sweater');
+    await expect.poll(async () => (await announcements(page)).join(' ')).toContain('Your readback is still here');
+    expect((await announcements(page)).join(' ')).not.toContain('Welcome to');
+    await expect(page.getByRole('button', { name: /^Press again to pay \$/ })).toHaveCount(0);
+    await expectNoAxeViolations(page);
+
+    // The next press is a first press again: nothing is paid.
+    await page.getByRole('button', { name: /^Confirm and pay \$/ }).click();
+    await expect(page.getByRole('button', { name: /^Press again to pay \$/ })).toBeFocused();
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(page.getByRole('group', { name: 'Readback' })).toHaveCount(0);
   });
 
   test('typed words come back in the text box when the request fails, and the transcript does not keep them', async ({ page }) => {

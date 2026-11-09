@@ -72,7 +72,7 @@ export async function saveSettings(_prev: SaveState, form: FormData): Promise<Sa
     .where(eq(tables.preferences.userId, user.id));
   await audit({ userId: user.id, actor: 'user', action: 'settings.saved', subjectId: user.id, payload: { perOrderCapCents: Math.round(v.perOrderCap * 100), dailyCapCents: Math.round(v.dailyCap * 100) } });
   revalidatePath('/app/settings');
-  return { ok: true, message: 'Saved. Your new settings apply from your next request.' };
+  return { ok: true, message: 'Saved. Your new settings apply from now on.' };
 }
 
 export type DeleteState = { ok: boolean; message: string } | null;

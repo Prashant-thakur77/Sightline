@@ -86,6 +86,11 @@ export function CameraCheck({
   const mirrored = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const shot = SHOTS[index];
+  /** A touch screen (a phone or tablet), where the photo field can open the device's own camera app. */
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    setTouch(window.matchMedia('(pointer: coarse)').matches);
+  }, []);
 
   /** A new step: say nothing and take nothing until it has been read out. */
   const quiet = useCallback(() => {
@@ -347,11 +352,11 @@ export function CameraCheck({
             the size tag, and any damage. You can skip any of them.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button type="button" className="btn btn-primary" onClick={start}>
+            <button type="button" className="btn btn-primary btn-xl" onClick={start}>
               Start the camera
             </button>
             {demoShots && (
-              <button type="button" className="btn" onClick={useDemo}>
+              <button type="button" className="btn btn-xl" onClick={useDemo}>
                 Use the demo parcel photos
               </button>
             )}
@@ -406,7 +411,7 @@ export function CameraCheck({
         <div className="grid gap-3 max-w-[var(--measure)]">
           <p className="card-refusal">
             I couldn’t use the camera. The browser may be blocking it: allow the camera for this site in the browser’s settings, then try again. Or
-            add the photos below instead.
+            take or choose a photo instead.
           </p>
           <p>
             <button type="button" className="btn btn-primary" onClick={start}>
@@ -419,7 +424,9 @@ export function CameraCheck({
       {(phase === 'live' || phase === 'denied' || phase === 'intro') && shot && (
         <div className="grid gap-2">
           <label htmlFor="upload" className="font-bold">
-            {phase === 'intro' ? `Or use your phone's camera app: photo of ${shot.title.toLowerCase()}` : `Or take or choose a photo of ${shot.title.toLowerCase()}`}
+            {phase === 'intro' && touch
+              ? `Or use your phone's camera app: photo of ${shot.title.toLowerCase()}`
+              : `Or take or choose a photo of ${shot.title.toLowerCase()}`}
           </label>
           <input id="upload" type="file" accept="image/*" capture="environment" onChange={onUpload} className="file-input" />
           {phase === 'denied' && demoShots && (

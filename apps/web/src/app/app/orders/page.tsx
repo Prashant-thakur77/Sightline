@@ -49,7 +49,7 @@ export default async function Orders() {
         <h1 className="text-[length:var(--step-4)]">Orders and money</h1>
         <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">
           {orders.length === 0
-            ? "You haven't bought anything yet."
+            ? "You haven't bought anything yet. Orders you buy appear here, with where the money is."
             : `${orders.length} ${orders.length === 1 ? 'order' : 'orders'}, newest first.${held ? ` ${formatMoney({ cents: held, currency: 'USD' })} is on hold until you check the parcel.` : ''}`}
         </p>
       </header>
@@ -144,7 +144,7 @@ export default async function Orders() {
               </p>
             ) : (
               <>
-                <p className="max-w-[var(--measure)]">Every hold, payment, refund and deadline on record, newest first.</p>
+                <p className="max-w-[var(--measure)]">Every hold, payment, refund, offer and deadline on record, newest first.</p>
                 <ol className="money-timeline">
                   {timeline.map((e) => (
                     <li key={e.key} data-upcoming={e.upcoming ? '' : undefined}>

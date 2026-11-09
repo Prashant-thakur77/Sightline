@@ -447,3 +447,14 @@
 .sx-data-empty {
   margin: 0 0 var(--space-4);
 }
+
+/* Data tables under the dashboards: the section never grows past the page; a wide table scrolls
+   inside its own box (a named region only when it actually scrolls). */
+.sx-data {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.sx-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
