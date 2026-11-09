@@ -46,8 +46,8 @@ This document describes the code as it is. File paths are relative to the repo r
 
 Data flow in one line each:
 
-1. Buyer speaks or types. `POST /api/turn` runs `handleTurn` (`apps/web/src/server/conductor.ts`). A deterministic grammar (`packages/agent/src/grammar.ts`) picks the intent. Only unparsed text goes to a model.
-2. Search results come from `packages/catalog`. Each product the buyer might buy is frozen as a hashed `ProductSnapshot` (`packages/catalog/src/snapshot.ts`).
+1. Buyer speaks or types. `POST /api/turn` runs `handleTurn` (`apps/web/src/server/conductor.ts`). A deterministic grammar (`packages/agent/src/grammar.ts`) picks the intent. What it fully understands (a complete search, a number, confirm, cancel, wait, repeat, help, money and memory questions, "buy my usual again") stays on that fast path. Open requests (a gift, "warm but not scratchy", a question about the options) go to the shopping agent, a Claude tool loop (section 6.5); when it can't finish, the turn falls back to the grammar.
+2. Search results come from `packages/catalog`: the Demo Store's own inventory, plus live Channel3 results when a key is set (`createMergedCatalog`). Each listing is read by `interpretListing` (`packages/agent/src/listing.ts`: its colour from its own words, the size asked for from the sizes it offers) and ranked (`packages/agent/src/ranking.ts`: team or fan merchandise, another size and avoided materials are left out with a reason). Each product the buyer might buy is frozen as a hashed `ProductSnapshot` (`packages/catalog/src/snapshot.ts`).
 3. `startReadback` builds a cart, hashes it, and composes the readback from a template (`packages/agent/src/readback.ts`). Nothing a model wrote is in it.
 4. The confirmation state machine (`packages/agent/src/confirm.ts`) needs two keys. Then `payForReadback` (`apps/web/src/server/payments.ts`) runs the gate and, if it allows, creates the PayPal order.
 5. After delivery the camera check posts photos to `/api/orders/[id]/check`. The vision service returns a verdict. `afterVerdict` (`apps/web/src/server/after-check.ts`) captures, leaves the hold, or offers money back.
@@ -302,7 +302,8 @@ Models are named by environment (`packages/core/src/env.ts`, `apps/web/src/serve
 | Call | Where | Model env | Input | Output used for |
 |---|---|---|---|---|
 | Confirmation key 2 | `ai.ts` `confirmationClassifier` | `FAST_MODEL` | Utterance and readback text, delimited as data | `confirm / not_confirm / unclear`. Can agree or veto. |
-| Request parsing | `ai.ts` `extractShoppingQuery` | `AGENT_MODEL` | Utterance, only when the grammar returns `freeform` | Search filters (category, colour, size, max price). |
+| Request parsing | `ai.ts` `extractShoppingQuery` | `AGENT_MODEL` | Utterance, only when the grammar returns `freeform` and the shopping agent is unavailable or could not finish | Search filters (category, colour, size, max price). |
+| Shopping agent | `server/shopper.ts`, loop in `packages/agent/src/shopper/loop.ts` | `FAST_MODEL`, effort low | The utterance, what is on screen, saved preferences and the last few turns, then tool results (listing data, as data) | Which searches to run, which listings to present with a one-line reason, a clarifying question, an answer about listings, or a hand-off to the readback, a money answer or the memory recall (section 6.5). |
 | Listing question | `ai.ts` `answerAboutListing` | `AGENT_MODEL` | One frozen listing and its review quotes, as data | Spoken answer in segments with citations. |
 | Size tag, identity, damage | `services/vision/app/vlm.py` | `VISION_MODEL` | Sanitised, re-encoded photos; listing details as data | Structured findings for fusion. |
 | Case narrative | `ai.ts` `writeCaseNarrative` | `AGENT_MODEL` | Item, amount, verdict reasons, merchant name | A two-sentence buyer summary and a message to the seller. |
@@ -311,7 +312,10 @@ Models are named by environment (`packages/core/src/env.ts`, `apps/web/src/serve
 ### 6.2 What model output can influence
 
 - Key 2 of a confirmation. It can only add agreement to a key 1 that already passed, or veto. It cannot confirm alone.
-- Search filters, which only change which snapshots are shown. Prices come from the catalog.
+- Search filters, which only change which snapshots are shown. Prices come from the catalog. The shopping agent's filters are its own search wording; a size, budget or lowest price it passes is used only when the buyer said it.
+- Which listings are presented, and a one-line reason for each, after the grounding check (section 6.5).
+- Which listing is handed to the readback, only when the buyer's words ask to buy.
+- A proposed memory, only when its value is in the buyer's words; it is stored only after the buyer says yes.
 - Spoken answers about a listing, after the grounding guard.
 - Findings inside the vision service, which fusion rules turn into a verdict.
 - The wording of the case summary and the seller message.
@@ -323,13 +327,39 @@ Models are named by environment (`packages/core/src/env.ts`, `apps/web/src/serve
 - The readback text. It is a template over the cart.
 - Whether a gate guard passes.
 - Whether money is captured or voided. `afterVerdict` and `sendMoneyBack` read only the verdict kind and the order's stored payment fields. The verdict kind comes from fusion rules, and `mismatch` needs a `sure` disagreement.
-- Any outbound call except to Anthropic. Models have no tools.
+- Any outbound call except to Anthropic. The shopping agent's tools are read-only (search, details, compare, order history) or end the turn by handing control to app code (present, ask, answer, readback, recall, money); none can pay, confirm, set an amount or store anything.
+- Money answers. "What's on hold?" and the other money questions are computed in `packages/agent/src/money.ts` from order rows, PayPal ids and the audit chain, and spoken from templates; the agent can only choose which question was asked.
 
 ### 6.4 Grounding guard
 
 `checkGrounding` (`packages/agent/src/grounding.ts`) is applied to `answerAboutListing` in `conductor.ts`. Each segment must cite a snapshot field or a verbatim quote from the listing's reviews. The guard extracts product tokens (money, numbers, sizes, colours, materials, dates, policy terms) from each segment and requires each to be backed by a citation. A quote counts only if it appears verbatim in the archived text. Unsupported segments are replaced by "The listing doesn't say." The guard is token-level: it does not detect negation ("it doesn't come in navy" passes when navy is listed). `evals/RESULTS.md` records this as a negative result (10 of 10 negations pass), measured on scripted answers, not on model output.
 
 The case narrative is not passed through the guard. The comment in `ai.ts` says the caller checks it, but `cases.ts` does not. The buyer hears the summary before anything is sent. The seller message is stored in the manifest as `narrative` and is part of what the Ed25519 signature covers. A template narrative is used when no model is available.
+
+### 6.5 The shopping agent
+
+`runShopper` (`packages/agent/src/shopper/loop.ts`) is a manual tool loop over the Messages API, run by `server/shopper.ts` on `FAST_MODEL` (Claude Haiku 5.5 by default) with effort `low`, strict tool schemas and `tool_choice: auto`. The system prompt and tools are stable and cached; the per-turn context (options on screen, saved preferences, the last few turns, the agent's own last question) is the first user message. Each turn is a fresh API conversation; nothing is replayed across turns. When the conversation page opens, the server sends a `max_tokens: 0` warm-up with the same prefix (at most every four minutes), so the first open request reads a warm cache: a cold first call measured about 10 seconds, warm turns 1 to 5 seconds.
+
+| Tool | Kind | What it does |
+|---|---|---|
+| `search_products` | facts | One catalog search through the shared search core (`packages/agent/src/search.ts`), with saved preferences applied in code. Returns up to eight ranked listings with ids `p1`.., facts only, and what was left out and why. |
+| `get_product_details`, `compare_products` | facts | The full frozen listing, or a side-by-side from listing data. |
+| `get_order_history` | facts | Past orders by item, most often bought first, ids `h1`.. (for "my usual"). |
+| `remember_preference` | proposal | Checked against the buyer's words (`draftFromProposal`); returned as a proposal the app asks about. |
+| `present_options`, `ask_clarifying_question`, `answer_about_products` | finish | Up to three listings with reasons; one short question; a short answer with per-sentence product ids. |
+| `start_readback`, `recall_preferences`, `money_question` | finish | Hand-offs to the template readback, the memory recall and the money answers. |
+
+Checks in code, every turn:
+
+- Ids: a product the agent names must have come back from a tool this turn or be on screen.
+- Filters: a size, budget or lowest price the buyer didn't say is not applied, and the tool result says so.
+- Grounding: every reason, lead, question and answer sentence goes through `checkFreeText` (`packages/agent/src/grounding.ts`): each product token (money, numbers, sizes, colours, materials, dates, policy terms, quotes) and each feature claim ("waterproof", "machine washable", "organic") must be in the listings it is about, or in the buyer's own words for leads and questions. A line that fails is not spoken; the template still reads the listing's facts.
+- Readback: only when the buyer's words ask to buy (`hasPurchaseIntent`), only a size the buyer said, and the readback is the same template as always. A listing that offers several sizes and has none chosen gets "Which size would you like?" before any readback.
+- Limits: six tool calls, six model calls, 16 seconds per turn (10 per call). A timeout, refusal, cut-off answer or plain-text finish ends in a fallback: if the agent already searched, the template presents that search; otherwise the grammar handles the turn.
+
+Every meaningful step is written to the audit chain as `agent.step` (`server/agent-steps.ts`): `{ tool, step, summary, decided?, conversationId, threadId, readbackId? }`, `tool` one of `claude`, `channel3`, `catalog` (a Demo Store-only search), `memory`, `money`, `paypal`, `app` (the app's own templates), and `decided` one of `model`, `rules`, `person`. The order timeline (`server/timeline.ts`) shows these with readable tool names. A shopping thread starts with a new search; the `proposed_readback` step carries the readbackId and the seq of every earlier step in the thread (`threadSteps`), and later steps (PayPal's outcome) carry the readbackId. Lines the grounding check stopped are a `lines_stopped` step whose payload keeps the lines (`stopped`) as evidence; the timeline says only how many were left out.
+
+Memory: preferences are stored in `memories` (`server/memories.ts`) only after the buyer says yes to "Shall I remember that ...?" (or said "remember that ..."). Searches apply them in code and say so ("Using your usual size M."); a gift uses none of them. Settings has "What I remember" (change, forget one, forget all); "forget my size" also clears a Settings size for the same kind of clothing, and says so.
 
 ## 7. The MCP server
 
@@ -353,7 +383,7 @@ Postgres through Drizzle (`packages/db/src/schema.ts`, migrations in `packages/d
 | Area | Tables |
 |---|---|
 | Identity | `users` (all rows are demo personas, `is_demo`), `sessions`, `preferences` (verbosity, sizes, caps, `pay_after_check`), `helpers` |
-| Conversation | `conversations` (agent and confirmation state as jsonb), `messages`, `notifications` |
+| Conversation | `conversations` (agent and confirmation state as jsonb), `messages`, `notifications`, `memories` (what the buyer asked to be remembered) |
 | Commerce | `product_snapshots`, `carts`, `readbacks`, `orders`, `vault_tokens`, `shipments`, `reservations` |
 | Check and money back | `verifications`, `helper_requests`, `evidence_packs`, `cases`, `blobs` (photo bytes in `bytea`), `store_policies`, `store_agent_proposals` |
 | Integrity | `receipts`, `audit_log` (hash chain), `webhook_events` |
@@ -388,7 +418,7 @@ Be exact here. "Live" means the code path calls the real service when its key is
 | Shipping and delivery | **Demo controls.** The merchant console (and `runLifecycle` in `server/lifecycle.ts`) chooses what ships and when it is delivered. PayPal's Orders tracker has no delivered state, so delivery never comes from PayPal. |
 | Parcel photos | The judge run and the guided demo use `apps/web/public/demo-parcel/*.jpg`, rendered by `scripts/demo-parcel-photos.mjs` from SVG with noise and perspective. They are synthetic. Real camera photos work through the same route. |
 | Personas | Maya and Raj (`server/personas.ts`) are seeded demo users. `POST /api/demo/start` signs anyone in as one of them. There are no real accounts. |
-| Catalog | Demo Store catalog by default. Channel3 when `CHANNEL3_API_KEY` is set. |
+| Catalog | Demo Store catalog by default. With `CHANNEL3_API_KEY`, the Demo Store's catalog and live Channel3 results together; if Channel3 fails, the Demo Store's results still come back. Orders are always placed with the Demo Store at the listed price. |
 | Vision | Colour, mask, quality, fusion and OCR run locally in the service with no key. Size-tag read A, identity and damage need `VISION_MODEL` and `ANTHROPIC_API_KEY`. `services/vision/README.md` says the model client has only been exercised against a stubbed SDK and that only the colour confidence rules are fitted, on synthetic dev renders. SightBench (`evals/results/sightbench.json`) measures the service on synthetic renders only, without model reads. |
 | Confirmation key 2 | Needs `ANTHROPIC_API_KEY`. Without it, two Confirm presses stand in. The confirmation eval ran key 1 only. |
 | Evals | `evals/RESULTS.md` states that no suite ran against the PayPal sandbox ledger or a live model. The duplicate suite simulates PayPal's documented `PayPal-Request-Id` behaviour. The grounding suite uses scripted answers. The red-team suite uses a local ledger. Held-out sets were written by the author of the code. |

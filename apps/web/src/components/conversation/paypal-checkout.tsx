@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 
 /**
@@ -51,27 +51,45 @@ function loadSdk(): Promise<void> {
   return sdkLoading;
 }
 
+/**
+ * What PayPal's window will ask, and how to come back, in one sentence: said once before the
+ * window can open, and kept as the button's description so it is heard again on the button.
+ */
+export function paypalWindowSentence(total: string): string {
+  return `When you press Pay with PayPal, PayPal's own window opens and asks you to log in and approve ${total}; when you approve or close it, you come straight back here and I tell you what happened.`;
+}
+
 export function PayPalCheckout({
   clientId,
   paypalOrderId,
+  total,
   onApproved,
   onError,
 }: {
   clientId: string;
   /** Created on our server from the confirmed readback before this card was shown. */
   paypalOrderId: string;
+  /** The amount PayPal will ask to approve, as the readback said it. */
+  total: string;
   onApproved: (paypalOrderId: string) => void;
   onError: (message: string) => void;
 }) {
   const [state, setState] = useState<'loading' | 'ready' | 'unavailable' | 'working'>('loading');
   const session = useRef<Session | null>(null);
   const { announce } = useAnnouncer();
+  const told = useRef(false);
+  const hintId = useId();
 
   // State changes are spoken through the announcer, never by writing to a live region here.
   useEffect(() => {
     if (state === 'unavailable') announce('PayPal checkout is not available right now. Nothing was charged.', { politeness: 'assertive', source: 'PayPal' });
+    // Before the window can open: what it will ask, and how to come back. Said once.
+    if (state === 'ready' && !told.current) {
+      told.current = true;
+      announce(paypalWindowSentence(total), { source: 'PayPal' });
+    }
     if (state === 'working') announce('PayPal window open. Finish there, then come back here.', { source: 'PayPal' });
-  }, [state, announce]);
+  }, [state, announce, total]);
 
   useEffect(() => {
     let alive = true;
@@ -90,6 +108,8 @@ export function PayPalCheckout({
         session.current = sdk.createPayPalOneTimePaymentSession({
           onApprove: (d) => {
             setState('ready');
+            // Back from PayPal: say what happened before the order is finished on our server.
+            announce(`Back from PayPal. You approved ${total}. I'm finishing the order now.`, { source: 'PayPal' });
             onApproved(d.orderId);
           },
           onCancel: () => {
@@ -109,7 +129,7 @@ export function PayPalCheckout({
     return () => {
       alive = false;
     };
-  }, [clientId, onApproved, onError]);
+  }, [clientId, onApproved, onError, announce, total]);
 
   // The SDK asks for the order to approve; it already exists on our server, bound to the readback.
   const createOrder = async (): Promise<{ orderId: string }> => ({ orderId: paypalOrderId });
@@ -133,11 +153,13 @@ export function PayPalCheckout({
   return (
     <div className="paypal-slot">
       {state === 'ready' ? (
-        <paypal-button type="pay" class="paypal-gold" onClick={start} />
+        <paypal-button type="pay" class="paypal-gold" onClick={start} aria-describedby={hintId} />
       ) : (
         <p>{state === 'loading' ? 'Loading PayPal…' : 'PayPal window open. Finish there, then come back here.'}</p>
       )}
-      <p className="receipt-note">A PayPal window opens. Log in there, approve, and you come back here.</p>
+      <p id={hintId} className="receipt-note">
+        {paypalWindowSentence(total)}
+      </p>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { PRODUCT_NAME } from '@sightline/core';
 import { Wordmark } from '@/components/shell/mark';
 import { PERSONAS } from '@/server/personas';
 import { startAs } from './actions';
+import { MayaArt, RajArt } from '@/components/art/illustrations';
 
 export const metadata = { title: 'Try it' };
 
@@ -20,6 +21,7 @@ export default function Start() {
           const p = PERSONAS[key];
           return (
             <li key={key} className="persona-card">
+              <div className="persona-art">{key === 'maya' ? <MayaArt /> : <RajArt />}</div>
               <h2 className="text-[length:var(--step-2)]">{p.displayName}</h2>
               <p>{p.summary}</p>
               <form action={startAs}>

@@ -137,6 +137,15 @@ export const en = {
     closingDetailed:
       "To pay, say 'confirm purchase' or use the Confirm button. To change something, say what to change. To stop without paying, say 'cancel'.",
     missing: LISTING_DOESNT_SAY,
+    /** Asked before a readback when the listing offers several sizes and none was chosen. */
+    whichSize: (sizes: string): string => `Which size would you like? It comes in ${sizes}. Nothing is paid yet.`,
+    sizeSoldOut: (size: string): string => `Size ${size} is sold out for that one, so I stopped. Nothing was charged.`,
+    sizeGone: (size: string): string => `That one doesn't come in size ${size}, so I stopped. Nothing was charged. Say another size, or 'more' for other options.`,
+    sizeNotOffered: (size: string, sizes: string): string => `It doesn't come in size ${size}. It comes in ${sizes}. Which would you like? Nothing is paid yet.`,
+    /** A marketing colour name next to the plain colour. */
+    colourListedAs: (colour: string, name: string): string => `${colour}, listed as “${name}”`,
+    /** A colour name with no colour word in it, said only as the listing's words. */
+    colourOnlyListedAs: (name: string): string => `the listing calls it “${name}”`,
     invalidated: "Something changed since I read that to you, so I haven't paid. Here's the new version.",
     /** Answers to questions asked during a readback, from the readback's own fields. */
     answers: {
@@ -203,6 +212,18 @@ export const en = {
     sizeNotGiven: 'size not given',
     sizeInStock: (size: string): string => `size ${size} in stock`,
     size: (size: string): string => `size ${size}`,
+    /** Offered, stock not stated by the store. */
+    sizeOffered: (size: string): string => `comes in size ${size}`,
+    /** No size asked for, and the listing offers several. */
+    sizesOffered: (sizes: string): string => `sizes ${sizes}`,
+    /** Said once when no shown listing gives a return policy, instead of after every option. */
+    noneGiveReturns: (count: string): string =>
+      count === 'one' ? "The listing doesn't give a return policy." : `None of the ${count} listings give a return policy.`,
+    /** A filter that isn't confirmed for every option shown. */
+    notConfirmed: (what: string, who: string, why: string): string => `${capitaliseFirst(what)} isn't confirmed for ${who}: ${why}`,
+    noSizesGiven: (many: boolean): string => (many ? "those listings don't give sizes." : "that listing doesn't give sizes."),
+    noColourGiven: (many: boolean): string => (many ? "those listings don't name a colour." : "that listing doesn't name a colour."),
+    headingUnconfirmed: (what: string): string => `not confirmed for every option: ${what}`,
     rated: (avg: number, count: number): string => `rated ${avg} from ${count} ${count === 1 ? 'review' : 'reviews'}`,
     optionsPromptNoMore: "Say a number for details, or 'compare' to compare.",
     optionsPrompt1NoMore: "Say 'tell me more' for details.",
@@ -242,6 +263,10 @@ export const en = {
     colourMismatch: (listed: string, wanted: string): string => `It's listed as ${listed}, not ${wanted}.`,
     sizeInStock: (size: string): string => `Size ${size} is in stock.`,
     sizeListed: (size: string): string => `Size ${size} is listed.`,
+    /** The listing offers the size; the store doesn't say whether it is in stock. */
+    sizeOffered: (size: string): string => `It comes in size ${size}.`,
+    sizeUnknown: (size: string): string => `The listing doesn't give sizes, so I can't confirm size ${size}.`,
+    likedColour: (colour: string): string => `${capitaliseFirst(colour)}, a colour you like.`,
     sizeMismatch: (listed: string, wanted: string): string => `The listed size is ${listed}, not ${wanted}.`,
     categoryMatch: (category: string): string => `It's a ${category}, as you asked.`,
     attributeMatch: (value: string): string => `${capitaliseFirst(value)}, as you asked.`,
@@ -264,6 +289,9 @@ export const en = {
       underMin: (price: Money, min: Money): string => `${m(price)} is under your ${m(min)} minimum.`,
       outOfStock: 'It is out of stock.',
       sizeSoldOut: (size: string): string => `Size ${size} is sold out.`,
+      sizeNotOffered: (size: string): string => `It doesn't come in size ${size}.`,
+      fanMerch: "It's team or fan merchandise.",
+      avoidedMaterial: (material: string): string => `It has ${material}, which you avoid.`,
       notFreeReturns: "Returns aren't free.",
       otherCategory: (plural: string): string => `It isn't one of the ${plural}.`,
     },
@@ -317,6 +345,8 @@ export const en = {
     fitMissing: "The listing doesn't describe the fit.",
     colour: (v: string): string => `The listing calls the colour ${v}.`,
     colourMissing: "The listing doesn't say what colour it is.",
+    colourNamed: (colour: string, name: string): string => `The colour is ${colour}. The listing calls it “${name}”.`,
+    colourOnlyName: (name: string): string => `The listing doesn't give a plain colour. It calls the colour “${name}”.`,
     size: (v: string): string => `Size: ${v}.`,
     sizeMissing: "The listing doesn't give a size.",
     seller: (v: string): string => `Sold by ${v}.`,
@@ -422,6 +452,14 @@ export const en = {
       `PayPal decided in favour of ${merchant}. I'm sorry. Want me to read you their reasons?`,
     declined: (merchant: string): string => `Okay, I declined. I'll tell ${merchant}, and your case stays open.`,
     summaryConfirm: "Should I send it? Say 'send it' to send, or tell me what to change.",
+  },
+
+  reorder: {
+    none: "You haven't bought anything yet, so there's no usual to order. Say what you're looking for.",
+    notFound: (what: string): string => `I couldn't find ${what} in your orders. Say 'what did I order' to hear them.`,
+    usual: (title: string, details: string, times: number): string =>
+      `Your usual is the ${title}${details ? `, ${details}` : ''}. You've bought it ${times === 1 ? 'once' : times === 2 ? 'twice' : `${times} times`}. Here it is again, at today's price.`,
+    last: (title: string, details: string): string => `Your last order was the ${title}${details ? `, ${details}` : ''}. Here it is again, at today's price.`,
   },
 
   grounding: {

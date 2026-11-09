@@ -23,6 +23,7 @@ export function snapshotOf(product: CatalogProduct, seller: Seller, now = new Da
     brand: product.brand,
     category: product.category,
     description: product.description,
+    keyFeatures: product.keyFeatures?.length ? product.keyFeatures.slice(0, 8) : undefined,
     attributes: Object.fromEntries(Object.entries(product.attributes).filter(([, v]) => v !== undefined && v !== '')),
     price: product.price,
     images,

@@ -1,0 +1,1262 @@
+{
+ "products": [
+  {
+   "id": "5D6cmCq",
+   "title": "Smooth Cotton Sweater",
+   "description": "A unisex, smooth cotton knit sweater featuring a crew neck and a relaxed, oversized silhouette. Designed with a sweatshirt-like feel for casual styling and a shorter length that pairs well with various bottoms. This piece is crafted from soft and comfortable 100% cotton.",
+   "brands": [
+    {
+     "id": "Bi6K",
+     "name": "Uniqlo"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/7451d6af-610a-4e94-bf83-247a049092b4",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a black long-sleeved sweater with a white collar and black trousers."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/60b4d877-a699-4383-b708-63757ca47952",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a deep maroon long-sleeved sweater and dark blue trousers."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "Soft and comfortable 100% cotton",
+    "Sweatshirt-like design and silhouette",
+    "Short length",
+    "Oversized fit"
+   ],
+   "colors": [
+    {
+     "hex": "#181819",
+     "percentage": 0.9232
+    },
+    {
+     "hex": "#726f6d",
+     "percentage": 0.0768
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/5D6cmCq-fJnd-GJ3hBB",
+     "domain": "uniqlo.com",
+     "price": {
+      "price": 49.9,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "clothing-features": [
+     "Wrinkle resistant"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "care-instructions": [
+     "Hand wash",
+     "Dry clean only",
+     "Ironing instructions"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "top-length-type": [
+     "Crop top"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ]
+   },
+   "ratings": {
+    "value": 4.5,
+    "count": 163,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "TmS1oMs",
+   "title": "Unisex Smooth Cotton Sweater",
+   "description": "A classic crewneck sweater made from soft, 100% cotton. This sweater features a relaxed fit and ribbed cuffs and hem, offering both comfort and versatile styling options for casual wear. It can be easily dressed up or down, making it a staple piece for any wardrobe.",
+   "brands": [
+    {
+     "id": "Bi6K",
+     "name": "Uniqlo"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/ddbdbb45-dd3c-4deb-9b95-4619609f94d2",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a red long-sleeved sweater and brown pants."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/66488c0b-eb75-4244-9181-700e6017e8f2",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a maroon sweater and blue jeans."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": null,
+   "age": "adult",
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "Soft and comfortable 100% cotton",
+    "Sweatshirt-like design and silhouette for casual styling",
+    "Short length pairs well with any bottoms"
+   ],
+   "colors": [
+    {
+     "hex": "#df2534",
+     "percentage": 0.4748
+    },
+    {
+     "hex": "#572e27",
+     "percentage": 0.2714
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/TmS1oMs-fJnd-GJ3hBB",
+     "domain": "uniqlo.com",
+     "price": {
+      "price": 39.9,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "DARK BROWN",
+        "exists": true,
+        "available": null,
+        "product_id": "rMix1hT"
+       },
+       {
+        "label": "Wine",
+        "exists": true,
+        "available": null,
+        "product_id": "PpQxuK5"
+       },
+       {
+        "label": "Light Green",
+        "exists": true,
+        "available": null,
+        "product_id": "2lcELXO"
+       },
+       {
+        "label": "Red",
+        "exists": true,
+        "available": null,
+        "product_id": "TmS1oMs"
+       },
+       {
+        "label": "Yellow",
+        "exists": true,
+        "available": null,
+        "product_id": "DHT1MmR"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XXS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Red"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "care-instructions": [
+     "Hand wash",
+     "Dry clean only"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "top-length-type": [
+     "Crop top"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": {
+    "value": 4.5,
+    "count": 164,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "eE4gP2G",
+   "title": "V-neck Sweater In Cotton-soft Blend",
+   "description": "A women's V-neck sweater crafted from a soft cotton-blend fabric. This regular-fit pullover features a classic V-neckline, hits at the hip, and is finished with ribbed detailing at the cuffs and hem for a clean look.",
+   "brands": [
+    {
+     "id": "NXTz",
+     "name": "J.Crew"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/816f68ed-4212-41a6-8a1c-6e49abdc9f69",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Beige V-neck sweater with cable knit pattern on a plain background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/a5369998-284e-4831-9224-e0507a716437",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Female model wearing a beige V-neck sweater and jeans."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "cotton",
+    "polyester",
+    "acrylic",
+    "elastane"
+   ],
+   "key_features": [
+    "Regular fit",
+    "Hits at hip",
+    "V-neckline",
+    "Machine wash"
+   ],
+   "colors": [
+    {
+     "hex": "#dbb6a2",
+     "percentage": 0.9374
+    },
+    {
+     "hex": "#bd9580",
+     "percentage": 0.0626
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/eE4gP2G-lCS4-GJ3hBB",
+     "domain": "factory.jcrew.com",
+     "price": {
+      "price": 54.5,
+      "compare_at_price": 110,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "ANTIQUE NAVY",
+        "exists": true,
+        "available": null,
+        "product_id": "VHePoJM"
+       },
+       {
+        "label": "HTHR MIDNIGHT FERN",
+        "exists": true,
+        "available": null,
+        "product_id": "1ynSi6B"
+       },
+       {
+        "label": "HTHR SANDY HAZE",
+        "exists": true,
+        "available": null,
+        "product_id": "eE4gP2G"
+       },
+       {
+        "label": "VINTAGE BURGUNDY",
+        "exists": true,
+        "available": null,
+        "product_id": "nd0nHfK"
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "HTHR SANDY HAZE"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "neckline": [
+     "V-neck"
+    ],
+    "top-length-type": [
+     "Medium"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "knit-pattern": [
+     "Cable",
+     "Rib"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester",
+     "Acrylic",
+     "Spandex"
+    ]
+   },
+   "ratings": {
+    "value": 4.2,
+    "count": 6,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "JWteYvB",
+   "title": "Short-sleeve Sweater In Cotton-soft Blend",
+   "description": "A short-sleeve crew neck sweater for women, crafted from a soft cotton-blend material. It features a regular fit that hits at the hip and is detailed with rib-knit banded cuffs and hem.",
+   "brands": [
+    {
+     "id": "NXTz",
+     "name": "J.Crew"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/f8a7a304-d33f-40ce-9b53-ae943d8aec18",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Front view of a blue short-sleeve sweater on a plain background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/5a3cce0e-17d8-4ea0-bb15-40aaaee96a16",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a blue sweater and dark pants, full body shot."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "55% cotton",
+    "31% polyester",
+    "10% acrylic",
+    "4% elastane"
+   ],
+   "key_features": [
+    "Short sleeve",
+    "Crew neck",
+    "Regular fit",
+    "Hits at hip"
+   ],
+   "colors": [
+    {
+     "hex": "#6a8bc0",
+     "percentage": 0.8365
+    },
+    {
+     "hex": "#506e9f",
+     "percentage": 0.0917
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/JWteYvB-lCS4-GJ3hBB",
+     "domain": "factory.jcrew.com",
+     "price": {
+      "price": 49.99,
+      "compare_at_price": 89.5,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "top-fit": [
+     "Regular"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "stretch-level": [
+     "Moderate stretch"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "clothing-features": [
+     "Stretchable"
+    ],
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "placket-type": [
+     "Buttonless (open V)"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "nursing-access-type": [
+     "None"
+    ],
+    "top-length-type": [
+     "Medium"
+    ],
+    "sleeve-length-type": [
+     "Short"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester",
+     "Acrylic",
+     "Spandex"
+    ]
+   },
+   "ratings": {
+    "value": 4.7,
+    "count": 274,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "FIZzJQC",
+   "title": "Easy V-Neck Pure Cotton Sweater",
+   "description": "Elevate your essentials with the Easy V-Neck Pure Cotton Sweater from NIC+ZOE. This versatile pullover is designed in a midweight knit with a flattering V-neckline and 3/4 dolman sleeves and an easy fit that sits perfectly at the hip. Mindfully made from fully fashioned knitwear to eliminate textile waste, this timeless piece is ideal for layering or wearing",
+   "brands": [
+    {
+     "id": "Kp8N",
+     "name": "NIC+ZOE"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/86a5c32e-91c1-4ca8-a01a-66720180d6c3",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a yellow V-neck sweater and jeans from the front."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/9a683881-2da5-4ed4-be85-004dcbbe81c9",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a yellow V-neck sweater and blue jeans."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": null,
+   "age": null,
+   "materials": [
+    "100% cotton"
+   ],
+   "key_features": [
+    "Midweight knit",
+    "Flattering V-neckline",
+    "3/4 dolman sleeves",
+    "Easy fit"
+   ],
+   "colors": [
+    {
+     "hex": "#eee9ba",
+     "percentage": 0.8131
+    },
+    {
+     "hex": "#433325",
+     "percentage": 0.1086
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/FIZzJQC-3L0Q-GJ3hBB",
+     "domain": "nicandzoe.com",
+     "price": {
+      "price": 39.99,
+      "compare_at_price": 98,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "fabric": [
+     "Cotton"
+    ],
+    "care-instructions": [
+     "Hand wash",
+     "Line dry",
+     "Ironing instructions"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "clothing-features": [
+     "Lightweight"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "fpj2QSX",
+   "title": "Gap Women's Cotton Sweater",
+   "description": "A Gap women's midweight cotton knit sweater featuring a classic crew neckline, long sleeves with dropped shoulders, and a rib-knit hem and cuffs. This particular style is a 'Nina Stripe' pattern with cream and black horizontal stripes.",
+   "brands": [
+    {
+     "id": "Q19J",
+     "name": "Gap"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/60fa0920-6b3f-4fe8-8370-3429bf640e5b",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a cream and black striped sweater."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/d9692ecf-1248-4d7d-b184-ae63d1af4de4",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a cream and black striped sweater from the side."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "Classic crew neckline",
+    "Regular fit",
+    "Long sleeves with dropped shoulders",
+    "Rib knit hem and cuffs"
+   ],
+   "colors": [
+    {
+     "hex": "#eceae7",
+     "percentage": 0.4266
+    },
+    {
+     "hex": "#482e33",
+     "percentage": 0.3841
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/fpj2QSX-ZO25-GJ3hBB",
+     "domain": "costco.com",
+     "price": {
+      "price": 16.97,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Striped",
+     "Solid"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "care-instructions": [
+     "Machine washable",
+     "Tumble dry",
+     "Ironing instructions"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "fabric": [
+     "Cotton",
+     "Wool"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "clothing-features": [
+     "Breathable design"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ]
+   },
+   "ratings": {
+    "value": 4.69,
+    "count": 137,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "JB32BvH",
+   "title": "Easy V-Neck Pure Cotton Sweater",
+   "description": "A lightweight to midweight V-neck pullover crafted from 100% cotton with a relaxed, easy fit designed to sit at the hip. Features 3/4 dolman sleeves, ribbed cuffs and hem, and a versatile color in Classic Cream. Ideal for layering or wearing solo, with mindfully shaped knit construction to reduce textile waste.",
+   "brands": [
+    {
+     "id": "Kp8N",
+     "name": "NIC+ZOE"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/533cb7bf-7a15-4a6c-bc4d-ed62eb2688f0",
+     "is_main_image": true,
+     "shot_type": "lifestyle",
+     "alt_text": "Woman wearing a coral pink V-neck sweater and beige jeans."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/59daf971-bdf1-477d-a0dc-44e9625ec8fb",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Woman wearing a pale yellow V-neck sweater and blue jeans."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": null,
+   "age": null,
+   "materials": [
+    "100% cotton"
+   ],
+   "key_features": [
+    "Pullover sweater",
+    "Midweight knit",
+    "V-neck",
+    "3/4 sleeve"
+   ],
+   "colors": [],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/JB32BvH-3L0Q-GJ3hBB",
+     "domain": "nicandzoe.com",
+     "price": {
+      "price": 49.99,
+      "compare_at_price": 98,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "top-length-type": [
+     "Medium"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "clothing-features": [
+     "Breathable design",
+     "Lightweight"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "sleeve-length-type": [
+     "3/4"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "neckline": [
+     "V-neck"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "sleeve-style": [
+     "Dolman"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "zjR9TNg",
+   "title": "Oversize V-Neck Cotton Sweater",
+   "description": "This is a black, oversized V-neck cotton sweater with a ribbed texture throughout the body and cuffs. It features a deep V-neck, long sleeves, and a relaxed, slouchy fit. The hemline is finished with a ribbed band, and the fabric appears to be a medium-weight knit.",
+   "brands": [
+    {
+     "id": "hjkl",
+     "name": "Nordstrom"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/369ff9e4-a6b1-4179-b0af-bf09fabcb2ea",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing an oversized black V-neck sweater and white pants."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "100% cotton"
+   ],
+   "key_features": [
+    "V-neck",
+    "Long sleeves",
+    "100% cotton",
+    "Machine wash, dry flat"
+   ],
+   "colors": [
+    {
+     "hex": "#141417",
+     "percentage": 0.9043
+    },
+    {
+     "hex": "#948174",
+     "percentage": 0.0957
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/zjR9TNg-cvfe-GJ3hBB",
+     "domain": "nordstromrack.com",
+     "price": {
+      "price": 34.97,
+      "compare_at_price": 79.5,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "care-instructions": [
+     "Tumble dry",
+     "Machine washable"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "clothing-features": [
+     "Lightweight"
+    ]
+   },
+   "ratings": {
+    "value": 4.8,
+    "count": 5,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "hwmS4xM",
+   "title": "Soft Touch Crew Neck Cotton Rich Jumper",
+   "description": "This soft touch, cotton-rich jumper from Next is a versatile staple for everyday wear. Featuring a classic crew neck and ribbed cuffs and hem, it's designed for lasting comfort and easy layering. Made from a breathable blend of 60% Cotton and 40% Livaeco™ Viscose, it's also machine washable.",
+   "brands": [
+    {
+     "id": "nNms",
+     "name": "Next"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/e9a8048d-5257-41e6-9303-d5f2f450aee2",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Close-up of the chocolate brown soft touch crew neck cotton rich jumper neckline."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/d4c76e24-96f5-4651-8042-4466d0795a10",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Woman wearing the chocolate brown soft touch crew neck cotton rich jumper."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "Cotton Rich",
+    "Cotton",
+    "Livaeco™ Viscose"
+   ],
+   "key_features": [
+    "soft touch finish",
+    "Classic crew neck",
+    "Ribbed cuffs and hem",
+    "Machine washable"
+   ],
+   "colors": [],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/hwmS4xM-9s4t-GJ3hBB",
+     "domain": "next.us",
+     "price": {
+      "price": 25,
+      "compare_at_price": 31,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "clothing-features": [
+     "Breathable design"
+    ],
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "fabric": [
+     "Cotton",
+     "Viscose"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "McC1YOq",
+   "title": "Women's Cotton Wedge Crew Neck Sweater",
+   "description": "A sweater that delivers everyday comfort with relaxed polish. Made from smooth, breathable long-staple combed cotton, it features an easy wedge shape and dropped shoulders for a laid-back feel, finished with classic ribbing.",
+   "brands": [
+    {
+     "id": "u0F6",
+     "name": "Lands' End"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/3ae8f31e-8245-4691-a9b3-7c3b62c2138e",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Blue crew neck sweater laid flat on a white background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/928620ec-aba3-4879-bed5-eec0e5480309",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a navy blue sweater and light pants."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "100% cotton"
+   ],
+   "key_features": [
+    "Long-staple combed cotton jersey",
+    "Dropped shoulders for an easy, relaxed fit",
+    "Ribbed mock neckline, cuffs, and hem",
+    "Fully fashioned for long-lasting fit"
+   ],
+   "colors": [
+    {
+     "hex": "#102748",
+     "percentage": 0.9706
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/McC1YOq-9Sgk-GJ3hBB",
+     "domain": "landsend.com",
+     "price": {
+      "price": 30.58,
+      "compare_at_price": 67.97,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "neckline": [
+     "Mock"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "clothing-features": [
+     "Breathable design"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": {
+    "value": 4.3,
+    "count": 3,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "wn5RTf8",
+   "title": "Emma: Crewneck Shaker Stitch Cotton Sweater",
+   "description": "A classic, relaxed-fit cotton sweater featuring shaker stitch knit for subtle texture. Designed with a crew neckline, long sleeves, and a slightly longer back hem for a casual, versatile look. Made from 100% cotton with easy-care instructions, suitable for year-round wear.",
+   "brands": [
+    {
+     "id": "6DVu",
+     "name": "525 America"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/f85fb0f9-b510-4fc6-846e-1eecbd58e0b2",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a chili red crewneck shaker stitch cotton sweater."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/2f887371-9dbd-49cd-a06d-5d124358bb93",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Back view of a woman wearing a chili red shaker stitch cotton sweater."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": null,
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "brushed finish",
+    "side slits",
+    "long sleeve",
+    "crew neck"
+   ],
+   "colors": [
+    {
+     "hex": "#d72520",
+     "percentage": 0.8021
+    },
+    {
+     "hex": "#8b0d0b",
+     "percentage": 0.0907
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/wn5RTf8-ndZg-GJ3hBB",
+     "domain": "tjmaxx.tjx.com",
+     "price": {
+      "price": 24.99,
+      "compare_at_price": 35,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "clothing-features": [
+     "Wrinkle resistant",
+     "Lightweight"
+    ],
+    "pattern": [
+     "Texture",
+     "Solid"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "top-length-type": [
+     "Crop top"
+    ],
+    "care-instructions": [
+     "Machine washable",
+     "Tumble dry",
+     "Dry clean only"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "qoBbCUG",
+   "title": "JASMINE SWEATER",
+   "description": "The Jasmine Sweater is a cool and casual open-knit sweater featuring a drop shoulder silhouette and a crew neckline. Crafted from 100% cotton, it offers a comfortable and updated classic look.",
+   "brands": [
+    {
+     "id": "IZnG",
+     "name": "Thread & Supply"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/1337d8e8-b6a0-4262-a2eb-04131963c0d1",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a brown knit sweater and white pants while sitting."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/ad41e4de-8751-4cc9-999f-d84f7a23ea4e",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a brown knit sweater and white pants from the front."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": null,
+   "age": null,
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "Crew neckline",
+    "Open knit",
+    "Drop shoulder silhouette",
+    "Knit sweater"
+   ],
+   "colors": [
+    {
+     "hex": "#a28166",
+     "percentage": 0.5393
+    },
+    {
+     "hex": "#20140d",
+     "percentage": 0.1231
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/qoBbCUG-jVd0-GJ3hBB",
+     "domain": "threadandsupply.com",
+     "price": {
+      "price": 50.4,
+      "compare_at_price": 72,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "fabric": [
+     "Cotton"
+    ],
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "pattern": [
+     "Texture"
+    ],
+    "clothing-features": [
+     "Breathable design"
+    ]
+   },
+   "ratings": null
+  }
+ ],
+ "next_page_token": null
+}

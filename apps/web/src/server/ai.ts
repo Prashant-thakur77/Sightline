@@ -8,7 +8,8 @@ import { buildClassifierPrompt, storeAgentSchema, type ConfirmationClassifier, t
 import { ENV, INTEGRATIONS } from './runtime';
 
 let client: Anthropic | undefined;
-function anthropic(): Anthropic {
+/** The shared SDK client (20 second timeout, two retries by default; callers may override per request). */
+export function anthropic(): Anthropic {
   if (!client) client = new Anthropic({ apiKey: ENV.ANTHROPIC_API_KEY, maxRetries: 2, timeout: 20_000 });
   return client;
 }

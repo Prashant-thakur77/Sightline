@@ -109,7 +109,7 @@ export function DataControls({ photoCount, neededByCase, retentionDays }: { phot
       <DeleteControl
         action={deleteDataAction}
         label="Delete everything"
-        question={`Delete your conversations, saved sizes and colours, helper contact, notifications and photos? This can't be undone. Orders, payments and receipts are kept, because refunds need them.${kept}`}
+        question={`Delete your conversations, saved sizes and colours, what I remember about you, helper contact, notifications and photos? This can't be undone. Orders, payments and receipts are kept, because refunds need them.${kept}`}
         confirmLabel="Yes, delete everything"
         keepLabel="Keep everything"
       />

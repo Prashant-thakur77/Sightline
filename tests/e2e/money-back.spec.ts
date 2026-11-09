@@ -196,7 +196,8 @@ test.describe('money back after a wrong item', () => {
     const day = said.match(/until (\w+ \d+ \w+)/)?.[1];
     if (day) await expect(page.locator('#money-back')).toContainText(`until ${day}`);
     // "Not now" then starting again reuses the same signed pack.
-    await expect(page.locator('.history li', { hasText: 'The evidence pack was signed.' })).toHaveCount(1);
+    // The "What your agent did" timeline records the signed evidence pack once.
+    await expect(page.locator('.agent-timeline li', { hasText: 'signed the evidence pack' })).toHaveCount(1);
     // The refresh after sending re-renders the page; let it settle (title included) before axe.
     await page.waitForLoadState('networkidle').catch(() => undefined);
     await expect(page).toHaveTitle(/\S/);

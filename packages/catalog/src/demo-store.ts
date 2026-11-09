@@ -226,6 +226,8 @@ export function toCatalogProduct(item: DemoItem, selection: Record<string, strin
     ],
     options: optionsFor(item),
     selected: { Colour: colour, ...(size ? { Size: size } : {}) },
+    // The Demo Store knows its stock, so every size says whether it is in stock in this colour.
+    ...(item.sizes ? { sizes: item.sizes.map((s) => ({ label: s, available: isAvailable(item, colour, s) })) } : {}),
     returnPolicy: item.returns,
     rating: item.rating,
     reviews: item.reviews,

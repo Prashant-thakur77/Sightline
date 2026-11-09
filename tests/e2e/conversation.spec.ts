@@ -123,10 +123,25 @@ test.describe('conversation: focus, honesty and dead ends', () => {
 
   test('another kind of thing is never offered: black jeans finds no cables, T-shirts or shoes', async ({ page }) => {
     await say(page, 'black jeans size 32');
-    await expect.poll(async () => (await announcements(page)).at(-1)).toBe("I couldn't find jeans in Demo Store. Want me to look for something else?");
-    await expect(page.getByRole('list', { name: /options/ })).toHaveCount(0);
-    await say(page, 'yes');
-    await expect.poll(async () => (await announcements(page)).at(-1)).toBe('Okay. What should I look for?');
+    // With live store data there may be real jeans; with the Demo Store alone there are none. Either
+    // way, nothing of another kind is ever offered.
+    const notFound = "I couldn't find jeans in Demo Store. Want me to look for something else?";
+    await expect.poll(async () => {
+      const last = (await announcements(page)).at(-1) ?? '';
+      return last === notFound || /^I found /.test(last);
+    }).toBe(true);
+    const options = page.getByRole('list', { name: /options/ });
+    if (await options.count()) {
+      const titles = await options.getByRole('heading').allTextContents();
+      expect(titles.length).toBeGreaterThan(0);
+      for (const t of titles) {
+        expect(t).toMatch(/jean|denim/i);
+        expect(t).not.toMatch(/cable|t-?shirt|\btee\b|shoe|sneaker/i);
+      }
+    } else {
+      await say(page, 'yes');
+      await expect.poll(async () => (await announcements(page)).at(-1)).toBe('Okay. What should I look for?');
+    }
     await expectNoAxeViolations(page);
   });
 });

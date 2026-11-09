@@ -26,6 +26,7 @@ export const COLOURS: LexEntry[] = [
   e('white', 'bright white', 'optic white'),
   atomic('off-white', 'off white', 'offwhite', 'ecru'),
   e('cream'),
+  e('natural', 'undyed'),
   e('ivory'),
   e('beige'),
   e('tan'),
@@ -126,6 +127,14 @@ export const MATERIALS: LexEntry[] = [
   e('plastic'),
 ];
 
+/** Materials that count as one another for "avoid" and "no ...": "nothing with wool" means no merino either. */
+export const MATERIAL_FAMILIES: Record<string, string[]> = {
+  wool: ['wool', 'merino', 'lambswool', 'cashmere', 'alpaca', 'mohair'],
+  leather: ['leather', 'suede'],
+  polyester: ['polyester', 'recycled polyester'],
+  cotton: ['cotton', 'organic cotton'],
+};
+
 export const NECKLINES: LexEntry[] = [
   e('crew-neck', 'crew neck', 'crewneck'),
   e('v-neck', 'v neck', 'vneck'),
@@ -170,6 +179,49 @@ export const POLICY_TERMS: LexEntry[] = [
   e('no returns', 'non returnable', 'not returnable', 'final sale', 'cannot be returned', "can't be returned"),
   e('free shipping', 'free delivery', 'ships free', 'shipping is free', 'delivery is free'),
   e('free exchanges', 'free exchange', 'exchanges are free'),
+];
+
+/**
+ * Product claims a buyer relies on that a listing either makes or doesn't: "waterproof", "machine
+ * washable", "organic". The shopping agent may say one only when the listing says it.
+ */
+export const FEATURE_TERMS: LexEntry[] = [
+  e('waterproof', 'water proof'),
+  e('water resistant', 'water-resistant', 'water repellent', 'water-repellent', 'showerproof'),
+  e('windproof', 'wind proof', 'wind resistant'),
+  e('breathable'),
+  e('insulated', 'insulation'),
+  e('lined', 'fleece lined', 'fully lined'),
+  e('thermal'),
+  e('moisture wicking', 'wicking', 'sweat wicking'),
+  e('quick dry', 'quick drying', 'fast drying'),
+  e('odour resistant', 'odor resistant', 'anti odour', 'anti odor', 'odour control', 'odor control'),
+  e('uv protection', 'upf', 'spf', 'sun protection'),
+  e('non slip', 'slip resistant', 'anti slip', 'non-slip', 'slip-resistant'),
+  e('machine washable', 'machine wash', 'machine-washable'),
+  e('hand wash', 'hand-wash'),
+  e('dry clean', 'dry clean only'),
+  e('dishwasher safe', 'dishwasher-safe'),
+  e('microwave safe', 'microwave-safe'),
+  e('organic'),
+  e('recycled'),
+  e('vegan'),
+  e('fair trade', 'fairtrade'),
+  e('hypoallergenic'),
+  e('handmade', 'hand made', 'handcrafted'),
+  e('gore tex', 'goretex', 'gore-tex'),
+  e('stretch', 'stretchy', 'stretchable'),
+  e('wrinkle free', 'wrinkle resistant', 'non iron', 'non-iron'),
+  e('reversible'),
+  e('packable'),
+  e('wireless', 'cordless'),
+  e('bluetooth'),
+  e('noise cancelling', 'noise canceling', 'noise-cancelling'),
+  e('rechargeable'),
+  e('warranty', 'guarantee', 'guaranteed'),
+  e('certified'),
+  e('bestseller', 'best seller', 'best selling', 'best-selling', 'top rated', 'top-rated', 'award winning', 'award-winning'),
+  e('cushioned', 'cushioning', 'padded'),
 ];
 
 const cat = (sizeDomain: SizeDomain | undefined, canonical: string, ...aliases: string[]): CategoryEntry => ({
@@ -267,7 +319,9 @@ export function findPhrases<E extends LexEntry>(ws: string[], entries: E[], allo
   const out: LexMatch<E>[] = [];
   let i = 0;
   while (i < ws.length) {
-    const candidates = index.get(ws[i]!) ?? (allowPlural ? index.get(ws[i]!.replace(/e?s$/, '')) : undefined);
+    // "hoodies" is "hoodie" + s, "dresses" is "dress" + es: try both singular forms.
+    const candidates =
+      index.get(ws[i]!) ?? (allowPlural ? (index.get(ws[i]!.replace(/s$/, '')) ?? index.get(ws[i]!.replace(/es$/, ''))) : undefined);
     let matched: CompiledAlias<E> | undefined;
     for (const c of candidates ?? []) {
       if (i + c.parts.length > ws.length) continue;

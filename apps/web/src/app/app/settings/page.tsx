@@ -7,6 +7,19 @@ import { PushOptIn } from '@/components/a11y/push-optin';
 import { vapidPublicKey } from '@/server/push';
 import { photoSummary, PHOTO_RETENTION_DAYS } from '@/server/privacy';
 import { DataControls } from './data-controls';
+import { MemoryControls, type MemoryView } from './memory-controls';
+import { listMemories, memorySentence } from '@/server/memories';
+import { spokenDate } from '@sightline/core';
+
+/** What each kind of memory is called when it is changed, and its value as the field shows it. */
+const FIELD: Record<string, string> = {
+  size: 'Size',
+  budget: 'Most for one item, in dollars',
+  avoid_material: 'Material to avoid',
+  like_material: 'Material you like',
+  avoid_colour: 'Colour to avoid',
+  like_colour: 'Colour you like',
+};
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Settings' };
@@ -16,6 +29,14 @@ export default async function Settings() {
   const [p] = await db().select().from(tables.preferences).where(eq(tables.preferences.userId, user.id)).limit(1);
   const [helper] = await db().select().from(tables.helpers).where(eq(tables.helpers.userId, user.id)).limit(1);
   const photos = await photoSummary(user.id);
+  const memories: MemoryView[] = (await listMemories(user.id)).map((m) => ({
+    id: m.id,
+    sentence: `${memorySentence(m)}.`,
+    said: m.said,
+    when: spokenDate(m.createdAt),
+    value: m.kind === 'budget' ? String(Number(m.value) / 100) : m.value,
+    field: FIELD[m.kind] ?? 'Value',
+  }));
   return (
     <div className="grid gap-8 max-w-[760px]">
       <header className="grid gap-2">
@@ -38,6 +59,7 @@ export default async function Settings() {
         }}
         helperName={helper?.name ?? null}
       />
+      <MemoryControls memories={memories} />
       {/* A named region with a heading, not also a fieldset with a legend, so its name is said once. */}
       <section aria-labelledby="notify-h" className="settings settings-box">
         <h2 id="notify-h" className="settings-h">

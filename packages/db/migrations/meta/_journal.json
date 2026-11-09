@@ -43,6 +43,13 @@
       "when": 1794209661372,
       "tag": "0005_store_agent",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794210034036,
+      "tag": "0006_agent_memories",
+      "breakpoints": true
     }
   ]
 }

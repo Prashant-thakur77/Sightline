@@ -75,6 +75,32 @@ export const preferences = pgTable('preferences', {
   onboardedAt: ts('onboarded_at'),
 });
 
+/**
+ * What the buyer asked the shopping agent to remember: a size in a kind of clothing, a material or
+ * colour they avoid or like, a usual budget. Stored only after the buyer said yes (or asked to be
+ * remembered); `said` keeps the buyer's own words it came from. Deleted by "forget ...", from
+ * Settings, or with "Delete everything".
+ */
+export const memories = pgTable(
+  'memories',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    /** size | avoid_material | like_material | avoid_colour | like_colour | budget */
+    kind: text('kind').notNull(),
+    /** A canonical size, material or colour, or a budget in integer cents. */
+    value: text('value').notNull(),
+    /** A category ("sweater") or size domain ("tops"); null means it applies to everything. */
+    scope: text('scope'),
+    said: text('said').notNull(),
+    /** "voice" when the buyer said it, "settings" when it was changed on the Settings page. */
+    source: text('source').notNull().default('voice'),
+    createdAt: created(),
+    updatedAt: updated(),
+  },
+  (t) => [index('memories_user_idx').on(t.userId, t.kind)],
+);
+
 export const helpers = pgTable('helpers', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),

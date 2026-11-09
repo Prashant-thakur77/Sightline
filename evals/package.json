@@ -13,7 +13,9 @@
     "store-agent": "tsx store-agent/run.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "lint": "echo ok"
+    "lint": "echo ok",
+    "agent": "tsx agent/run.ts",
+    "agent:live": "tsx agent/run.ts --live"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.6.0",

@@ -73,9 +73,16 @@ function titleOf(line: CartLine): string {
   return clean(line.snapshot.title) ?? en.readback.fallbackTitle;
 }
 
+/**
+ * The colour as a plain colour, with the store's own name beside it when that is a marketing name:
+ * "navy, listed as “In The Navy”". A name with no colour in it is only ever the listing's words.
+ */
 function colourOf(line: CartLine): string | undefined {
-  const c = clean(line.snapshot.attributes.colour);
-  return c?.toLowerCase();
+  const c = clean(line.snapshot.attributes.colour)?.toLowerCase();
+  const named = clean(line.snapshot.attributes.colourName);
+  if (named && c && named.toLowerCase() !== c) return en.readback.colourListedAs(c, named);
+  if (named && !c) return en.readback.colourOnlyListedAs(named);
+  return c;
 }
 
 function sizeOf(line: CartLine): string | undefined {

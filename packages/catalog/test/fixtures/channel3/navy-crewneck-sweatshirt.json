@@ -1,0 +1,1533 @@
+{
+ "products": [
+  {
+   "id": "MuSENYu",
+   "title": "Cozy Cowboy Crewneck Sweatshirt",
+   "description": "This navy crewneck sweatshirt from Marieloulou is made from soft cotton fleece, offering a comfortable yet clean look. Its versatile design makes it ideal for everyday wear, whether for school, errands, dance practice, or casual nights. It easily pairs with sweatpants, shorts, or jeans for an effortless streetwear and loungewear aesthetic. Key features inclu",
+   "brands": [
+    {
+     "id": "wvNg",
+     "name": "Marieloulou"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/c8251d00-896d-460d-9c2e-f32b69a1bdb3",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Man wearing a navy crewneck sweatshirt and sweatpants outdoors."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/0668d4f2-5016-480d-aefe-03085a8df7fc",
+     "is_main_image": false,
+     "shot_type": "product_information",
+     "alt_text": "Close-up of the brand label on the navy sweatshirt."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "cotton fleece"
+   ],
+   "key_features": [
+    "Soft cotton fleece comfort",
+    "Clean, everyday fit that layers easily",
+    "Raw-cut neckband for that effortless “cool” detail",
+    "Ribbed + stretchy cuffs that stay in place"
+   ],
+   "colors": [
+    {
+     "hex": "#281f35",
+     "percentage": 0.5045
+    },
+    {
+     "hex": "#463960",
+     "percentage": 0.238
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/MuSENYu-phnF-GJ3hBB",
+     "domain": "marieloulou.com",
+     "price": {
+      "price": 78,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "activity": [
+     "Universal"
+    ],
+    "care-instructions": [
+     "Machine washable",
+     "Tumble dry"
+    ],
+    "stretch-level": [
+     "Moderate stretch"
+    ],
+    "sleeve-style": [
+     "Cuffed"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "neckline": [
+     "Round"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "clothing-features": [
+     "Breathable design",
+     "Lightweight"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "SFSkQjT",
+   "title": "Heavyweight Cotton Rich Crew Neck Sweatshirt",
+   "description": "Stay comfortable and stylish with this heavyweight crew neck sweatshirt from Next. Made from a soft-to-the-touch, cotton-rich jersey, it's a versatile staple for everyday wear. The sweatshirt features a classic crew neck, long sleeves with ribbed cuffs, and a ribbed hem for a comfortable, regular fit.",
+   "brands": [
+    {
+     "id": "nNms",
+     "name": "Next"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/2226e20e-1a97-4e3e-a399-8a3b332e52c7",
+     "is_main_image": true,
+     "shot_type": "lifestyle",
+     "alt_text": "Male model wearing a navy blue crew neck sweatshirt."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/c7e5ba5d-ea6a-4540-8fc0-9032a46a798e",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Male model wearing a navy blue sweatshirt and dark trousers."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "Cotton",
+    "Recycled polyester"
+   ],
+   "key_features": [
+    "Heavyweight style",
+    "Crew neck",
+    "Cotton-rich jersey",
+    "Soft-to-the-touch"
+   ],
+   "colors": [
+    {
+     "hex": "#2b2f40",
+     "percentage": 0.8645
+    },
+    {
+     "hex": "#191b26",
+     "percentage": 0.08
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/SFSkQjT-9s4t-GJ3hBB",
+     "domain": "next.us",
+     "price": {
+      "price": 51,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "zs665N7",
+   "title": "U.S. Naval Academy Freeman Crewneck Sweatshirt",
+   "description": "An elevated take on the classic cotton sweatshirt, the Freeman is made with an ultra soft and silky cotton blend and thoughtful details. This navy blue crewneck features raglan sleeves, contrast rib collar, cuffs, and bottom, and a small gold embroidered 'N' with a star representing the U.S. Naval Academy on the left chest.",
+   "brands": [
+    {
+     "id": "JJAp",
+     "name": "Johnnie-O"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/153c58e8-9b23-4978-bf8e-a9c6c7d0411a",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Front view of a navy blue crewneck sweatshirt with a gold 'N' logo on the chest."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "50% Cotton",
+    "45% Modal",
+    "5% Spandex"
+   ],
+   "key_features": [
+    "Raglan sleeve sweatshirt",
+    "Contrast rib collar, cuffs, and bottom",
+    "Whistlestop contrast neck detail",
+    "Tonal embroidery surfer dude on yoke"
+   ],
+   "colors": [
+    {
+     "hex": "#233048",
+     "percentage": 0.947
+    },
+    {
+     "hex": "#4d576b",
+     "percentage": 0.053
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/zs665N7-MBFI-GJ3hBB",
+     "domain": "johnnie-o.com",
+     "price": {
+      "price": 135,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S S not in stock",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Midnight Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "sleeve-style": [
+     "Raglan"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "fabric": [
+     "Cotton",
+     "Modal",
+     "Spandex"
+    ],
+    "decoration-technique": [
+     "Embroidery"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "care-instructions": [
+     "Machine washable",
+     "Tumble dry"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "clothing-features": [
+     "Stretchable"
+    ],
+    "stretch-level": [
+     "Moderate stretch"
+    ],
+    "neckline": [
+     "Crew"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "J5ZyN1v",
+   "title": "Crewneck Sweatshirt",
+   "description": "An elevated take on an everyday essential, this oversized crewneck sweatshirt is designed for a modern, understated look. It is crafted from a soft tri-blend fabric that offers a smooth, structured feel with subtle stretch. The design features a relaxed, drop-shoulder silhouette and is finished with clean ribbed trims at the cuffs and hem.",
+   "brands": [
+    {
+     "id": "XlyW",
+     "name": "SPRWMN"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/2f797b5c-af5d-4753-99e0-b66a3ddf8239",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Back view of a male model wearing navy sweatpants and sweatshirt."
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/1231/2718/files/LOOK_58_44531.jpg",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Man wearing navy sweatshirt and sweatpants, front view."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "male",
+   "age": null,
+   "materials": [
+    "50% Polyester",
+    "38% Cotton",
+    "12% Rayon"
+   ],
+   "key_features": [
+    "Oversized fit",
+    "Drop shoulders",
+    "Crew neckline",
+    "Ribbed cuffs and hem"
+   ],
+   "colors": [
+    {
+     "hex": "#11101a",
+     "percentage": 0.4787
+    },
+    {
+     "hex": "#242436",
+     "percentage": 0.3191
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/J5ZyN1v-y2Ea-GJ3hBB",
+     "domain": "sprwmn.com",
+     "price": {
+      "price": 245,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "BLACK",
+        "exists": false,
+        "available": null,
+        "product_id": "9sRzPgk"
+       },
+       {
+        "label": "NAVY",
+        "exists": true,
+        "available": null,
+        "product_id": "J5ZyN1v"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": "yksJqUV"
+       },
+       {
+        "label": "M",
+        "exists": false,
+        "available": null,
+        "product_id": "9sRzPgk"
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": "J5ZyN1v"
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Size",
+      "label": "XL"
+     },
+     {
+      "name": "Color",
+      "label": "NAVY"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "neckline": [
+     "Crew"
+    ],
+    "clothing-features": [
+     "Stretchable"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "stretch-level": [
+     "Low stretch"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "top-fit": [
+     "Oversized"
+    ],
+    "fabric": [
+     "Polyester",
+     "Cotton",
+     "Rayon"
+    ],
+    "pattern": [
+     "Solid"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "rUdHXiJ",
+   "title": "Hoxton Sweatshirt",
+   "description": "The Hoxton Sweatshirt is a classic navy blue crewneck layer featuring a relaxed fit and a timeless silhouette. It is distinguished by contrasting red and white tape detailing along the arms and hem, adding a playful yet refined touch. Handmade in Europe from a soft, breathable brushed organic cotton fleece, this sweatshirt offers both comfort and style, maki",
+   "brands": [
+    {
+     "id": "4d0c",
+     "name": "Saint + Sofia"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/81ad347d-3b77-42d5-81ce-b4308d42631b",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a navy sweatshirt with red stripes and white trim."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/9246389d-c42f-4264-9c9f-29d062ac3903",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a navy sweatshirt with red stripes and white trim and navy pants."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "100% Organic Cotton (Main Fabric)",
+    "95% Organic Cotton, 5% Elastane (Rib)",
+    "100% Polyester (Trim)"
+   ],
+   "key_features": [
+    "Classic crew neckline for a clean and versatile look",
+    "Structured ribbed cuffs and hem that hold their shape",
+    "Relaxed, laid-back fit that drapes beautifully",
+    "Statement tape detailing at the sleeves for added interest"
+   ],
+   "colors": [
+    {
+     "hex": "#1f1d21",
+     "percentage": 0.9337
+    },
+    {
+     "hex": "#706463",
+     "percentage": 0.0663
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/rUdHXiJ-m1eL-GJ3hBB",
+     "domain": "saintandsofia.com",
+     "price": {
+      "price": 149,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Cream - Black Stripe",
+        "exists": true,
+        "available": null,
+        "product_id": "4lJAIgP"
+       },
+       {
+        "label": "Black - Leopard",
+        "exists": true,
+        "available": null,
+        "product_id": "VN0HiXR"
+       },
+       {
+        "label": "Navy - Red Stripe",
+        "exists": true,
+        "available": null,
+        "product_id": "rUdHXiJ"
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy - Red Stripe"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "pattern": [
+     "Striped"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "fabric": [
+     "Cotton",
+     "Fleece",
+     "Polyester"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "clothing-features": [
+     "Breathable design"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "leU9nBg",
+   "title": "Faial Diplomatic striped sweatshirt",
+   "description": "The Faial Diplomatic striped sweatshirt by TWOTHIRDS is a marine-inspired navy blue top featuring a subtle striped pattern. Designed for style and sustainability, this sweatshirt is crafted for everyday wear, offering a comfortable fit with a classic aesthetic.",
+   "brands": [
+    {
+     "id": "9Nct",
+     "name": "TWO THIRDS"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/e005092c-6feb-4e1f-9715-878b8c37fffb",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing navy blue striped sweatshirt and sweatpants, full body view."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/9d1d84fb-398f-4d8f-a4da-bfdf0ef32ad3",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Navy blue striped sweatshirt laid flat on a white background."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "female",
+   "age": null,
+   "materials": [],
+   "key_features": [
+    "Marine-inspired design",
+    "Sustainable craftsmanship"
+   ],
+   "colors": [
+    {
+     "hex": "#262934",
+     "percentage": 0.948
+    },
+    {
+     "hex": "#4c4f58",
+     "percentage": 0.052
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/leU9nBg-xwpf-GJ3hBB",
+     "domain": "kauristore.com",
+     "price": {
+      "price": 102,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "pattern": [
+     "Striped"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "top-length-type": [
+     "Medium"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "activity": [
+     "Universal"
+    ],
+    "neckline": [
+     "Round"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "k7egD0p",
+   "title": "Vintage Crewneck Sweatshirt",
+   "description": "The Vintage Crewneck Sweatshirt is a refined take on an everyday essential, crafted from midweight sueded fleece for a soft hand feel and lasting comfort. This long-sleeve sweatshirt features a clean crew neckline and a streamlined fit in a washed navy tone that provides a naturally worn character.",
+   "brands": [
+    {
+     "id": "Nk0c",
+     "name": "Citizens of Humanity"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/852c2cdf-bdfa-4891-986a-b2331ef517b4",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy blue crewneck sweatshirt laid flat on a background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/1ad36fc0-18f1-4e0b-8576-e620865182ef",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Man wearing navy crewneck sweatshirt and maroon pants."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "72% Cotton",
+    "28% Polyester"
+   ],
+   "key_features": [
+    "Clean crew neckline",
+    "Streamlined fit",
+    "Midweight sueded fleece",
+    "Washed navy tone"
+   ],
+   "colors": [
+    {
+     "hex": "#272a34",
+     "percentage": 0.9602
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/k7egD0p-E0i1-GJ3hBB",
+     "domain": "citizensofhumanity.com",
+     "price": {
+      "price": 188,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Abalone",
+        "exists": true,
+        "available": null,
+        "product_id": "k7egD0p"
+       },
+       {
+        "label": "Washed Black",
+        "exists": true,
+        "available": null,
+        "product_id": "72dYw2d"
+       },
+       {
+        "label": "Washed Marine",
+        "exists": true,
+        "available": null,
+        "product_id": "OwXdILQ"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Abalone"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "care-instructions": [
+     "Machine washable",
+     "Tumble dry"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "k4QZuce",
+   "title": "Off-shift Relaxed Crewneck Sweatshirt",
+   "description": "A cozy and soft navy blue crewneck sweatshirt designed for warmth and comfort during downtime. It features a relaxed fit, long sleeves, crew neck, soft jersey fabric with fleece lining, and subtle embroidered branding. Finished with ribbed cuffs, hems, and collar.",
+   "brands": [
+    {
+     "id": "Mmlp",
+     "name": "FIGS"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/k4QZuce",
+     "is_main_image": true,
+     "shot_type": null,
+     "alt_text": null
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0139/8942/files/2025_Q4_11_NAVY_OFF-SHIFT-RELAXED-CREWNECK-SWEATSHIRT_DEJA_036.jpg",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a navy blue sweatshirt and matching headband"
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "70% Cotton",
+    "30% Polyester",
+    "Rib: 100% Cotton"
+   ],
+   "key_features": [
+    "Crewneck",
+    "Soft jersey fabric",
+    "Fleece lining",
+    "Embroidered branding"
+   ],
+   "colors": [
+    {
+     "hex": "#252131",
+     "percentage": 0.8874
+    },
+    {
+     "hex": "#ae8e84",
+     "percentage": 0.1126
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/k4QZuce-AUAk-GJ3hBB",
+     "domain": "wearfigs.com",
+     "price": {
+      "price": 68,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Charcoal Heather Grey",
+        "exists": true,
+        "available": null,
+        "product_id": "k4QZuce"
+       },
+       {
+        "label": "Heather Grey",
+        "exists": true,
+        "available": null,
+        "product_id": "vzjChP4"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XXS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "2XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Charcoal Heather Grey"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "top-length-type": [
+     "Medium"
+    ],
+    "clothing-features": [
+     "Wrinkle resistant",
+     "Lightweight"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "45RwtEk",
+   "title": "Entire Studios Crew Neck Sweatshirt",
+   "description": "A relaxed, straight-silhouette crew neck sweatshirt in dark navy blue, crafted from 100% cotton. This understated piece features a distinctive cross-stitch detail at the front neckline, along with ribbed trim at the collar, cuffs, and hem for a comfortable, everyday fit.",
+   "brands": [
+    {
+     "id": "Wh4C",
+     "name": "ENTIRE STUDIOS"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/164357f3-377f-4d74-aa42-5a45d6e4578b",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a navy blue crewneck sweatshirt and matching pants."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/6f943a49-b282-4b97-80c8-25eb93f5a1a5",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Side view of model wearing navy blue sweatshirt and pants."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "Cotton"
+   ],
+   "key_features": [
+    "Crew neck",
+    "V-stitch detailing",
+    "Long sleeves",
+    "Ribbed cuffs"
+   ],
+   "colors": [
+    {
+     "hex": "#192947",
+     "percentage": 0.829
+    },
+    {
+     "hex": "#797987",
+     "percentage": 0.0904
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/45RwtEk-NuBr-GJ3hBB",
+     "domain": "farfetch.com",
+     "price": {
+      "price": 203,
+      "compare_at_price": 271,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    },
+    {
+     "url": "https://buy.trychannel3.com/45RwtEk-5MLj-GJ3hBB",
+     "domain": "cettire.com",
+     "price": {
+      "price": 219.69,
+      "compare_at_price": 307.18,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "top-fit": [
+     "Regular",
+     "Relaxed"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "AQgA5Ce",
+   "title": "Penny Crewneck Sweatshirt",
+   "description": "Penny Crewneck Sweatshirt in multiple colors including Midnight Navy, Black, White and Gulf Blue. Classic crewneck design with ribbed collar, cuffs and hem, soft fleece-like interior, and a relaxed casual fit. Made with a fabric blend that includes cotton, modal and spandex for stretch and comfort. Available in adult sizes XS–XL. Imported. Free shipping on U",
+   "brands": [
+    {
+     "id": "JJAp",
+     "name": "Johnnie-O"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/7471b1c4-5bff-4cbb-8913-28f30db1549c",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a white crewneck sweatshirt and navy skirt, front view."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/d7482e0d-3b5c-4e47-a3b2-ea6f48f94ae1",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Back view of a woman wearing a white crewneck sweatshirt, focusing on the neckline."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "55% cotton",
+    "40% modal",
+    "5% spandex"
+   ],
+   "key_features": [
+    "Crewneck sweatshirt",
+    "Rib collar, cuffs, and bottom",
+    "Heather jersey inside yoke",
+    "Tonal embroidery center back"
+   ],
+   "colors": [
+    {
+     "hex": "#15192a",
+     "percentage": 0.6598
+    },
+    {
+     "hex": "#2f2730",
+     "percentage": 0.132
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/AQgA5Ce-MBFI-GJ3hBB",
+     "domain": "johnnie-o.com",
+     "price": {
+      "price": 118,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Midnight Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "AQgA5Ce"
+       },
+       {
+        "label": "Black",
+        "exists": true,
+        "available": null,
+        "product_id": "EkG1MmO"
+       },
+       {
+        "label": "Gulf Blue",
+        "exists": true,
+        "available": "OutOfStock",
+        "product_id": "fhgT9k0"
+       },
+       {
+        "label": "Chateau Rose",
+        "exists": true,
+        "available": null,
+        "product_id": "V62SUPM"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Midnight Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "neckline": [
+     "Crew"
+    ],
+    "fabric": [
+     "Cotton",
+     "Modal",
+     "Spandex"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "clothing-features": [
+     "Stretchable"
+    ],
+    "top-length-type": [
+     "Medium"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "1R3gjMD",
+   "title": "Crew-neck Slogan Sweatshirt",
+   "description": "A comfortable crew-neck sweatshirt in navy blue, designed for casual wear. This unisex apparel piece features a minimalist embossed slogan on the front and a ribbed crew neckline, cuffs, and hem for a classic fit. The product appears to be part of a winter or loungewear collection, suitable for layering in cooler weather.",
+   "brands": [
+    {
+     "id": "jONK",
+     "name": "North Sails"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/359f19be-4e0c-4643-9a53-844b7b68b3a5",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Front view of a woman wearing an off-white crew-neck sweatshirt."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/b7253fd1-6130-487f-a103-28e81d1bf38b",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Front view of a woman wearing a cornflower blue crew-neck sweatshirt and matching cap."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "female",
+   "age": null,
+   "materials": [
+    "cotton",
+    "polyester"
+   ],
+   "key_features": [
+    "Crew-neck sweatshirt",
+    "Embossed slogan on chest",
+    "Comfortable french terry or fleece interior (assumed from sweatshirt design)",
+    "Ribbed cuffs and hem"
+   ],
+   "colors": [
+    {
+     "hex": "#b7b5ae",
+     "percentage": 0.3115
+    },
+    {
+     "hex": "#3a2418",
+     "percentage": 0.2989
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/1R3gjMD-bOI2-GJ3hBB",
+     "domain": "northsails.com",
+     "price": {
+      "price": 70,
+      "compare_at_price": 140,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Navy blue",
+        "exists": true,
+        "available": null,
+        "product_id": "1R3gjMD"
+       },
+       {
+        "label": "Mauve",
+        "exists": true,
+        "available": "OutOfStock",
+        "product_id": "sp4A6a0"
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Size",
+      "label": "XXS"
+     },
+     {
+      "name": "Color",
+      "label": "Navy blue"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Text"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "xAtcQ2V",
+   "title": "Heavyweight Crewneck",
+   "description": "The 3sixteen Heavyweight Crewneck in Indigo is a premium, substantial layer designed for warmth and durability. Crafted in Canada from a custom-knit 500gsm heavyweight fleece, this crewneck features a tightly woven exterior and a brushed interior for a plush, cozy feel. It includes functional hidden gusset pockets tucked into the side seams, maintaining a cl",
+   "brands": [
+    {
+     "id": "sL3u",
+     "name": "3sixteen"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/b2ab4105-f8ec-4e2f-9554-e46d9903295c",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Man wearing indigo heavyweight crewneck sweatshirt and black jeans."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/66b7fac2-eb4e-48ce-bcb9-44f24c7860a9",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Back view of man wearing indigo heavyweight crewneck sweatshirt."
+    }
+   ],
+   "category": {
+    "slug": "sweatshirts-3",
+    "title": "Sweatshirts"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "100% cotton"
+   ],
+   "key_features": [
+    "Custom-knit 500gsm heavyweight fleece",
+    "Tightly woven exterior with a plush, brushed interior",
+    "Hidden gusset pockets at the side seams",
+    "100% preshrunk cotton"
+   ],
+   "colors": [
+    {
+     "hex": "#161828",
+     "percentage": 0.8932
+    },
+    {
+     "hex": "#99837e",
+     "percentage": 0.1068
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/xAtcQ2V-6AQR-GJ3hBB",
+     "domain": "3sixteen.com",
+     "price": {
+      "price": 175,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "2X",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "sweatshirt-pocket-type": [
+     "Side seam pocket"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Cotton",
+     "Fleece"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "neckline": [
+     "Crew"
+    ]
+   },
+   "ratings": null
+  }
+ ],
+ "next_page_token": null
+}

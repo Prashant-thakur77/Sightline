@@ -1,1 +1,1 @@
-{ "extends": "../tsconfig.base.json", "include": ["lib", "confirmation", "redteam", "duplicates", "grounding", "store-agent", "*.ts"] }
+{ "extends": "../tsconfig.base.json", "include": ["lib", "confirmation", "redteam", "duplicates", "grounding", "store-agent", "agent", "*.ts"] }

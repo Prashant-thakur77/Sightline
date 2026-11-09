@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { parseMoney } from '@sightline/core';
-import type { CatalogProduct, CatalogSource, SearchQuery, VariantOption } from './types';
+import type { CatalogProduct, CatalogSource, SearchQuery, SizeOffer, VariantOption } from './types';
 
 export const CHANNEL3_BASE = 'https://api.trychannel3.com';
 
@@ -117,10 +117,16 @@ export class Channel3Error extends Error {
   }
 }
 
-function attr(p: Channel3Product, key: string): string | undefined {
-  const v = p.structured_attributes?.[key];
-  if (typeof v === 'string') return v;
-  if (Array.isArray(v) && typeof v[0] === 'string') return v.join(', ');
+/** The first of the structured attribute keys that is present, as text. */
+function attr(p: Channel3Product, ...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const v = p.structured_attributes?.[key];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (Array.isArray(v)) {
+      const parts = v.filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
+      if (parts.length) return parts.join(', ');
+    }
+  }
   return undefined;
 }
 
@@ -128,6 +134,66 @@ function selectedOption(p: Channel3Product, names: string[]): string | undefined
   const sel = p.variants?.selected ?? [];
   const hit = sel.find((s) => names.includes(s.name.toLowerCase()));
   return hit?.label;
+}
+
+const STOCK_WORDS = /\b(?:not in stock|out of stock|sold out|unavailable)\b/i;
+const SIZE_LIKE = /^(?:\d{1,2}(?:\.\d)?|[2-5]?x{0,3}[sml]|xx?l|one size|os|[a-z]{1,4}\/[a-z]{1,4})$/i;
+
+/**
+ * The listing's own size choices: an option named like "Size" or "EU Size", or a generic "Option"
+ * whose values all look like sizes. Labels are cleaned ("S S not in stock" is S, out of stock) and
+ * de-duplicated ("46" and "46 EU" are one). Stock is known only when the store says so.
+ */
+export function channel3Sizes(p: Channel3Product): SizeOffer[] | undefined {
+  const options = p.variants?.options ?? [];
+  const opt =
+    options.find((o) => /\bsize\b/i.test(o.name)) ??
+    options.find((o) => /^option$/i.test(o.name.trim()) && o.values.length > 0 && o.values.every((v) => SIZE_LIKE.test(v.label.trim())));
+  if (!opt) return undefined;
+  const out: SizeOffer[] = [];
+  const seen = new Set<string>();
+  for (const v of opt.values) {
+    if (v.exists === false) continue;
+    let label = v.label.replace(/\s+/g, ' ').trim();
+    let available: boolean | undefined = v.available === 'OutOfStock' ? false : v.available === 'InStock' ? true : undefined;
+    if (STOCK_WORDS.test(label)) {
+      available = false;
+      label = label.replace(STOCK_WORDS, '').trim();
+    }
+    // "S S" (a label repeated by the store) is one size.
+    const words = label.split(' ');
+    if (words.length === 2 && words[0]!.toLowerCase() === words[1]!.toLowerCase()) label = words[0]!;
+    label = label.replace(/\s+(?:EU|US|UK|IT|FR)$/i, '');
+    if (!label) continue;
+    const key = label.toLowerCase();
+    const prior = out.find((s) => s.label.toLowerCase() === key);
+    if (prior) {
+      if (available === false) prior.available = false;
+      continue;
+    }
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const own = (v as { product_id?: unknown }).product_id;
+    const productId = typeof own === 'string' && own && own !== p.id ? `c3:${own}` : undefined;
+    out.push({ label, ...(available === undefined ? {} : { available }), ...(productId ? { productId } : {}) });
+  }
+  return out.length ? out : undefined;
+}
+
+/** "male" and "female" as the store's audience words. */
+function audience(p: Channel3Product): string | undefined {
+  const g = (p as { gender?: unknown }).gender;
+  if (g === 'male') return "men's";
+  if (g === 'female') return "women's";
+  if (g === 'unisex') return 'unisex';
+  return undefined;
+}
+
+/** The store's rating, when it gives an average and a count. */
+function ratingOf(p: Channel3Product): { average: number; count: number } | undefined {
+  const r = (p as { ratings?: unknown }).ratings as { value?: unknown; count?: unknown } | null | undefined;
+  if (!r || typeof r.value !== 'number' || typeof r.count !== 'number' || r.count < 1) return undefined;
+  return { average: Math.round(r.value * 10) / 10, count: Math.round(r.count) };
 }
 
 /** Pick the offer we mirror: cheapest new, in-stock offer; else cheapest offer. */
@@ -140,21 +206,34 @@ export function pickOffer(p: Channel3Product) {
   return pool.sort((a, b) => a.value - b.value)[0];
 }
 
-export function normaliseChannel3(p: Channel3Product): CatalogProduct | null {
+/**
+ * A Channel3 product as a CatalogProduct. `selection` is the variant the buyer chose, by the
+ * listing's own labels (`{ Size: 'M' }`). A listing that offers several sizes never takes the size
+ * the store happened to pre-select: the size is set only when the buyer chose one it offers.
+ */
+export function normaliseChannel3(p: Channel3Product, selection: Record<string, string> = {}): CatalogProduct | null {
   const offer = pickOffer(p);
   if (!offer) return null;
   const options: VariantOption[] = (p.variants?.options ?? []).map((o) => ({
     name: o.name,
     values: o.values.filter((v) => v.exists !== false).map((v) => ({ label: v.label, available: v.available !== 'OutOfStock' })),
   }));
-  const colour = selectedOption(p, ['color', 'colour']) ?? attr(p, 'color') ?? attr(p, 'colour');
-  const size = selectedOption(p, ['size']) ?? attr(p, 'size');
+  const colour = selectedOption(p, ['color', 'colour']) ?? attr(p, 'color', 'colour');
+  const sizes = channel3Sizes(p);
+  const wantedSize = Object.entries(selection).find(([k]) => /size/i.test(k))?.[1];
+  const offered = wantedSize ? sizes?.find((s) => s.label.toLowerCase() === wantedSize.trim().toLowerCase()) : undefined;
+  // A size sold as its own listing is that listing's size, not this one's.
+  const chosenSize = offered && !offered.productId ? offered : undefined;
+  // One size, or none listed: the store's own selection (or attribute) is the listing's size.
+  const size = sizes && sizes.length > 1 ? chosenSize?.label : (chosenSize?.label ?? selectedOption(p, ['size']) ?? attr(p, 'size') ?? sizes?.[0]?.label);
   const images = (p.images ?? [])
     .sort((a, b) => Number(Boolean(b.is_main_image)) - Number(Boolean(a.is_main_image)))
     .slice(0, 6)
     .map((i) => ({ url: i.url, alt: i.alt_text ?? undefined }));
   const selected: Record<string, string> = {};
-  for (const s of p.variants?.selected ?? []) selected[s.name] = s.label;
+  for (const s of p.variants?.selected ?? []) if (!/size/i.test(s.name)) selected[s.name] = s.label;
+  if (size) selected.Size = size;
+  const rating = ratingOf(p);
   return {
     id: `c3:${p.id}`,
     source: 'channel3',
@@ -167,11 +246,16 @@ export function normaliseChannel3(p: Channel3Product): CatalogProduct | null {
     attributes: {
       colour: colour?.toLowerCase(),
       size,
-      material: p.materials?.join(', ') ?? attr(p, 'material'),
+      material: p.materials?.length ? p.materials.join(', ') : attr(p, 'fabric', 'material'),
       neckline: attr(p, 'neckline'),
-      fit: attr(p, 'fit'),
+      fit: attr(p, 'top-fit', 'bottom-fit', 'fit'),
       pattern: attr(p, 'pattern'),
+      care: attr(p, 'care-instructions', 'care'),
+      sleeve: attr(p, 'sleeve-length-type'),
+      audience: audience(p),
     },
+    ...(sizes ? { sizes } : {}),
+    ...(rating ? { rating } : {}),
     price: parseMoney(offer.value.toFixed(2), offer.o.price.currency),
     compareAtPrice:
       typeof offer.o.price.compare_at_price === 'number'
@@ -187,12 +271,27 @@ export function normaliseChannel3(p: Channel3Product): CatalogProduct | null {
   };
 }
 
+/**
+ * The words sent to Channel3: the colour once (it is often already in the text), and "navy" as
+ * "navy blue", so the colour is not read as the U.S. Navy's teams and gear.
+ */
+export function channel3QueryText(q: Pick<SearchQuery, 'text' | 'colour'>): string {
+  const words = q.text.trim().split(/\s+/).filter(Boolean);
+  const colour = q.colour?.trim().toLowerCase();
+  const has = (w: string) => words.some((x) => x.toLowerCase() === w);
+  const out = colour && !colour.split(' ').every(has) ? [colour, ...words] : words;
+  const text = out.join(' ');
+  return /\bnavy\b(?!\s+blue)/i.test(text) ? text.replace(/\bnavy\b(?!\s+blue)/i, 'navy blue') : text;
+}
+
 export interface Channel3Options {
   apiKey: string;
   fetch?: typeof fetch;
   baseUrl?: string;
   /** Stable per-user id for Channel3's x-user-id header (never an email). */
   userId?: string;
+  /** Per-request time limit in milliseconds (default 8 seconds). */
+  timeoutMs?: number;
 }
 
 export function createChannel3(opts: Channel3Options): CatalogSource & {
@@ -208,7 +307,8 @@ export function createChannel3(opts: Channel3Options): CatalogSource & {
   });
 
   async function call(path: string, init: RequestInit): Promise<unknown> {
-    const res = await f(`${base}${path}`, init);
+    // A voice turn can't wait long: a slow answer is a failed one, and the caller says so.
+    const res = await f(`${base}${path}`, { ...init, signal: init.signal ?? AbortSignal.timeout(opts.timeoutMs ?? 8000) });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Channel3Error(`Channel3 ${res.status}: ${text.slice(0, 200)}`, res.status);
@@ -237,9 +337,8 @@ export function createChannel3(opts: Channel3Options): CatalogSource & {
         };
       const hex = q.colour ? COLOUR_HEX[q.colour.toLowerCase()] : undefined;
       if (hex) filters.colors = { palette: [{ hex }] };
-      const text = [q.colour, q.text].filter(Boolean).join(' ');
-      const res = await rawSearch({ query: text, filters, limit: q.limit ?? 12 });
-      return res.products.map(normaliseChannel3).filter((p): p is CatalogProduct => p !== null);
+      const res = await rawSearch({ query: channel3QueryText(q), filters, limit: q.limit ?? 12 });
+      return res.products.map((p) => normaliseChannel3(p)).filter((p): p is CatalogProduct => p !== null);
     },
     async get(id: string, selection?: Record<string, string>) {
       const raw = id.replace(/^c3:/, '');
@@ -251,7 +350,7 @@ export function createChannel3(opts: Channel3Options): CatalogSource & {
           method: 'GET',
           headers: headers(),
         });
-        return normaliseChannel3(Channel3ProductSchema.parse(json));
+        return normaliseChannel3(Channel3ProductSchema.parse(json), selection);
       } catch (e) {
         if (e instanceof Channel3Error && e.status === 404) return null;
         throw e;

@@ -1,0 +1,1429 @@
+{
+ "products": [
+  {
+   "id": "C8Azcne",
+   "title": "Men's Navy Midshipmen Navy Bones Hoodie",
+   "description": "Under Armour Men's Navy Midshipmen Navy Bones Hoodie in a deep navy blue. This long-sleeve pullover hoodie features a standard fit, a front kangaroo pocket, and a striking screen-printed graphic on the chest consisting of a skull and crossbones with the text 'FEAR THE BONES NAVY.' It is an officially licensed NCAA product.",
+   "brands": [
+    {
+     "id": "56BV",
+     "name": "Under Armour"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/81a4d195-3288-4713-8a71-5e932e1748d3",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy blue hoodie with white text graphic on the chest."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "fleece"
+   ],
+   "key_features": [
+    "Long sleeve, pullover hoodie",
+    "Front kangaroo pocket",
+    "Standard fit",
+    "Screen-printed graphics"
+   ],
+   "colors": [
+    {
+     "hex": "#1d1e36",
+     "percentage": 0.9444
+    },
+    {
+     "hex": "#45475c",
+     "percentage": 0.0556
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/C8Azcne-fdOw-GJ3hBB",
+     "domain": "dickssportinggoods.com",
+     "price": {
+      "price": 80,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "activity": [
+     "Universal"
+    ],
+    "decoration-technique": [
+     "Screen printing"
+    ],
+    "neckline": [
+     "Round"
+    ],
+    "sweatshirt-pocket-type": [
+     "Kangaroo pocket"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "Id9F4kP",
+   "title": "Men's Navy Midshipmen Navy Victory Pullover Hoodie",
+   "description": "The Antigua Men's Navy Midshipmen Navy Victory Pullover Hoodie is a standard-fit, long-sleeve hoodie designed for team spirit and comfort. It features a navy blue exterior with a contrasting gray hood lining and drawstrings. The chest is adorned with embroidered graphics. Functional details include thumbholes at the cut-and-sew cuffs, an adjustable hood, and",
+   "brands": [
+    {
+     "id": "kJNN",
+     "name": "Antigua"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/077a27fc-a5fd-46b7-a7c3-5156fba9ae03",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy pullover hoodie from the back view with a graphic logo on the chest."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "fleece"
+   ],
+   "key_features": [
+    "Long sleeve, pullover hoodie",
+    "Thumbholes at cut-and-sew cuffs",
+    "Adjustable hood",
+    "Bungee/toggle bottom"
+   ],
+   "colors": [
+    {
+     "hex": "#181e32",
+     "percentage": 0.915
+    },
+    {
+     "hex": "#575a67",
+     "percentage": 0.085
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/Id9F4kP-fdOw-GJ3hBB",
+     "domain": "dickssportinggoods.com",
+     "price": {
+      "price": 84.99,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "neckline": [
+     "Hooded"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "stretch-level": [
+     "No stretch"
+    ],
+    "activity": [
+     "Universal"
+    ],
+    "decoration-technique": [
+     "Embroidery"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "placket-type": [
+     "Buttonless (open V)"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "X5sIbtj",
+   "title": "Heavyweight Hoodie",
+   "description": "A navy heavyweight hoodie crafted from brushed cotton fleece-back fabric. This garment-dyed and pre-shrunk piece features a faded aesthetic throughout, with a classic kangaroo pocket at the front, dropped shoulders, and rib-knit finishing on the hem, cuffs, and side seams. The hood is detailed with grommets for a refined touch.",
+   "brands": [
+    {
+     "id": "tisX",
+     "name": "LES TIEN - HER"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/b9c9f095-1eba-4ea8-a490-d48de29ef69e",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Front view of a navy heavyweight hoodie on a male model."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/35c7701d-933f-47d6-911c-730d8fe036c3",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Front view of a navy heavyweight hoodie on a male model."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "100% cotton"
+   ],
+   "key_features": [
+    "Brushed cotton fleece-back",
+    "Pre-shrunk and garment-dyed",
+    "Fading throughout",
+    "Grommets at hood"
+   ],
+   "colors": [
+    {
+     "hex": "#1a2a49",
+     "percentage": 0.9201
+    },
+    {
+     "hex": "#7a757e",
+     "percentage": 0.0799
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/X5sIbtj-NLmP-GJ3hBB",
+     "domain": "ssense.com",
+     "price": {
+      "price": 295,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XXS",
+        "exists": false,
+        "available": null,
+        "product_id": "hXbZRl2"
+       },
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": "X5sIbtj"
+       },
+       {
+        "label": "S",
+        "exists": false,
+        "available": null,
+        "product_id": "06vdtC6"
+       },
+       {
+        "label": "M",
+        "exists": false,
+        "available": null,
+        "product_id": "FpJk0VA"
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": "wMm7pSg"
+       }
+      ]
+     },
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Aloe",
+        "exists": false,
+        "available": null,
+        "product_id": "cniE3zF"
+       },
+       {
+        "label": "Aloe Oil",
+        "exists": false,
+        "available": null,
+        "product_id": "EKLr1KZ"
+       },
+       {
+        "label": "Ivory",
+        "exists": true,
+        "available": null,
+        "product_id": "pY128BO"
+       },
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "X5sIbtj"
+       },
+       {
+        "label": "Roebuck Oil",
+        "exists": false,
+        "available": null,
+        "product_id": "rJcccHk"
+       },
+       {
+        "label": "Sunfaded Dark Moss",
+        "exists": false,
+        "available": null,
+        "product_id": "78U0fEa"
+       },
+       {
+        "label": "Vintage Black",
+        "exists": false,
+        "available": null,
+        "product_id": "FpJk0VA"
+       },
+       {
+        "label": "Washed Brown Fig",
+        "exists": false,
+        "available": null,
+        "product_id": "2W7nZgp"
+       },
+       {
+        "label": "Washed Forest",
+        "exists": false,
+        "available": null,
+        "product_id": "38PwNLD"
+       },
+       {
+        "label": "Washed Red Mahogany",
+        "exists": false,
+        "available": null,
+        "product_id": "06vdtC6"
+       },
+       {
+        "label": "Washed Slate Grey",
+        "exists": false,
+        "available": null,
+        "product_id": "wMm7pSg"
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Size",
+      "label": "XS"
+     },
+     {
+      "name": "Color",
+      "label": "Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "sweatshirt-pocket-type": [
+     "Kangaroo pocket"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "neckline": [
+     "Hooded"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "jBb0v8c",
+   "title": "Hoodie",
+   "description": "Saint Laurent's relaxed cotton hoodie features a generous silhouette with a drawstring hood and a kangaroo pocket at the chest. The piece showcases ribbed knit at the cuffs and hem for structure, with soft loopback fleece construction throughout.",
+   "brands": [
+    {
+     "id": "0Byb",
+     "name": "Yves Saint Laurent"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/2539a104-7db4-4210-8763-f798b7d2c2bf",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy blue hoodie shown from the front, plain background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/0e161dd7-cabc-4f92-b492-6776ee833fb9",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Back view of a navy blue hoodie against a white background."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "Generous silhouette",
+    "Drawstring hood",
+    "Kangaroo pocket at the chest",
+    "Ribbed knit cuffs and hem"
+   ],
+   "colors": [
+    {
+     "hex": "#1c1e2e",
+     "percentage": 0.9262
+    },
+    {
+     "hex": "#404250",
+     "percentage": 0.0738
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/jBb0v8c-sBqr-GJ3hBB",
+     "domain": "italist.com",
+     "price": {
+      "price": 551,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "knit-pattern": [
+     "Rib"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "activity": [
+     "Universal"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "clothing-features": [
+     "Lightweight"
+    ],
+    "sweatshirt-pocket-type": [
+     "Kangaroo pocket"
+    ],
+    "neckline": [
+     "Hooded"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "8SvT6wI",
+   "title": "Men's Navy Midshipmen Navy Victory Pullover Hoodie",
+   "description": "A navy blue men's pullover hoodie from Antigua, featuring the Navy Midshipmen team graphics. This hooded sweatshirt includes a contrasting grey lining in the hood and grey drawstrings. It is designed with long sleeves, thumbholes at the cuffs, a bungee/toggle bottom for an adjustable fit, and a front kangaroo pocket.",
+   "brands": [
+    {
+     "id": "kJNN",
+     "name": "Antigua"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/b86f7810-f67c-49e0-b071-25c79338c307",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy pullover hoodie shown on a male model, front view."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [],
+   "key_features": [
+    "Long sleeve, pullover hoodie",
+    "Thumbholes at cut-and-sew cuffs",
+    "Adjustable hood",
+    "Bungee/toggle bottom"
+   ],
+   "colors": [
+    {
+     "hex": "#181f31",
+     "percentage": 0.9138
+    },
+    {
+     "hex": "#505561",
+     "percentage": 0.0862
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/8SvT6wI-fdOw-GJ3hBB",
+     "domain": "dickssportinggoods.com",
+     "price": {
+      "price": 84.99,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "neckline": [
+     "Hooded"
+    ],
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ]
+   },
+   "ratings": {
+    "value": 3.75,
+    "count": 4,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "JBnOapm",
+   "title": "Standard Hoodie",
+   "description": "This Navy Standard Hoodie from Entire Studios is a heavyweight cotton terry pullover. It features a drawstring hood, a spacious kangaroo pocket at the waist, dropped shoulders for a relaxed fit, and rib-knit cuffs and hem. Part of the Uniform collection, it is crafted from 100% cotton with a 510 gsm weight for durability and warmth.",
+   "brands": [
+    {
+     "id": "Wh4C",
+     "name": "ENTIRE STUDIOS"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/68007ba1-7261-4e87-b237-6b17464cca8e",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a navy standard hoodie with black pants."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/42368e6d-6dd3-4c91-8e82-32f05c49b85d",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Navy standard hoodie, front view on plain background."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "100% cotton"
+   ],
+   "key_features": [
+    "Cotton terry hoodie",
+    "510 gsm",
+    "Drawstring at hood",
+    "Kangaroo pocket at waist"
+   ],
+   "colors": [
+    {
+     "hex": "#2c2f44",
+     "percentage": 0.6416
+    },
+    {
+     "hex": "#1c1b1f",
+     "percentage": 0.2778
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/JBnOapm-NLmP-GJ3hBB",
+     "domain": "ssense.com",
+     "price": {
+      "price": 270,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Black",
+        "exists": true,
+        "available": null,
+        "product_id": "7PA2Afs"
+       },
+       {
+        "label": "Gray",
+        "exists": true,
+        "available": null,
+        "product_id": "ZlJfxDC"
+       },
+       {
+        "label": "Off-white",
+        "exists": true,
+        "available": null,
+        "product_id": "LBRoOAA"
+       },
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "JBnOapm"
+       },
+       {
+        "label": "Brown",
+        "exists": true,
+        "available": null,
+        "product_id": "LSwUGRz"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "fabric": [
+     "Cotton"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "neckline": [
+     "Hooded"
+    ],
+    "sweatshirt-pocket-type": [
+     "Kangaroo pocket"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "X5mgOc2",
+   "title": "Entire Studios Standard Hoodie",
+   "description": "A slim-fit cotton terry hoodie in salted navy, featuring overall fading and a heavy 510 gsm weight. This piece is detailed with a drawstring hood, a kangaroo pocket at the waist, rib-knit cuffs and hem, and saddle shoulders for a structured silhouette.",
+   "brands": [
+    {
+     "id": "Wh4C",
+     "name": "ENTIRE STUDIOS"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/57e2b2b1-e68d-4688-b488-d01c1375739d",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Man wearing a navy blue hoodie and matching sweatpants."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/f05593c7-ffa7-4e90-b432-d461747c2cea",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Man wearing a navy blue hoodie and matching sweatpants."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "cotton"
+   ],
+   "key_features": [
+    "Cotton terry fabric",
+    "Fading throughout",
+    "510 gsm weight",
+    "Slim-fit"
+   ],
+   "colors": [
+    {
+     "hex": "#32364f",
+     "percentage": 0.9276
+    },
+    {
+     "hex": "#817179",
+     "percentage": 0.0724
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/X5mgOc2-NLmP-GJ3hBB",
+     "domain": "ssense.com",
+     "price": {
+      "price": 240,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Grey Marble",
+        "exists": true,
+        "available": null,
+        "product_id": "0HdXNcR"
+       },
+       {
+        "label": "Washed Black",
+        "exists": true,
+        "available": null,
+        "product_id": "jCpsi7I"
+       },
+       {
+        "label": "Heather Grey",
+        "exists": true,
+        "available": null,
+        "product_id": "WwVT59I"
+       },
+       {
+        "label": "Black Standard Hoodie",
+        "exists": true,
+        "available": null,
+        "product_id": "2MQBikN"
+       },
+       {
+        "label": "Green Standard Hoodie",
+        "exists": true,
+        "available": null,
+        "product_id": "Vg15IbF"
+       },
+       {
+        "label": "Navy Standard Hoodie",
+        "exists": true,
+        "available": null,
+        "product_id": "X5mgOc2"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy Standard Hoodie"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "top-fit": [
+     "Slim"
+    ],
+    "neckline": [
+     "Hooded"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "sweatshirt-pocket-type": [
+     "Kangaroo pocket"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Cotton"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "UyRFqMr",
+   "title": "Men's Heavyweight Hoodie",
+   "description": "The Men's Heavyweight Hoodie by Talentless is the ultimate essential for cold city days and long-haul flights. Designed and developed in Los Angeles, this premium hoodie is crafted from 100% cotton fleece with a heavy 500 GSM weight, providing the perfect balance of warmth and comfort without feeling bulky. Built for durability, it features reinforced double",
+   "brands": [
+    {
+     "id": "3iII",
+     "name": "Talentless"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/de0d85c2-3c36-468c-95fb-1cea3c4136ff",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy blue heavyweight hoodie laid flat on a plain background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/19d6b420-2cfb-406b-aaae-8499d7396054",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Man wearing a navy blue hoodie from the back in a lifestyle shot."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "100% Cotton Fleece"
+   ],
+   "key_features": [
+    "100% Cotton Fleece",
+    "Heavyweight 500 GSM",
+    "Reinforced double stitched seams",
+    "Strong metal grommets"
+   ],
+   "colors": [
+    {
+     "hex": "#1e2231",
+     "percentage": 0.9651
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/UyRFqMr-sulf-GJ3hBB",
+     "domain": "talentless.co",
+     "price": {
+      "price": 77.4,
+      "compare_at_price": 129,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "clothing-features": [
+     "Wrinkle resistant"
+    ],
+    "top-length-type": [
+     "Medium"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "activity": [
+     "Universal"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "care-instructions": [
+     "Tumble dry"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "neckline": [
+     "Crew"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "oIpHRef",
+   "title": "Oversized Zip Through Hoodie",
+   "description": "This Oversized Zip Through Hoodie in navy is crafted from premium heavyweight soft touch jersey for a luxurious feel. It features a relaxed oversized fit, rib cuffs and hem, a branded zip pull, and a puff print on the back. Designed for versatility and comfort, it can be paired with matching joggers to complete a cohesive urban look.",
+   "brands": [
+    {
+     "id": "ne74",
+     "name": "Cernucci"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/7814b3d2-c460-42f4-9dc6-7ab636c9601a",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing navy oversized hoodie and sweatpants with a white crop top."
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0591/2844/7137/files/TA-COREZIPHOOD-W-N_TA-COREJOG01-W-N-21.jpg",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing navy oversized zip-through hoodie and sweatpants."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "Oversized zip through hoodie",
+    "Heavyweight soft touch jersey",
+    "Rib cuffs",
+    "Rib hem"
+   ],
+   "colors": [
+    {
+     "hex": "#2d2945",
+     "percentage": 0.8195
+    },
+    {
+     "hex": "#110d1e",
+     "percentage": 0.104
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/oIpHRef-m7kZ-GJ3hBB",
+     "domain": "us.cernucci.com",
+     "price": {
+      "price": 59.99,
+      "compare_at_price": 119.99,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "clothing-features": [
+     "Lightweight"
+    ],
+    "placket-type": [
+     "Full-zip"
+    ],
+    "top-fit": [
+     "Oversized"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "activity": [
+     "Universal"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "neckline": [
+     "Hooded"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "i5pwxm1",
+   "title": "Small Logo Hoodie",
+   "description": "The Love Moschino Navy Blue Hoodie merges contemporary design with practical comfort for the modern man. Crafted from a premium 60% cotton and 40% polyester blend, this piece offers a natural breathability and all-day softness while ensuring long-term durability and color retention. Featuring a classic navy hue and a subtle logo on the chest, it is a versati",
+   "brands": [
+    {
+     "id": "6463",
+     "name": "Moschino"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/6d5a6aab-26bc-4277-af79-752eaa838250",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Dark blue men's logo hoodie shown from the front on a plain background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/fc1e86ea-94fe-45b3-967a-278c37690c18",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Dark blue men's logo hoodie shown from the back."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "60% Cotton",
+    "40% Polyester"
+   ],
+   "key_features": [
+    "Logo design",
+    "Breathable, durable, and soft fabric technology",
+    "Hood with drawstring",
+    "Kangaroo front pocket"
+   ],
+   "colors": [
+    {
+     "hex": "#1a1d28",
+     "percentage": 0.9448
+    },
+    {
+     "hex": "#444a59",
+     "percentage": 0.0552
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/i5pwxm1-Z87s-GJ3hBB",
+     "domain": "kohls.com",
+     "price": {
+      "price": 132.99,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    },
+    {
+     "url": "https://buy.trychannel3.com/i5pwxm1-FLKz-GJ3hBB",
+     "domain": "thedesignerboxuk.com",
+     "price": {
+      "price": 175,
+      "compare_at_price": 253,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Solid",
+     "Logo"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester"
+    ],
+    "clothing-features": [
+     "Breathable design",
+     "Lightweight"
+    ],
+    "neckline": [
+     "Hooded"
+    ],
+    "sweatshirt-pocket-type": [
+     "Kangaroo pocket"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "decoration-technique": [
+     "Screen printing"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "KiIL5Kf",
+   "title": "Crest Embroidered Boxy Zip Hoodie - Navy",
+   "description": "A navy blue zip-through hoodie featuring a boxy fit and a front crest graphic. It is crafted from premium heavyweight soft-touch jersey for a luxury feel and includes a Cernucci branded zip pull and ribbed cuffs and hem.",
+   "brands": [
+    {
+     "id": "ne74",
+     "name": "Cernucci"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/bb43dca7-a5e9-4d7c-a7a8-dc93e5a91e6d",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Male model wearing a navy zip-up hoodie and cap."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/95121f15-2c4c-4848-bad4-a77e3ea4aa84",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Male model wearing a navy zip-up hoodie and cap."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "100% Cotton"
+   ],
+   "key_features": [
+    "Navy zip through hoodie",
+    "Front crest branding",
+    "Boxy fit",
+    "Heavyweight soft touch jersey"
+   ],
+   "colors": [
+    {
+     "hex": "#1c1f33",
+     "percentage": 0.6916
+    },
+    {
+     "hex": "#a88778",
+     "percentage": 0.1279
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/KiIL5Kf-m7kZ-GJ3hBB",
+     "domain": "us.cernucci.com",
+     "price": {
+      "price": 64.99,
+      "compare_at_price": 129.99,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "top-fit": [
+     "Boxy"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "placket-type": [
+     "Full-zip"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "neckline": [
+     "Hooded"
+    ],
+    "decoration-technique": [
+     "Embroidery"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "fabric": [
+     "Cotton"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "gQVwd9K",
+   "title": "Gant Small Graphic Hoodie Navy",
+   "description": "A navy blue hooded sweatshirt featuring a small graphic on the chest that reads 'GANT American Sportswear NEW HAVEN 1949 CONNECTICUT'. This long-sleeved hoodie includes a hood with adjustable drawstrings and a front pocket, blending classic sportswear style with a clean, branded look.",
+   "brands": [
+    {
+     "id": "qZXG",
+     "name": "GANT"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/94674163-906a-4aa9-a18d-07c6141f1b60",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy Gant graphic hoodie shown from the chest up on a plain background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/dba5656a-2712-4b3f-b5e7-d06ef088991f",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Navy Gant graphic hoodie shown from the front on a plain background."
+    }
+   ],
+   "category": {
+    "slug": "hoodies-3",
+    "title": "Hoodies"
+   },
+   "gender": "male",
+   "age": null,
+   "materials": [],
+   "key_features": [
+    "Small graphic chest print",
+    "Adjustable hood with drawstrings",
+    "Long sleeves",
+    "Front pouch pocket"
+   ],
+   "colors": [
+    {
+     "hex": "#312e35",
+     "percentage": 0.3684
+    },
+    {
+     "hex": "#5e5b5f",
+     "percentage": 0.2497
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/gQVwd9K-NB8i-GJ3hBB",
+     "domain": "mainlinemenswear.com",
+     "price": {
+      "price": 87.46,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "activity": [
+     "Universal"
+    ],
+    "neckline": [
+     "Hooded"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "decoration-technique": [
+     "Screen printing"
+    ],
+    "pattern": [
+     "Graphic"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "sweatshirt-pocket-type": [
+     "Front pouch pocket",
+     "Kangaroo pocket"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester"
+    ]
+   },
+   "ratings": null
+  }
+ ],
+ "next_page_token": null
+}

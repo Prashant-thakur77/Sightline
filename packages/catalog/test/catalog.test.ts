@@ -128,7 +128,8 @@ describe('channel3 normalisation', () => {
     expect(h['x-api-key']).toBe('k');
     expect(h['x-user-id']).toBe('usr_1');
     const body = JSON.parse(String(seen!.init.body));
-    expect(body.query).toBe('navy crew-neck sweater');
+    // The colour once, and navy as navy blue so the U.S. Navy's teams don't match it.
+    expect(body.query).toBe('navy blue crew-neck sweater');
     expect(body.filters.price.max_price).toBe(40);
     expect(body.filters.colors.palette[0].hex).toBe('#1f2a44');
   });

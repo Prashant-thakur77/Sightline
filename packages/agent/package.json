@@ -12,6 +12,7 @@
     "lint": "echo ok"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.6.0",
     "@sightline/catalog": "workspace:*",
     "@sightline/core": "workspace:*",
     "@sightline/evidence": "workspace:*",

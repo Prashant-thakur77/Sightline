@@ -21,6 +21,8 @@ export interface OptionItem {
   imageUrl?: string;
   imageAlt?: string;
   why: string[];
+  /** The shopping agent's one-line reason this option fits, checked against the listing. */
+  pick?: string;
 }
 
 export interface Fact {

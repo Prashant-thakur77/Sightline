@@ -9,6 +9,7 @@ import type { ShoppingQuery } from './grammar';
 import {
   CATEGORIES,
   FITS,
+  MATERIAL_FAMILIES,
   NECKLINES,
   PATTERNS,
   SLEEVES,
@@ -20,6 +21,7 @@ import {
   sameSize,
   type LexEntry,
 } from './lexicon';
+import { isFanMerchandise, wantsTeamGear, type SizeChoice, type SizeFit } from './listing';
 import { joinOr, words } from './text';
 
 export interface Candidate {
@@ -29,6 +31,8 @@ export interface Candidate {
   inStock?: boolean;
   /** Checkout barrier score from the Barrier Index: 0 (none) to 1 (severe). */
   barrierScore?: number;
+  /** How the listing answers the asked-for size, from interpretListing. */
+  sizeChoice?: SizeChoice;
 }
 
 export interface RankInput {
@@ -39,6 +43,12 @@ export interface RankInput {
   limit?: number;
   /** Skip this many ranked options (for "more"). */
   offset?: number;
+  /** Materials the buyer never wants (canonical names, e.g. "wool"): such listings are left out. */
+  avoidMaterials?: string[];
+  /** Colours the buyer likes: a small boost when no colour was asked for. */
+  likeColours?: string[];
+  /** Keep fan and licensed team merchandise. Defaults to whether the request asked for it. */
+  allowTeamGear?: boolean;
 }
 
 export type MissingField = 'colour' | 'size' | 'images';
@@ -59,9 +69,22 @@ export interface RankedOption {
   sizeInStock?: boolean;
   /** The size that the option list should mention. */
   displaySize?: string;
+  /** How the listing answers the asked-for size, when a size was asked for. */
+  sizeFit?: SizeFit;
+  /** The listing to freeze for the asked size, when the store sells it as its own listing. */
+  sizeProductId?: string;
 }
 
-export type ExclusionReason = 'wrong_category' | 'over_budget' | 'under_minimum' | 'out_of_stock' | 'size_sold_out' | 'returns_not_free';
+export type ExclusionReason =
+  | 'wrong_category'
+  | 'over_budget'
+  | 'under_minimum'
+  | 'out_of_stock'
+  | 'size_sold_out'
+  | 'size_not_offered'
+  | 'returns_not_free'
+  | 'fan_merch'
+  | 'avoided_material';
 
 export interface ExcludedCandidate {
   snapshot: ProductSnapshot;
@@ -85,6 +108,9 @@ export const WEIGHTS = {
   colourMismatch: -4,
   sizeMatch: 2,
   sizeMismatch: -3,
+  sizeUnknown: -2,
+  likedColour: 1,
+  materialListed: 0.5,
   attributeMatch: 1,
   attributeMismatch: -1,
   withinBudget: 1,
@@ -145,6 +171,14 @@ interface Scored {
   missing: MissingField[];
   sizeInStock?: boolean;
   displaySize?: string;
+  sizeFit?: SizeFit;
+  sizeProductId?: string;
+}
+
+function avoidedMaterial(s: ProductSnapshot, avoid: string[] | undefined): string | undefined {
+  if (!avoid?.length) return undefined;
+  const have = materialSupport(`${s.attributes.material ?? ''} ${s.title}`);
+  return avoid.find((a) => (MATERIAL_FAMILIES[a] ?? [a]).some((m) => have.has(m)));
 }
 
 function scoreCandidate(c: Candidate, input: RankInput): Scored | ExcludedCandidate {
@@ -167,24 +201,66 @@ function scoreCandidate(c: Candidate, input: RankInput): Scored | ExcludedCandid
   if (q.freeReturns && s.returnPolicy?.free !== true)
     return { snapshot: s, reason: 'returns_not_free', detail: en.why.excluded.notFreeReturns };
 
-  // Size stock
+  // Fan and licensed team merchandise ("Navy Midshipmen" for "navy"), and materials the buyer avoids.
+  if (!(input.allowTeamGear ?? wantsTeamGear(q.text)) && isFanMerchandise(s))
+    return { snapshot: s, reason: 'fan_merch', detail: en.why.excluded.fanMerch };
+  const avoided = avoidedMaterial(s, input.avoidMaterials);
+  if (avoided) return { snapshot: s, reason: 'avoided_material', detail: en.why.excluded.avoidedMaterial(avoided) };
+
+  // Size: a listing that is another size, or doesn't offer the size, is never shown for it.
   let sizeInStock: boolean | undefined;
   let displaySize: string | undefined = s.attributes.size;
+  let sizeFit: SizeFit | undefined;
+  let sizeProductId: string | undefined;
   if (q.size) {
-    if (c.availableSizes) {
+    const choice = c.sizeChoice;
+    if (choice && choice.fit !== 'not_asked') {
+      sizeFit = choice.fit;
+      switch (choice.fit) {
+        case 'sold_out':
+          return { snapshot: s, reason: 'size_sold_out', detail: en.why.excluded.sizeSoldOut(q.size) };
+        case 'not_offered':
+          return { snapshot: s, reason: 'size_not_offered', detail: en.why.excluded.sizeNotOffered(q.size) };
+        case 'in_stock':
+          sizeInStock = true;
+          score += WEIGHTS.sizeMatch;
+          why.push(en.why.sizeInStock(q.size));
+          displaySize = choice.label;
+          break;
+        case 'offered':
+        case 'other_listing':
+          score += WEIGHTS.sizeMatch;
+          why.push(en.why.sizeOffered(q.size));
+          displaySize = choice.label;
+          if (choice.productId) sizeProductId = choice.productId;
+          break;
+        case 'listed':
+          score += WEIGHTS.sizeMatch;
+          why.push(en.why.sizeListed(q.size));
+          displaySize = choice.label;
+          break;
+        case 'unknown':
+          score += WEIGHTS.sizeUnknown;
+          caveats.push(en.why.sizeUnknown(q.size));
+          break;
+      }
+    } else if (c.availableSizes) {
       sizeInStock = c.availableSizes.some((x) => sameSize(x, q.size));
       if (!sizeInStock) return { snapshot: s, reason: 'size_sold_out', detail: en.why.excluded.sizeSoldOut(q.size) };
       score += WEIGHTS.sizeMatch;
       why.push(en.why.sizeInStock(q.size));
       displaySize = q.size;
+      sizeFit = 'in_stock';
     } else if (s.attributes.size) {
-      if (sameSize(s.attributes.size, q.size)) {
-        score += WEIGHTS.sizeMatch;
-        why.push(en.why.sizeListed(q.size));
-      } else {
-        score += WEIGHTS.sizeMismatch;
-        caveats.push(en.why.sizeMismatch(s.attributes.size, q.size));
-      }
+      // Another size is never shown under the one asked for.
+      if (!sameSize(s.attributes.size, q.size)) return { snapshot: s, reason: 'size_not_offered', detail: en.why.excluded.sizeNotOffered(q.size) };
+      score += WEIGHTS.sizeMatch;
+      why.push(en.why.sizeListed(q.size));
+      sizeFit = 'listed';
+    } else {
+      score += WEIGHTS.sizeUnknown;
+      caveats.push(en.why.sizeUnknown(q.size));
+      sizeFit = 'unknown';
     }
   }
 
@@ -203,11 +279,18 @@ function scoreCandidate(c: Candidate, input: RankInput): Scored | ExcludedCandid
       caveats.push(en.why.colourMismatch(s.attributes.colour.toLowerCase(), q.colour));
     }
   }
-  const avoided = (input.avoidColours ?? []).map((a) => a.toLowerCase()).find((a) => colours.has(a));
-  if (avoided) {
+  const avoidedColour = (input.avoidColours ?? []).map((a) => a.toLowerCase()).find((a) => colours.has(a));
+  if (avoidedColour) {
     score += WEIGHTS.avoidColour;
-    caveats.push(en.why.avoidColour(avoided));
+    caveats.push(en.why.avoidColour(avoidedColour));
   }
+  const liked = q.colour ? undefined : (input.likeColours ?? []).map((a) => a.toLowerCase()).find((a) => colours.has(a));
+  if (liked) {
+    score += WEIGHTS.likedColour;
+    why.push(en.why.likedColour(liked));
+  }
+  // A listing that names its material can be compared and checked; small, but it adds up.
+  if (s.attributes.material) score += WEIGHTS.materialListed;
 
   // Other attributes
   for (const [key, wanted] of Object.entries(q.attributes)) {
@@ -284,11 +367,17 @@ function scoreCandidate(c: Candidate, input: RankInput): Scored | ExcludedCandid
     missing,
     ...(sizeInStock !== undefined ? { sizeInStock } : {}),
     ...(displaySize !== undefined ? { displaySize } : {}),
+    ...(sizeFit !== undefined ? { sizeFit } : {}),
+    ...(sizeProductId !== undefined ? { sizeProductId } : {}),
   };
 }
 
 function compareScored(a: Scored, b: Scored): number {
   if (b.score !== a.score) return b.score - a.score;
+  // The Demo Store is the sandbox merchant every order is placed with: its own item wins a tie.
+  const da = a.candidate.snapshot.source === 'demo-store' ? 0 : 1;
+  const dbs = b.candidate.snapshot.source === 'demo-store' ? 0 : 1;
+  if (da !== dbs) return da - dbs;
   const pa = a.candidate.snapshot.price.cents;
   const pb = b.candidate.snapshot.price.cents;
   if (pa !== pb) return pa - pb;
@@ -305,9 +394,7 @@ function compareScored(a: Scored, b: Scored): number {
  * snapshot id. Listings in another category, over-budget, out-of-stock and sold-out-size listings
  * are excluded with a reason, which the "found none" message uses to suggest a refinement.
  */
-export function rankProducts(input: RankInput): RankResult {
-  const limit = Math.min(3, Math.max(1, input.limit ?? 3));
-  const offset = Math.max(0, input.offset ?? 0);
+function scoreAll(input: RankInput): { scored: Scored[]; excluded: ExcludedCandidate[] } {
   const seen = new Set<string>();
   const scored: Scored[] = [];
   const excluded: ExcludedCandidate[] = [];
@@ -320,23 +407,42 @@ export function rankProducts(input: RankInput): RankResult {
     else scored.push(r);
   }
   scored.sort(compareScored);
+  return { scored, excluded };
+}
+
+function toOption(s: Scored, rank: number): RankedOption {
+  return {
+    rank,
+    snapshot: s.candidate.snapshot,
+    score: s.score,
+    why: [...s.why, ...s.caveats],
+    caveats: s.caveats,
+    verifiable: s.verifiable,
+    missing: s.missing,
+    ...(s.sizeInStock !== undefined ? { sizeInStock: s.sizeInStock } : {}),
+    ...(s.displaySize !== undefined ? { displaySize: s.displaySize } : {}),
+    ...(s.sizeFit !== undefined ? { sizeFit: s.sizeFit } : {}),
+    ...(s.sizeProductId !== undefined ? { sizeProductId: s.sizeProductId } : {}),
+  };
+}
+
+export function rankProducts(input: RankInput): RankResult {
+  const limit = Math.min(3, Math.max(1, input.limit ?? 3));
+  const offset = Math.max(0, input.offset ?? 0);
+  const { scored, excluded } = scoreAll(input);
   const page = scored.slice(offset, offset + limit);
   return {
-    options: page.map((s, i) => ({
-      rank: offset + i + 1,
-      snapshot: s.candidate.snapshot,
-      score: s.score,
-      why: [...s.why, ...s.caveats],
-      caveats: s.caveats,
-      verifiable: s.verifiable,
-      missing: s.missing,
-      ...(s.sizeInStock !== undefined ? { sizeInStock: s.sizeInStock } : {}),
-      ...(s.displaySize !== undefined ? { displaySize: s.displaySize } : {}),
-    })),
+    options: page.map((s, i) => toOption(s, offset + i + 1)),
     total: scored.length,
     remaining: Math.max(0, scored.length - offset - page.length),
     excluded,
   };
+}
+
+/** Every eligible candidate in rank order, for the shopping agent to choose from. */
+export function rankAll(input: Omit<RankInput, 'limit' | 'offset'>): { options: RankedOption[]; excluded: ExcludedCandidate[] } {
+  const { scored, excluded } = scoreAll(input);
+  return { options: scored.map((s, i) => toOption(s, i + 1)), excluded };
 }
 
 /** Cheapest excluded-for-budget price, used to suggest "up to $45". */

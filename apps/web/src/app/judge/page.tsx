@@ -40,8 +40,8 @@ export default async function Judge() {
   const demo = await latestDemoTimeline((await currentUser())?.id ?? null, JUDGE_EMAIL).catch(() => null);
   const live: [string, boolean, string][] = [
     ['PayPal sandbox (Orders v2, Vault, Payments, tracking, Disputes, webhooks)', INTEGRATIONS.paypal, 'Every payment, hold, capture, void and refund'],
-    ['Claude (agent, confirmation check, vision, case writing)', INTEGRATIONS.anthropic, 'Second confirmation key, free questions, size-tag reading'],
-    ['Channel3 product data', INTEGRATIONS.channel3, 'Real products and variants; Demo Store catalog otherwise'],
+    ['Claude (agent, confirmation check, vision, case writing)', INTEGRATIONS.anthropic, 'Shopping agent for open requests, second confirmation key, free questions, size-tag reading'],
+    ['Channel3 product data', INTEGRATIONS.channel3, 'Real products and variants, searched with the Demo Store catalog; Demo Store catalog alone otherwise'],
     ['Deepgram speech to text', INTEGRATIONS.deepgram, 'Streaming voice input; browser speech otherwise'],
     ['KERNEL cloud browsers', INTEGRATIONS.kernel, 'Reading store pages (the Barrier Index crawl ran on a local browser)'],
     [

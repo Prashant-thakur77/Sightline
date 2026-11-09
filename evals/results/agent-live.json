@@ -1,0 +1,291 @@
+{
+  "suite": "agent-live",
+  "title": "Shopping agent, live model",
+  "ranAt": "2026-11-09T07:57:18.981Z",
+  "gitSha": "01e9149",
+  "headlines": [
+    {
+      "id": "live-right-finish",
+      "label": "Live model finishes with the right tool",
+      "value": "8 of 8",
+      "interval": "95% Wilson 67.6%–100.0%",
+      "n": 8,
+      "script": "evals/agent/run.ts",
+      "note": "claude-haiku-5-5, effort low, over recorded Channel3 data. Hand-written cases; a small sample."
+    },
+    {
+      "id": "live-stopped",
+      "label": "Model lines the grounding check stopped before speech",
+      "value": "1 of 14",
+      "n": 14,
+      "script": "evals/agent/run.ts",
+      "note": "Stopped lines are never spoken; the template says the listing facts instead."
+    },
+    {
+      "id": "live-latency",
+      "label": "Time for an agent turn, median and slowest",
+      "value": "1.6 s, 6.5 s",
+      "n": 8,
+      "script": "evals/agent/run.ts",
+      "note": "Model calls and tool work, from this laptop; recorded catalog, so no Channel3 time."
+    }
+  ],
+  "limitations": [
+    "8 hand-written dialogues, one run each: a smoke test, not a benchmark.",
+    "The catalog is recorded Channel3 data plus the Demo Store; live Channel3 latency is not included.",
+    "Right finish is judged by the finishing tool only, not by how good the chosen options are.",
+    "The prompt cache is warmed before the first case, as the app does when the conversation opens. A cold first call measured about 10 seconds before warming was added."
+  ],
+  "details": {
+    "model": "claude-haiku-5-5",
+    "costUsd": 0.0032,
+    "rows": [
+      {
+        "case": "gift",
+        "utterance": "a gift for my sister who hikes, under $50",
+        "outcome": "present",
+        "expected": [
+          "present"
+        ],
+        "right": true,
+        "remember": null,
+        "steps": [
+          "channel3:searched",
+          "channel3:searched",
+          "claude:presented"
+        ],
+        "spoken": {
+          "lead": "Here are hiking socks for your sister, all under $50. None list a colour.",
+          "reasons": [
+            "Women's merino hiking liner socks, made for hiking. Colour is not listed.",
+            "Women's merino midweight hiking socks, good for longer hikes. Colour is not listed.",
+            null
+          ],
+          "titles": [
+            "Women's Merino Hike+ Liner Crew Socks",
+            "Women's Merino Midweight Hiking Socks",
+            "Step Wool Quarter Hike Socks - 3820"
+          ]
+        },
+        "ungrounded": [
+          "Merino hiking socks in four sizes, under $20. Colour is not listed."
+        ],
+        "modelCalls": 3,
+        "toolCalls": 3,
+        "ms": 6513,
+        "usage": {
+          "inputTokens": 6343,
+          "outputTokens": 734,
+          "cacheReadTokens": 11475,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.00112
+      },
+      {
+        "case": "warm",
+        "utterance": "something warm for me but not scratchy",
+        "outcome": "present",
+        "expected": [
+          "present",
+          "ask"
+        ],
+        "right": true,
+        "remember": null,
+        "steps": [
+          "channel3:searched",
+          "channel3:searched",
+          "channel3:searched",
+          "claude:presented"
+        ],
+        "spoken": {
+          "lead": "Here are warm options with no wool.",
+          "reasons": [
+            "Cotton blend knit, soft and not wool, with free 30-day returns.",
+            "Smooth 100% cotton, relaxed fit, no wool, many sizes.",
+            "Heavyweight cotton fleece hoodie, a warm option with no wool."
+          ],
+          "titles": [
+            "Harbor knit crew-neck sweater",
+            "Unisex Smooth Cotton Sweater",
+            "Men's Heavyweight Hoodie"
+          ]
+        },
+        "ungrounded": [],
+        "modelCalls": 2,
+        "toolCalls": 4,
+        "ms": 4096,
+        "usage": {
+          "inputTokens": 4094,
+          "outputTokens": 764,
+          "cacheReadTokens": 7650,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.00087
+      },
+      {
+        "case": "vague",
+        "utterance": "I need a present",
+        "outcome": "ask",
+        "expected": [
+          "ask"
+        ],
+        "right": true,
+        "remember": null,
+        "steps": [
+          "claude:asked"
+        ],
+        "spoken": "Who is the present for, and roughly what budget would you like?",
+        "ungrounded": [],
+        "modelCalls": 1,
+        "toolCalls": 1,
+        "ms": 1322,
+        "usage": {
+          "inputTokens": 133,
+          "outputTokens": 122,
+          "cacheReadTokens": 3825,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.00011
+      },
+      {
+        "case": "money",
+        "utterance": "am I still waiting on any money from my orders?",
+        "outcome": "money",
+        "expected": [
+          "money"
+        ],
+        "right": true,
+        "remember": null,
+        "steps": [],
+        "spoken": null,
+        "ungrounded": [],
+        "modelCalls": 1,
+        "toolCalls": 1,
+        "ms": 1604,
+        "usage": {
+          "inputTokens": 143,
+          "outputTokens": 155,
+          "cacheReadTokens": 3825,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.00013
+      },
+      {
+        "case": "recall",
+        "utterance": "what do you know about my sizes?",
+        "outcome": "recall",
+        "expected": [
+          "recall"
+        ],
+        "right": true,
+        "remember": null,
+        "steps": [],
+        "spoken": null,
+        "ungrounded": [],
+        "modelCalls": 1,
+        "toolCalls": 1,
+        "ms": 1122,
+        "usage": {
+          "inputTokens": 139,
+          "outputTokens": 84,
+          "cacheReadTokens": 3825,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.00009
+      },
+      {
+        "case": "remember",
+        "utterance": "I'm a medium in sweaters, by the way. Find me a navy one.",
+        "outcome": "present",
+        "expected": [
+          "present",
+          "ask"
+        ],
+        "right": true,
+        "remember": {
+          "kind": "size",
+          "value": "M",
+          "scope": "sweater"
+        },
+        "steps": [
+          "channel3:searched",
+          "claude:presented"
+        ],
+        "spoken": {
+          "lead": "Here are navy sweaters in sizes S to XL. I'll ask to save medium.",
+          "reasons": [
+            "Cotton and recycled polyester blend, regular fit, free returns.",
+            "Merino wool, warm and soft, but slim fit and paid returns.",
+            "Same cotton blend in a V-neck, if you prefer that shape."
+          ],
+          "titles": [
+            "Harbor knit crew-neck sweater",
+            "Tidewater merino crew-neck",
+            "Harbor knit V-neck sweater"
+          ]
+        },
+        "ungrounded": [],
+        "modelCalls": 2,
+        "toolCalls": 3,
+        "ms": 3383,
+        "usage": {
+          "inputTokens": 2413,
+          "outputTokens": 459,
+          "cacheReadTokens": 7650,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.00055
+      },
+      {
+        "case": "question",
+        "utterance": "which of these is cheapest?",
+        "outcome": "answer",
+        "expected": [
+          "answer"
+        ],
+        "right": true,
+        "remember": null,
+        "steps": [
+          "claude:answered"
+        ],
+        "spoken": "The cheapest is the Merino Wool Hiking Crew Socks at $12.73. The other two cost $21.00 each. The listing for the Merino Wool Hiking Crew Socks does not give a colour or sizes.",
+        "ungrounded": [],
+        "modelCalls": 1,
+        "toolCalls": 1,
+        "ms": 1559,
+        "usage": {
+          "inputTokens": 295,
+          "outputTokens": 268,
+          "cacheReadTokens": 3825,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.0002
+      },
+      {
+        "case": "buy",
+        "utterance": "I'll take the second one",
+        "outcome": "readback",
+        "expected": [
+          "readback"
+        ],
+        "right": true,
+        "remember": null,
+        "steps": [
+          "claude:chose_to_buy"
+        ],
+        "spoken": null,
+        "ungrounded": [],
+        "modelCalls": 1,
+        "toolCalls": 1,
+        "ms": 1339,
+        "usage": {
+          "inputTokens": 293,
+          "outputTokens": 49,
+          "cacheReadTokens": 3825,
+          "cacheWriteTokens": 0
+        },
+        "costUsd": 0.00009
+      }
+    ]
+  }
+}

@@ -976,6 +976,9 @@ a:hover {
 }
 
 @layer components {
+  .persona-art {
+    width: clamp(96px, 30%, 140px);
+  }
   .persona-card {
     display: grid;
     gap: var(--space-4);
@@ -3438,7 +3441,7 @@ a:hover {
   }
   /* The composer is one calm dock: Talk, the text box and the status line together. */
   .composer {
-    padding: var(--space-6) min(var(--space-6), 4vw);
+    padding: var(--space-6) min(var(--space-6), 4vw) var(--space-4);
     background: var(--surface);
     border: 1px solid var(--hairline);
     border-radius: var(--radius-xl);
@@ -3642,5 +3645,13 @@ a:hover {
   :root[data-theme='contrast'] .agent-step::before {
     background: #000;
     box-shadow: 0 0 0 2px var(--ink);
+  }
+}
+
+/* On a phone the app header keeps to the name and the pages: light and dark follow the phone's own
+   setting, and the high-contrast low-vision mode lives in Settings. */
+@media (max-width: 40rem) {
+  .app-header .theme-switch {
+    display: none;
   }
 }

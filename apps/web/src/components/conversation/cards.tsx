@@ -35,6 +35,7 @@ function OptionCard({ item, onChoose, onBuy }: { item: OptionItem; onChoose: (i:
             <dd>{item.returns}</dd>
           </div>
         </dl>
+        {item.pick && <p className="hint">{item.pick}</p>}
         {!item.available && <p className="option-warn">Out of stock in this size.</p>}
         <div className="option-actions">
           <button type="button" className="btn" onClick={() => onChoose(item.index)} aria-describedby={`${id}-t`}>

@@ -26,6 +26,14 @@ describe('describeEntry', () => {
     expect(one(row('agent.step', { tool: 'claude', summary: 'Turned your words into search filters.' })).decided).toBe('model');
   });
 
+  it('keeps who decided a shopping step when the step records it', () => {
+    expect(one(row('agent.step', { tool: 'money', step: 'answered', summary: 'Answered from the order records.', decided: 'rules' }))).toMatchObject({ tool: 'Order records', decided: 'rules' });
+    expect(one(row('agent.step', { tool: 'memory', step: 'remembered', summary: 'With the buyer’s yes, remembered their size.', decided: 'person' }))).toMatchObject({ tool: 'Saved preferences', decided: 'person' });
+    expect(one(row('agent.step', { tool: 'claude', step: 'lines_stopped', summary: 'Left out 2 lines it wrote that the listings don’t back.', decided: 'model' }))).toMatchObject({ tool: 'Claude', decided: 'model' });
+    // An unknown value is not trusted.
+    expect(one(row('agent.step', { tool: 'catalog', summary: 'Searched the Demo Store.', decided: 'nobody' })).decided).toBeNull();
+  });
+
   it('marks the payment check as fixed rules and the second confirmation key as a model', () => {
     expect(one(row('gate.allowed', {}, 'gate'))).toMatchObject({ who: 'safety', whoWords: 'Sightline’s safety check', decided: 'rules', tool: null });
     const confirmed = describeEntry(row('readback.confirmed', { key1: 'phrase', key2: 'classifier' }, 'user'), order);
@@ -97,6 +105,10 @@ describe('describeEntry', () => {
     expect(toolName('paypal.payments.void')).toBe('PayPal Payments API');
     expect(toolName('Anthropic claude-haiku-5-5')).toBe('Claude');
     expect(toolName('vision service')).toBe('Sightline vision check');
+    expect(toolName('catalog')).toBe('Demo Store catalog');
+    expect(toolName('memory')).toBe('Saved preferences');
+    expect(toolName('money')).toBe('Order records');
+    expect(toolName('app')).toBe('Fixed templates');
     expect(toolName('')).toBeNull();
   });
 });

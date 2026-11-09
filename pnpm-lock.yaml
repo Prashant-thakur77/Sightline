@@ -376,6 +376,9 @@ importers:
 
   packages/agent:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: 1.6.0
+        version: 1.6.0(zod@4.6.7)
       '@sightline/catalog':
         specifier: workspace:*
         version: link:../catalog

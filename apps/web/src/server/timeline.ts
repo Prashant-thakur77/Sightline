@@ -86,6 +86,8 @@ export function toolName(raw: unknown): string | null {
   if (k.includes('paypal')) return 'PayPal Orders API';
   if (k.includes('vision')) return 'Sightline vision check';
   if (k === 'store rules') return 'Store rules';
+  const named: Record<string, string> = { catalog: 'Demo Store catalog', memory: 'Saved preferences', money: 'Order records', app: 'Fixed templates' };
+  if (named[k]) return named[k];
   return t.length > 60 ? `${t.slice(0, 57)}…` : t;
 }
 
@@ -127,7 +129,8 @@ export function describeEntry(row: AuditRow, order: OrderFacts): TimelineStep[] 
   switch (row.action) {
     case 'agent.step': {
       const tool = toolName(p.tool);
-      drafts = [d({ who: 'agent', what: str(p.summary) ?? str(p.step) ?? 'Took a step.', tool, decided: tool === 'Claude' ? 'model' : null, paypal: null })];
+      const decided: Decided | null = p.decided === 'model' || p.decided === 'rules' || p.decided === 'person' ? p.decided : tool === 'Claude' ? 'model' : null;
+      drafts = [d({ who: 'agent', what: str(p.summary) ?? str(p.step) ?? 'Took a step.', tool, decided, paypal: null })];
       break;
     }
     case 'answer.grounded': {

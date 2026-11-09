@@ -18,6 +18,8 @@ import {
   findPhrases,
   type LexEntry,
 } from './lexicon';
+import { parseForget, parsePreferenceStatement, type ForgetTarget, type MemoryDraft } from './memory';
+import { parseMoneyQuestion, type MoneyAsk } from './money';
 import { ordinalValue, readMoneyAt, readNumber } from './numbers';
 import { expandContractions, normaliseText, words } from './text';
 
@@ -40,6 +42,9 @@ export type Intent =
   | 'offer'
   | 'help'
   | 'settings'
+  | 'money'
+  | 'memory'
+  | 'reorder'
   | 'freeform';
 
 export interface ShoppingQuery {
@@ -49,7 +54,7 @@ export interface ShoppingQuery {
   colour?: string;
   size?: string;
   /** Whether the size was spoken or filled in from the user's saved sizes. */
-  sizeSource?: 'spoken' | 'saved';
+  sizeSource?: 'spoken' | 'saved' | 'memory';
   maxPrice?: Money;
   minPrice?: Money;
   /** neckline, fit, sleeve, pattern, material. */
@@ -131,7 +136,15 @@ export type ParsedIntent =
   | Base<'offer', { action: 'accept' | 'decline' | 'status'; phrase?: PhraseMatch }>
   | Base<'help', { topic: 'general' | 'more' | 'repeat' }>
   | Base<'settings', SettingsSlots>
+  | Base<'money', MoneyAsk>
+  | Base<'memory', MemorySlots>
+  | Base<'reorder', { what: 'usual' | 'last' | string }>
   | Base<'freeform', { text: string }>;
+
+export type MemorySlots =
+  | { action: 'recall' }
+  | { action: 'forget'; target: ForgetTarget }
+  | { action: 'state'; drafts: MemoryDraft[]; explicit: boolean };
 
 export interface OptionContext {
   /** 1-based position as spoken. */
@@ -725,6 +738,35 @@ function parseHelp(s: string): ParsedIntent | null {
   return null;
 }
 
+/** "What do you remember about me?", "forget my size". Statements are read later, after choices. */
+function parseMemoryCommand(s: string): ParsedIntent | null {
+  if (/^(?:what (?:do|did) you (?:remember|know) about me|what have you remembered|what do you remember|what are my (?:preferences|sizes)|tell me what you (?:remember|know)(?: about me)?|what do you have saved(?: about me)?)$/.test(s))
+    return result('memory', { action: 'recall' }, 'sure');
+  const target = parseForget(s);
+  return target ? result('memory', { action: 'forget', target }, 'sure') : null;
+}
+
+/** "I'm a medium in sweaters", "nothing with wool": a lasting preference, said on its own. */
+function parseMemoryStatement(utterance: string): ParsedIntent | null {
+  const read = parsePreferenceStatement(utterance);
+  if (read.drafts.length === 0 || read.hasSearch || !read.lasting) return null;
+  return result('memory', { action: 'state', drafts: read.drafts, explicit: read.explicit }, 'sure');
+}
+
+function parseMoney(utterance: string): ParsedIntent | null {
+  const ask = parseMoneyQuestion(utterance);
+  return ask ? result('money', ask, 'sure') : null;
+}
+
+/** "Buy my usual again", "order the same again", "reorder the sweater". */
+function parseReorder(s: string): ParsedIntent | null {
+  if (/^(?:(?:buy|order|get|reorder|re order)(?: me)? )?(?:my|the) usual(?: one)?(?: again)?$/.test(s)) return result('reorder', { what: 'usual' }, 'sure');
+  if (/^(?:(?:buy|order|get)(?: me)? (?:it|that|the same|the same thing|the same one|that one) again|reorder(?: it| that)?|order again|buy again)$/.test(s))
+    return result('reorder', { what: 'last' }, 'sure');
+  const named = /^(?:buy|order|get|reorder)(?: me)? (?:the|my) (.+?) again$/.exec(s) ?? /^reorder (?:the|my) (.+)$/.exec(s);
+  return named ? result('reorder', { what: named[1]! }, 'fairly_sure') : null;
+}
+
 function parseGeneralCancelHold(s: string): ParsedIntent | null {
   if (/^(cancel|stop|never mind|nevermind|forget it|quiet|be quiet|shut up|enough)( it| that)?$/.test(s)) return result('cancel', {}, 'sure');
   if (/^cancel (my|the) order$/.test(s)) return result('cancel', { target: 'order' }, 'sure');
@@ -818,14 +860,18 @@ export function parseIntent(utterance: string, ctx: GrammarContext = {}): Parsed
     parseHelp(s) ??
     parseGeneralCancelHold(s) ??
     parseSettings(s) ??
+    parseMemoryCommand(s) ??
+    parseMoney(utterance) ??
     parseStatus(s) ??
     parseCase(s) ??
     parseCheck(s) ??
     parseOffer(s) ??
     parseCompare(s, ws) ??
     parseChoose(s, ctx) ??
+    parseReorder(s) ??
     parseCart(s, ws, ctx) ??
     (startsWithAny(s, ['tell me more', 'more details']) ? parseDetails(s, ws) : null) ??
+    parseMemoryStatement(utterance) ??
     parseRefine(s, ctx) ??
     parseSearchFirst(s, ws, ctx) ??
     result('freeform', { text: utterance.trim() }, 'not_sure')

@@ -18,7 +18,7 @@
  */
 import { spokenDate, type Money, type ProductSnapshot } from '@sightline/core';
 import { en } from './copy/en';
-import { COLOURS, MATERIALS, POLICY_TERMS, SIZE_WORDS, findPhrases, normaliseSize, supportSet } from './lexicon';
+import { COLOURS, FEATURE_TERMS, MATERIAL_FAMILIES, MATERIALS, POLICY_TERMS, SIZE_WORDS, findPhrases, normaliseSize, supportSet } from './lexicon';
 import { readMoneyAt, readNumber } from './numbers';
 import { normaliseForQuote, words } from './text';
 
@@ -50,7 +50,7 @@ export interface GroundingInput {
   maxFailures?: number;
 }
 
-export type TokenKind = 'money' | 'number' | 'size' | 'colour' | 'material' | 'date' | 'policy' | 'quoted';
+export type TokenKind = 'money' | 'number' | 'size' | 'colour' | 'material' | 'date' | 'policy' | 'quoted' | 'feature';
 
 export interface ClaimToken {
   kind: TokenKind;
@@ -404,6 +404,9 @@ function tokenSupported(t: ClaimToken, s: Support): boolean {
       return s.policies.has(t.value);
     case 'quoted':
       return s.quotes.some((q) => q.includes(t.value));
+    // Feature claims are checked against the listing's own words in checkFreeText, not by field.
+    case 'feature':
+      return false;
   }
 }
 
@@ -477,6 +480,97 @@ export class GroundingTurn {
   get shouldFallBack(): boolean {
     return this.failures >= this.maxFailures;
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Free text from the shopping agent
+
+export interface FreeTextInput {
+  /** One sentence or short line the agent wrote. */
+  text: string;
+  /** The listings it is about: every product fact must be in one of them. */
+  snapshots: ProductSnapshot[];
+  /** Other things the system knows this turn (the buyer's own words, saved preferences). */
+  facts?: Record<string, FactValue>;
+}
+
+export interface FreeTextReport {
+  supported: boolean;
+  unsupportedTokens: ClaimToken[];
+}
+
+/** What a listing supports: its title, description, attributes, price, returns, rating and review quotes. */
+function snapshotSupport(s: ProductSnapshot): Support {
+  const out = emptySupport();
+  const listing = {
+    title: s.title,
+    brand: s.brand,
+    category: s.category,
+    description: s.description,
+    attributes: s.attributes,
+    price: s.price,
+    returnPolicy: s.returnPolicy,
+    rating: s.rating,
+    seller: s.seller.name,
+  } as unknown as FactValue;
+  merge(out, valueSupport(listing, 'listing'));
+  for (const r of s.reviews ?? []) {
+    merge(out, textSupport(r.quote));
+    out.quotes.push(normaliseForQuote(r.quote));
+  }
+  if (s.description) out.quotes.push(normaliseForQuote(s.description));
+  out.quotes.push(normaliseForQuote(s.title));
+  return out;
+}
+
+/**
+ * Check a line the shopping agent wrote, without per-claim citations: every product token in it
+ * (money, numbers, sizes, colours, materials, dates, policy terms, quoted words) must be backed by
+ * the listings it is about or by the turn's facts. A line that fails is not spoken.
+ */
+export function checkFreeText(input: FreeTextInput): FreeTextReport {
+  const support = emptySupport();
+  for (const s of input.snapshots) merge(support, snapshotSupport(s));
+  for (const [ref, v] of Object.entries(input.facts ?? {})) merge(support, valueSupport(v, ref));
+  // "No wool", "without wool", "wool-free" claim an absence: true only when every listing it is
+  // about names its material and none of that family is in it. An unknown material can't back it.
+  const absent = absentMaterials(input.text);
+  const absenceHolds = (m: string) =>
+    input.snapshots.length > 0 &&
+    input.snapshots.every((s) => {
+      if (!s.attributes.material) return false;
+      const have = supportSet(`${s.attributes.material} ${s.title}`, MATERIALS);
+      return !(MATERIAL_FAMILIES[m] ?? [m]).some((x) => have.has(x));
+    });
+  // A negated material is judged by absence alone: "no wool" is false for merino even though
+  // the word "wool" is in the listing.
+  const unsupportedTokens = extractTokens(input.text).filter((t) =>
+    t.kind === 'material' && absent.has(t.value) ? !absenceHolds(t.value) : !tokenSupported(t, support),
+  );
+  // Feature claims ("waterproof", "machine washable") must be words the listing itself uses.
+  const listingText = [
+    ...input.snapshots.flatMap((s) => [s.title, s.description ?? '', ...(s.keyFeatures ?? []), ...Object.values(s.attributes), ...(s.reviews ?? []).map((r) => r.quote)]),
+    ...Object.values(input.facts ?? {}).filter((v): v is string => typeof v === 'string'),
+  ].join(' . ');
+  const offered = new Set(findPhrases(words(listingText), FEATURE_TERMS).map((m) => m.canonical));
+  const ws = words(input.text);
+  for (const m of findPhrases(ws, FEATURE_TERMS))
+    if (!offered.has(m.canonical)) unsupportedTokens.push({ kind: 'feature', value: m.canonical, raw: ws.slice(m.start, m.end).join(' ') });
+  return { supported: unsupportedTokens.length === 0, unsupportedTokens };
+}
+
+const NEGATORS = new Set(['no', 'not', 'without', 'non', 'zero', 'nor']);
+
+/** Materials the text says are absent: "no wool", "without merino", "wool-free", "free of wool". */
+function absentMaterials(text: string): Set<string> {
+  const ws = words(text);
+  const out = new Set<string>();
+  for (const m of findPhrases(ws, MATERIALS)) {
+    const before = ws[m.start - 1];
+    const negated = (before !== undefined && NEGATORS.has(before)) || ws[m.end] === 'free' || (ws[m.start - 2] === 'free' && before === 'of');
+    if (negated) out.add(m.canonical);
+  }
+  return out;
 }
 
 /** Exposed for tests: normalised comparison used for quotes. */

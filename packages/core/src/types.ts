@@ -45,6 +45,8 @@ export interface ProductSnapshot {
   brand?: string;
   category?: string;
   description?: string;
+  /** The listing's own feature lines ("Waterproof membrane", "Machine washable"), when it gives them. */
+  keyFeatures?: string[];
   attributes: ProductAttributes;
   price: Money;
   images: ProductImage[];

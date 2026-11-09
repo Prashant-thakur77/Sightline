@@ -1,0 +1,1628 @@
+{
+ "products": [
+  {
+   "id": "t5AuSWj",
+   "title": "Vero Moda soft o-neck sweater in navy",
+   "description": "A navy blue knitted sweater from Vero Moda featuring a soft o-neck, relaxed fit, and drop shoulders. The mid-weight knit is crafted from a blend of polyester, acrylic, wool, and spandex, finished with ribbed trim on the hem and cuffs for a cozy, casual look.",
+   "brands": [
+    {
+     "id": "de2l",
+     "name": "Vero Moda"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/7075213e-d75b-42d7-9f5e-d29637bb666d",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman modeling a dark blue sweater and beige pants."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/3c498989-3eab-4e56-ab2e-f929268b9297",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Back view of a woman wearing a dark blue sweater."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "85% Polyester",
+    "7% Acrylic",
+    "5% Wool",
+    "3% Spandex"
+   ],
+   "key_features": [
+    "Crew neck",
+    "Drop shoulders",
+    "Long sleeves",
+    "Ribbed trim"
+   ],
+   "colors": [
+    {
+     "hex": "#2f3443",
+     "percentage": 0.6971
+    },
+    {
+     "hex": "#17191f",
+     "percentage": 0.218
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/t5AuSWj-YvaJ-GJ3hBB",
+     "domain": "asos.com",
+     "price": {
+      "price": 58,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "neckline": [
+     "Round"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "fabric": [
+     "Polyester",
+     "Acrylic",
+     "Wool",
+     "Spandex"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ]
+   },
+   "ratings": {
+    "value": 3.75,
+    "count": 10,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "6ZQcyTd",
+   "title": "Willy Alpaca Knit Sweater",
+   "description": "A cozy, lightweight alpaca knit sweater in navy with a relaxed fit, crewneck, and dropped shoulders. Crafted from a fuzzy alpaca blend for warmth without bulk. Features long sleeves, slip-on style, and an unlined interior. Fabric composition: 78% Alpaca, 19% Polyamide, 3% Elastane. Dry clean only. Size S. Color navy. Brand is The Frankie Shop. Model/fit appe",
+   "brands": [
+    {
+     "id": "AVsj",
+     "name": "The Frankie Shop"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/3d1420b8-e95a-46f0-9bda-ca17cce88311",
+     "is_main_image": true,
+     "shot_type": "lifestyle",
+     "alt_text": "Man wearing a navy alpaca knit sweater, grey beanie, and blue jeans."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/a9e207c8-ca18-4328-b633-ba8f8f52d398",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Man wearing a navy alpaca knit sweater and grey beanie."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "male",
+   "age": null,
+   "materials": [
+    "78% Alpaca",
+    "19% Polyamide",
+    "3% Elastane"
+   ],
+   "key_features": [
+    "Color: Navy",
+    "Lightweight fuzzy alpaca knit fabric",
+    "Relaxed fit",
+    "Crewneck"
+   ],
+   "colors": [
+    {
+     "hex": "#262534",
+     "percentage": 0.9498
+    },
+    {
+     "hex": "#4b4958",
+     "percentage": 0.0502
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/6ZQcyTd-jFsk-GJ3hBB",
+     "domain": "thefrankieshop.com",
+     "price": {
+      "price": 225,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XXS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "neckline": [
+     "Crew"
+    ],
+    "knit-pattern": [
+     "Chunky"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "fabric": [
+     "Polyester",
+     "Spandex"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "clothing-features": [
+     "Lightweight"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "care-instructions": [
+     "Dry clean only"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "VRehwfF",
+   "title": "Navy Crewneck Sweater",
+   "description": "Seamless navy knit crewneck sweater with ribbed cuffs and hem. Relaxed fit crafted from 100% cotton with a smooth, dense weave for breathable warmth. The garment features a rib-knit crew neckline, cuffs, and hem, offering a comfortable, relaxed silhouette.",
+   "brands": [
+    {
+     "id": "VmRB",
+     "name": "Mackays"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/850099b9-10f1-49c5-afc1-1d19db0f40c2",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy blue knit sweater worn with light pants, full-body front view"
+    },
+    {
+     "url": "https://spierandmackay.com/files/catalog/PRODUCT_IMAGES/15579--6-model-1633x2643.jpg",
+     "is_main_image": false,
+     "shot_type": "angle_view",
+     "alt_text": "Back view of navy blue knit sweater on model"
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": null,
+   "age": "adult",
+   "materials": [
+    "100% Cotton",
+    "Combed, Ringspun Yarn",
+    "6-Ply Yarn"
+   ],
+   "key_features": [
+    "Crewneck",
+    "Rib-knit Collar, Cuffs, & Hem",
+    "100% Cotton",
+    "6-Pply Yarn"
+   ],
+   "colors": [
+    {
+     "hex": "#2f343f",
+     "percentage": 0.5658
+    },
+    {
+     "hex": "#d4cebe",
+     "percentage": 0.1555
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/VRehwfF-DCFB-GJ3hBB",
+     "domain": "us.spierandmackay.com",
+     "price": {
+      "price": 39.99,
+      "compare_at_price": 88,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Cream",
+        "exists": true,
+        "available": null,
+        "product_id": "z71PZht"
+       },
+       {
+        "label": "Green",
+        "exists": true,
+        "available": null,
+        "product_id": "zvIUWxB"
+       },
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "VRehwfF"
+       },
+       {
+        "label": "Wheat",
+        "exists": true,
+        "available": null,
+        "product_id": "1qvbJUA"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "clothing-features": [
+     "Breathable design"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "care-instructions": [
+     "Line dry"
+    ],
+    "pattern": [
+     "Solid"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "EjQbo4K",
+   "title": "Cotton Rib Boat Neck Sweater",
+   "description": "A navy rib-knit cotton sweater with a boat neckline, designed for a close, flattering fit. Features ribbed trims that define the shape and is versatile for day-to-night wear. The garment is made primarily from cotton with a small blend for stretch. Model height: 5'9\" wearing size XS. Trim details and machine washable care. Fitted silhouette with mid-hip leng",
+   "brands": [
+    {
+     "id": "PagM",
+     "name": "Boden"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/38a6780d-5fb9-4736-9729-36023f031aef",
+     "is_main_image": true,
+     "shot_type": "lifestyle",
+     "alt_text": "Woman wearing a navy blue boat neck jumper and red skirt."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/b10b2727-834e-4406-9ae1-dd930cccfe59",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Woman modeling a navy blue boat neck jumper and red skirt."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": null,
+   "materials": [
+    "cotton",
+    "polyamide",
+    "elastane"
+   ],
+   "key_features": [
+    "slightly ribbed-knit for a close fit",
+    "boat neck design",
+    "ribbed trims define silhouette",
+    "machine washable"
+   ],
+   "colors": [
+    {
+     "hex": "#1d1c2a",
+     "percentage": 0.9416
+    },
+    {
+     "hex": "#696771",
+     "percentage": 0.0584
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/EjQbo4K-J58t-GJ3hBB",
+     "domain": "eu.boden.com",
+     "price": {
+      "price": 56,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "EjQbo4K"
+       },
+       {
+        "label": "Carnival Pink",
+        "exists": true,
+        "available": null,
+        "product_id": "0cvm8rw"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "pattern": [
+     "Texture",
+     "Solid"
+    ],
+    "top-fit": [
+     "Fitted"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "clothing-features": [
+     "Breathable design"
+    ],
+    "neckline": [
+     "Boat"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "gzBfTPZ",
+   "title": "crew neck wide sleeve knit sweater",
+   "description": "A stylish navy blue knit sweater by Gina Tricot, perfect for adding a touch of modern flair to your wardrobe. This sweater features a classic crew neck, elegant wide sleeves, and a ribbed trim for a refined finish. Its cropped cut and regular fit create a flattering silhouette.",
+   "brands": [
+    {
+     "id": "wDyD",
+     "name": "Gina Tricot"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/bd9d1198-bb04-4706-b794-a3673d62eea2",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Close-up of the back of a navy blue knit sweater."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/4685f1dd-3b83-48e7-bba7-8c8ab96d036f",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a navy blue knit sweater and jeans."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "Viscose",
+    "Polyester",
+    "Polyamide"
+   ],
+   "key_features": [
+    "Crew neck",
+    "Drop shoulders",
+    "Wide sleeves",
+    "Ribbed trim"
+   ],
+   "colors": [
+    {
+     "hex": "#292936",
+     "percentage": 0.6412
+    },
+    {
+     "hex": "#57657e",
+     "percentage": 0.1727
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/gzBfTPZ-YvaJ-GJ3hBB",
+     "domain": "asos.com",
+     "price": {
+      "price": 63,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "fabric": [
+     "Viscose",
+     "Polyester",
+     "Nylon"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "top-length-type": [
+     "Crop top"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": {
+    "value": 5,
+    "count": 2,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "HA8BRYh",
+   "title": "Fitted Yak Wool Sweater",
+   "description": "Navy fitted Yak wool blend sweater with crew neckline, ribbed cuffs and hem, and a small chest logo patch. Made from a wool and yak wool blend (85% wool, 15% yak wool). RWS-certified wool. Knit texture with a clean, body-skimming silhouette. Made in China.",
+   "brands": [
+    {
+     "id": "oJ5W",
+     "name": "Acne Studios"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/09809f6b-10a3-4b9f-9402-93d23937a0d4",
+     "is_main_image": true,
+     "shot_type": "lifestyle",
+     "alt_text": "Woman wearing a navy blue fitted sweater and sunglasses."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/01bb9147-32ee-4bfb-9624-ce57322b43c4",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Woman wearing a navy blue fitted sweater and sunglasses."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": null,
+   "materials": [
+    "85% wool",
+    "15% yak wool",
+    "RWS-certified wool"
+   ],
+   "key_features": [
+    "Knit wool- and yak wool-blend sweater",
+    "Rib-knit crewneck, hem, and cuffs",
+    "Logo patch at chest",
+    "Fitted silhouette"
+   ],
+   "colors": [
+    {
+     "hex": "#1d2031",
+     "percentage": 0.6374
+    },
+    {
+     "hex": "#7b899e",
+     "percentage": 0.155
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/HA8BRYh-NLmP-GJ3hBB",
+     "domain": "ssense.com",
+     "price": {
+      "price": 480,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Beige",
+        "exists": true,
+        "available": null,
+        "product_id": "48sWc1c"
+       },
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "HA8BRYh"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XXS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "neckline": [
+     "Boat",
+     "Crew"
+    ],
+    "fabric": [
+     "Mohair",
+     "Wool"
+    ],
+    "top-fit": [
+     "Fitted"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "pattern": [
+     "Solid"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "Vg1StGj",
+   "title": "Navy Cable Knit Sweater",
+   "description": "This is a navy blue cable knit pullover sweater for women from John Galt. It features a relaxed fit, a classic crew neckline, long sleeves, and ribbed trimming at the hem and cuffs. The sweater is made from a blend of 60% cotton and 40% acrylic, making it a cozy and comfortable choice for layering during cooler seasons.",
+   "brands": [
+    {
+     "id": "eEkr",
+     "name": "John Galt"
+    },
+    {
+     "id": "0UcA",
+     "name": "Brandy Melville"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/65f2dcdc-3a05-43ff-b250-5a03c72194a1",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a navy cable knit sweater outdoors."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/b1884052-e236-455d-a0ee-72d8c28db4e1",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a navy cable knit sweater from the back."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "60% cotton",
+    "40% acrylic"
+   ],
+   "key_features": [
+    "Cable knit fabric",
+    "Crew neckline",
+    "Long sleeves",
+    "Ribbed trimming"
+   ],
+   "colors": [
+    {
+     "hex": "#24263c",
+     "percentage": 0.6478
+    },
+    {
+     "hex": "#766f83",
+     "percentage": 0.1522
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/Vg1StGj-imYE-GJ3hBB",
+     "domain": "pacsun.com",
+     "price": {
+      "price": 38,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "chest-pocket-style": [
+     "None"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "knit-pattern": [
+     "Cable",
+     "Rib"
+    ],
+    "care-instructions": [
+     "Machine washable"
+    ],
+    "fabric": [
+     "Cotton",
+     "Acrylic"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "pattern": [
+     "Texture",
+     "Solid"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "95PvPfx",
+   "title": "Silk Crewe Long Sleeve Sweater",
+   "description": "The Navy Silk Crewe Long Sleeve Sweater is a luxury knit made from 100% silk with an 18-gauge knit. It features a lightweight, smooth texture, long sleeves, a round neck, ribbed neck/cuffs/hem, and is made in Italy. Available in multiple EU/UK/US sizes and made-to-order. Price historically high, indicating premium hand-finished knitwear. The product highligh",
+   "brands": [
+    {
+     "id": "0eNM",
+     "name": "Luxire"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/258260c6-cd88-434e-aaf4-e55ec2f98e52",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "A male model wearing a navy long sleeve sweater and matching trousers."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/f58365bd-29d4-4eaf-b07d-4f62f6801d50",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Back view of a male model wearing a navy long sleeve sweater and trousers."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "male",
+   "age": null,
+   "materials": [
+    "100% Silk"
+   ],
+   "key_features": [
+    "Long sleeved",
+    "Round neck",
+    "Fits true to size",
+    "Ribbed details on neck, cuffs and hem"
+   ],
+   "colors": [
+    {
+     "hex": "#181c31",
+     "percentage": 0.8935
+    },
+    {
+     "hex": "#846e67",
+     "percentage": 0.1065
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/95PvPfx-111K-GJ3hBB",
+     "domain": "scabal.com",
+     "price": {
+      "price": 950,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Beige",
+        "exists": true,
+        "available": null,
+        "product_id": "21w31cM"
+       },
+       {
+        "label": "Black",
+        "exists": true,
+        "available": null,
+        "product_id": "0DBnG2d"
+       },
+       {
+        "label": "Carmine",
+        "exists": true,
+        "available": null,
+        "product_id": "PaiyJFh"
+       },
+       {
+        "label": "Chocolate",
+        "exists": true,
+        "available": null,
+        "product_id": "d07nkxZ"
+       },
+       {
+        "label": "Grey",
+        "exists": true,
+        "available": null,
+        "product_id": "ULLAqDd"
+       },
+       {
+        "label": "Ink Blue",
+        "exists": true,
+        "available": null,
+        "product_id": "rwFIlUC"
+       },
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "95PvPfx"
+       },
+       {
+        "label": "Tobacco",
+        "exists": true,
+        "available": null,
+        "product_id": "j3as57t"
+       },
+       {
+        "label": "Turquoise Blue",
+        "exists": true,
+        "available": null,
+        "product_id": "aYOZffZ"
+       },
+       {
+        "label": "Violet",
+        "exists": true,
+        "available": null,
+        "product_id": "ME3iVZT"
+       }
+      ]
+     },
+     {
+      "name": "EU Size",
+      "values": [
+       {
+        "label": "46",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "48",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "50",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "52",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "54",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "56",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "58",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "60",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "46 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "48 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "50 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "52 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "54 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "56 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "58 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "60 EU",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "care-instructions": [
+     "Hand wash",
+     "Line dry"
+    ],
+    "neckline": [
+     "Round"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "clothing-features": [
+     "Lightweight"
+    ],
+    "knit-pattern": [
+     "Fine gauge",
+     "Rib"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "fabric": [
+     "Silk"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "hIFNV5L",
+   "title": "Paloma Wool Navy Clot Sweater",
+   "description": "A navy blue V-neck sweater crafted from a blend of merino wool and cashmere. This piece features elegant pointelle detailing throughout, complemented by a rib-knit V-neck, hem, and cuffs for a refined silhouette.",
+   "brands": [
+    {
+     "id": "YZTp",
+     "name": "Paloma Wool"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/0c170470-b62b-4b04-ac38-c0cbfb617c9a",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a navy blue V-neck sweater over a plaid skirt."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/835780d8-2f15-495c-b9f4-efb5abceb26b",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a navy blue V-neck sweater over a plaid skirt from the side."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "merino wool",
+    "cashmere"
+   ],
+   "key_features": [
+    "Knit merino wool- and cashmere-blend",
+    "Pointelle detailing throughout",
+    "Rib-knit V-neck, hem, and cuffs"
+   ],
+   "colors": [
+    {
+     "hex": "#202032",
+     "percentage": 0.9176
+    },
+    {
+     "hex": "#7f7576",
+     "percentage": 0.0824
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/hIFNV5L-NLmP-GJ3hBB",
+     "domain": "ssense.com",
+     "price": {
+      "price": 275,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "hIFNV5L"
+       },
+       {
+        "label": "Green",
+        "exists": true,
+        "available": null,
+        "product_id": "RO9BuX3"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XXS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Merino",
+     "Cashmere"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "qTam8wn",
+   "title": "Ribbed Crew-Neck Sweater",
+   "description": "This navy crew-neck sweater from Chloé exemplifies understated sophistication through its clean silhouette and relaxed proportions. The piece features a textured ribbed knit throughout, with definition at the crew neckline, cuffs, and hem. The oversized fit and dropped shoulders create a contemporary ease.",
+   "brands": [
+    {
+     "id": "SncU",
+     "name": "Chloé"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/8287c999-ef5b-46a5-b858-e8ae7ea91bb5",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Back view of a navy blue ribbed crew-neck sweater."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/26ef5afc-4543-445b-a60a-38d0b64e619c",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Model wearing a navy sweater and heels."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "Knit"
+   ],
+   "key_features": [
+    "Ribbed knit throughout",
+    "Crew neckline",
+    "Ribbed cuffs and hem",
+    "Oversized fit"
+   ],
+   "colors": [
+    {
+     "hex": "#1b1d28",
+     "percentage": 0.9518
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/qTam8wn-sBqr-GJ3hBB",
+     "domain": "italist.com",
+     "price": {
+      "price": 605,
+      "compare_at_price": 1964,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "top-fit": [
+     "Oversized"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Texture"
+    ],
+    "neckline": [
+     "Crew"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "cRKVBLB",
+   "title": "Keep Me Posted Oversized Sweater",
+   "description": "The Keep Me Posted Oversized Sweater in Navy is a cozy and stylish loungewear piece designed for a relaxed fit. It features a classic crew neckline, long sleeves, and ribbed cuffs and hem band. The sweater is crafted from a soft internal fleece for added warmth and is accented with statement White Fox embroidered branding at the center front.",
+   "brands": [
+    {
+     "id": "z3t3",
+     "name": "White Fox Boutique"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/779195e1-ab40-4cb3-bacc-1b914cbd538d",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing navy loungewear while holding a lamp."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/d3e20b50-e1f3-4c07-a7bc-3eabd34da97b",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing navy oversized sweatshirt and sweatpants."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "51.5% Cotton",
+    "48.5% Polyester"
+   ],
+   "key_features": [
+    "Oversized Fit",
+    "Long Sleeves",
+    "Ribbed Crew Neckline",
+    "Ribbed Cuffs"
+   ],
+   "colors": [
+    {
+     "hex": "#1c1c1f",
+     "percentage": 0.8829
+    },
+    {
+     "hex": "#826a5e",
+     "percentage": 0.1171
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/cRKVBLB-CIF8-GJ3hBB",
+     "domain": "whitefoxboutique.com",
+     "price": {
+      "price": 59.99,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "3XS/XXS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXS/XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XS/S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S/M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M/L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L/XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "fabric": [
+     "Cotton",
+     "Polyester"
+    ],
+    "pattern": [
+     "Text",
+     "Solid"
+    ],
+    "top-fit": [
+     "Oversized"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "decoration-technique": [
+     "Embroidery"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "Tu2sCAl",
+   "title": "Navy Stripe Sweater",
+   "description": "A wide, boxy cut crewneck sweater featuring a navy and white horizontal stripe pattern. Designed with a vintage-inspired oversized fit, it features long sleeves that bunch perfectly at the wrists and a bodice that tapers slightly at the bottom. Made from 100% organic cotton, the knit is designed to become slouchier and more comfortable with each wear while m",
+   "brands": [
+    {
+     "id": "fjSj",
+     "name": "Sonderhaus"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/95b3f5e1-226c-423d-9db6-412e759703fd",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Navy and white striped crewneck sweater laid flat on white."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/d3a2f450-7ac3-4f21-bb96-e2cdfe61a7e5",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a navy and white striped crewneck sweater outdoors."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "100% Organic Cotton"
+   ],
+   "key_features": [
+    "100% Organic Cotton",
+    "Wide, boxy cut",
+    "Long sleeves",
+    "Vintage-inspired oversized fit"
+   ],
+   "colors": [
+    {
+     "hex": "#bdbcb1",
+     "percentage": 0.3917
+    },
+    {
+     "hex": "#262a37",
+     "percentage": 0.3848
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/Tu2sCAl-JSGM-GJ3hBB",
+     "domain": "garmentory.com",
+     "price": {
+      "price": 105,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Striped"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "fabric": [
+     "Cotton"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "top-fit": [
+     "Boxy"
+    ]
+   },
+   "ratings": null
+  }
+ ],
+ "next_page_token": null
+}

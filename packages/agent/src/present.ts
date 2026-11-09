@@ -15,7 +15,7 @@ import {
 } from '@sightline/core';
 import { confidenceSentence, en, m, returnsPhrase, returnsShort } from './copy/en';
 import type { DetailsTopic, OptionContext, ShoppingQuery } from './grammar';
-import { CATEGORIES, categoryOf, categoryPlural } from './lexicon';
+import { CATEGORIES, categoryOf, categoryPlural, colourSupport, sameSize } from './lexicon';
 import { numberToWords, optionWord } from './numbers';
 import { cheapestOverBudget, type RankResult, type RankedOption } from './ranking';
 import { capitalise, joinAnd } from './text';
@@ -54,20 +54,86 @@ function isSized(o: RankedOption, query?: ShoppingQuery): boolean {
   return Boolean(query?.size) || Boolean(o.displaySize) || Boolean(categoryOf(o.snapshot.category ?? o.snapshot.title)?.sizeDomain);
 }
 
-function optionParts(o: RankedOption, verbosity: Verbosity, query?: ShoppingQuery): string[] {
+/** "sizes S, M, L" or, for a long list, "sizes XXS to XXL". */
+function sizesPhrase(list: string): string {
+  const all = list.split(/\s*,\s*/).filter(Boolean);
+  return en.search.sizesOffered(all.length > 4 ? `${all[0]} to ${all[all.length - 1]}` : all.join(', '));
+}
+
+/** The size the buyer asked for is confirmed by this listing (stock may still be unknown). */
+export function confirmsSize(o: Pick<RankedOption, 'sizeFit' | 'displaySize' | 'sizeInStock'>, size: string | undefined): boolean {
+  if (!size) return true;
+  if (o.sizeFit) return ['in_stock', 'offered', 'other_listing', 'listed'].includes(o.sizeFit);
+  return Boolean(o.sizeInStock) || sameSize(o.displaySize, size);
+}
+
+function optionParts(o: RankedOption, verbosity: Verbosity, query?: ShoppingQuery, sayReturns = true): string[] {
   const s = o.snapshot;
   const title = shortTitle(s.title, query?.category ?? categoryOf(s.category ?? s.title)?.canonical);
-  const colour = s.attributes.colour?.trim().toLowerCase() || en.search.colourNotGiven;
+  const named = s.attributes.colourName?.trim();
+  const colour = s.attributes.colour?.trim().toLowerCase() || (named ? en.readback.colourOnlyListedAs(named) : en.search.colourNotGiven);
   const parts = [title, colour];
   if (verbosity !== 'brief' && isSized(o, query)) {
     if (o.sizeInStock && o.displaySize) parts.push(en.search.sizeInStock(o.displaySize));
+    else if ((o.sizeFit === 'offered' || o.sizeFit === 'other_listing') && o.displaySize) parts.push(en.search.sizeOffered(o.displaySize));
     else if (o.displaySize) parts.push(en.search.size(o.displaySize));
+    else if (!query?.size && s.attributes.sizes) parts.push(sizesPhrase(s.attributes.sizes));
     else parts.push(en.search.sizeNotGiven);
   }
   parts.push(m(s.price));
-  if (verbosity !== 'brief') parts.push(returnsShort(s.returnPolicy));
+  if (verbosity !== 'brief' && sayReturns) parts.push(returnsShort(s.returnPolicy));
   if (verbosity === 'detailed' && s.rating && s.rating.count > 0) parts.push(en.search.rated(s.rating.average, s.rating.count));
   return parts;
+}
+
+const noPolicy = (o: RankedOption) => returnsShort(o.snapshot.returnPolicy) === 'return policy not given';
+
+/**
+ * What the buyer asked for that some options can't confirm, said once: "Size M isn't confirmed for
+ * three: that listing doesn't give sizes." Nothing is claimed that a listing doesn't say.
+ */
+export function unconfirmedSentences(query: ShoppingQuery | undefined, options: RankedOption[]): string[] {
+  if (!query) return [];
+  const out: string[] = [];
+  const names = (idx: number[]) => joinAnd(idx.map((i) => numberToWords(i + 1)));
+  if (query.size) {
+    const idx = options.map((o, i) => (o.sizeFit === 'unknown' || (!o.sizeFit && !confirmsSize(o, query.size)) ? i : -1)).filter((i) => i >= 0);
+    if (idx.length) out.push(en.search.notConfirmed(`size ${query.size}`, names(idx), en.search.noSizesGiven(idx.length > 1)));
+  }
+  if (query.colour) {
+    const idx = options.map((o, i) => (o.snapshot.attributes.colour ? -1 : i)).filter((i) => i >= 0);
+    if (idx.length) out.push(en.search.notConfirmed(query.colour, names(idx), en.search.noColourGiven(idx.length > 1)));
+  }
+  return out;
+}
+
+/**
+ * The options card's heading claims only what every option shown confirms: "3 options: a sweater
+ * under $40. Not confirmed for every option: navy and size M". A filter the store couldn't apply
+ * is never in the heading as if it had been.
+ */
+export function optionsHeading(query: ShoppingQuery, options: RankedOption[]): string {
+  const n = options.length;
+  const count = n === 1 ? 'One option' : `${n} options`;
+  let shown: ShoppingQuery = query;
+  const unconfirmed: string[] = [];
+  if (query.colour && options.some((o) => !colourSupport(o.snapshot.attributes.colour).has(query.colour!))) {
+    shown = { ...shown, colour: undefined };
+    unconfirmed.push(query.colour);
+  }
+  // A neckline, fit or pattern is claimed only when every option's ranking confirmed it.
+  for (const [key, value] of Object.entries(query.attributes)) {
+    if (options.every((o) => o.why.includes(en.why.attributeMatch(value)))) continue;
+    const { [key]: _drop, ...rest } = shown.attributes;
+    shown = { ...shown, attributes: rest };
+    unconfirmed.push(value);
+  }
+  if (query.size && options.some((o) => !confirmsSize(o, query.size))) {
+    shown = { ...shown, size: undefined };
+    unconfirmed.push(`size ${query.size}`);
+  }
+  const head = `${count}: ${describeQuery(shown)}`;
+  return unconfirmed.length ? `${head}. ${capitalise(en.search.headingUnconfirmed(joinAnd(unconfirmed)))}` : head;
 }
 
 export interface OptionsPresentation extends Spoken {
@@ -75,21 +141,41 @@ export interface OptionsPresentation extends Spoken {
   context: OptionContext[];
 }
 
+export interface PresentOptionsOptions {
+  query?: ShoppingQuery;
+  verbosity?: Verbosity;
+  firstPage?: boolean;
+  /** Said first: which saved preferences were used ("Using your usual size M."). */
+  notes?: string[];
+  /** A short, grounded opening line from the shopping agent. */
+  lead?: string;
+  /** One grounded line per option from the shopping agent, said after that option. */
+  reasons?: Array<string | undefined>;
+}
+
 /**
  * "I found three. One: Harbor knit crew-neck, navy, size M in stock, $34, free returns for 30 days.
  * Two: ... Say a number for details, 'compare' to compare, or 'more' for other options."
  * Options are numbered from one on every page so "say a number" always means what was just read.
+ * Every fact is from the listing; the agent's lead and reasons, already grounding-checked, are the
+ * only words not from a template.
  */
-export function presentOptions(
-  result: Pick<RankResult, 'options' | 'remaining'>,
-  opts: { query?: ShoppingQuery; verbosity?: Verbosity; firstPage?: boolean } = {},
-): OptionsPresentation {
+export function presentOptions(result: Pick<RankResult, 'options' | 'remaining'>, opts: PresentOptionsOptions = {}): OptionsPresentation {
   const verbosity = opts.verbosity ?? 'standard';
   const options = result.options.slice(0, 3);
   if (options.length === 0) return { ...spoken([en.search.noneFoundGeneric]), context: [] };
   const count = numberToWords(options.length);
-  const sentences = [opts.firstPage === false ? en.search.moreCount(count) : en.search.foundCount(count)];
-  options.forEach((o, i) => sentences.push(en.search.option(optionWord(i + 1), optionParts(o, verbosity, opts.query))));
+  // With several options and none giving a return policy, that is said once, not after each.
+  const collapseReturns = verbosity !== 'brief' && options.length > 1 && options.every(noPolicy);
+  const sentences = [...(opts.notes ?? []), ...(opts.lead ? [opts.lead] : [])];
+  sentences.push(opts.firstPage === false ? en.search.moreCount(count) : en.search.foundCount(count));
+  options.forEach((o, i) => {
+    sentences.push(en.search.option(optionWord(i + 1), optionParts(o, verbosity, opts.query, !collapseReturns)));
+    const reason = opts.reasons?.[i]?.trim();
+    if (reason) sentences.push(/[.!?]$/.test(reason) ? reason : `${reason}.`);
+  });
+  if (verbosity !== 'brief') sentences.push(...unconfirmedSentences(opts.query, options));
+  if (collapseReturns) sentences.push(en.search.noneGiveReturns(count));
   const more = result.remaining > 0;
   if (options.length === 1) sentences.push(more ? en.search.optionsPrompt1 : en.search.optionsPrompt1NoMore);
   else sentences.push(more ? en.search.optionsPrompt3 : en.search.optionsPromptNoMore);
@@ -113,7 +199,8 @@ export function describeQuery(q: ShoppingQuery): string {
   let head: string;
   if (q.category) {
     const phrase = [...adjectives, q.category].join(' ');
-    head = `${article(phrase)} ${phrase}`;
+    // "socks", "jeans" and "running shoes" take no article.
+    head = /s$/.test(q.category) && q.category !== 'dress' ? phrase : `${article(phrase)} ${phrase}`;
   } else {
     head = [en.search.describe.anything, ...adjectives].join(' ');
   }
@@ -235,7 +322,13 @@ export function presentWhy(options: Array<Pick<RankedOption, 'snapshot' | 'why' 
 export function presentDetails(snapshot: ProductSnapshot, topic: DetailsTopic = 'general', verbosity: Verbosity = 'standard'): Spoken {
   const a = snapshot.attributes;
   const d = en.details;
-  const colour = a.colour ? d.colour(a.colour.toLowerCase()) : d.colourMissing;
+  const colour = a.colour
+    ? a.colourName && a.colourName.toLowerCase() !== a.colour.toLowerCase()
+      ? d.colourNamed(a.colour.toLowerCase(), a.colourName)
+      : d.colour(a.colour.toLowerCase())
+    : a.colourName
+      ? d.colourOnlyName(a.colourName)
+      : d.colourMissing;
   const size = a.size ? d.size(a.size) : d.sizeMissing;
   const material = a.material ? d.material(a.material) : d.materialMissing;
   const rating = snapshot.rating && snapshot.rating.count > 0 ? d.rating(snapshot.rating.average, snapshot.rating.count) : d.ratingMissing;

@@ -113,6 +113,7 @@ export async function deleteMyData(userId: string): Promise<DataDeletion> {
   await db().delete(tables.notifications).where(eq(tables.notifications.userId, userId));
   await db().delete(tables.pushSubscriptions).where(eq(tables.pushSubscriptions.userId, userId));
   await db().delete(tables.helpers).where(eq(tables.helpers.userId, userId));
+  await db().delete(tables.memories).where(eq(tables.memories.userId, userId));
   await db().update(tables.preferences).set({ sizes: {}, avoidColours: [] }).where(eq(tables.preferences.userId, userId));
   await audit({ userId, actor: 'user', action: 'privacy.data_deleted', subjectId: userId, payload: { photos: photos.deleted, conversations: conversations.length } });
   return { photos, conversations: conversations.length };

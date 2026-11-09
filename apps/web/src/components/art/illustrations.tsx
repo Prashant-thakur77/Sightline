@@ -255,3 +255,64 @@ export function EmptyArt({ className, label, delay }: P) {
     </Art>
   );
 }
+
+/** Maya: headphones on, phone in hand. A portrait for her persona card. */
+export function MayaArt({ className, label, delay }: P) {
+  return (
+    <Art viewBox="0 0 200 200" className={className} label={label} delay={delay}>
+      <circle className="fb" cx="100" cy="100" r="92" />
+      <g className="off">
+        <path className="fa" d="M48 196 C52 156 72 140 100 140 C128 140 148 156 152 196 Z" />
+        <path className="fc" d="M66 92 C64 60 80 44 100 44 C120 44 136 60 134 92 C126 78 112 70 100 70 C88 70 74 78 66 92 Z" />
+      </g>
+      {/* shoulders and sweater */}
+      <path className="ln" pathLength={1} style={i(0)} d="M48 196 C52 156 72 140 100 140 C128 140 148 156 152 196" />
+      <path className="ln ln-thin" pathLength={1} style={i(1)} d="M86 142 Q100 156 114 142" />
+      {/* neck and face */}
+      <path className="ln" pathLength={1} style={i(2)} d="M90 128 V140 M110 128 V140" />
+      <path className="ln" pathLength={1} style={i(3)} d="M70 92 C70 116 82 132 100 132 C118 132 130 116 130 92" />
+      {/* hair with a bun */}
+      <path className="ln" pathLength={1} style={i(4)} d="M66 92 C64 60 80 44 100 44 C120 44 136 60 134 92 C126 78 112 70 100 70 C88 70 74 78 66 92 Z" />
+      <circle className="ln" pathLength={1} style={i(5)} cx="100" cy="34" r="11" />
+      {/* headphones */}
+      <path className="ln" pathLength={1} style={i(6)} d="M60 98 C56 56 76 38 100 38 C124 38 144 56 140 98" />
+      <rect className="ln" pathLength={1} style={i(7)} x="54" y="90" width="14" height="24" rx="6" />
+      <rect className="ln" pathLength={1} style={i(8)} x="132" y="90" width="14" height="24" rx="6" />
+      {/* a calm smile, eyes closed */}
+      <path className="ln ln-thin" pathLength={1} style={i(9)} d="M86 100 q5 4 10 0 M104 100 q5 4 10 0" />
+      <path className="ln ln-thin" pathLength={1} style={i(10)} d="M92 116 q8 6 16 0" />
+      {/* sound, gently */}
+      <path className="ln ln-thin wave" pathLength={1} style={i(11)} d="M158 86 q8 12 0 24" />
+      <path className="ln ln-thin wave" pathLength={1} style={i(12)} d="M168 78 q14 20 0 40" />
+    </Art>
+  );
+}
+
+/** Raj: big glasses and a magnifier, for low vision. A portrait for his persona card. */
+export function RajArt({ className, label, delay }: P) {
+  return (
+    <Art viewBox="0 0 200 200" className={className} label={label} delay={delay}>
+      <circle className="fc" cx="100" cy="100" r="92" />
+      <g className="off">
+        <path className="fa" d="M48 196 C52 156 72 140 100 140 C128 140 148 156 152 196 Z" />
+        <path className="fp" d="M68 84 C68 56 84 46 100 46 C116 46 132 56 132 84 C122 74 110 70 100 70 C90 70 78 74 68 84 Z" />
+      </g>
+      <path className="ln" pathLength={1} style={i(0)} d="M48 196 C52 156 72 140 100 140 C128 140 148 156 152 196" />
+      <path className="ln ln-thin" pathLength={1} style={i(1)} d="M88 142 L100 154 L112 142" />
+      <path className="ln" pathLength={1} style={i(2)} d="M90 128 V140 M110 128 V140" />
+      <path className="ln" pathLength={1} style={i(3)} d="M70 88 C70 114 82 132 100 132 C118 132 130 114 130 88" />
+      {/* short hair */}
+      <path className="ln" pathLength={1} style={i(4)} d="M68 84 C68 56 84 46 100 46 C116 46 132 56 132 84 C122 74 110 70 100 70 C90 70 78 74 68 84 Z" />
+      {/* big round glasses */}
+      <circle className="ln" pathLength={1} style={i(5)} cx="87" cy="98" r="12" />
+      <circle className="ln" pathLength={1} style={i(6)} cx="113" cy="98" r="12" />
+      <path className="ln ln-thin" pathLength={1} style={i(7)} d="M99 98 h2 M75 96 l-6 -2 M125 96 l6 -2" />
+      <circle className="fi pop" style={i(0)} cx="87" cy="99" r="2.5" />
+      <circle className="fi pop" style={i(1)} cx="113" cy="99" r="2.5" />
+      <path className="ln ln-thin" pathLength={1} style={i(8)} d="M92 118 q8 6 16 0" />
+      {/* a hand magnifier */}
+      <circle className="ln" pathLength={1} style={i(9)} cx="158" cy="148" r="16" />
+      <path className="ln" pathLength={1} style={i(10)} d="M146 160 L132 176" />
+    </Art>
+  );
+}

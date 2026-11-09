@@ -112,7 +112,7 @@ describe('parseIntent', () => {
     ['change size to L', 'cart'],
     ['remove it', 'cart'],
     ["where's my order", 'status'],
-    ['where is my money', 'status'],
+    ['where is my money', 'money'],
     ['did it ship', 'status'],
     ['check my delivery', 'check'],
     ['it arrived', 'check'],
@@ -196,7 +196,7 @@ describe('parseIntent', () => {
   });
 
   it('reads status, case and settings slots', () => {
-    expect(parseIntent('where is my money')).toMatchObject({ slots: { topic: 'money' } });
+    expect(parseIntent('where is my money')).toMatchObject({ intent: 'money', slots: { question: 'overview' } });
     expect(parseIntent('has it shipped')).toMatchObject({ slots: { topic: 'shipping' } });
     expect(parseIntent('they sent the wrong colour')).toMatchObject({ intent: 'case', slots: { reason: 'wrong_colour' } });
     expect(parseIntent('it never came')).toMatchObject({ slots: { reason: 'not_received' } });

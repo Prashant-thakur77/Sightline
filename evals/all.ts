@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { EVALS_DIR } from './lib/results';
 
-const SUITES = ['confirmation/run.ts', 'redteam/run.ts', 'duplicates/run.ts', 'grounding/run.ts', 'store-agent/run.ts'];
+const SUITES = ['confirmation/run.ts', 'redteam/run.ts', 'duplicates/run.ts', 'grounding/run.ts', 'store-agent/run.ts', 'agent/run.ts'];
 const tsx = path.join(EVALS_DIR, 'node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx');
 
 function run(file: string): void {

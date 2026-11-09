@@ -416,6 +416,7 @@ export function Conversation({
                     <PayPalCheckout
                       clientId={card.clientId}
                       paypalOrderId={card.paypalOrderId}
+                      total={card.total}
                       onApproved={(paypalOrderId) => void send({ action: 'paypal-approved', readbackId: card.readbackId, paypalOrderId })}
                       onError={(m) => announce(m, { politeness: 'assertive', source: 'PayPal' })}
                     />

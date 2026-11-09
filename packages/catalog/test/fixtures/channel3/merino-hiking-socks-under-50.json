@@ -1,0 +1,1456 @@
+{
+ "products": [
+  {
+   "id": "WtABTGY",
+   "title": "Men's Merino Midweight Hiker Socks",
+   "description": "These Simms Merino Midweight Hiking Socks are designed for comfort and performance on long hikes. Made with a blend of merino wool, nylon, and Lycra spandex, they offer natural moisture-wicking and odor-resistant properties. The mid-calf height and cushioning in high-impact areas provide support and protection, while the durable construction ensures they hol",
+   "brands": [
+    {
+     "id": "BmWY",
+     "name": "Simms"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/7ac3b1fd-8d0a-486c-835b-439c8b053c4a",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Merino midweight hiking sock with gray body and brown cuff and toe."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/29d89856-d102-4fb5-ae05-ede3351cfe61",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Merino midweight hiking sock with gray body, black toe, and navy accents."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": null,
+   "age": null,
+   "materials": [
+    "merino wool",
+    "nylon",
+    "Lycra® spandex"
+   ],
+   "key_features": [
+    "Naturally wicking and odor resistant",
+    "Cushioning in high-impact areas",
+    "Mid-calf height",
+    "Made in USA"
+   ],
+   "colors": [
+    {
+     "hex": "#ffffff",
+     "percentage": 0.5391
+    },
+    {
+     "hex": "#543c35",
+     "percentage": 0.1236
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/WtABTGY-JBnz-GJ3hBB",
+     "domain": "simmsfishing.com",
+     "price": {
+      "price": 20.97,
+      "compare_at_price": 39.95,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "activity": [
+     "Hiking",
+     "Fishing"
+    ],
+    "clothing-features": [
+     "Moisture wicking"
+    ],
+    "fabric": [
+     "Merino",
+     "Wool",
+     "Nylon",
+     "Spandex"
+    ],
+    "accessory-size": [
+     "Medium (M)",
+     "Large (L)",
+     "Extra large (XL)"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "YsfRWzG",
+   "title": "Men's Merino Midweight Hiking Socks",
+   "description": "Simms Men's Merino Midweight Hiking Socks are designed for all-season performance. Made from a blend of merino wool, nylon, and Lycra spandex, these over-the-calf socks provide natural temperature regulation, wicking, and odor resistance. They feature cushioning in high-impact areas for added comfort during hiking and other outdoor activities. The socks are ",
+   "brands": [
+    {
+     "id": "BmWY",
+     "name": "Simms"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/ab20620d-2c12-4bcc-a6db-202382f93dfd",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Merino hiking sock with grey body and orange cuff, shown from the side."
+    }
+   ],
+   "category": {
+    "slug": "athletic-socks",
+    "title": "Athletic Socks"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "66% merino wool",
+    "31% nylon",
+    "3% Lycra spandex"
+   ],
+   "key_features": [
+    "Naturally wicking and odor resistant",
+    "Cushioning in high-impact areas",
+    "Over-the-calf height",
+    "Made in USA"
+   ],
+   "colors": [
+    {
+     "hex": "#313134",
+     "percentage": 0.6177
+    },
+    {
+     "hex": "#544345",
+     "percentage": 0.1692
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/YsfRWzG-xUlk-GJ3hBB",
+     "domain": "sportsmans.com",
+     "price": {
+      "price": 34.95,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Spandex"
+    ],
+    "activity": [
+     "Hiking"
+    ],
+    "sock-cushioning": [
+     "Targeted"
+    ],
+    "cushioning-level": [
+     "Targeted cushion"
+    ],
+    "clothing-features": [
+     "Moisture wicking",
+     "Breathable design"
+    ],
+    "sock-grip-type": [
+     "None"
+    ],
+    "grip-coverage": [
+     "No grip"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "sock-cushioning-level": [
+     "Medium cushioning"
+    ],
+    "accessory-size": [
+     "Medium (M)",
+     "Large (L)",
+     "Extra large (XL)"
+    ],
+    "pattern": [
+     "Solid"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "NNGwwhw",
+   "title": "Marl Merino Crew Hiking Socks",
+   "description": "These Bombas Marl Merino Crew Hiking Socks are designed for comfort and warmth, making them ideal for hiking and outdoor activities. Crafted from a durable merino wool blend, they offer a soft feel, excellent stretch, and temperature regulation. Key features include a cushioned footbed, honeycomb arch support, seamless toe, and stay-up technology to ensure a",
+   "brands": [
+    {
+     "id": "q6ys",
+     "name": "Bombas"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/d452f264-c4e6-480f-8d24-62e0492a2d2c",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Dark grey crew hiking sock standing upright on white background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/bfb27a58-f9c9-479a-aad4-c512a4b2ea98",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Female legs wearing dark grey hiking socks."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": null,
+   "age": "adult",
+   "materials": [
+    "Merino Wool",
+    "Polyester",
+    "Elastane"
+   ],
+   "key_features": [
+    "Cushioned footbed",
+    "Honeycomb Arch Support",
+    "Merino Wool",
+    "Seamless Toe"
+   ],
+   "colors": [
+    {
+     "hex": "#3f3b3d",
+     "percentage": 0.8978
+    },
+    {
+     "hex": "#969394",
+     "percentage": 0.1022
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/NNGwwhw-98k8-GJ3hBB",
+     "domain": "scheels.com",
+     "price": {
+      "price": 16.99,
+      "compare_at_price": 22,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "fabric": [
+     "Merino",
+     "Polyester",
+     "Spandex"
+    ],
+    "accessory-size": [
+     "Medium (M)"
+    ],
+    "pattern": [
+     "Solid",
+     "Texture"
+    ],
+    "activity": [
+     "Hiking",
+     "Walking"
+    ],
+    "clothing-features": [
+     "Moisture wicking",
+     "Stretchable"
+    ]
+   },
+   "ratings": {
+    "value": 5,
+    "count": 1,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "IwYXbL3",
+   "title": "Minaret Lightweight Merino Wool Hiking Crew Socks",
+   "description": "The Minaret Lightweight Merino Wool Hiking Crew Socks by Ridge Merino are versatile, year-round socks designed for hiking, trail running, and daily wear. Inspired by the Ritter Range in Mammoth Lakes, these socks feature a 3/4 crew height and light cushioning at the base of the foot for comfort without bulk. Made in the U.S., they utilize merino wool to prov",
+   "brands": [
+    {
+     "id": "B2tr",
+     "name": "Ridge Merino"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/85a4dfbc-f83b-41aa-b377-72212dc733e9",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Dark navy hiking crew sock with blue and teal stripes."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/682dafec-6b17-4c73-a42f-7558cd48b711",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Crew sock with grey, blue, and orange horizontal stripes."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": null,
+   "age": "adult",
+   "materials": [
+    "Merino wool",
+    "nylon",
+    "spandex"
+   ],
+   "key_features": [
+    "Made in the U.S. of imported and domestic yarns",
+    "Resists odor, wicks moisture, regulates temperature and breathes well",
+    "Light cushion along the base of the foot only",
+    "3/4 crew fit that hits above a hiking boot but just below the calf"
+   ],
+   "colors": [
+    {
+     "hex": "#2d3146",
+     "percentage": 0.748
+    },
+    {
+     "hex": "#464e67",
+     "percentage": 0.1486
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/IwYXbL3-0EyY-GJ3hBB",
+     "domain": "ridgemerino.com",
+     "price": {
+      "price": 20,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Black",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "Gray",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "accessory-size": [
+     "Small (S)",
+     "Medium (M)",
+     "Large (L)",
+     "Extra large (XL)"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "clothing-features": [
+     "Moisture wicking",
+     "Breathable design",
+     "Lightweight"
+    ],
+    "sock-cushioning-level": [
+     "Light cushioning"
+    ],
+    "sock-cushioning": [
+     "Light"
+    ],
+    "sock-toe-style": [
+     "Seamless"
+    ],
+    "pattern": [
+     "Solid",
+     "Striped"
+    ],
+    "activity": [
+     "Hiking",
+     "Running"
+    ],
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Spandex"
+    ],
+    "sock-grip-type": [
+     "None"
+    ],
+    "cushioning-level": [
+     "Light cushion"
+    ],
+    "grip-coverage": [
+     "No grip"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "bm7lBtr",
+   "title": "Merino Wool Hiking Crew Socks",
+   "description": "Designed for year-round hiking, these Woolrich crew socks are crafted from a merino wool blend to provide moisture-wicking, thermoregulation, and natural antimicrobial properties. They feature targeted cushioning for shin protection, built-in arch support to reduce foot fatigue, and double-welt tops to prevent sliding. The socks are finished with flat toe cl",
+   "brands": [
+    {
+     "id": "23iH",
+     "name": "Woolrich"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/77040679-eebf-48f6-8461-009b790d3737",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Pair of blue and teal merino wool hiking crew socks standing up."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/69a48e8b-0e27-48d9-a81c-d07d51a404ef",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Pair of dark blue and teal hiking crew socks laid out."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "merino wool",
+    "nylon",
+    "LYCRA spandex"
+   ],
+   "key_features": [
+    "79% merino wool content wicks moisture and offers thermoregulation",
+    "LYCRA® spandex for great recovery",
+    "Targeted cushioning for shin protection",
+    "Built-in arch support helps combat foot fatigue"
+   ],
+   "colors": [
+    {
+     "hex": "#3a5169",
+     "percentage": 0.9268
+    },
+    {
+     "hex": "#698699",
+     "percentage": 0.0732
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/bm7lBtr-a0Dd-GJ3hBB",
+     "domain": "rei.com",
+     "price": {
+      "price": 12.73,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "cushioning-level": [
+     "Medium cushion"
+    ],
+    "sock-cushioning": [
+     "Medium",
+     "Targeted"
+    ],
+    "sock-cushioning-level": [
+     "Medium cushioning"
+    ],
+    "grip-coverage": [
+     "No grip"
+    ],
+    "sock-grip-type": [
+     "None"
+    ],
+    "clothing-features": [
+     "Moisture wicking",
+     "Quick drying",
+     "Lightweight"
+    ],
+    "accessory-size": [
+     "Large (L)"
+    ],
+    "activity": [
+     "Hiking"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Spandex"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "sock-toe-style": [
+     "Seamless"
+    ]
+   },
+   "ratings": {
+    "value": 3.9,
+    "count": 40,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "Sede1k2",
+   "title": "Women's Merino Midweight Hiking Socks",
+   "description": "These midweight merino wool hiker socks are designed for comfort and performance during outdoor activities. Featuring a mid-calf height and cushioning in high-impact areas, they provide essential support for hiking or wading. The naturally wicking and odor-resistant merino wool blend ensures feet stay dry and fresh, while the 'Hex Flo Camo Admiral' pattern o",
+   "brands": [
+    {
+     "id": "BmWY",
+     "name": "Simms"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/1b528c2a-fe6e-457d-8fc7-cf5858af9677",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Merino hiking sock shown from the side, highlighting the camouflage pattern."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": "female",
+   "age": null,
+   "materials": [
+    "67% merino wool",
+    "31% nylon",
+    "2% Lycra® spandex"
+   ],
+   "key_features": [
+    "Naturally wicking and odor resistant",
+    "Cushioning in high-impact areas",
+    "Mid-calf height",
+    "Made in USA"
+   ],
+   "colors": [
+    {
+     "hex": "#64656d",
+     "percentage": 0.2605
+    },
+    {
+     "hex": "#8b8c93",
+     "percentage": 0.2605
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/Sede1k2-JBnz-GJ3hBB",
+     "domain": "simmsfishing.com",
+     "price": {
+      "price": 21,
+      "compare_at_price": 30,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sock-cushioning-level": [
+     "Medium cushioning"
+    ],
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Spandex",
+     "Wool"
+    ],
+    "pattern": [
+     "Camouflage",
+     "Geometric"
+    ],
+    "cushioning-level": [
+     "Targeted cushion"
+    ],
+    "sock-grip-type": [
+     "None"
+    ],
+    "accessory-size": [
+     "Small (S)",
+     "Medium (M)",
+     "Large (L)"
+    ],
+    "sock-cushioning": [
+     "Targeted"
+    ],
+    "clothing-features": [
+     "Moisture wicking",
+     "Breathable design",
+     "Water resistant"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "grip-coverage": [
+     "No grip"
+    ],
+    "activity": [
+     "Hiking",
+     "Fishing"
+    ]
+   },
+   "ratings": {
+    "value": 5,
+    "count": 1,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "uhB7prx",
+   "title": "Marmot Darn Tough Men's Willoughby Micro Crew Lightweight With Cushion Hiking Socks",
+   "description": "These lightweight Micro Crew height hiking socks are crafted from climate-controlling Merino Wool and feature cozy cushioning underfoot to prevent blisters and keep feet dry. The design includes a performance fit to eliminate slipping and bunching, and utilizes True Seamless™ Toe technology for an ultra-smooth feel. The aesthetic features a multi-colored str",
+   "brands": [
+    {
+     "id": "9ufM",
+     "name": "Marmot"
+    },
+    {
+     "id": "XWJM",
+     "name": "Darn Tough"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/f49fb9de-dc42-4e89-9bfc-d3703f073bdb",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Close-up of a striped hiking sock with a mountain graphic."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/14efd68e-d1a4-44ba-a8b7-841da88abf64",
+     "is_main_image": false,
+     "shot_type": "lifestyle",
+     "alt_text": "Model wearing brown boots and striped hiking socks."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "Merino Wool"
+   ],
+   "key_features": [
+    "Micro crew height (average 8.5 in. from heel to cuff)",
+    "Performance fit to prevent slipping and bunching",
+    "Climate-controlling Merino Wool for moisture management",
+    "Lightweight construction for summer hiking"
+   ],
+   "colors": [
+    {
+     "hex": "#242222",
+     "percentage": 0.6
+    },
+    {
+     "hex": "#514c48",
+     "percentage": 0.3146
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/uhB7prx-92yf-GJ3hBB",
+     "domain": "marmot.com",
+     "price": {
+      "price": 25,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Darn Tough Bottle"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "pattern": [
+     "Striped"
+    ],
+    "fabric": [
+     "Merino"
+    ],
+    "sock-cushioning-level": [
+     "Light cushioning"
+    ],
+    "activity": [
+     "Hiking"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "sock-cushioning": [
+     "Light"
+    ],
+    "sock-toe-style": [
+     "Seamless"
+    ],
+    "clothing-features": [
+     "Moisture wicking",
+     "Breathable design",
+     "Lightweight"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "CThZ1Ga",
+   "title": "Men's Merino Hike+ Ultralight Quarter Socks",
+   "description": "The Men's Merino Hike+ Ultralight Socks Quarter are designed for warm-weather trail adventures. Featuring an anatomical sculpted, ultralight design, these socks maximize ventilation and temperature regulation to keep feet comfortable during hikes.",
+   "brands": [
+    {
+     "id": "rPyC",
+     "name": "Icebreaker"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/15d6b8cf-d1fa-4a78-acd5-2b52d9448281",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Black and grey hike socks laid out with toe up."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/ec52cbff-9928-4b14-a440-f3ac1f93b0cc",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Man sitting wearing black hike socks."
+    }
+   ],
+   "category": {
+    "slug": "athletic-socks",
+    "title": "Athletic Socks"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "57% Merino wool",
+    "40% Nylon",
+    "3% Elastane"
+   ],
+   "key_features": [
+    "Anatomical toe box for unique left and right fit",
+    "Targeted cushioning maximizes fit and comfort",
+    "Achilles support keeps your sock in place",
+    "Reinforced heel and toe for durability and strength"
+   ],
+   "colors": [
+    {
+     "hex": "#222122",
+     "percentage": 0.9019
+    },
+    {
+     "hex": "#474546",
+     "percentage": 0.0981
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/CThZ1Ga-w7ud-GJ3hBB",
+     "domain": "eu.icebreaker.com",
+     "price": {
+      "price": 21,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S/M",
+        "exists": true,
+        "available": null,
+        "product_id": "CThZ1Ga"
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": "VuHyJl5"
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Size",
+      "label": "S/M"
+     },
+     {
+      "name": "Color",
+      "label": "Black/Obsidian"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "activity": [
+     "Hiking"
+    ],
+    "pattern": [
+     "Texture"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "clothing-features": [
+     "Breathable design",
+     "Lightweight"
+    ],
+    "accessory-size": [
+     "Small (S)",
+     "Medium (M)",
+     "Large (L)",
+     "Extra large (XL)"
+    ],
+    "sock-toe-style": [
+     "Seamless"
+    ],
+    "sock-cushioning": [
+     "Targeted"
+    ],
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Spandex"
+    ],
+    "cushioning-level": [
+     "Targeted cushion"
+    ],
+    "sock-grip-type": [
+     "None"
+    ],
+    "grip-coverage": [
+     "No grip"
+    ]
+   },
+   "ratings": {
+    "value": 4.9,
+    "count": 7,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "hLR3VY3",
+   "title": "Women's Merino Hike+ Liner Crew Socks",
+   "description": "The Women's Merino Hike+ Liner Crew Socks are ultralight yet durable liner socks designed for hiking. Made from a stretchy blend of merino wool, nylon, and elastane, these socks are breathable and naturally odour-resistant. They can be worn alone in hot conditions or layered beneath a heavier sock for added warmth and protection.",
+   "brands": [
+    {
+     "id": "rPyC",
+     "name": "Icebreaker"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/fc7b59e9-68ad-4c8b-a542-1ef3311b8367",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman in green top and grey pants squatting, wearing hike socks and sneakers."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/1bd49623-1e2e-42ba-893d-18e456e0f4ed",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Person adjusting shirt cuff while wearing grey pants and black socks."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "59% Merino Wool",
+    "38% Nylon",
+    "3% Elastane"
+   ],
+   "key_features": [
+    "Ultralight yet durable",
+    "Breathable",
+    "Naturally odour-resistant",
+    "Can be worn alone or as a liner"
+   ],
+   "colors": [
+    {
+     "hex": "#1f1f20",
+     "percentage": 0.9339
+    },
+    {
+     "hex": "#373536",
+     "percentage": 0.0661
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/hLR3VY3-w7ud-GJ3hBB",
+     "domain": "na.icebreaker.com",
+     "price": {
+      "price": 21,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "activity": [
+     "Hiking"
+    ],
+    "accessory-size": [
+     "Small (S)",
+     "Medium (M)",
+     "Large (L)"
+    ],
+    "grip-coverage": [
+     "No grip"
+    ],
+    "sock-cushioning": [
+     "Ultra light"
+    ],
+    "sock-cushioning-level": [
+     "Light cushioning"
+    ],
+    "cushioning-level": [
+     "Ultralight cushion"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "clothing-features": [
+     "Stretchable",
+     "Breathable design",
+     "Lightweight"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Spandex"
+    ],
+    "sock-grip-type": [
+     "None"
+    ]
+   },
+   "ratings": {
+    "value": 5,
+    "count": 3,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "HisHunk",
+   "title": "Step Wool Quarter Hike Socks - 3820",
+   "description": "The Step Wool Quarter Hike Socks (model 3820) are high-performance outdoor socks designed for hiking and trail activities. Made in Italy, these socks feature a blend of Merino Wool and MicroSupreme® fibers to provide natural insulation and moisture-wicking properties, keeping your feet dry and regulated in temperature. With light padding for cushioning and b",
+   "brands": [
+    {
+     "id": "ez4p",
+     "name": "EUROSOCK"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/c8853052-52b9-493a-9968-4f06211360ca",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Black wool hiking sock view from the side and top."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/935a507d-5459-4347-b624-dc8fd7abe275",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Black wool hiking socks lying on a white background."
+    }
+   ],
+   "category": {
+    "slug": "athletic-socks",
+    "title": "Athletic Socks"
+   },
+   "gender": null,
+   "age": null,
+   "materials": [
+    "Merino Wool",
+    "MicroSupreme®",
+    "Nylon",
+    "Acrylic",
+    "Elastane Lycra®"
+   ],
+   "key_features": [
+    "Natural insulation properties to regulate foot temperature",
+    "Wicks moisture to inhibit bacteria and odor",
+    "Lightly padded for cushioning and blister protection",
+    "Highly resilient, breathable, and soft against the skin"
+   ],
+   "colors": [
+    {
+     "hex": "#14171c",
+     "percentage": 0.9394
+    },
+    {
+     "hex": "#444449",
+     "percentage": 0.0606
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/HisHunk-PCsU-GJ3hBB",
+     "domain": "eurosock.com",
+     "price": {
+      "price": 19.5,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Option",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "clothing-features": [
+     "Insulated",
+     "Moisture wicking",
+     "Breathable design",
+     "Lightweight"
+    ],
+    "grip-coverage": [
+     "No grip"
+    ],
+    "accessory-size": [
+     "Small (S)",
+     "Medium (M)",
+     "Large (L)",
+     "Extra large (XL)"
+    ],
+    "cushioning-level": [
+     "Light cushion"
+    ],
+    "activity": [
+     "Hiking"
+    ],
+    "sock-cushioning-level": [
+     "Light cushioning"
+    ],
+    "toe-coverage": [
+     "Full toe"
+    ],
+    "sock-grip-type": [
+     "None"
+    ],
+    "sock-cushioning": [
+     "Light"
+    ],
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Acrylic",
+     "Spandex",
+     "Lycra"
+    ],
+    "pattern": [
+     "Solid"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "7TFJhoQ",
+   "title": "Mens Hike Light Cushion Striped Mid Crew Socks",
+   "description": "Hike freely in responsibly sourced, ZQ-certified Merino wool Hike Light Cushion socks. These hiking socks feature proven innovations such as Indestructawool™ technology for enhanced durability, the 4 Degree™ Elite Fit System for a performance-oriented fit, and a Virtually Seamless™ toe for added comfort. Extended durability zones and updated mesh areas help ",
+   "brands": [
+    {
+     "id": "VEsJ",
+     "name": "Smartwool"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/5e90a898-2ad5-4831-bc07-d9de90361ce8",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Pair of striped mid-crew socks in brown, navy, and gray colors."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": "male",
+   "age": null,
+   "materials": [
+    "Merino wool"
+   ],
+   "key_features": [
+    "Indestructawool™ technology for enhanced durability",
+    "4 Degree™ Elite Fit System for a performance-oriented fit",
+    "Virtually Seamless™ toe for added comfort",
+    "Extended durability zones and updated mesh areas for breathability"
+   ],
+   "colors": [
+    {
+     "hex": "#655b58",
+     "percentage": 0.3733
+    },
+    {
+     "hex": "#404045",
+     "percentage": 0.3708
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/7TFJhoQ-nQUQ-GJ3hBB",
+     "domain": "ems.com",
+     "price": {
+      "price": 24,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "clothing-features": [
+     "Moisture wicking"
+    ],
+    "accessory-size": [
+     "Medium (M)",
+     "Long",
+     "Extra large (XL)",
+     "Large (L)"
+    ],
+    "pattern": [
+     "Striped",
+     "Geometric"
+    ],
+    "activity": [
+     "Hiking"
+    ],
+    "fabric": [
+     "Wool",
+     "Merino"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "5CRr5AZ",
+   "title": "Trek Wool Hike Crew Med Weight Socks",
+   "description": "These medium-weight hiking crew socks are designed for outdoor performance and comfort. Made in Italy with a blend of Merino Wool and MicroSupreme®, they offer natural insulation to regulate temperature, moisture-wicking properties to inhibit odor, and light padding for cushioning and blister protection. The breathable, soft fabric ensures a comfortable fit ",
+   "brands": [
+    {
+     "id": "ez4p",
+     "name": "EUROSOCK"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/523c96d8-7142-4d05-a7d7-e84815e0380c",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Black wool hiking socks displayed in a curved shape."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/6ea94e3d-83af-4ac7-abf0-98318d5dd0cb",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Black wool hiking socks displayed in a curved shape."
+    }
+   ],
+   "category": {
+    "slug": "crew-socks",
+    "title": "Crew Socks"
+   },
+   "gender": null,
+   "age": "adult",
+   "materials": [
+    "Merino Wool",
+    "MicroSupreme®",
+    "Nylon",
+    "Acrylic",
+    "Elastane Lycra®"
+   ],
+   "key_features": [
+    "Medium weight for balanced insulation",
+    "Natural temperature regulation via Merino Wool",
+    "Moisture-wicking and odor-inhibiting",
+    "Lightly padded for cushioning and blister protection"
+   ],
+   "colors": [
+    {
+     "hex": "#2e2e2f",
+     "percentage": 0.7322
+    },
+    {
+     "hex": "#171a1c",
+     "percentage": 0.2107
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/5CRr5AZ-PCsU-GJ3hBB",
+     "domain": "eurosock.com",
+     "price": {
+      "price": 22,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "cushioning-level": [
+     "Medium cushion"
+    ],
+    "pattern": [
+     "Texture"
+    ],
+    "fabric": [
+     "Merino",
+     "Nylon",
+     "Acrylic",
+     "Lycra"
+    ],
+    "activity": [
+     "Hiking"
+    ],
+    "accessory-size": [
+     "Small (S)",
+     "Medium (M)",
+     "Large (L)",
+     "Extra large (XL)"
+    ],
+    "sock-cushioning-level": [
+     "Medium cushioning"
+    ],
+    "clothing-features": [
+     "Moisture wicking",
+     "Breathable design",
+     "Lightweight"
+    ],
+    "sock-cushioning": [
+     "Medium"
+    ]
+   },
+   "ratings": null
+  }
+ ],
+ "next_page_token": null
+}

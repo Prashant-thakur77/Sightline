@@ -10,6 +10,14 @@ export interface VariantOption {
   values: VariantOptionValue[];
 }
 
+/** One size a listing offers. `available` is true or false only when the store says so. */
+export interface SizeOffer {
+  label: string;
+  available?: boolean;
+  /** Set when the store sells this size as its own listing (another product id). */
+  productId?: string;
+}
+
 /** A product as Sightline sees it, before a variant is chosen. */
 export interface CatalogProduct {
   id: string;
@@ -27,6 +35,11 @@ export interface CatalogProduct {
   images: ProductImage[];
   options: VariantOption[];
   selected: Record<string, string>;
+  /**
+   * The sizes the listing offers, cleaned and de-duplicated, when it lists any. A size the buyer
+   * asks for is chosen from these; a listing with none can't confirm a size.
+   */
+  sizes?: SizeOffer[];
   returnPolicy: ReturnPolicy | null;
   retailerDomain?: string;
   retailerUrl?: string;
@@ -46,7 +59,7 @@ export interface SearchQuery {
 }
 
 export interface CatalogSource {
-  name: 'channel3' | 'demo-store';
+  name: 'channel3' | 'demo-store' | 'merged';
   search(q: SearchQuery): Promise<CatalogProduct[]>;
   get(id: string, selection?: Record<string, string>): Promise<CatalogProduct | null>;
 }

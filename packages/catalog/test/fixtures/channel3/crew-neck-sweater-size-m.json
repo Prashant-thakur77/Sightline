@@ -1,0 +1,1011 @@
+{
+ "products": [
+  {
+   "id": "bAVhjU7",
+   "title": "Crew Neck Sweater",
+   "description": "A classic crew neck sweater made from 100% mid-weight french terry cotton. This sweater features long raglan sleeves and a relaxed fit, perfect for everyday wear. It is hand-washable and made in Portugal. The sweater is a solid dark gray color with a heathered texture.",
+   "brands": [
+    {
+     "id": "nNUL",
+     "name": "Officine Générale"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/d416ae0d-032a-4177-bc75-bc79b895610b",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Male model wearing a dark grey crew neck sweater and olive pants."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/89fffe07-71b9-4fa8-a1fa-965a0fc88f41",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Back view of a dark grey crew neck sweater and olive pants on a model."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "male",
+   "age": null,
+   "materials": [
+    "cotton",
+    "french terry"
+   ],
+   "key_features": [
+    "Crew neck",
+    "Long raglan sleeves",
+    "Mid-weight french terry",
+    "Relaxed fit"
+   ],
+   "colors": [
+    {
+     "hex": "#2b2b2e",
+     "percentage": 0.5174
+    },
+    {
+     "hex": "#424242",
+     "percentage": 0.3073
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/bAVhjU7-pyJB-GJ3hBB",
+     "domain": "shopbop.com",
+     "price": {
+      "price": 195,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "pattern": [
+     "Solid"
+    ],
+    "care-instructions": [
+     "Hand wash"
+    ],
+    "fabric": [
+     "Cotton",
+     "Terrycloth"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "RC88ey8",
+   "title": "crew-neck sweater",
+   "description": "This classic Moorer crew-neck sweater is crafted in Italy from premium materials. Featuring long sleeves with ribbed cuffs and hem, this sweater offers a comfortable and stylish fit. The burnt orange color adds a touch of warmth and sophistication to any outfit.",
+   "brands": [
+    {
+     "id": "HVCF",
+     "name": "MOOER"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/7f4e8bd9-ad7a-4294-a01c-ee1ce44fc1ec",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Front view of a burnt orange crew-neck sweater on a mannequin or flat lay."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/61439b25-33b6-4733-92ee-5256612439f9",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Back view of a burnt orange crew-neck sweater."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [],
+   "key_features": [
+    "Crew neck",
+    "Long sleeves",
+    "Ribbed cuffs"
+   ],
+   "colors": [
+    {
+     "hex": "#9e3933",
+     "percentage": 0.8479
+    },
+    {
+     "hex": "#5e1818",
+     "percentage": 0.0968
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/RC88ey8-NuBr-GJ3hBB",
+     "domain": "farfetch.com",
+     "price": {
+      "price": 277,
+      "compare_at_price": 726,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "48",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "50",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "54",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "fKukVXI",
+   "title": "Merino Crew-neck Sweater",
+   "description": "A unisex merino wool crew-neck sweater featuring a relaxed fit and ribbed hem. Crafted from warm, soft Merino wool. Available in multiple colors and sizes with a standard price around $120.00. Page highlights include a navy blue color option and standard PDP features like an Add to Bag button, color and size selectors, and shipping/returns information.",
+   "brands": [
+    {
+     "id": "m9cC",
+     "name": "Banana Republic"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/01KDND9JNKSCF51E0K097HYHPP",
+     "is_main_image": true,
+     "shot_type": null,
+     "alt_text": null
+    },
+    {
+     "url": "https://bananarepublic.gap.com/webcontent/0060/659/898/cn60659898.jpg",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Woman wearing a navy knit sweater over a light blue striped shirt, cropped at hip."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": null,
+   "age": "adult",
+   "materials": [
+    "Merino wool"
+   ],
+   "key_features": [
+    "Merino wool",
+    "Crew neck",
+    "Relaxed fit",
+    "Ribbed hem"
+   ],
+   "colors": [],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/fKukVXI-tLg4-GJ3hBB",
+     "domain": "bananarepublic.gap.com",
+     "price": {
+      "price": 120,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    },
+    {
+     "url": "https://buy.trychannel3.com/fKukVXI-dNAl-GJ3hBB",
+     "domain": "bananarepublic.gap.com",
+     "price": {
+      "price": 120,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Color",
+      "values": [
+       {
+        "label": "Snake Eye Yellow",
+        "exists": true,
+        "available": null,
+        "product_id": "hqyPBvg"
+       },
+       {
+        "label": "Ganache Brown",
+        "exists": true,
+        "available": null,
+        "product_id": "E1vVfD2"
+       },
+       {
+        "label": "Heather Gray",
+        "exists": true,
+        "available": null,
+        "product_id": "1Tn5pLa"
+       },
+       {
+        "label": "Heather Oatmeal",
+        "exists": true,
+        "available": null,
+        "product_id": "XAj0vDQ"
+       },
+       {
+        "label": "Soft Yellow",
+        "exists": true,
+        "available": null,
+        "product_id": "wYvXD0t"
+       },
+       {
+        "label": "Sahara Sun Yellow",
+        "exists": true,
+        "available": null,
+        "product_id": "iHB36sn"
+       },
+       {
+        "label": "Navy",
+        "exists": true,
+        "available": null,
+        "product_id": "O0MdNJz"
+       },
+       {
+        "label": "Navy Blue",
+        "exists": true,
+        "available": null,
+        "product_id": "fKukVXI"
+       },
+       {
+        "label": "Bright Teal",
+        "exists": true,
+        "available": null,
+        "product_id": "97JY8Cr"
+       },
+       {
+        "label": "Storm Slate Green",
+        "exists": true,
+        "available": null,
+        "product_id": "KGtmyum"
+       },
+       {
+        "label": "Dark Brown",
+        "exists": true,
+        "available": null,
+        "product_id": "NIehLB9"
+       },
+       {
+        "label": "Burgundy",
+        "exists": true,
+        "available": null,
+        "product_id": "KNRswsU"
+       },
+       {
+        "label": "Charcoal Gray",
+        "exists": true,
+        "available": null,
+        "product_id": "43dmlFm"
+       },
+       {
+        "label": "Bright Blue",
+        "exists": true,
+        "available": null,
+        "product_id": "ZfDwoI6"
+       },
+       {
+        "label": "Jade Green",
+        "exists": true,
+        "available": null,
+        "product_id": "6it9hQX"
+       },
+       {
+        "label": "Dark Fuchsia",
+        "exists": true,
+        "available": null,
+        "product_id": "LW6Qmzk"
+       },
+       {
+        "label": "Antique Ruby Red",
+        "exists": true,
+        "available": null,
+        "product_id": "roP1gGi"
+       }
+      ]
+     },
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XXS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XXL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     },
+     {
+      "name": "Fit",
+      "values": []
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Navy Blue"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "fabric": [
+     "Merino"
+    ]
+   },
+   "ratings": {
+    "value": 4.4,
+    "count": 132,
+    "source_count": 2
+   }
+  },
+  {
+   "id": "fMSFdb4",
+   "title": "Suzie Crew Neck Sweater",
+   "description": "The Suzie Crew Neck Sweater by French Connection is an everyday essential designed for effortless layering. It features a relaxed silhouette with a soft, cozy knit feel, a classic crew neckline, long sleeves, and ribbed detailing at the neckline, cuffs, and hem.",
+   "brands": [
+    {
+     "id": "jefz",
+     "name": "French Connection"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/17584d74-335b-41d1-ab0b-0e4720e22692",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a black sweater and white pants."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/dc7b379f-f4e7-43f0-9e21-087f9f43f673",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Woman modeling a black turtleneck sweater."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "68% Acrylic",
+    "28% Polyester",
+    "4% Elastane/Spandex"
+   ],
+   "key_features": [
+    "Relaxed-fit sweater",
+    "Soft knit fabric",
+    "Crew neckline",
+    "Long sleeves"
+   ],
+   "colors": [
+    {
+     "hex": "#0e0d0d",
+     "percentage": 0.9402
+    },
+    {
+     "hex": "#655850",
+     "percentage": 0.0598
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/fMSFdb4-eqI2-GJ3hBB",
+     "domain": "usa.frenchconnection.com",
+     "price": {
+      "price": 98,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": []
+   },
+   "structured_attributes": {
+    "care-instructions": [
+     "Line dry"
+    ],
+    "placket-type": [
+     "Buttonless (open V)"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "top-fit": [
+     "Relaxed"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "stretch-level": [
+     "Moderate stretch"
+    ],
+    "top-length-type": [
+     "Medium"
+    ],
+    "fabric": [
+     "Acrylic",
+     "Polyester",
+     "Spandex"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "nursing-access-type": [
+     "None"
+    ],
+    "clothing-features": [
+     "Stretchable"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "sweatshirt-pocket-type": [
+     "None"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "JdCXEKs",
+   "title": "Crew-Neck Sweater",
+   "description": "This C.P. Company crew-neck sweater is rendered in a versatile black hue, offering a clean and understated silhouette. It features long sleeves for effortless everyday wear and is crafted with the brand's signature attention to detail. To maintain the garment's refined appearance and lasting quality, it is recommended to remove any detachable accessories bef",
+   "brands": [
+    {
+     "id": "GbrL",
+     "name": "C.P. Company"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/10d4352f-b21e-4230-8836-5e99cc2bcf09",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Front view of a black crew-neck sweater on a white background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/6ccd4e84-abc3-4539-beb8-ba5e47bec186",
+     "is_main_image": false,
+     "shot_type": "detail",
+     "alt_text": "Close-up of the ribbed crew neckline of the black sweater."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "Cotton 82%",
+    "Polyester 18%"
+   ],
+   "key_features": [
+    "Crew neck",
+    "Long sleeves",
+    "Ribbed collar",
+    "Understated silhouette"
+   ],
+   "colors": [
+    {
+     "hex": "#121314",
+     "percentage": 0.9653
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/JdCXEKs-faC4-GJ3hBB",
+     "domain": "thebusinessfashion.com",
+     "price": {
+      "price": 243,
+      "compare_at_price": 485,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    },
+    {
+     "url": "https://buy.trychannel3.com/JdCXEKs-NuBr-GJ3hBB",
+     "domain": "farfetch.com",
+     "price": {
+      "price": 522,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "top-fit": [
+     "Regular"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "care-instructions": [
+     "Machine washable",
+     "Hand wash"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "neckline": [
+     "Round",
+     "Crew"
+    ],
+    "chest-pocket-style": [
+     "None"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "fabric": [
+     "Cotton",
+     "Polyester"
+    ]
+   },
+   "ratings": null
+  },
+  {
+   "id": "q5bjKuu",
+   "title": "Crew-neck sweater",
+   "description": "A navy blue crew-neck sweater for men, featuring a mid-weight, slightly stretchy knit with a ribbed texture. It is designed with a regular fit through the shoulders and body, full-length sleeves, and a soft, fluid hand feel.",
+   "brands": [
+    {
+     "id": "KjXH",
+     "name": "Armani"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/3a59963d-640a-461c-bdac-0d39ba576ffd",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Front view of a dark navy blue crew-neck sweater."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/a92f7ff5-1546-447c-9a30-38f8ee38fde3",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Back view of a dark navy blue crew-neck sweater."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "48% Acrylic",
+    "33% Lyocell",
+    "19% Wool"
+   ],
+   "key_features": [
+    "Regular fit",
+    "Crew neckline",
+    "Full-length sleeves",
+    "Mid-weight, slightly stretchy knit"
+   ],
+   "colors": [
+    {
+     "hex": "#35334a",
+     "percentage": 0.9267
+    },
+    {
+     "hex": "#21202e",
+     "percentage": 0.0733
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/q5bjKuu-wX6z-GJ3hBB",
+     "domain": "the-fashion-square.com",
+     "price": {
+      "price": 295,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {},
+   "ratings": null
+  },
+  {
+   "id": "0mwVtes",
+   "title": "Cloud Soft Crew Neck Sweater",
+   "description": "This is a cozy, leopard print crewneck sweater made from a soft, chunky knit fabric. It features a relaxed fit with ribbed collar, cuffs, and hem, and raglan sleeves. The sweater is perfect for a casual and stylish look.",
+   "brands": [
+    {
+     "id": "QFSJ",
+     "name": "Lucky Brand"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/6b23b266-15c4-4b97-a997-24bac9b68da2",
+     "is_main_image": true,
+     "shot_type": "on_model",
+     "alt_text": "Woman wearing a leopard print crew neck sweater."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/487f7807-c94d-47cc-a50d-71165a60a92b",
+     "is_main_image": false,
+     "shot_type": "on_model",
+     "alt_text": "Close-up of leopard print sweater texture and neckline."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "female",
+   "age": "adult",
+   "materials": [
+    "Polyester",
+    "Acrylic",
+    "Elastane"
+   ],
+   "key_features": [
+    "Crew neck",
+    "Raglan sleeves",
+    "Ribbed collar, cuffs and hem",
+    "Cloud Soft fabric"
+   ],
+   "colors": [
+    {
+     "hex": "#bca894",
+     "percentage": 0.5057
+    },
+    {
+     "hex": "#43352c",
+     "percentage": 0.1288
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/0mwVtes-Bhv6-GJ3hBB",
+     "domain": "luckybrand.com",
+     "price": {
+      "price": 29.99,
+      "compare_at_price": 99,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": {
+    "options": [
+     {
+      "name": "Size",
+      "values": [
+       {
+        "label": "XS",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "S",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "M",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "L",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       },
+       {
+        "label": "2XL",
+        "exists": true,
+        "available": null,
+        "product_id": null
+       }
+      ]
+     }
+    ],
+    "selected": [
+     {
+      "name": "Color",
+      "label": "Leopard Print"
+     }
+    ]
+   },
+   "structured_attributes": {
+    "pattern": [
+     "Animal"
+    ],
+    "fabric": [
+     "Polyester",
+     "Acrylic",
+     "Spandex"
+    ],
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "sleeve-style": [
+     "Raglan"
+    ],
+    "top-fit": [
+     "Slim"
+    ],
+    "clothing-features": [
+     "Stretchable"
+    ]
+   },
+   "ratings": {
+    "value": 4.17,
+    "count": 6,
+    "source_count": 1
+   }
+  },
+  {
+   "id": "dXwHP1D",
+   "title": "Malo crew-neck sweater",
+   "description": "A minimalist, long-sleeved crew-neck sweater crafted from 100% cashmere. It features a regular fit with a ribbed neckline, cuffs, and hem, making it a versatile piece for casual wear or office layering.",
+   "brands": [
+    {
+     "id": "KQ1w",
+     "name": "Malo"
+    }
+   ],
+   "images": [
+    {
+     "url": "https://cdn.trychannel3.com/e4a5961b-8771-4182-a285-a244de0619ef",
+     "is_main_image": true,
+     "shot_type": "hero",
+     "alt_text": "Full view of a plain brown crew-neck sweater on a mannequin or plain background."
+    },
+    {
+     "url": "https://cdn.trychannel3.com/503e261f-024f-4aa5-a7ca-218fa7b34999",
+     "is_main_image": false,
+     "shot_type": "hero",
+     "alt_text": "Full view of a brown crew-neck sweater on a mannequin or plain background."
+    }
+   ],
+   "category": {
+    "slug": "sweaters-2",
+    "title": "Sweaters"
+   },
+   "gender": "male",
+   "age": "adult",
+   "materials": [
+    "100% Cashmere"
+   ],
+   "key_features": [
+    "Cashmere construction",
+    "Crew-neck design",
+    "Long sleeves",
+    "Ribbed neckline"
+   ],
+   "colors": [
+    {
+     "hex": "#ba7432",
+     "percentage": 0.9383
+    },
+    {
+     "hex": "#c89058",
+     "percentage": 0.0617
+    }
+   ],
+   "offers": [
+    {
+     "url": "https://buy.trychannel3.com/dXwHP1D-5MLj-GJ3hBB",
+     "domain": "cettire.com",
+     "price": {
+      "price": 329.83,
+      "compare_at_price": 903.74,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    },
+    {
+     "url": "https://buy.trychannel3.com/dXwHP1D-NuBr-GJ3hBB",
+     "domain": "farfetch.com",
+     "price": {
+      "price": 354,
+      "compare_at_price": null,
+      "currency": "USD"
+     },
+     "availability": "InStock",
+     "condition": "new"
+    }
+   ],
+   "variants": null,
+   "structured_attributes": {
+    "sleeve-length-type": [
+     "Long"
+    ],
+    "pattern": [
+     "Solid"
+    ],
+    "knit-pattern": [
+     "Rib"
+    ],
+    "shirt-cuff-style": [
+     "Elasticated"
+    ],
+    "neckline": [
+     "Crew"
+    ],
+    "top-fit": [
+     "Regular"
+    ],
+    "fabric": [
+     "Cashmere"
+    ]
+   },
+   "ratings": null
+  }
+ ],
+ "next_page_token": null
+}

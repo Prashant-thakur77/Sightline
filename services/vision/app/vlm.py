@@ -232,6 +232,15 @@ class AnthropicVlmClient:
             raise VlmUnavailable(f"api error {exc.status_code}") from exc
         except a.APIConnectionError as exc:
             raise VlmUnavailable("connection failed") from exc
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            # Token counts only (never image or prompt content), so the cost of a check can be measured.
+            log.info(
+                "vlm usage model=%s input=%s output=%s",
+                getattr(response, "model", self.model),
+                getattr(usage, "input_tokens", None),
+                getattr(usage, "output_tokens", None),
+            )
         if response.stop_reason == "refusal":
             raise VlmUnavailable("model declined")
         if response.stop_reason == "max_tokens":
