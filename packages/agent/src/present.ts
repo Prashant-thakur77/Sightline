@@ -597,49 +597,68 @@ export function presentCaseUpdate(update: CaseUpdate, verbosity: Verbosity = 'st
 }
 
 /** A store's offer on an open case, in the buyer's terms. */
-export type OfferKind = 'refund' | 'refund_with_return' | 'replacement' | 'refund_with_replacement';
+export type OfferKind = 'refund' | 'refund_with_return' | 'replacement' | 'refund_with_replacement' | 'partial_refund';
 
 export interface OfferChoice {
   merchant: string;
   kind: OfferKind;
+  /** The amount offered back: the full price, or the part for "keep it for less". */
   amount?: Money;
   /** "sweater", from the order's category. */
   itemNoun?: string;
+  /** What the order cost. Needed for a part refund. */
+  paid?: Money;
+  /** PayPal still holds the money: nothing is refunded, the hold is released or partly taken. */
+  held?: boolean;
+  /** The store's own agent made the offer, inside the store's policy. */
+  byAgent?: boolean;
+  /** The agent's reasons, checked against the case's facts before they were stored. */
+  reasons?: string[];
 }
 
 /**
- * Read an offer like a readback before the buyer answers it: what was offered, what accepting
- * means, that it can't be undone, and how to answer. "Demo Store offered to send a replacement
- * sweater. If you accept, Demo Store sends a new sweater and your case closes. You don't get money
- * back. You can't undo accepting. Say 'accept' to accept the offer, or 'decline' to say no.
- * Nothing changes until you choose."
+ * Read an offer like a readback before the buyer answers it: what was offered, why (when the
+ * store's agent made it), what accepting means, that it can't be undone, and how to answer.
+ * "Demo Store offered to send a replacement sweater. If you accept, Demo Store sends a new sweater
+ * and your case closes. You don't get money back. You can't undo accepting. Say 'accept' to
+ * accept the offer, or 'decline' to say no. Nothing changes until you choose."
  */
 export function presentOfferChoice(o: OfferChoice): Spoken {
   const noun = o.itemNoun ?? en.check.defaultNoun;
   const amount = o.amount ?? { cents: 0, currency: 'USD' };
   const c = en.cases;
   const f = en.offers;
+  const who = o.byAgent ? f.agentOf(o.merchant) : o.merchant;
   let lead: string;
   let means: string;
   switch (o.kind) {
     case 'refund':
-      lead = `${c.offerFullRefund(o.merchant, amount)}${c.keepIt(noun)}`;
+      lead = `${c.offerFullRefund(who, amount)}${c.keepIt(noun)}`;
       means = f.meansRefund(o.merchant, amount);
       break;
     case 'refund_with_return':
-      lead = `${c.offerFullRefund(o.merchant, amount)}${c.ifSendBack(noun)}`;
-      means = f.meansReturn(o.merchant, amount, noun);
+      // A hold is released, never refunded: nothing was taken.
+      lead = o.held ? f.releaseIfSendBack(who, amount, noun) : `${c.offerFullRefund(who, amount)}${c.ifSendBack(noun)}`;
+      means = o.held ? f.meansReturnHeld(o.merchant, amount, noun) : f.meansReturn(o.merchant, amount, noun);
       break;
     case 'replacement':
-      lead = `${c.offerReplacement(o.merchant, noun)}.`;
+      lead = `${c.offerReplacement(who, noun)}.`;
       means = f.meansReplacement(o.merchant, noun);
       break;
     case 'refund_with_replacement':
-      lead = f.refundAndReplacement(o.merchant, amount, noun);
+      lead = f.refundAndReplacement(who, amount, noun);
       means = f.meansRefundAndReplacement(o.merchant, amount, noun);
       break;
+    case 'partial_refund': {
+      const paid = o.paid ?? amount;
+      const rest: Money = { cents: paid.cents - amount.cents, currency: paid.currency };
+      lead = o.held ? f.takeOff(who, amount, noun) : `${c.offerPartialRefund(who, amount)}${c.keepIt(noun)}`;
+      means = o.held ? f.meansKeepForLessHeld(rest, paid, amount, noun) : f.meansKeepForLess(o.merchant, amount, paid, noun);
+      break;
+    }
   }
-  return spoken([lead, means, f.cantUndo, en.help.offer]);
+  const why = o.reasons?.length ? [f.reasonsLead(o.reasons[0]!), ...o.reasons.slice(1)] : [];
+  return spoken([lead, ...why, means, f.cantUndo, en.help.offer]);
 }
 
 /** What happens next once the buyer has answered. */
@@ -653,9 +672,14 @@ export function presentOfferAnswer(o: OfferChoice & { answer: 'accept' | 'declin
     case 'refund_with_replacement':
       return spoken([f.acceptedRefund(amount)]);
     case 'refund_with_return':
-      return spoken([f.acceptedReturn(o.merchant, amount, noun)]);
+      return spoken([o.held ? f.acceptedReturnHeld(o.merchant, amount, noun) : f.acceptedReturn(o.merchant, amount, noun)]);
     case 'replacement':
       return spoken([f.acceptedReplacement(o.merchant, noun)]);
+    case 'partial_refund': {
+      const paid = o.paid ?? amount;
+      const rest: Money = { cents: paid.cents - amount.cents, currency: paid.currency };
+      return spoken([o.held ? f.acceptedKeepForLessHeld(o.merchant, rest, amount, noun) : f.acceptedKeepForLess(o.merchant, amount, noun)]);
+    }
   }
 }
 

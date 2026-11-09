@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 
@@ -19,6 +20,7 @@ const WORD: Record<StepEvent['status'], string> = { running: 'In progress', done
 /** Runs the whole lifecycle against the sandbox and shows each step with what was spoken. */
 export function LifecycleRun({ ready, missing }: { ready: boolean; missing: string[] }) {
   const { announce } = useAnnouncer();
+  const router = useRouter();
   const [steps, setSteps] = useState<StepEvent[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,13 +76,15 @@ export function LifecycleRun({ ready, missing }: { ready: boolean; missing: stri
       fail('The connection dropped during the run. The steps listed so far show how far it got.');
     }
     setBusy(false);
+    // The agents' timeline below now has the run's order; focus stays here.
+    router.refresh();
   };
 
   return (
     <div className="grid gap-4">
       {ready ? (
         <button type="button" className="btn btn-primary btn-xl" onClick={run} aria-disabled={busy || undefined}>
-          {busy ? 'Running…' : 'Run the whole lifecycle (about 90 seconds)'}
+          {busy ? 'Running…' : 'Run the whole lifecycle (about two minutes)'}
         </button>
       ) : (
         <p className="card-refusal">This server is missing {missing.join(' and ')}, so the run is switched off rather than faked.</p>

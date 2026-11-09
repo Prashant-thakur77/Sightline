@@ -682,6 +682,7 @@ const STATUS_WORDS: Record<string, string> = {
   verified_unsure: 'checked, not sure yet',
   case_open: 'with an open case',
   resolved_refund: 'refunded',
+  resolved_partial_refund: 'kept for less, as agreed with the store',
   resolved_replacement: 'settled with a replacement',
   voided: 'cancelled, the hold was released',
   failed: 'not placed, nothing charged',
@@ -732,13 +733,18 @@ const SETTINGS_CARD: Card = { kind: 'link', heading: 'Settings', text: 'Speech, 
 function offerChoice(open: OpenOffer): OfferChoice {
   return {
     merchant: demoSeller().name,
-    kind: offerKind(open.offer.type),
+    kind: offerKind(open.offer.type, open.offer.partial),
     amount: money(open.amountCents, open.currency),
+    paid: money(open.paidCents, open.currency),
+    held: open.held,
     itemNoun: categoryOf(open.title)?.canonical ?? en.check.defaultNoun,
+    byAgent: open.offer.by === 'store_agent',
+    // Checked against the case's facts before they were stored; read as they are.
+    reasons: open.offer.reasons?.length ? open.offer.reasons : undefined,
   };
 }
 
-/** The offer as a card: what was offered, what accepting means, and its Accept and Decline buttons. */
+/** The offer as a card: what was offered, why, what accepting means, and its Accept and Decline buttons. */
 function offerCard(open: OpenOffer, needsSecondPress: boolean): Card {
   const choice = offerChoice(open);
   return {
@@ -746,7 +752,9 @@ function offerCard(open: OpenOffer, needsSecondPress: boolean): Card {
     heading: `${choice.merchant}’s offer`,
     offerId: open.offer.id,
     orderId: open.orderId,
-    text: presentOfferChoice(choice).sentences.slice(0, 3).join(' '),
+    text: presentOfferChoice({ ...choice, reasons: undefined }).sentences.slice(0, 3).join(' '),
+    ...(choice.reasons ? { reasons: choice.reasons } : {}),
+    ...(choice.byAgent ? { byAgent: true } : {}),
     needsSecondPress,
   };
 }
@@ -802,7 +810,14 @@ async function answerTheOffer(ctx: Ctx, answer: OfferAnswer): Promise<Reply> {
   leaveOffer(ctx);
   const after = suggestionsFor('browsing', Boolean(ctx.state.options?.length));
   if (!result.ok) {
-    const say = result.reason === 'gone' ? en.offers.gone : result.reason === 'paypal-unavailable' ? en.offers.paypalUnavailable : en.offers.paypalFailed;
+    const say =
+      result.reason === 'gone'
+        ? en.offers.gone
+        : result.reason === 'paypal-unavailable'
+          ? en.offers.paypalUnavailable
+          : result.reason === 'not-connected'
+            ? en.offers.notConnected
+            : en.offers.paypalFailed;
     return { say, politeness: 'assertive', cue: 'error', card: null, suggestions: after };
   }
   const spoken = presentOfferAnswer({ ...offerChoice(result.offer), answer });

@@ -1,0 +1,215 @@
+{
+  "spike": "s1-dispute",
+  "ranAt": "2026-11-09T07:12:40.096Z",
+  "apiBase": "https://api-m.sandbox.paypal.com",
+  "outputs": {
+    "orderId": "9HV77928F9596323W",
+    "sellerTransactionId": "2VU48115XJ7745633",
+    "buyerTransactionIdCandidates": [
+      "2VU48115XJ7745633"
+    ],
+    "resolutionCenter": {
+      "note": "Manual fallback (b): the sandbox buyer logs in and files from the transaction. Not automated.",
+      "buyerLogin": "https://www.sandbox.paypal.com/signin",
+      "activity": "https://www.sandbox.paypal.com/myaccount/activity",
+      "resolutionCenter": "https://www.sandbox.paypal.com/resolutioncenter",
+      "sellerTransactionId": "2VU48115XJ7745633"
+    }
+  },
+  "steps": [
+    {
+      "name": "fresh-capture: create CAPTURE order",
+      "ok": true,
+      "at": "2026-11-09T07:11:16.785Z",
+      "data": {
+        "id": "9HV77928F9596323W",
+        "status": "PAYER_ACTION_REQUIRED",
+        "payeeMerchantId": "RHQ29N9V78U72",
+        "approvalHost": "www.sandbox.paypal.com"
+      }
+    },
+    {
+      "name": "fresh-capture: approve headlessly as sandbox buyer",
+      "ok": true,
+      "at": "2026-11-09T07:11:18.911Z",
+      "data": {
+        "returnedTo": "/spike/return",
+        "screenshots": "/tmp/claude-1000/-home-prashant-projects-Sightline/7633199f-8d06-4de6-b59d-314713283d0b/scratchpad/spikes"
+      }
+    },
+    {
+      "name": "fresh-capture: order status after approval",
+      "ok": true,
+      "at": "2026-11-09T07:11:32.866Z",
+      "data": {
+        "id": "9HV77928F9596323W",
+        "status": "APPROVED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "fresh-capture: capture",
+      "ok": true,
+      "at": "2026-11-09T07:11:33.919Z",
+      "data": {
+        "id": "9HV77928F9596323W",
+        "status": "COMPLETED",
+        "captureId": "2VU48115XJ7745633",
+        "captureStatus": "COMPLETED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "transaction search as merchant (capture id)",
+      "ok": false,
+      "at": "2026-11-09T07:11:35.681Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 403,
+        "name": "NOT_AUTHORIZED",
+        "issue": "NOT_AUTHORIZED",
+        "message": "Authorization failed due to insufficient permissions.",
+        "debugId": "f686280cf6de6",
+        "details": [
+          {
+            "issue": "NOT_AUTHORIZED",
+            "description": "Authorization failed due to insufficient permissions."
+          }
+        ],
+        "path": "/v1/reporting/transactions"
+      }
+    },
+    {
+      "name": "transaction search as buyer (auth assertion, undocumented)",
+      "ok": false,
+      "at": "2026-11-09T07:11:36.194Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 400,
+        "name": "invalid_request",
+        "message": "No permissions to set target_client_id",
+        "debugId": "f68628004f39f",
+        "details": [],
+        "path": "/v1/reporting/transactions"
+      }
+    },
+    {
+      "name": "validate-eligibility attempt 1 (body shape guessed; schema unpublished)",
+      "ok": false,
+      "at": "2026-11-09T07:11:37.561Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 400,
+        "name": "invalid_request",
+        "message": "No permissions to set target_client_id",
+        "debugId": "f9460637d1c33",
+        "details": [],
+        "path": "/v1/customer/disputes/validate-eligibility"
+      }
+    },
+    {
+      "name": "validate-eligibility attempt 2 (body shape guessed; schema unpublished)",
+      "ok": false,
+      "at": "2026-11-09T07:11:38.114Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 400,
+        "name": "invalid_request",
+        "message": "No permissions to set target_client_id",
+        "debugId": "f9460639a85bb",
+        "details": [],
+        "path": "/v1/customer/disputes/validate-eligibility"
+      }
+    },
+    {
+      "name": "validate-eligibility attempt 3 (body shape guessed; schema unpublished)",
+      "ok": false,
+      "at": "2026-11-09T07:11:38.700Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 400,
+        "name": "invalid_request",
+        "message": "No permissions to set target_client_id",
+        "debugId": "f683167097eee",
+        "details": [],
+        "path": "/v1/customer/disputes/validate-eligibility"
+      }
+    },
+    {
+      "name": "buyer create dispute with buyer_transaction_id=2VU48115XJ7745633",
+      "ok": false,
+      "at": "2026-11-09T07:11:39.836Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 400,
+        "name": "invalid_request",
+        "message": "No permissions to set target_client_id",
+        "debugId": "f436988661b72",
+        "details": [],
+        "path": "/v1/customer/disputes"
+      }
+    },
+    {
+      "name": "buyer create dispute with payer_id assertion (capture id)",
+      "ok": false,
+      "at": "2026-11-09T07:11:41.008Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 400,
+        "name": "invalid_request",
+        "message": "No permissions to set target_client_id",
+        "debugId": "f431107daa146",
+        "details": [],
+        "path": "/v1/customer/disputes"
+      }
+    },
+    {
+      "name": "sandbox chargeback: POST /v2/customer-support/process-chargeback",
+      "ok": false,
+      "at": "2026-11-09T07:11:42.162Z",
+      "error": {
+        "type": "PayPalApiError",
+        "status": 500,
+        "name": "HTTP_500",
+        "message": "PayPal returned HTTP 500.",
+        "debugId": "f426669b5952f",
+        "details": [],
+        "path": "/v2/customer-support/process-chargeback"
+      }
+    },
+    {
+      "name": "merchant disputes for the capture (poll 1)",
+      "ok": true,
+      "at": "2026-11-09T07:11:50.501Z",
+      "data": {
+        "ids": []
+      }
+    },
+    {
+      "name": "merchant disputes for the capture (poll 2)",
+      "ok": true,
+      "at": "2026-11-09T07:12:06.122Z",
+      "data": {
+        "ids": []
+      }
+    },
+    {
+      "name": "merchant disputes for the capture (poll 3)",
+      "ok": true,
+      "at": "2026-11-09T07:12:22.458Z",
+      "data": {
+        "ids": []
+      }
+    },
+    {
+      "name": "merchant disputes for the capture (poll 4)",
+      "ok": true,
+      "at": "2026-11-09T07:12:38.745Z",
+      "data": {
+        "ids": []
+      }
+    }
+  ]
+}

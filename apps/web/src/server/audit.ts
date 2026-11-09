@@ -6,7 +6,8 @@ import { db } from './runtime';
 
 export interface AuditInput {
   userId?: string | null;
-  actor: 'user' | 'agent' | 'gate' | 'paypal' | 'merchant' | 'system' | 'helper';
+  /** store_agent: the store's own agent, acting for Demo Store within the store's policy. */
+  actor: 'user' | 'agent' | 'gate' | 'paypal' | 'merchant' | 'system' | 'helper' | 'store_agent';
   action: string;
   subjectId?: string | null;
   payload: Record<string, unknown>;

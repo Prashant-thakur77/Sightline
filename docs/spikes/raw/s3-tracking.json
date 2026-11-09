@@ -1,0 +1,131 @@
+{
+  "spike": "s3-tracking",
+  "ranAt": "2026-11-09T07:11:12.031Z",
+  "apiBase": "https://api-m.sandbox.paypal.com",
+  "outputs": {
+    "orderId": "4XJ89928JC602272X",
+    "captureId": "50J350111X460444Y",
+    "ordersTrackWorks": true,
+    "trackersBatchWorks": true,
+    "deliveredStatusSettable": true,
+    "trackingWebhookEvents": [
+      "COMMERCE.APPROVAL-TOKEN.SHIPMENT.DELIVERED",
+      "COMMERCE.APPROVAL-TOKEN.SHIPMENT.SHIPPED",
+      "TAXES.REPORTS.DELIVERED"
+    ]
+  },
+  "steps": [
+    {
+      "name": "fresh-capture: create CAPTURE order",
+      "ok": true,
+      "at": "2026-11-09T07:10:46.824Z",
+      "data": {
+        "id": "4XJ89928JC602272X",
+        "status": "PAYER_ACTION_REQUIRED",
+        "payeeMerchantId": "RHQ29N9V78U72",
+        "approvalHost": "www.sandbox.paypal.com"
+      }
+    },
+    {
+      "name": "fresh-capture: approve headlessly as sandbox buyer",
+      "ok": true,
+      "at": "2026-11-09T07:10:48.010Z",
+      "data": {
+        "returnedTo": "/spike/return",
+        "screenshots": "/tmp/claude-1000/-home-prashant-projects-Sightline/7633199f-8d06-4de6-b59d-314713283d0b/scratchpad/spikes"
+      }
+    },
+    {
+      "name": "fresh-capture: order status after approval",
+      "ok": true,
+      "at": "2026-11-09T07:11:01.292Z",
+      "data": {
+        "id": "4XJ89928JC602272X",
+        "status": "APPROVED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "fresh-capture: capture",
+      "ok": true,
+      "at": "2026-11-09T07:11:02.594Z",
+      "data": {
+        "id": "4XJ89928JC602272X",
+        "status": "COMPLETED",
+        "captureId": "50J350111X460444Y",
+        "captureStatus": "COMPLETED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "orders-track: POST /v2/checkout/orders/{id}/track",
+      "ok": true,
+      "at": "2026-11-09T07:11:04.745Z",
+      "data": {
+        "trackerId": "50J350111X460444Y-94001794208264745"
+      }
+    },
+    {
+      "name": "trackers-batch: POST /v1/shipping/trackers-batch",
+      "ok": true,
+      "at": "2026-11-09T07:11:06.261Z",
+      "data": {
+        "trackerId": "50J350111X460444Y-1Z1794208264745"
+      }
+    },
+    {
+      "name": "read back: GET /v1/shipping/trackers?transaction_id=",
+      "ok": true,
+      "at": "2026-11-09T07:11:07.307Z",
+      "data": {
+        "trackers": [
+          {
+            "tracking_number": "94001794208264745",
+            "status": "SHIPPED",
+            "carrier": "USPS"
+          },
+          {
+            "tracking_number": "1Z1794208264745",
+            "status": "SHIPPED",
+            "carrier": "UPS"
+          }
+        ]
+      }
+    },
+    {
+      "name": "read back: order shipping.trackers",
+      "ok": true,
+      "at": "2026-11-09T07:11:08.351Z",
+      "data": {
+        "trackers": [
+          {
+            "id": "50J350111X460444Y-94001794208264745",
+            "status": "SHIPPED"
+          }
+        ]
+      }
+    },
+    {
+      "name": "mark DELIVERED: PUT /v1/shipping/trackers/{id}",
+      "ok": true,
+      "at": "2026-11-09T07:11:09.408Z",
+      "data": {
+        "status": 204
+      }
+    },
+    {
+      "name": "webhook event types related to tracking or delivery",
+      "ok": true,
+      "at": "2026-11-09T07:11:10.956Z",
+      "data": {
+        "related": [
+          "COMMERCE.APPROVAL-TOKEN.SHIPMENT.DELIVERED",
+          "COMMERCE.APPROVAL-TOKEN.SHIPMENT.SHIPPED",
+          "TAXES.REPORTS.DELIVERED"
+        ]
+      }
+    }
+  ]
+}

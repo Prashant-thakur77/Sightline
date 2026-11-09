@@ -1,9 +1,10 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
+import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { z } from 'zod';
 import type { ProductSnapshot } from '@sightline/core';
-import { buildClassifierPrompt, type ConfirmationClassifier } from '@sightline/agent';
+import { buildClassifierPrompt, storeAgentSchema, type ConfirmationClassifier, type RawProposal } from '@sightline/agent';
 import { ENV, INTEGRATIONS } from './runtime';
 
 let client: Anthropic | undefined;
@@ -153,3 +154,34 @@ export async function writeCaseNarrative(facts: Record<string, unknown>): Promis
   const parsed = NarrativeSchema.safeParse(JSON.parse(text.text));
   return parsed.success ? parsed.data : null;
 }
+
+/** The store agent's model call: given the case as facts and the allowed options, pick one and give reasons. */
+export type StoreAgentModel = (input: {
+  system: string;
+  prompt: string;
+  optionIds: string[];
+  factIds: string[];
+}) => Promise<{ raw: RawProposal | null; model: string }>;
+
+/**
+ * The store's agent on Claude. The option and fact ids are closed sets in the output schema, so
+ * the model can only pick an option code built; the caller then checks every reason against the
+ * facts it cites (checkProposal) before anything is shown or sent. It has no tools and never sees
+ * a PayPal id. On a policy decline, the server-side fallback answers instead (not on Haiku, which
+ * has none).
+ */
+export const claudeStoreAgent: StoreAgentModel = async ({ system, prompt, optionIds, factIds }) => {
+  if (!aiAvailable()) throw new Error('ai_unavailable');
+  const model = MODELS.agent();
+  const fallback = /^claude-(opus|sonnet|fable)/.test(model);
+  const res = await anthropic().beta.messages.parse({
+    model,
+    max_tokens: 4000,
+    system,
+    messages: [{ role: 'user', content: prompt }],
+    output_config: { effort: 'low', format: betaZodOutputFormat(storeAgentSchema(optionIds, factIds)) },
+    ...(fallback ? { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' as const } : {}),
+  });
+  if (res.stop_reason === 'refusal' || !res.parsed_output) return { raw: null, model: res.model };
+  return { raw: res.parsed_output, model: res.model };
+};

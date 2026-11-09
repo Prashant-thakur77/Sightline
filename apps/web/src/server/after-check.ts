@@ -45,7 +45,7 @@ export async function afterVerdict(a: { userId: string; orderId: string; verific
         await db().update(tables.orders).set({ status: 'verified_match', captureId: cap.id, updatedAt: now }).where(eq(tables.orders.id, o.id));
         const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o.paypalRequestId)).limit(1);
         if (rsv && rsv.status === 'reserved') await dbReservations.commit(rsv.id, new Date());
-        await audit({ userId: a.userId, actor: 'paypal', action: 'payment.captured_after_check', subjectId: o.id, payload: { captureId: cap.id, verificationId: a.verificationId } });
+        await audit({ userId: a.userId, actor: 'paypal', action: 'payment.captured_after_check', subjectId: o.id, payload: { captureId: cap.id, paypalStatus: cap.status ?? null, verificationId: a.verificationId } });
         // Tracking could not be attached to PayPal before there was a capture; attach it now.
         await attachPendingTracking(o.id).catch(() => undefined);
         return { kind: 'captured', say: `${a.verdict.headline} I've told PayPal to complete the payment of ${amount} to Demo Store now.` };

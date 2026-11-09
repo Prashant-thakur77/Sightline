@@ -8,6 +8,7 @@ import {
   type Order,
   type TrackerCollection,
 } from './schemas';
+import { paypalImageUrl } from './orders';
 
 /**
  * "orders-track": POST /v2/checkout/orders/{id}/track (live docs: the path for Orders v2 integrations).
@@ -80,7 +81,7 @@ export function buildOrderTrackBody(input: AddTrackingInput): Record<string, unk
             ...(i.quantity !== undefined ? { quantity: String(i.quantity) } : {}),
             ...(i.sku ? { sku: i.sku } : {}),
             ...(i.url ? { url: i.url } : {}),
-            ...(i.imageUrl ? { image_url: i.imageUrl } : {}),
+            ...(paypalImageUrl(i.imageUrl) ? { image_url: paypalImageUrl(i.imageUrl) } : {}),
           })),
         }
       : {}),

@@ -339,6 +339,9 @@ importers:
 
   evals:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: 1.6.0
+        version: 1.6.0(zod@4.6.7)
       '@sightline/agent':
         specifier: workspace:*
         version: link:../packages/agent
@@ -354,6 +357,9 @@ importers:
       '@sightline/gate':
         specifier: workspace:*
         version: link:../packages/gate
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@types/node':
         specifier: 22.20.5

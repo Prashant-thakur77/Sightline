@@ -220,6 +220,18 @@ export function CardView({
             {card.heading}
           </h2>
           <p className="max-w-[var(--measure)]">{card.text}</p>
+          {card.reasons && card.reasons.length > 0 && (
+            <div className="offer-why">
+              <h3 id="card-why-h" className="font-bold">
+                {card.byAgent ? 'Why the store’s agent offered this' : 'Why the store offered this'}
+              </h3>
+              <ul aria-labelledby="card-why-h" className="max-w-[var(--measure)]">
+                {card.reasons.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {/* data-action keeps focus on Accept between its two presses, as with Confirm. */}
           <div className="confirm-row">
             <button type="button" className="btn btn-primary btn-xl" onClick={() => onOffer('accept', card.offerId)} data-action="offer-accept">

@@ -39,6 +39,8 @@ test.describe('money back after a wrong item', () => {
   async function offerWaiting(page: import('@playwright/test').Page): Promise<string> {
     const orderId = await seededOrder(page);
     const origin = new URL(test.info().project.use.baseURL ?? 'http://localhost:3100').origin;
+    // Staff answer this case by hand, so the store's agent is switched off for this session's store.
+    expect((await page.request.post('/api/merchant/policy', { data: { agentOn: false }, headers: { origin } })).ok()).toBeTruthy();
     const photo = (name: string) => ({ name: `${name}.jpg`, mimeType: 'image/jpeg', buffer: readFileSync(path.join(REPO, 'apps/web/public/demo-parcel', `${name}.jpg`)) });
     const checked = await page.request.post(`/api/orders/${orderId}/check`, {
       multipart: { item: photo('wrong-item'), 'item-source': 'demo', label: photo('wrong-tag'), 'label-source': 'demo' },

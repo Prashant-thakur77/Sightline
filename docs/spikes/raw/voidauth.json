@@ -1,0 +1,71 @@
+{
+  "spike": "voidauth",
+  "ranAt": "2026-11-09T07:10:41.292Z",
+  "apiBase": "https://api-m.sandbox.paypal.com",
+  "outputs": {
+    "authorizationId": "4K094697KG852230F",
+    "finalStatus": "VOIDED"
+  },
+  "steps": [
+    {
+      "name": "voidauth: create AUTHORIZE order",
+      "ok": true,
+      "at": "2026-11-09T07:10:21.208Z",
+      "data": {
+        "id": "7KE73278R6446962A",
+        "status": "PAYER_ACTION_REQUIRED",
+        "payeeMerchantId": "RHQ29N9V78U72",
+        "approvalHost": "www.sandbox.paypal.com"
+      }
+    },
+    {
+      "name": "voidauth: approve headlessly as sandbox buyer",
+      "ok": true,
+      "at": "2026-11-09T07:10:22.405Z",
+      "data": {
+        "returnedTo": "/spike/return",
+        "screenshots": "/tmp/claude-1000/-home-prashant-projects-Sightline/7633199f-8d06-4de6-b59d-314713283d0b/scratchpad/spikes"
+      }
+    },
+    {
+      "name": "voidauth: order status after approval",
+      "ok": true,
+      "at": "2026-11-09T07:10:37.060Z",
+      "data": {
+        "id": "7KE73278R6446962A",
+        "status": "APPROVED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "authorize approved order",
+      "ok": true,
+      "at": "2026-11-09T07:10:37.589Z",
+      "data": {
+        "id": "7KE73278R6446962A",
+        "status": "COMPLETED",
+        "authorizationId": "4K094697KG852230F",
+        "authorizationStatus": "CREATED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "void authorization",
+      "ok": true,
+      "at": "2026-11-09T07:10:38.968Z",
+      "data": {
+        "status": "VOIDED"
+      }
+    },
+    {
+      "name": "authorization status is VOIDED",
+      "ok": true,
+      "at": "2026-11-09T07:10:40.795Z",
+      "data": {
+        "status": "VOIDED"
+      }
+    }
+  ]
+}

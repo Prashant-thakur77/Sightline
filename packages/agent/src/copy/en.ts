@@ -371,6 +371,25 @@ export const en = {
       `If you accept, ${merchant} refunds ${mFull(amount)}, sends a new ${noun}, and your case closes.`,
     refundAndReplacement: (merchant: string, amount: Money, noun: string): string =>
       `${merchant} offered a refund of ${mFull(amount)} and a replacement ${noun}.`,
+    /** "Demo Store’s agent": the store's own agent made the offer. */
+    agentOf: (merchant: string): string => `${merchant}’s agent`,
+    reasonsLead: (first: string): string => `Its reasons: ${first}`,
+    releaseIfSendBack: (who: string, amount: Money, noun: string): string =>
+      `${who} offered to release your ${mFull(amount)} hold if you send the ${noun} back.`,
+    meansReturnHeld: (merchant: string, amount: Money, noun: string): string =>
+      `If you accept, you send the ${noun} back, and ${merchant} releases your ${mFull(amount)} hold once it arrives. You were never charged.`,
+    takeOff: (who: string, part: Money, noun: string): string => `${who} offered to take ${mFull(part)} off if you keep the ${noun}.`,
+    meansKeepForLessHeld: (rest: Money, paid: Money, part: Money, noun: string): string =>
+      `If you accept, you keep the ${noun} and pay ${mFull(rest)} instead of ${mFull(paid)}: PayPal takes ${mFull(rest)} from your hold and releases the other ${mFull(part)}. Your case closes.`,
+    meansKeepForLess: (merchant: string, part: Money, paid: Money, noun: string): string =>
+      `If you accept, you keep the ${noun}, ${merchant} refunds ${mFull(part)} of the ${mFull(paid)} you paid, and your case closes.`,
+    acceptedReturnHeld: (merchant: string, amount: Money, noun: string): string =>
+      `Accepted. Send the ${noun} back to ${merchant}. They release your ${mFull(amount)} hold once it arrives, and I'll tell you when they do.`,
+    acceptedKeepForLessHeld: (merchant: string, rest: Money, part: Money, noun: string): string =>
+      `Accepted. PayPal paid ${merchant} ${mFull(rest)} from your hold and released the other ${mFull(part)}. You keep the ${noun}, and your case is closed.`,
+    acceptedKeepForLess: (merchant: string, part: Money, noun: string): string =>
+      `Accepted. ${merchant} refunded ${mFull(part)} to your PayPal. You keep the ${noun}, and your case is closed.`,
+    notConnected: "PayPal isn't connected on this server, so I couldn't settle that offer. Nothing changed.",
     cantUndo: "You can't undo accepting.",
     acceptedRefund: (amount: Money): string => `Accepted. ${mFull(amount)} comes back to you next. I'll tell you when it's done.`,
     acceptedReturn: (merchant: string, amount: Money, noun: string): string =>

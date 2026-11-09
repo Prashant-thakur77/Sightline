@@ -11,6 +11,7 @@ import { db } from '@/server/runtime';
 import { MoneyBack } from '@/components/orders/money-back';
 import { AskHelper } from '@/components/orders/ask-helper';
 import { FocusFromHash } from '@/components/orders/focus-from-hash';
+import { AgentTimeline } from '@/components/orders/agent-timeline';
 import { spokenWhen } from '@/lib/when';
 
 export const dynamic = 'force-dynamic';
@@ -62,39 +63,6 @@ function Section({ n, id, tab, state, current, children }: { n: number; id: Step
 /** Times on this page are UTC and say so, in the same words as the orders page and what is said aloud. */
 const when = spokenWhen;
 
-/** Each audit action as a plain sentence; unknown ones fall back to their words. */
-const HAPPENED: Record<string, string> = {
-  'readback.spoken': 'I read the order back to you',
-  'readback.confirmed': 'You confirmed the purchase',
-  'gate.allowed': 'The payment check passed',
-  'gate.refused': 'The payment check stopped the payment',
-  'order.created': 'The order went to PayPal',
-  'order.outcome_unknown': 'PayPal had not answered yet',
-  'shipment.shipped': 'Demo Store shipped it',
-  'shipment.not_shipped': 'Demo Store marked it as not shipped',
-  'shipment.delivered': 'It was delivered',
-  'tracking.sent': 'Tracking was added to the PayPal order',
-  'check.photos_sent': 'You sent photos for the check',
-  'check.verdict': 'The camera check finished',
-  'payment.captured_after_check': 'PayPal paid Demo Store after the check matched',
-  'payment.voided_after_check': 'PayPal cancelled the payment hold',
-  'evidence.built': 'The evidence pack was signed',
-  'case.sent_to_seller': 'Your case went to Demo Store',
-  'case.offer_made': 'Demo Store made an offer',
-  'case.offer_accepted': 'You accepted the offer',
-  'case.offer_declined': 'You declined the offer',
-  'case.no_response': 'Demo Store did not reply in time',
-  'helper.asked': 'You asked your helper to look',
-  'helper.answered': 'Your helper answered',
-  'helper.revoked': 'You cancelled the helper link',
-  refund: 'Demo Store refunded the payment',
-};
-function happened(action: string): string {
-  if (HAPPENED[action]) return HAPPENED[action]!;
-  if (action.startsWith('webhook.')) return 'PayPal sent an update';
-  const words = action.replace(/[._]/g, ' ');
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
 
 /**
  * What a closed case ended with, from its recorded outcome, or from the order's own state when
@@ -170,7 +138,6 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         .limit(1)
     : [];
   const liveHelperUntil = liveLink ? spokenWhen(liveLink.expiresAt) : null;
-  const history = await db().select().from(tables.auditLog).where(eq(tables.auditLog.subjectId, o.id)).orderBy(desc(tables.auditLog.seq)).limit(20);
   const amount = formatMoney({ cents: o.amountCents, currency: o.currency });
   const verdict = verification?.verdict ?? null;
 
@@ -369,23 +336,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </Section>
       </ol>
 
-      <section aria-labelledby="hist-h" className="grid gap-3">
-        <h2 id="hist-h" className="text-[length:var(--step-2)]">
-          Everything that happened
-        </h2>
-        {history.length ? (
-          <ol className="history">
-            {history.map((h) => (
-              <li key={h.seq}>
-                {when(h.createdAt)}: {happened(h.action)}.
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p>Nothing recorded for this order yet.</p>
-        )}
-        <p className="muted">Each line is chained to the one before it with a hash, so the history cannot be edited quietly.</p>
-      </section>
+      <AgentTimeline orderId={o.id} userId={user.id} />
+
     </div>
   );
 }

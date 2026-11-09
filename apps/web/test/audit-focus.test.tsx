@@ -267,6 +267,7 @@ describe('CaseDesk', () => {
       offers: [],
       outcome: null,
       suggestion: { action: 'refund', title: 'Release the hold', why: 'The check found the wrong size.' },
+      agent: { on: true, pending: null, thinking: false, history: [], handedOver: null, choices: [], canAsk: false },
       dispute: null,
     }) as unknown as MerchantCase;
 

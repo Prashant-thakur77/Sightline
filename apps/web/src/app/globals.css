@@ -3546,3 +3546,101 @@ a:hover {
 .verdict-word {
   min-width: 0;
 }
+
+/* ---------- What your agent did (timeline) ---------- */
+@layer components {
+  .agent-timeline-section {
+    padding: var(--space-6) min(var(--space-6), 4vw);
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-1);
+  }
+  :root[data-theme='contrast'] .agent-timeline-section {
+    border: 2px solid var(--line);
+  }
+  ol.history.agent-timeline {
+    list-style: none;
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    border: 0;
+    display: grid;
+    gap: 0;
+    position: relative;
+  }
+  .agent-timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 14px;
+    bottom: 14px;
+    width: 2px;
+    background: var(--hairline);
+  }
+  .agent-step {
+    position: relative;
+    padding: 0 0 var(--space-5) 44px;
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+  .agent-step:last-child {
+    padding-bottom: 0;
+  }
+  /* The actor's dot on the rail (decorative: the words name who did it). */
+  .agent-step::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+    box-shadow: 0 0 0 1.5px var(--line);
+    background: var(--paper-2);
+  }
+  .agent-step[data-who='agent']::before {
+    background: var(--accent-bright);
+    box-shadow: 0 0 0 1.5px var(--accent-bright);
+  }
+  .agent-step[data-who='store_agent']::before {
+    background: var(--warm);
+    box-shadow: 0 0 0 1.5px var(--ink);
+  }
+  .agent-step[data-who='paypal']::before {
+    background: var(--ink);
+    box-shadow: 0 0 0 1.5px var(--ink);
+  }
+  .agent-step[data-who='you']::before {
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1.5px var(--accent);
+  }
+  .agent-step[data-who='safety']::before {
+    background: var(--surface);
+    box-shadow: 0 0 0 2px var(--match);
+  }
+  .agent-step p {
+    margin: 0;
+    overflow-wrap: break-word;
+  }
+  .agent-step-meta {
+    font-size: var(--step--1);
+  }
+  .agent-step-paypal {
+    justify-self: start;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-s);
+    background: var(--paper-2);
+    overflow-wrap: anywhere;
+  }
+  .agent-step:focus-visible {
+    border-radius: var(--radius-m);
+  }
+  :root[data-theme='contrast'] .agent-step::before {
+    background: #000;
+    box-shadow: 0 0 0 2px var(--ink);
+  }
+}

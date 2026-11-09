@@ -11,3 +11,4 @@ export * from './text';
 export * from './hash';
 export * from './copy/en';
 export * from './warnings';
+export * from './store-agent';

@@ -55,6 +55,9 @@ export type Card =
       orderId: string;
       /** What was offered, what accepting means, and that it can't be undone. */
       text: string;
+      /** The store agent's reasons, checked against the case's facts, when its agent made the offer. */
+      reasons?: string[];
+      byAgent?: boolean;
       needsSecondPress: boolean;
     }
   | { kind: 'paypal'; heading: string; readbackId: string; paypalOrderId: string; total: string; clientId: string; orderIntent: 'CAPTURE' | 'AUTHORIZE' }

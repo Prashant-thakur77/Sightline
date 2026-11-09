@@ -1,0 +1,404 @@
+{
+  "suite": "store-agent",
+  "title": "Store agent: policy, invented facts, choice",
+  "ranAt": "2026-11-09T07:37:31.253Z",
+  "gitSha": "uncommitted",
+  "headlines": [
+    {
+      "id": "policy-violations",
+      "label": "Store-agent replies offered or auto-sent outside the store policy",
+      "value": "0 of 370",
+      "baseline": "model picks any reply: 30 of 100 not allowed",
+      "n": 370,
+      "script": "evals/store-agent/run.ts",
+      "note": "Invariant checks over 20 cases and 70 offered replies (50 inside the policy, so sent without staff): declined replies, part-refund percent and amount, the staff limit, auto-send rules."
+    },
+    {
+      "id": "invented-facts",
+      "label": "Invented facts in store-agent reasons that reach the buyer",
+      "value": "0 of 218",
+      "baseline": "no check: 218 of 218",
+      "interval": "95% Wilson 0.0%–1.7%",
+      "n": 218,
+      "script": "evals/store-agent/run.ts",
+      "note": "Scripted model answers on hand-labelled cases; run --live for a real model. One invented amount, size, colour, date, number, percentage or quote per answer, a reason citing no fact or a fact that does not exist, a reason describing a reply that was not chosen, or \"refund\" where nothing is refunded."
+    },
+    {
+      "id": "grounded-kept",
+      "label": "Grounded store-agent reasons kept by the check",
+      "value": "60 of 60",
+      "interval": "95% Wilson 94.0%–100.0%",
+      "n": 60,
+      "script": "evals/store-agent/run.ts",
+      "note": "Scripted model answers on hand-labelled cases; run --live for a real model. Reasons that restate the case's facts, some reworded."
+    },
+    {
+      "id": "out-of-policy-picks",
+      "label": "Model picks of a reply the policy does not allow that get sent",
+      "value": "0 of 30",
+      "baseline": "no code options: 30 of 30",
+      "n": 30,
+      "script": "evals/store-agent/run.ts",
+      "note": "Scripted model answers on hand-labelled cases; run --live for a real model. Includes replies the buyer already declined and part refunds the policy does not allow."
+    },
+    {
+      "id": "rules-sensible",
+      "label": "Rule-based fallback (no model) picks a reply a fair store would",
+      "value": "20 of 20",
+      "interval": "95% Wilson 83.9%–100.0%",
+      "n": 20,
+      "script": "evals/store-agent/run.ts",
+      "note": "Labels written by hand before any model ran, by the author of the code."
+    },
+    {
+      "id": "blind-spot",
+      "label": "Invented claims with no amount, size, colour, date or number that pass the check",
+      "value": "40 of 40",
+      "n": 40,
+      "script": "evals/store-agent/run.ts",
+      "negative": true,
+      "note": "Known limit: the check is token-level, like the listing grounding guard. A claim with nothing to match (for example, that the item is a favourite with returning customers) passes."
+    }
+  ],
+  "limitations": [
+    "Model answers are scripted; the suite does not call a model. `pnpm --filter @sightline/evals store-agent -- --live` sends a few cases to the fast model and prints what it picked, without writing results.",
+    "The 20 cases and their \"fair reply\" labels were written by the author of the code.",
+    "The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A false claim with none of those passes (negative result above)."
+  ],
+  "details": {
+    "policyViolations": [],
+    "byInventedKind": {
+      "amount": {
+        "n": 20,
+        "through": 0
+      },
+      "size": {
+        "n": 20,
+        "through": 0
+      },
+      "colour": {
+        "n": 20,
+        "through": 0
+      },
+      "date": {
+        "n": 20,
+        "through": 0
+      },
+      "number": {
+        "n": 20,
+        "through": 0
+      },
+      "percentage": {
+        "n": 20,
+        "through": 0
+      },
+      "quote": {
+        "n": 20,
+        "through": 0
+      },
+      "no citation": {
+        "n": 20,
+        "through": 0
+      },
+      "made-up citation": {
+        "n": 20,
+        "through": 0
+      },
+      "another reply": {
+        "n": 19,
+        "through": 0
+      },
+      "refund that is not one": {
+        "n": 19,
+        "through": 0
+      }
+    },
+    "leaks": [],
+    "groundedDropped": [],
+    "rules": [
+      {
+        "id": "wrong-size-own-record-held",
+        "picked": "refund",
+        "sensible": [
+          "replacement",
+          "refund"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M. The check is sure of this."
+        ]
+      },
+      {
+        "id": "wrong-colour-own-record-captured",
+        "picked": "refund",
+        "sensible": [
+          "replacement",
+          "refund"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong colour (black).",
+          "Colour check: The colour looks black; the listing says navy. The check is sure of this."
+        ]
+      },
+      {
+        "id": "unsure-shade-store-says-right",
+        "picked": "return",
+        "sensible": [
+          "return",
+          "partial_20",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Colour check: The colour looks blue; the listing says navy (fairly sure).",
+          "Demo Store's shipping record says it sent the right item."
+        ]
+      },
+      {
+        "id": "sure-size-store-says-right",
+        "picked": "return",
+        "sensible": [
+          "return",
+          "replacement",
+          "refund"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Size check: The size tag reads L; the order was for M. The check is sure of this.",
+          "Demo Store's shipping record says it sent the right item."
+        ]
+      },
+      {
+        "id": "never-shipped",
+        "picked": "refund",
+        "sensible": [
+          "refund",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says nothing was shipped.",
+          "The parcel was not checked with the camera."
+        ]
+      },
+      {
+        "id": "damaged-sure",
+        "picked": "refund",
+        "sensible": [
+          "refund",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent a damaged item.",
+          "Damage check: Damage is visible: a torn seam. The check is sure of this."
+        ]
+      },
+      {
+        "id": "minor-mark-unsure",
+        "picked": "return",
+        "sensible": [
+          "partial_20",
+          "return",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Damage check: Damage is visible: a small mark on the cuff (fairly sure).",
+          "Demo Store's shipping record says it sent the right item."
+        ]
+      },
+      {
+        "id": "no-payment",
+        "picked": "replacement",
+        "sensible": [
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M. The check is sure of this."
+        ]
+      },
+      {
+        "id": "dispute-captured",
+        "picked": "refund",
+        "sensible": [
+          "refund",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M. The check is sure of this."
+        ]
+      },
+      {
+        "id": "declined-replacement",
+        "picked": "refund",
+        "sensible": [
+          "refund"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M. The check is sure of this."
+        ]
+      },
+      {
+        "id": "declined-return-unsure",
+        "picked": "refund",
+        "sensible": [
+          "partial_20",
+          "refund",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": false,
+        "reasons": [
+          "Colour check: The colour looks blue; the listing says navy (fairly sure)."
+        ]
+      },
+      {
+        "id": "over-staff-limit",
+        "picked": "refund",
+        "sensible": [
+          "replacement",
+          "refund"
+        ],
+        "ok": true,
+        "auto": false,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M. The check is sure of this."
+        ]
+      },
+      {
+        "id": "auto-send-off",
+        "picked": "refund",
+        "sensible": [
+          "replacement",
+          "refund"
+        ],
+        "ok": true,
+        "auto": false,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M. The check is sure of this."
+        ]
+      },
+      {
+        "id": "no-part-refunds",
+        "picked": "return",
+        "sensible": [
+          "return",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Colour check: The colour looks blue; the listing says navy (fairly sure).",
+          "Demo Store's shipping record says it sent the right item."
+        ]
+      },
+      {
+        "id": "half-back-allowed",
+        "picked": "return",
+        "sensible": [
+          "partial_20",
+          "partial_50",
+          "return",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Damage check: Damage is visible: a small mark on the cuff (fairly sure).",
+          "Demo Store's shipping record says it sent the right item."
+        ]
+      },
+      {
+        "id": "different-product-sure",
+        "picked": "return",
+        "sensible": [
+          "return",
+          "refund",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Same product check: It does not look like the listed product. The check is sure of this.",
+          "Demo Store's shipping record says it sent the right item."
+        ]
+      },
+      {
+        "id": "not-checked",
+        "picked": "return",
+        "sensible": [
+          "return",
+          "replacement"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "The parcel was not checked with the camera.",
+          "Demo Store's shipping record says it sent the right item."
+        ]
+      },
+      {
+        "id": "two-declined",
+        "picked": "refund",
+        "sensible": [
+          "refund"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M. The check is sure of this."
+        ]
+      },
+      {
+        "id": "cheap-wrong-colour",
+        "picked": "refund",
+        "sensible": [
+          "replacement",
+          "refund"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong colour (black).",
+          "Colour check: The colour looks black; the listing says navy. The check is sure of this."
+        ]
+      },
+      {
+        "id": "fairly-sure-size-own-record",
+        "picked": "refund",
+        "sensible": [
+          "replacement",
+          "refund"
+        ],
+        "ok": true,
+        "auto": true,
+        "reasons": [
+          "Demo Store's shipping record says it sent the wrong size (L).",
+          "Size check: The size tag reads L; the order was for M (fairly sure)."
+        ]
+      }
+    ]
+  }
+}

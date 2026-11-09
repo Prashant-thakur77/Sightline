@@ -108,6 +108,7 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
   const remedy: Remedy = isHeld(o) ? 'release' : o.captureId ? 'refund' : 'none';
   const tpl = templateNarrative(o.title, verdict, amount, remedy);
   let narrative = tpl;
+  let writtenBy: 'model' | 'template' = 'template';
   const ai = await writeCaseNarrative({
     item: o.title,
     amount,
@@ -121,6 +122,7 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
   const wrongAsk = remedy !== 'refund' && /\brefund/i.test(`${ai?.summary_for_buyer ?? ''} ${ai?.message_to_seller ?? ''}`);
   if (ai && !wrongAsk && narrativeGrounded(`${ai.summary_for_buyer} ${ai.message_to_seller}`, { amountCents: o.amountCents, verdict, snapshot: snapRow?.body as never })) {
     narrative = { summary: ai.summary_for_buyer, seller: ai.message_to_seller };
+    writtenBy = 'model';
   }
 
   const photos = [];
@@ -181,7 +183,7 @@ export async function prepareMoneyBack(userId: string, orderId: string): Promise
         evidencePackId,
       });
   else await db().update(tables.cases).set({ stage: 'evidence_built', evidencePackId, updatedAt: new Date().toISOString() }).where(eq(tables.cases.id, caseId));
-  await audit({ userId, actor: 'agent', action: 'evidence.built', subjectId: orderId, payload: { evidencePackId, manifestHash: built.manifestHash } });
+  await audit({ userId, actor: 'agent', action: 'evidence.built', subjectId: orderId, payload: { evidencePackId, manifestHash: built.manifestHash, narrative: writtenBy } });
   return { caseId, evidencePackId, summary: narrative.summary, path: isHeld(o) ? 'void' : 'refund-request', amount };
 }
 

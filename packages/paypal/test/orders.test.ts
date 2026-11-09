@@ -319,6 +319,26 @@ describe('orders API', () => {
     expect(re.id).toBe('8AA831015G517922L');
   });
 
+  it('captures part of an authorization as the final capture, so PayPal releases the rest', async () => {
+    const mock = mockPayPal().on('POST', '/v2/payments/authorizations/3C679366HH908993F/capture', {
+      status: 201,
+      json: authorizationCaptured,
+    });
+    const { client } = testClient(mock);
+    await client.payments.captureAuthorization('3C679366HH908993F', {
+      requestId: 'keep-for-less-1',
+      amount: usd(2938),
+      finalCapture: true,
+      invoiceId: 'ord_01JC8Z',
+    });
+    expect(jsonOf(mock.api()[0]!)).toEqual({
+      final_capture: true,
+      amount: { currency_code: 'USD', value: '29.38' },
+      invoice_id: 'ord_01JC8Z',
+    });
+    await expect(client.payments.captureAuthorization('3C679366HH908993F', { requestId: 'x', amount: usd(0) })).rejects.toThrow(/positive integer cents/);
+  });
+
   it('refunds with amount, note to payer and invoice id', async () => {
     const mock = mockPayPal().on('POST', '/v2/payments/captures/2GG279541U471931P/refund', {
       status: 201,
@@ -354,5 +374,19 @@ describe('orders API', () => {
         noteToPayer: 'x'.repeat(256),
       }),
     ).rejects.toBeInstanceOf(PayPalValidationError);
+  });
+});
+
+describe('item image links PayPal accepts', () => {
+  it('keeps an https .jpg/.jpeg/.gif/.png link and drops anything PayPal would reject', async () => {
+    const { paypalImageUrl } = await import('../src/orders');
+    expect(paypalImageUrl('https://example.com/a/b-1.jpg')).toBe('https://example.com/a/b-1.jpg');
+    expect(paypalImageUrl('https://example.com/x.PNG')).toBe('https://example.com/x.PNG');
+    // A product-feed CDN link with no extension and a query string (the live sandbox rejected it).
+    expect(paypalImageUrl('https://cdn.trychannel3.com/0b18c0ec-7215?aid=01M6&mid=WDzU')).toBeUndefined();
+    expect(paypalImageUrl('https://example.com/a.jpg?w=200')).toBeUndefined();
+    expect(paypalImageUrl('http://example.com/a.jpg')).toBeUndefined();
+    expect(paypalImageUrl('/demo-store/sweater.png')).toBeUndefined();
+    expect(paypalImageUrl(undefined)).toBeUndefined();
   });
 });

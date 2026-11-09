@@ -137,6 +137,16 @@ export default async function Landing() {
             </div>
             <div className="lx-hero-art">
               <HeroArt />
+              {/* The moment in miniature: what Maya says, and the money waiting for her check. Decorative
+                  (the journey below says the same in full); real text, never text in an image. */}
+              <p className="lx-bubble" aria-hidden="true">
+                “A <b>navy</b> crew-neck, size <b>M</b>, under <b>$40</b>.”
+              </p>
+              <p className="lx-held" aria-hidden="true">
+                <span className="lx-held-k">Held by PayPal</span>
+                <span className="lx-held-v">$36.72</span>
+                <span className="lx-held-n">until you check the parcel</span>
+              </p>
             </div>
           </div>
           <div className="lx-wrap">

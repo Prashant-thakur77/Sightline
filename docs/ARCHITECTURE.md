@@ -51,7 +51,8 @@ Data flow in one line each:
 3. `startReadback` builds a cart, hashes it, and composes the readback from a template (`packages/agent/src/readback.ts`). Nothing a model wrote is in it.
 4. The confirmation state machine (`packages/agent/src/confirm.ts`) needs two keys. Then `payForReadback` (`apps/web/src/server/payments.ts`) runs the gate and, if it allows, creates the PayPal order.
 5. After delivery the camera check posts photos to `/api/orders/[id]/check`. The vision service returns a verdict. `afterVerdict` (`apps/web/src/server/after-check.ts`) captures, leaves the hold, or offers money back.
-6. Money back builds a signed evidence pack and sends the case to the store. A held payment stays held until the store accepts the return (void) or offers a replacement; with no answer in three business days the hold sweep voids it (`server/holds.ts`). A store offer sets a new deadline (10 business days, time for a return to arrive) and the hold is voided if the case is still open then; an agreed replacement pays the store a week after the agreement. The sweep also pays the store a week after an unchecked delivery, retries failed captures and reauthorizes holds older than PayPal's three-day honour period. It runs from `POST /api/maintenance` every 15 minutes (render.yaml cron) and, throttled, when a demo starts.
+6. Money back builds a signed evidence pack and sends the case to the store. A held payment stays held until the store accepts the return (void) or offers a replacement; with no answer in three business days the hold sweep voids it (`server/holds.ts`). A store offer sets a new deadline (10 business days, time for a return to arrive) and the hold is voided if the case is still open then; an agreed replacement pays the store a week after the agreement. The sweep also pays the store a week after an unchecked delivery, retries failed captures, tells the buyer a day before a held case's deadline what happens at it, and reauthorizes a held authorization each time its three-day honour period runs out, inside PayPal's 29 days (each reauthorization numbered into its request id). It runs from `POST /api/maintenance` every 15 minutes (render.yaml cron) and, throttled, when a demo starts.
+7. When a case reaches the store, Demo Store's own agent reads it after the buyer's reply is sent (`server/store-agent.ts`, section 5.4) and answers inside the store's policy or leaves a proposal for staff.
 
 ## 2. Order lifecycle state machine
 
@@ -73,6 +74,7 @@ Order status is a text column (`packages/db/src/schema.ts`, `orders.status`). Th
 | `case_open` | `server/cases.ts` (`sendMoneyBack`) | Money back on an order that is not held: the case goes to the seller. |
 | `voided` | `server/cases.ts`; `server/merchant.ts` (`respondToCase`); `server/webhooks.ts` | The PayPal authorization was voided (buyer path, merchant refund of a held order, or `PAYMENT.AUTHORIZATION.VOIDED`). |
 | `resolved_refund` | `server/merchant.ts`; `server/webhooks.ts` | Merchant refunded a capture or accepted a dispute claim, or the webhook `PAYMENT.CAPTURE.REFUNDED` / `REVERSED` arrived. |
+| `resolved_partial_refund` | `server/offers.ts`; `server/webhooks.ts` | The buyer accepted "keep it for less": on a hold, PayPal captured only the rest (`final_capture`) and released the part; on a capture, PayPal refunded the part. A `PAYMENT.CAPTURE.REFUNDED` for less than the order keeps this status. |
 | `shipped`, `resolved_replacement`, `resolved_seller_favour`, `closed`, `readback_pending` | nothing | Declared in the type, never written. Shipping state lives in the `shipments` table, not in `orders.status`. |
 
 ### Transitions
@@ -181,6 +183,12 @@ The receipt body holds the decision, the first failing guard, every guard result
 
 `audit()` (`apps/web/src/server/audit.ts`) appends to `audit_log` inside a transaction holding `pg_advisory_xact_lock(4242)`. Each row's hash is `hashObject('audit', { prevHash, entry })`, so each entry commits to the one before it. Gate decisions, readbacks, confirmations, order events, checks, evidence, helper events, case events and webhooks write entries. `verifyChain` exists in `packages/evidence/src/chain.ts` and is unit-tested. No route or job in `apps/` calls it.
 
+PayPal calls record PayPal's own ids and the status PayPal answered (order, authorization, capture, refund, void, reauthorization), and processed webhooks record the resource id and status of the signature-verified event. Entries written before this was added have ids without a status.
+
+### 3.7 The order timeline
+
+`orderTimeline` (`apps/web/src/server/timeline.ts`) turns one order's audit entries into "What your agent did" on the order page (`components/orders/agent-timeline.tsx`) and on `/judge` (the visitor's own latest demo order, else the lifecycle run's). It joins entries about the order and its readback, `agent.step` entries tagged with the order's readback id, and the buyer's conversation steps since their previous order. Each step says who did it (you, your agent, the store's agent, store staff, PayPal, your helper, the safety check), the tool, whether a model, fixed rules or a person decided, and PayPal's id and status with where the status came from (PayPal's answer or a verified webhook). Nothing is inferred: an action with no entry shows no step.
+
 ## 4. The unboxing check
 
 ### 4.1 In the browser
@@ -191,7 +199,7 @@ The receipt body holds the decision, the first failing guard, every guard result
 
 Two layers, both on the way in:
 
-1. `POST /api/orders/[id]/check` runs `sanitisePhoto` (`apps/web/src/server/blobs.ts`) on each upload: allow-listed MIME type, 12 MB cap, EXIF orientation applied, then re-encoded by sharp to JPEG at most 2000 px, without calling `withMetadata`. Re-encoding drops EXIF, GPS and camera serials. The stored blob and the bytes sent on are the sanitised ones. Blobs go into Postgres (`blobs.bytes`) with the owner's user id.
+1. `POST /api/orders/[id]/check` runs `sanitisePhoto` (`apps/web/src/server/blobs.ts`) on every upload before any is stored: 12 MB cap; the type is read from the bytes, not the browser's label, and must be one this build of sharp decodes (`allowedPhotoTypes`: `sharp.format` at runtime, plus a HEIF round trip per codec, because prebuilt sharp decodes AVIF but not iPhone HEIC); EXIF orientation applied, then re-encoded by sharp to JPEG at most 2000 px, without calling `withMetadata`. A damaged or undecodable photo is a 422 with words the buyer can act on, and nothing is stored. In the browser, `lib/photo-file.ts` decodes an added file first (`createImageBitmap`): one it can't read is refused at once, and one it can read but the server may not (HEIC in Safari, AVIF, GIF, TIFF) is re-encoded to JPEG from its pixels. Re-encoding drops EXIF, GPS and camera serials. The stored blob and the bytes sent on are the sanitised ones. Blobs go into Postgres (`blobs.bytes`) with the owner's user id.
 2. `services/vision/app/imageio.py` sanitises again on every image, uploaded or fetched: it removes the EXIF GPS directory and XMP packets, keeps the capture time, and re-encodes the pixels that go to the model.
 
 ### 4.3 Vision pipeline
@@ -262,7 +270,19 @@ The server does not require a `mismatch` verdict for either path. Ownership of t
 
 Gaps in this flow: the web app never creates a PayPal dispute (`disputes.create` is not called; the buyer-side client in `packages/paypal/src/buyer.ts` exists but is not wired into the app), so `cases.paypalDisputeId` is only filled when a `CUSTOMER.DISPUTE.*` webhook arrives. There is no buyer route to accept or decline an offer. Case stages `accepted` and `declined` are displayed but never set.
 
-### 5.4 Webhooks
+### 5.4 The store’s agent
+
+`server/store-agent.ts`, with the deterministic half in `packages/agent/src/store-agent.ts`.
+
+- Trigger: `POST /api/cases/[id]/send` schedules it with `after()` once the buyer's answer is sent; a declined offer schedules a revision (`server/offers.ts`); staff can ask from the desk; the maintenance job picks up any case it has not read. One proposal row per trigger and one live proposal per round (`store_agent_proposals`, two unique indexes), so a repeated or racing trigger does nothing. At most two proposals per case, then it hands the case to staff. Staff replies, the agent's replies and the buyer's answers all take one advisory lock per case (`withCaseLock` in `server/merchant.ts`) and re-read the case inside it, so two replies never both go out and a late write never reopens a closed case; a staff reply supersedes a proposal still being worked on.
+- It reads `loadStoreCase` (`server/store-case.ts`): the evidence pack's hash and Ed25519 signature are checked first (a pack that does not verify stops it), and the verdict comes from the signed manifest. Then the order's payment state, the store's own shipping record, offers already declined, and the store policy (`store_policies`, per demo scope; edited on `/merchant/agent`).
+- Code lists the allowed replies (`storeOptions`): replacement; full refund, or releasing a hold; part refund of 20 or 50 percent, rounded to the cent from the order, when the policy allows it; item back first. It marks a reply as inside the policy only with auto-send on, the order under the staff limit and the evidence verified; a replacement also needs a wrong size or colour under its own limit, and a full refund needs the store's own record of a mistake or a sure check.
+- The model (`claudeStoreAgent` in `ai.ts`, structured output with the option ids and fact ids as closed sets) picks one option and gives one to three reasons, each citing fact ids. `checkProposal` keeps a reason only if every amount, size, colour, date, number and quote in it is in the facts it cites, it describes only the reply chosen (never another option's money, never "refund" on a hold or a replacement), and it is about the evidence rather than the buyer or the store's internals. With no reason left, or no key, `rulesProposal` (the cases desk's rule-based suggestion) picks, and the proposal says why.
+- Inside the policy the reply is sent through `respondToCase` or `offerPartialRefund` with `by: 'store_agent'`; otherwise it waits on the cases desk for Send, Change (any other allowed reply) or Dismiss. Sending re-reads the case and recomputes the amount; a mismatch sends nothing.
+- The buyer's agent reads the offer with the reasons (`presentOfferChoice`); the offer card lists them. Accepting "keep it for less" settles at once (`settleKeepForLess`): the offer is claimed first, then PayPal captures the rest of a hold with `final_capture` or refunds part of a capture (which one was fixed when the offer was made), with request ids derived from the offer; a failure puts the offer back, and a retry asks PayPal for the same thing. A held offer's deadline stays inside the authorization's 29 days.
+- Every step is `store_agent.step` in the audit chain, with the tool and who decided.
+
+### 5.5 Webhooks
 
 `POST /api/webhooks/paypal` (`apps/web/src/app/api/webhooks/paypal/route.ts`):
 
@@ -286,6 +306,7 @@ Models are named by environment (`packages/core/src/env.ts`, `apps/web/src/serve
 | Listing question | `ai.ts` `answerAboutListing` | `AGENT_MODEL` | One frozen listing and its review quotes, as data | Spoken answer in segments with citations. |
 | Size tag, identity, damage | `services/vision/app/vlm.py` | `VISION_MODEL` | Sanitised, re-encoded photos; listing details as data | Structured findings for fusion. |
 | Case narrative | `ai.ts` `writeCaseNarrative` | `AGENT_MODEL` | Item, amount, verdict reasons, merchant name | A two-sentence buyer summary and a message to the seller. |
+| Store agent | `ai.ts` `claudeStoreAgent` | `AGENT_MODEL` (server-side refusal fallback on Opus and Sonnet) | The case as numbered facts built by code, and the allowed replies | One option id from a closed set, and reasons citing fact ids, checked by `checkProposal`. |
 
 ### 6.2 What model output can influence
 
@@ -294,6 +315,7 @@ Models are named by environment (`packages/core/src/env.ts`, `apps/web/src/serve
 - Spoken answers about a listing, after the grounding guard.
 - Findings inside the vision service, which fusion rules turn into a verdict.
 - The wording of the case summary and the seller message.
+- Which of the replies code allows the store's agent proposes, and the wording of its reasons (after `checkProposal`).
 
 ### 6.3 What it cannot influence
 
@@ -333,7 +355,7 @@ Postgres through Drizzle (`packages/db/src/schema.ts`, migrations in `packages/d
 | Identity | `users` (all rows are demo personas, `is_demo`), `sessions`, `preferences` (verbosity, sizes, caps, `pay_after_check`), `helpers` |
 | Conversation | `conversations` (agent and confirmation state as jsonb), `messages`, `notifications` |
 | Commerce | `product_snapshots`, `carts`, `readbacks`, `orders`, `vault_tokens`, `shipments`, `reservations` |
-| Check and money back | `verifications`, `helper_requests`, `evidence_packs`, `cases`, `blobs` (photo bytes in `bytea`) |
+| Check and money back | `verifications`, `helper_requests`, `evidence_packs`, `cases`, `blobs` (photo bytes in `bytea`), `store_policies`, `store_agent_proposals` |
 | Integrity | `receipts`, `audit_log` (hash chain), `webhook_events` |
 | Defined, not used by any code | `passkeys`, `magic_links`, `push_subscriptions`, `idempotency_keys`, `barrier_audits`, `eval_runs` |
 

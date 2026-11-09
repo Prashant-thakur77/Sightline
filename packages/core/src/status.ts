@@ -29,6 +29,9 @@ export function paymentStatus(o: PaymentFacts): StatusWord {
   if (o.status === 'failed') return { word: 'Not placed', glyph: '–', tone: 'neutral', detail: 'Nothing was charged.' };
   if (o.status === 'voided') return { word: 'Hold released', glyph: '✓', tone: 'good', detail: 'PayPal cancelled the hold. The store was never paid.' };
   if (o.status === 'resolved_refund') return { word: 'Refunded', glyph: '✓', tone: 'good', detail: 'PayPal refunded the payment.' };
+  // True whether the money was on hold (only the agreed part was taken) or already paid (part came back).
+  if (o.status === 'resolved_partial_refund')
+    return { word: 'Kept for less', glyph: '✓', tone: 'good', detail: 'You kept the item and paid less than the full price, as agreed with the store.' };
   if (o.status === 'confirmed') return { word: 'Checking with PayPal', glyph: '…', tone: 'waiting', detail: 'PayPal has not answered yet. No second charge can happen meanwhile.' };
   if (!o.paypalOrderId) return { word: 'Not paid', glyph: '–', tone: 'neutral', detail: 'No PayPal order exists. Nothing was charged.' };
   if (o.status === 'approval_pending') return { word: 'Waiting for approval', glyph: '…', tone: 'waiting', detail: 'Approve in PayPal to pay. Nothing is charged until then.' };

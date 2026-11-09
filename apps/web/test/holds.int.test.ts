@@ -174,11 +174,48 @@ describe.skipIf(!hasDb)('payment holds over time (Postgres, fake PayPal)', () =>
     expect(opsFor(recent.auth)).toEqual([]);
   });
 
-  it('reauthorizes once after the three-day honour period', async () => {
+  it('reauthorizes each time the honour period runs out while the money is held, and never past day 29', async () => {
     const { orderId, auth } = await heldOrder({ createdDaysAgo: 4 });
-    await holds.sweepHolds(new Date(), fake, { orderIds: [orderId] });
+    const reauths = () => calls.filter((c) => c.op === 'reauthorize' && c.auth.endsWith(auth));
+    const t0 = Date.now();
+    await holds.sweepHolds(new Date(t0), fake, { orderIds: [orderId] });
+    await holds.sweepHolds(new Date(t0), fake, { orderIds: [orderId] });
+    expect(reauths()).toHaveLength(1);
+    expect((await order(orderId)).authorizationId).toBe(`RE-${auth}`);
+    // Inside the new authorization's own three days: nothing to do.
+    await holds.sweepHolds(new Date(t0 + DAY), fake, { orderIds: [orderId] });
+    expect(reauths()).toHaveLength(1);
+    // Its honour period has run out too: reauthorize again, on the new authorization, as a new request.
+    await holds.sweepHolds(new Date(t0 + 3.5 * DAY), fake, { orderIds: [orderId] });
+    expect(reauths().map((c) => c.auth)).toEqual([auth, `RE-${auth}`]);
+    expect(new Set(reauths().map((c) => c.requestId)).size).toBe(2);
+    expect((await order(orderId)).authorizationId).toBe(`RE-RE-${auth}`);
+
+    // Past PayPal's 29 days there is nothing left to reauthorize.
+    const old = await heldOrder({ createdDaysAgo: 30 });
+    await holds.sweepHolds(new Date(), fake, { orderIds: [old.orderId] });
+    expect(opsFor(old.auth)).toEqual([]);
+  });
+
+  it('keeps the hold honoured while a case is open, so an agreed capture later is still good', async () => {
+    const { userId, orderId, auth } = await heldOrder({ createdDaysAgo: 4, status: 'case_open' });
+    await rt.db().insert(t.cases).values({ id: id('cas'), orderId, userId, kind: 'void', stage: 'offer_received', status: 'open', reason: 'size', dueAt: new Date(Date.now() + 6 * DAY).toISOString() });
     await holds.sweepHolds(new Date(), fake, { orderIds: [orderId] });
     expect(opsFor(auth)).toEqual(['reauthorize']);
-    expect((await order(orderId)).authorizationId).toBe(`RE-${auth}`);
+  });
+
+  it('tells the buyer once, a day before a held case closes, what happens then, in one sentence', async () => {
+    const soon = await heldOrder({ status: 'case_open' });
+    await rt.db().insert(t.cases).values({ id: id('cas'), orderId: soon.orderId, userId: soon.userId, kind: 'void', stage: 'seller_contacted', status: 'open', reason: 'size', dueAt: new Date(Date.now() + 20 * 3_600_000).toISOString() });
+    const later = await heldOrder({ status: 'case_open' });
+    await rt.db().insert(t.cases).values({ id: id('cas'), orderId: later.orderId, userId: later.userId, kind: 'void', stage: 'seller_contacted', status: 'open', reason: 'size', dueAt: new Date(Date.now() + 3 * DAY).toISOString() });
+    await holds.sweepHolds(new Date(), fake, { orderIds: [soon.orderId, later.orderId] });
+    await holds.sweepHolds(new Date(), fake, { orderIds: [soon.orderId, later.orderId] });
+    const told = (await notes(soon.userId)).filter((n) => n.startsWith('Demo Store has until'));
+    expect(told).toHaveLength(1);
+    expect(told[0]).toMatch(/^Demo Store has until \w+ \d+ \w+ to answer your case about the Harbor knit crew-neck sweater, and if they don't, I'll cancel the hold and your \$36\.72 is released\.$/);
+    expect(told[0]!.split(/[.!?] /)).toHaveLength(1);
+    expect(await notes(later.userId)).toEqual([]);
+    expect(opsFor(soon.auth)).toEqual([]);
   });
 });

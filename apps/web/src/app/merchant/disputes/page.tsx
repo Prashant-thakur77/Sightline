@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { currentUser } from '@/server/session';
 import { CaseDesk } from '@/components/merchant/case-desk';
 import { listMerchantCases, paypalConfigured } from '@/server/merchant';
@@ -23,8 +24,8 @@ export default async function MerchantCases() {
             : `${open.length} open ${open.length === 1 ? 'case' : 'cases'}, soonest deadline first${overdue ? `, ${overdue} overdue` : ''}. Each one carries the buyer's signed evidence.`}
         </p>
         <p className="mx-hint">
-          Every reply asks you to confirm first. Suggestions are shown to help you decide and are never sent
-          on their own.
+          Your store agent sends a reply on its own only when your <Link href="/merchant/agent">store agent policy</Link> allows it.
+          Everything else waits here, and every reply you send asks you to confirm first.
         </p>
       </header>
 

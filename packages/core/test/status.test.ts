@@ -13,6 +13,12 @@ describe('shared status vocabulary', () => {
     expect(paymentStatus({ ...base, status: 'voided' }).word).toBe('Hold released');
     expect(paymentStatus({ ...base, status: 'confirmed' }).word).toBe('Checking with PayPal');
   });
+  it('says a part refund the same way whether the money was held or paid, and never says refunded in full', () => {
+    const held = paymentStatus({ ...base, status: 'resolved_partial_refund', captureId: 'CA1' });
+    expect(held.word).toBe('Kept for less');
+    expect(held.detail).not.toMatch(/refunded/i);
+    expect(paymentStatus({ ...base, intent: 'CAPTURE', status: 'resolved_partial_refund', captureId: 'CA1' })).toEqual(held);
+  });
   it('has a glyph for every verdict and case stage', () => {
     expect(verdictStatus('unsure').glyph).toBe('?');
     expect(verdictStatus(null).word).toBe('Not checked');

@@ -23,6 +23,7 @@ import {
   type VerdictReason,
 } from '@sightline/core';
 import { paypalRequestId } from '@sightline/evidence';
+import { VARIANT_WORD, suggestResponse, type CaseAction, type Suggestion } from '@sightline/agent';
 import {
   hasAction,
   PayPalActionUnavailableError,
@@ -35,11 +36,14 @@ import { db, INTEGRATIONS } from './runtime';
 import { paypal, PayPalNotConfiguredError } from './paypal';
 import { audit } from './audit';
 import { notify } from './cases';
+import { loadStorePolicy } from './store-policy';
+import { AWAITING_STORE, loadStoreCase } from './store-case';
 
 /*
- * The Demo Store side of the sandbox: what the test merchant sees and does. Every action here
- * runs only from an explicit, confirmed click in the merchant console. Nothing is accepted,
- * refunded or offered automatically.
+ * The Demo Store side of the sandbox: what the test merchant sees and does. Staff actions run
+ * only from an explicit, confirmed click in the merchant console. The store's own agent
+ * (store-agent.ts) may send a reply through the same functions, but only one that code found
+ * inside the store's policy; everything else waits here for staff.
  */
 
 export type ShipChoice = ShippedVariant;
@@ -86,15 +90,6 @@ type OrderRow = typeof tables.orders.$inferSelect;
 type ShipmentRow = typeof tables.shipments.$inferSelect;
 
 export type { StatusWord };
-
-/** What the demo controls sent, in words. Used in messages and in the shipment detail. */
-const VARIANT_WORD: Record<string, string> = {
-  correct: 'the right item',
-  wrong_colour: 'the wrong colour (black)',
-  wrong_size: 'the wrong size (L)',
-  damaged: 'a damaged item',
-  nothing: 'nothing',
-};
 
 const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
@@ -259,7 +254,7 @@ function canShip(o: OrderRow, s: ShipmentRow | null): boolean {
 function blockedReason(o: OrderRow, s: ShipmentRow | null): string | null {
   if (s?.deliveredAt) return 'Delivered. Shipping can no longer change.';
   if (s?.status === 'shipped') return 'Shipped. The next step is delivery.';
-  if (['voided', 'resolved_refund', 'resolved_replacement', 'closed'].includes(o.status))
+  if (['voided', 'resolved_refund', 'resolved_partial_refund', 'resolved_replacement', 'closed'].includes(o.status))
     return 'This order is closed.';
   if (o.status === 'failed') return 'This order was never placed, so there is nothing to ship.';
   if (['readback_pending', 'confirmed', 'approval_pending'].includes(o.status))
@@ -550,6 +545,17 @@ export async function attachPendingTracking(orderId: string): Promise<MerchantRe
   return { ok: t.sync === 'sent', paypal: t.sync, message: trackingSentence(t.sync, false) };
 }
 
+/**
+ * What the buyer is told when the carrier marks the parcel delivered, in one plain sentence from
+ * the order (never model text): on a held payment, that the money waits for their check.
+ */
+export function deliveredNotice(o: Pick<OrderRow, 'intent' | 'authorizationId' | 'captureId' | 'status' | 'amountCents' | 'currency'>): string {
+  const held = o.intent === 'AUTHORIZE' && Boolean(o.authorizationId) && !o.captureId && o.status !== 'voided';
+  return held
+    ? `Your parcel from Demo Store should be at your door, and your ${money(o.amountCents, o.currency)} is still on hold until you check it.`
+    : 'Your parcel from Demo Store was delivered. Want to check it now?';
+}
+
 /** Demo control: the carrier delivered the parcel. Tells the buyer it can be checked now. */
 export async function markDelivered(orderId: string): Promise<MerchantResult> {
   const { o, s } = await loadOrder(orderId);
@@ -575,12 +581,7 @@ export async function markDelivered(orderId: string): Promise<MerchantResult> {
     subjectId: o.id,
     payload: { variant: s.shippedVariant, orderStatus: next },
   });
-  await notify(
-    o.userId,
-    'delivery',
-    'Your parcel from Demo Store was delivered. Want to check it now?',
-    `/app/check/${o.id}`,
-  );
+  await notify(o.userId, 'delivery', deliveredNotice(o), `/app/check/${o.id}`);
   return {
     ok: true,
     paypal: 'not-needed',
@@ -591,67 +592,7 @@ export async function markDelivered(orderId: string): Promise<MerchantResult> {
 // ---------------------------------------------------------------------------------------------
 // Cases
 
-export interface Suggestion {
-  /** Always one of the reply buttons, so the suggestion can be acted on as shown. */
-  action: CaseAction;
-  title: string;
-  why: string;
-}
-
-/**
- * The suggested fair response. Deterministic, shown, never sent. It only suggests a reply that has
- * a button on the cases desk, and it starts from Demo Store's own shipping record: what the store
- * says it sent outweighs a check that is not sure. Reasons are told in the third person.
- */
-export function suggestResponse(
-  v: Verdict | null,
-  shippedVariant: string | null,
-  amount: string,
-  opts: { reason?: string; refundPath: 'refund' | 'void' | 'none'; dispute: boolean } = { refundPath: 'refund', dispute: false },
-): Suggestion {
-  const canRefund = opts.dispute || opts.refundPath !== 'none';
-  const sure = v?.reasons.find((r) => r.finding === 'disagree' && r.confidence === 'sure');
-  const doubt = v?.reasons.find((r) => r.finding === 'disagree') ?? v?.reasons.find((r) => r.finding !== 'agree');
-  const check = !v
-    ? 'The buyer has not checked the parcel with the camera.'
-    : v.kind === 'match'
-      ? "The buyer's check matched the listing."
-      : v.kind === 'mismatch' && sure
-        ? `The buyer's check is sure. ${reasonForSeller(sure)}`
-        : `The buyer's check is not sure.${doubt ? ` ${reasonForSeller(doubt)}` : ''}`;
-  const sent = shippedVariant ? VARIANT_WORD[shippedVariant] : undefined;
-  const record =
-    shippedVariant === 'nothing' ? 'Your shipping record says nothing was shipped.' : sent ? `Your shipping record says you sent ${sent}.` : '';
-  const refund = (why: string): Suggestion =>
-    canRefund
-      ? {
-          action: 'refund',
-          title: opts.refundPath === 'void' && !opts.dispute ? `Release the ${amount} hold` : `Refund ${amount} in full`,
-          why,
-        }
-      : {
-          action: 'replacement',
-          title: 'Offer a replacement',
-          why: `${why} This order has no PayPal payment to refund, so a replacement is the fair reply.`,
-        };
-
-  // The store's own record says it got the order wrong: no need to wait for anything else.
-  if (shippedVariant === 'nothing') return refund(record);
-  if (shippedVariant && shippedVariant !== 'correct') return refund(`${record} ${check}`);
-  if (opts.reason === 'not_received')
-    return {
-      action: 'replacement',
-      title: 'Offer a replacement',
-      why: `${record ? `${record} ` : ''}The buyer says it has not arrived. A replacement settles it without a refund.`,
-    };
-  // No record of a wrong item: a sure check is enough on its own; otherwise see the item first.
-  if (v?.kind === 'mismatch' && sure && !record) return refund(check);
-  return {
-    action: 'return',
-    title: 'Ask for the item back first',
-    why: `${check}${record ? ` ${record}` : ''} Seeing the item settles it: ${opts.refundPath === 'void' && !opts.dispute ? `you release the ${amount} hold` : `you refund ${amount}`} when it is back.`,
-  };
-}
+export { suggestResponse, type Suggestion };
 
 export interface CaseOffer {
   id: string;
@@ -660,6 +601,57 @@ export interface CaseOffer {
   amountCents?: number;
   at: string;
   via: 'paypal' | 'local';
+  /** Keep the item for less: this share of the price comes back (amountCents is that part); held: the money was on hold when offered. */
+  partial?: { percent: number; held?: boolean };
+  /** Who sent it: store staff, or the store's agent inside the store's policy. */
+  by?: 'staff' | 'store_agent';
+  /** The store agent's checked reasons, read to the buyer with the offer. */
+  reasons?: string[];
+  proposalId?: string;
+}
+
+/** Who is replying for the store, and the agent's checked reasons when it is the agent. */
+export interface CaseReplyMeta {
+  by?: 'staff' | 'store_agent';
+  reasons?: string[];
+  proposalId?: string;
+  /** Send only if the case is still at one of these stages when the lock is taken. */
+  expectStages?: string[];
+}
+
+/** One look the store's agent took at a case, as the desk shows it. */
+export interface AgentProposalView {
+  id: string;
+  round: number;
+  status: string;
+  optionId: string | null;
+  title: string | null;
+  amount: string | null;
+  reasons: string[];
+  staffNote: string | null;
+  source: 'model' | 'rules' | null;
+  auto: boolean;
+  staffWhy: string | null;
+  checkNotes: { text: string; why: string }[];
+  result: string | null;
+  decidedBy: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+}
+
+export interface CaseAgentView {
+  on: boolean;
+  /** Waiting for staff: Send, Change or Dismiss. */
+  pending: AgentProposalView | null;
+  /** Still reading the case. */
+  thinking: boolean;
+  /** Everything the agent did on this case, oldest first. */
+  history: AgentProposalView[];
+  handedOver: string | null;
+  /** The replies code allows on this case now, for Change. */
+  choices: { id: string; title: string; means: string }[];
+  /** The case waits for the store and the agent has not looked at it yet. */
+  canAsk: boolean;
 }
 
 export interface MerchantCase {
@@ -697,6 +689,7 @@ export interface MerchantCase {
   offers: CaseOffer[];
   outcome: string | null;
   suggestion: Suggestion;
+  agent: CaseAgentView;
   dispute: {
     id: string;
     state: string | null;
@@ -734,9 +727,15 @@ function outcomeWords(outcome: unknown, currency: string, buyer = 'The buyer'): 
       ? `No reply by the deadline, so the ${a} hold was released. Demo Store was never paid.`
       : o.by === 'merchant'
         ? `You accepted the return and released the ${a} hold. Demo Store was never paid.`
+        : o.by === 'store_agent'
+          ? `Your store agent released the ${a} hold, inside your policy. Demo Store was never paid.`
         : `The ${a} hold was released. Demo Store was never paid.`;
   if (o.kind === 'refunded')
     return `Refunded ${a}${o.via === 'dispute' ? ' through the PayPal dispute' : ' through PayPal'}.`;
+  if (o.kind === 'partial_refund')
+    return o.via === 'capture'
+      ? `${buyer} kept the item for less: PayPal took the rest of the hold and released ${a}.`
+      : `${buyer} kept the item for less: PayPal refunded ${a}.`;
   if (o.kind === 'replacement' || o.kind === 'REPLACEMENT_WITHOUT_REFUND') return `${buyer} accepted the replacement. No refund is due.`;
   return `Closed: ${o.kind.replace(/_/g, ' ').toLowerCase()}.`;
 }
@@ -747,6 +746,64 @@ function disputeOptions(d: Dispute) {
     acceptClaim: d.allowed_response_options?.accept_claim?.accept_claim_types ?? [],
     actions: (d.links ?? []).filter((l) => (l.method ?? 'GET').toUpperCase() !== 'GET').map((l) => l.rel),
   };
+}
+
+function proposalView(p: typeof tables.storeAgentProposals.$inferSelect, currency: string): AgentProposalView {
+  return {
+    id: p.id,
+    round: p.round,
+    status: p.status,
+    optionId: p.optionId,
+    title: p.title,
+    amount: typeof p.amountCents === 'number' ? money(p.amountCents, currency) : null,
+    reasons: p.reasons ?? [],
+    staffNote: p.staffNote,
+    source: p.source === 'model' || p.source === 'rules' ? p.source : null,
+    auto: p.auto,
+    staffWhy: p.staffWhy,
+    checkNotes: p.checkNotes ?? [],
+    result: p.result,
+    decidedBy: p.decidedBy,
+    createdAt: p.createdAt,
+    decidedAt: p.decidedAt,
+  };
+}
+
+/** Still reading the case: claimed in the last five minutes (an older claim is from a run that died). */
+const thinkingNow = (p: typeof tables.storeAgentProposals.$inferSelect) => p.status === 'thinking' && Date.now() - Date.parse(p.createdAt) < 5 * 60_000;
+
+/** What the store's agent did on each case, and what staff can do about it now. */
+async function agentViews(rows: (typeof tables.cases.$inferSelect)[]): Promise<Map<string, CaseAgentView>> {
+  const out = new Map<string, CaseAgentView>();
+  if (!rows.length) return out;
+  const proposals = await db()
+    .select()
+    .from(tables.storeAgentProposals)
+    .where(inArray(tables.storeAgentProposals.caseId, rows.map((c) => c.id)))
+    .orderBy(asc(tables.storeAgentProposals.createdAt));
+  const policies = new Map<string, boolean>();
+  for (const c of rows) {
+    if (!policies.has(c.userId)) policies.set(c.userId, (await loadStorePolicy(c.userId)).agentOn);
+    const mine = proposals.filter((p) => p.caseId === c.id);
+    const [o] = await db().select({ currency: tables.orders.currency }).from(tables.orders).where(eq(tables.orders.id, c.orderId)).limit(1);
+    const currency = o?.currency ?? 'USD';
+    const views = mine.filter((p) => p.status !== 'thinking').map((p) => proposalView(p, currency));
+    const pending = views.find((p) => p.status === 'proposed') ?? null;
+    const handed = [...mine].reverse().find((p) => p.status === 'handed_over');
+    const made = mine.filter((p) => p.round > 0 && p.status !== 'handed_over' && p.status !== 'failed' && p.status !== 'thinking').length;
+    const waits = AWAITING_STORE.has(c.stage);
+    const choices = pending && waits ? ((await loadStoreCase(c.id, pending.round))?.options ?? []).map((x) => ({ id: x.id, title: x.title, means: x.means })) : [];
+    out.set(c.id, {
+      on: policies.get(c.userId) ?? true,
+      pending: waits ? pending : null,
+      thinking: mine.some(thinkingNow),
+      history: views.filter((p) => p !== pending || !waits),
+      handedOver: handed?.result ?? null,
+      choices,
+      canAsk: waits && (policies.get(c.userId) ?? true) && !pending && !handed && made < 2 && !mine.some((p) => thinkingNow(p) || p.status === 'sending'),
+    });
+  }
+  return out;
 }
 
 export async function listMerchantCases(scopeUserId?: string): Promise<MerchantCase[]> {
@@ -800,6 +857,7 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
     if (v.verdict && !verdictOf.has(v.orderId)) verdictOf.set(v.orderId, v.verdict as Verdict);
   const shipOf = new Map(ships.map((s) => [s.orderId, s]));
   const packOf = new Map(packs.map((p) => [p.id, p.narrative]));
+  const agentOf = await agentViews(rows);
 
   const out: MerchantCase[] = [];
   for (const c of rows) {
@@ -875,13 +933,14 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
         refundPath: o.captureId ? 'refund' : o.authorizationId && o.status !== 'voided' ? 'void' : 'none',
         dispute: Boolean(c.paypalDisputeId),
       }),
+      agent: agentOf.get(c.id) ?? { on: false, pending: null, thinking: false, history: [], handedOver: null, choices: [], canAsk: false },
       dispute,
     });
   }
   return out;
 }
 
-export type CaseAction = 'refund' | 'replacement' | 'return' | 'no_response';
+export type { CaseAction };
 export const CASE_ACTIONS: readonly CaseAction[] = ['refund', 'replacement', 'return', 'no_response'];
 
 /** The sandbox test merchant's return address, used only when PayPal needs one for a return offer. */
@@ -915,16 +974,55 @@ function paypalFailure(e: unknown, what: string): MerchantResult {
 }
 
 /**
- * The merchant's reply to a case. Runs only after the person at the desk confirmed it. When the
- * case is a real PayPal dispute, PayPal's own merchant actions are used, gated on what the
- * dispute currently allows.
+ * A staff reply replaces whatever the store's agent proposed or is still working on; an agent run
+ * that finishes later finds its row taken and stops.
  */
-export async function respondToCase(caseId: string, action: CaseAction): Promise<MerchantResult> {
+async function supersedeProposals(caseId: string, now: string): Promise<void> {
+  await db()
+    .update(tables.storeAgentProposals)
+    .set({ status: 'superseded', result: 'Store staff replied themselves.', decidedBy: 'staff', decidedAt: now })
+    .where(and(eq(tables.storeAgentProposals.caseId, caseId), inArray(tables.storeAgentProposals.status, ['proposed', 'thinking'])));
+}
+
+/**
+ * One reply at a time per case: staff, the store's agent and the buyer's answer each take this
+ * lock (a Postgres advisory lock held by a transaction) and then read the case fresh, so two
+ * replies can never both send, and a late write can never reopen a closed case.
+ */
+export async function withCaseLock<T>(caseId: string, fn: () => Promise<T>): Promise<T> {
+  return db().transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`case:${caseId}`}))`);
+    return fn();
+  });
+}
+
+/** PayPal honours an authorization (with reauthorizations) for 29 days; an offer's deadline stays a day inside that. */
+const AUTH_LIFE_MS = 28 * 86_400_000;
+function heldOfferDue(o: { createdAt: string }, now: string): string {
+  const wanted = addBusinessDays(new Date(now), 10).getTime();
+  return new Date(Math.min(wanted, Date.parse(o.createdAt) + AUTH_LIFE_MS)).toISOString();
+}
+
+/**
+ * The store's reply to a case. Staff replies run only after the person at the desk confirmed it;
+ * the store's agent calls this only for a reply code found inside the store's policy. When the case
+ * is a real PayPal dispute, PayPal's own merchant actions are used, gated on what the dispute
+ * currently allows. PayPal's answer (ids and status) is recorded in the audit chain.
+ */
+export async function respondToCase(caseId: string, action: CaseAction, meta: CaseReplyMeta = {}): Promise<MerchantResult> {
   if (!CASE_ACTIONS.includes(action)) throw new MerchantError(400, 'Unknown action.');
+  return withCaseLock(caseId, () => respondLocked(caseId, action, meta));
+}
+
+async function respondLocked(caseId: string, action: CaseAction, meta: CaseReplyMeta): Promise<MerchantResult> {
   const [c] = await db().select().from(tables.cases).where(eq(tables.cases.id, caseId)).limit(1);
   if (!c || c.stage === 'draft' || c.stage === 'evidence_built')
     throw new MerchantError(404, 'That case was not found.');
   if (c.stage === 'resolved') throw new MerchantError(409, 'This case is already resolved.');
+  if (meta.expectStages && !meta.expectStages.includes(c.stage)) throw new MerchantError(409, 'The case moved on before this was sent. Nothing was sent.');
+  // While an offer waits for the buyer, the one reply left is to give the money back.
+  if (c.stage === 'offer_received' && action !== 'refund' && action !== 'no_response')
+    throw new MerchantError(409, 'An offer is already waiting for the buyer’s answer. Nothing was sent.');
   const [o] = await db().select().from(tables.orders).where(eq(tables.orders.id, c.orderId)).limit(1);
   if (!o) throw new MerchantError(404, 'The order for this case was not found.');
   const amount = money(o.amountCents, o.currency);
@@ -932,15 +1030,21 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
   const now = new Date().toISOString();
   const ref = shortRef(c.id);
   const orderLink = `/app/orders/${o.id}`;
+  const agent = meta.by === 'store_agent';
+  const actor = agent ? 'store_agent' : 'merchant';
+  const by = agent ? 'store_agent' : 'staff';
+  const store = agent ? 'Demo Store’s agent' : 'Demo Store';
+  const fromProposal = meta.proposalId ? { proposalId: meta.proposalId } : {};
 
   if (action === 'no_response') {
     await audit({
       userId: o.userId,
-      actor: 'merchant',
+      actor,
       action: 'case.no_response',
       subjectId: o.id,
-      payload: { caseId: c.id },
+      payload: { caseId: c.id, by },
     });
+    if (!agent && !meta.proposalId) await supersedeProposals(c.id, now);
     const due = c.dueAt ? spokenDate(c.dueAt) : null;
     return {
       ok: true,
@@ -952,6 +1056,7 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
   if (action === 'refund') {
     let via: 'dispute' | 'capture' | 'void';
     let paypalId: string | undefined;
+    let paypalStatus: string | null = null;
     try {
       if (c.paypalDisputeId) {
         const pp = paypal();
@@ -979,6 +1084,9 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
             amountCents: o.amountCents,
             at: now,
             via: 'paypal',
+            by,
+            ...(meta.reasons?.length ? { reasons: meta.reasons } : {}),
+            ...fromProposal,
           };
           await db()
             .update(tables.cases)
@@ -990,17 +1098,13 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
             .where(eq(tables.cases.id, c.id));
           await audit({
             userId: o.userId,
-            actor: 'merchant',
+            actor,
             action: 'case.offer_made',
             subjectId: o.id,
-            payload: { caseId: c.id, offerType: 'REFUND', via: 'paypal' },
+            payload: { caseId: c.id, offerId: offer.id, offerType: 'REFUND', via: 'paypal', by, paypalId: d.dispute_id, paypalStatus: d.status ?? null },
           });
-          await notify(
-            o.userId,
-            'case',
-            `Demo Store offered a full refund of ${amount}. Nothing changes until you answer.`,
-            orderLink,
-          );
+          if (!agent && !meta.proposalId) await supersedeProposals(c.id, now);
+          await notify(o.userId, 'case', `${store} offered a full refund of ${amount}. Nothing changes until you answer.`, orderLink);
           return {
             ok: true,
             paypal: 'sent',
@@ -1028,12 +1132,15 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
         });
         via = 'capture';
         paypalId = refund.id;
+        paypalStatus = refund.status ?? null;
       } else if (o.authorizationId && o.status !== 'voided') {
-        await paypal().payments.voidAuthorization(o.authorizationId, {
+        const voided = await paypal().payments.voidAuthorization(o.authorizationId, {
           requestId: paypalRequestId('void', o.authorizationId),
         });
         via = 'void';
         paypalId = o.authorizationId;
+        // PayPal answers a void with the authorization, or with 204 No Content, which means it was voided.
+        paypalStatus = voided?.status ?? 'VOIDED';
       } else {
         return {
           ok: false,
@@ -1059,7 +1166,7 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
           amountCents: o.amountCents,
           via,
           paypalId,
-          by: 'merchant',
+          by: agent ? 'store_agent' : 'merchant',
           at: now,
         },
         updatedAt: now,
@@ -1067,17 +1174,22 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
       .where(eq(tables.cases.id, c.id));
     await audit({
       userId: o.userId,
-      actor: 'merchant',
+      actor,
       action: voided ? 'case.hold_released' : 'case.refunded',
       subjectId: o.id,
-      payload: { caseId: c.id, via, paypalId, amountCents: o.amountCents },
+      payload: { caseId: c.id, via, paypalId, paypalStatus, amountCents: o.amountCents, by, ...fromProposal },
     });
+    if (!agent && !meta.proposalId) await supersedeProposals(c.id, now);
     await notify(
       o.userId,
       'refund',
       voided
-        ? `Demo Store released the payment hold of ${amount}. You were never charged.`
-        : `Demo Store refunded ${amount}. It should reach your PayPal balance within minutes.`,
+        ? agent
+          ? `Demo Store’s agent released your ${amount} payment hold, so you were never charged.`
+          : `Demo Store released the payment hold of ${amount}. You were never charged.`
+        : agent
+          ? `Demo Store’s agent refunded ${amount}, and it should reach your PayPal balance within minutes.`
+          : `Demo Store refunded ${amount}. It should reach your PayPal balance within minutes.`,
       orderLink,
     );
     return {
@@ -1103,7 +1215,7 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
         ? `Demo Store will release the ${amount} payment hold as soon as the ${o.title} is back with us.`
         : `Demo Store will refund ${amount} as soon as the ${o.title} is back with us.`;
   // A held payment keeps a deadline while an offer is open: time for a return to arrive.
-  const offerDue = held ? addBusinessDays(new Date(now), 10).toISOString() : c.dueAt;
+  const offerDue = held ? heldOfferDue(o, now) : c.dueAt;
   let via: 'paypal' | 'local' = 'local';
   if (c.paypalDisputeId) {
     try {
@@ -1133,6 +1245,9 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
     amountCents: offerType === 'REFUND_WITH_RETURN' ? o.amountCents : undefined,
     at: now,
     via,
+    by,
+    ...(meta.reasons?.length ? { reasons: meta.reasons } : {}),
+    ...fromProposal,
   };
   await db()
     .update(tables.cases)
@@ -1140,26 +1255,119 @@ export async function respondToCase(caseId: string, action: CaseAction): Promise
     .where(eq(tables.cases.id, c.id));
   await audit({
     userId: o.userId,
-    actor: 'merchant',
+    actor,
     action: 'case.offer_made',
     subjectId: o.id,
-    payload: { caseId: c.id, offerType, via },
+    payload: { caseId: c.id, offerId: offer.id, offerType, via, by, ...(via === 'paypal' ? { paypalId: c.paypalDisputeId } : {}), ...fromProposal },
   });
+  if (!agent && !meta.proposalId) await supersedeProposals(c.id, now);
   await notify(
     o.userId,
     // Its own kind, so the app can tell an offer notice apart without reading its words.
     'offer',
-    action === 'replacement'
-      ? `Demo Store offered to send a replacement ${o.title}. Nothing changes until you answer.`
-      : held
-        ? `Demo Store asked for the ${o.title} back first. They release the ${amount} hold once it arrives, and if it isn't settled by ${spokenDate(offerDue!)}, I'll cancel the hold myself. Nothing changes until you answer.`
-        : `Demo Store asked for the ${o.title} back first. They will refund ${amount} once it arrives. Nothing changes until you answer.`,
+    agent
+      ? action === 'replacement'
+        ? `Demo Store’s agent offered to send a replacement ${o.title}, and nothing changes until you answer.`
+        : held
+          ? `Demo Store’s agent asked for the ${o.title} back first and will release your ${amount} hold once it arrives, and nothing changes until you answer.`
+          : `Demo Store’s agent asked for the ${o.title} back first and will refund ${amount} once it arrives, and nothing changes until you answer.`
+      : action === 'replacement'
+        ? `Demo Store offered to send a replacement ${o.title}. Nothing changes until you answer.`
+        : held
+          ? `Demo Store asked for the ${o.title} back first. They release the ${amount} hold once it arrives, and if it isn't settled by ${spokenDate(offerDue!)}, I'll cancel the hold myself. Nothing changes until you answer.`
+          : `Demo Store asked for the ${o.title} back first. They will refund ${amount} once it arrives. Nothing changes until you answer.`,
     orderLink,
   );
   return {
     ok: true,
     paypal: via === 'paypal' ? 'sent' : 'local-only',
     message: `${action === 'replacement' ? 'Replacement offered' : 'Return-first offer made'} for case ${ref}${via === 'paypal' ? ' through the PayPal dispute' : ''}. The buyer has been told and decides what happens next.`,
+  };
+}
+
+/**
+ * "Keep it for less": the buyer keeps the item and the store gives part of the price back. The
+ * amount is recomputed here from the order and the percent and must equal what code offered.
+ * Nothing moves until the buyer accepts; then offers.ts captures only the rest of a hold (PayPal
+ * releases the remainder) or refunds the part of a payment. Not for PayPal disputes, which carry
+ * their own offers.
+ */
+export async function offerPartialRefund(caseId: string, part: { percent: number; amountCents: number }, meta: CaseReplyMeta = {}): Promise<MerchantResult> {
+  return withCaseLock(caseId, () => offerPartialLocked(caseId, part, meta));
+}
+
+async function offerPartialLocked(caseId: string, part: { percent: number; amountCents: number }, meta: CaseReplyMeta): Promise<MerchantResult> {
+  const [c] = await db().select().from(tables.cases).where(eq(tables.cases.id, caseId)).limit(1);
+  if (!c || c.stage === 'draft' || c.stage === 'evidence_built') throw new MerchantError(404, 'That case was not found.');
+  if (c.stage === 'resolved') throw new MerchantError(409, 'This case is already resolved.');
+  if (c.stage === 'offer_received') throw new MerchantError(409, 'An offer is already waiting for the buyer’s answer.');
+  if (meta.expectStages && !meta.expectStages.includes(c.stage)) throw new MerchantError(409, 'The case moved on before this was sent. Nothing was sent.');
+  if (c.paypalDisputeId)
+    return { ok: false, paypal: 'not-needed', message: 'This case is a PayPal dispute, so a part refund has to be offered through PayPal. Nothing was sent.' };
+  const [o] = await db().select().from(tables.orders).where(eq(tables.orders.id, c.orderId)).limit(1);
+  if (!o) throw new MerchantError(404, 'The order for this case was not found.');
+  const held = o.intent === 'AUTHORIZE' && Boolean(o.authorizationId) && !o.captureId && o.status !== 'voided';
+  if (!held && !o.captureId)
+    return { ok: false, paypal: 'not-needed', message: 'This order has no PayPal payment, so there is nothing to give back. Offer a replacement instead.' };
+  const expected = Math.round((o.amountCents * part.percent) / 100);
+  if (!Number.isInteger(part.amountCents) || part.amountCents !== expected || part.amountCents < 1 || part.amountCents >= o.amountCents)
+    throw new MerchantError(400, 'That amount does not match the order. Nothing was sent.');
+  const now = new Date().toISOString();
+  const agent = meta.by === 'store_agent';
+  const by = agent ? 'store_agent' : 'staff';
+  const store = agent ? 'Demo Store’s agent' : 'Demo Store';
+  const amount = money(o.amountCents, o.currency);
+  const back = money(part.amountCents, o.currency);
+  const rest = money(o.amountCents - part.amountCents, o.currency);
+  const offer: CaseOffer = {
+    id: newId('ofr'),
+    type: 'REFUND',
+    note: held
+      ? `Demo Store takes ${back} off: you keep the ${o.title} and pay ${rest} instead of ${amount}.`
+      : `Demo Store refunds ${back} and you keep the ${o.title}.`,
+    amountCents: part.amountCents,
+    at: now,
+    via: 'local',
+    // Fixed when offered: accepting captures the rest of a hold, or refunds part of a payment.
+    partial: { percent: part.percent, held },
+    by,
+    ...(meta.reasons?.length ? { reasons: meta.reasons } : {}),
+    ...(meta.proposalId ? { proposalId: meta.proposalId } : {}),
+  };
+  const offerDue = held ? heldOfferDue(o, now) : c.dueAt;
+  await db()
+    .update(tables.cases)
+    .set({ stage: 'offer_received', offers: [...((c.offers as unknown[]) ?? []), offer], dueAt: offerDue, updatedAt: now })
+    .where(eq(tables.cases.id, c.id));
+  await audit({
+    userId: o.userId,
+    actor: agent ? 'store_agent' : 'merchant',
+    action: 'case.offer_made',
+    subjectId: o.id,
+    payload: {
+      caseId: c.id,
+      offerId: offer.id,
+      offerType: 'PARTIAL_REFUND',
+      percent: part.percent,
+      amountCents: part.amountCents,
+      via: 'local',
+      by,
+      ...(meta.proposalId ? { proposalId: meta.proposalId } : {}),
+    },
+  });
+  if (!agent && !meta.proposalId) await supersedeProposals(c.id, now);
+  await notify(
+    o.userId,
+    'offer',
+    held
+      ? `${store} offered to take ${back} off if you keep the ${o.title}, so you would pay ${rest} instead of ${amount}, and nothing changes until you answer.`
+      : `${store} offered ${back} back if you keep the ${o.title}, and nothing changes until you answer.`,
+    `/app/orders/${o.id}`,
+  );
+  return {
+    ok: true,
+    paypal: 'local-only',
+    message: `Offered ${back} back if the buyer keeps the item, for case ${shortRef(c.id)}. The buyer has been told and decides what happens next.`,
   };
 }
 

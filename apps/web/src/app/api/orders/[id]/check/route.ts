@@ -4,7 +4,7 @@ import { tables } from '@sightline/db';
 import { newId } from '@sightline/core';
 import { requireUser, HttpError } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
-import { putBlob, sanitisePhoto } from '@/server/blobs';
+import { PHOTO_TOO_LARGE_SAY, PhotoTooLargeError, putBlob, sanitisePhoto, UNREADABLE_PHOTO_SAY, UnreadablePhotoError } from '@/server/blobs';
 import { verifyDelivery, VisionRefusedError, VisionUnavailableError } from '@/server/vision';
 import { db } from '@/server/runtime';
 import { audit } from '@/server/audit';
@@ -28,16 +28,28 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const item = form.get('item');
     if (!(item instanceof File) || item.size === 0)
       return NextResponse.json({ error: 'I need a photo of the whole item to check it. Add one, then check again.' }, { status: 400 });
+    // Every photo is read and cleaned before any is stored, so one unreadable photo (a damaged
+    // file, a GIF from an old phone, an iPhone HEIC this server can't decode) stores nothing and
+    // gets an answer the buyer can act on instead of a server error.
+    const cleaned: { kind: (typeof KINDS)[number]; bytes: Buffer }[] = [];
+    try {
+      for (const kind of KINDS) {
+        const f = form.get(kind);
+        if (!(f instanceof File) || f.size === 0) continue;
+        cleaned.push({ kind, bytes: await sanitisePhoto(Buffer.from(await f.arrayBuffer())) });
+      }
+    } catch (e) {
+      if (e instanceof UnreadablePhotoError) return NextResponse.json({ error: UNREADABLE_PHOTO_SAY }, { status: 422 });
+      if (e instanceof PhotoTooLargeError) return NextResponse.json({ error: PHOTO_TOO_LARGE_SAY }, { status: 413 });
+      throw e;
+    }
     const photos: { kind: (typeof KINDS)[number]; bytes: Buffer; blobId: string; sha256: string; source?: string }[] = [];
-    for (const kind of KINDS) {
-      const f = form.get(kind);
-      if (!(f instanceof File) || f.size === 0) continue;
-      const clean = await sanitisePhoto(Buffer.from(await f.arrayBuffer()), f.type || 'image/jpeg');
-      const blob = await putBlob(clean, 'image/jpeg', user.id);
+    for (const { kind, bytes } of cleaned) {
+      const blob = await putBlob(bytes, 'image/jpeg', user.id);
       // Where the page says the photo came from (camera, an added file, or the demo parcel photos),
       // so a demo photo is never presented as the buyer's or shown to a helper as theirs.
       const source = String(form.get(`${kind}-source`) ?? '');
-      photos.push({ kind, bytes: clean, blobId: blob.id, sha256: blob.sha256, ...(SOURCES.has(source) ? { source } : {}) });
+      photos.push({ kind, bytes, blobId: blob.id, sha256: blob.sha256, ...(SOURCES.has(source) ? { source } : {}) });
     }
     if (photos.length === 0) return NextResponse.json({ error: 'No photos were received.' }, { status: 400 });
 

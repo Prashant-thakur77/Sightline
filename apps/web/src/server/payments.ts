@@ -223,7 +223,7 @@ export async function payForReadback(input: { userId: string; readbackId: string
       },
     });
     await db().update(tables.orders).set({ paypalOrderId: created.id, status: 'approval_pending', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, orderId));
-    await audit({ userId: input.userId, actor: 'paypal', action: 'order.created', subjectId: orderId, payload: { paypalOrderId: created.id, intent, requestId: decision.requestId } });
+    await audit({ userId: input.userId, actor: 'paypal', action: 'order.created', subjectId: orderId, payload: { paypalOrderId: created.id, paypalStatus: created.status ?? null, intent, requestId: decision.requestId } });
     return { kind: 'needs-approval', intent, paypalOrderId: created.id, orderId, receiptId };
   } catch (e) {
     // A popup order cannot charge until the buyer approves it in PayPal, so an unanswered create is
@@ -307,7 +307,15 @@ async function settleCreatedOrder(a: {
     actor: 'paypal',
     action: a.intent === 'AUTHORIZE' ? 'payment.authorized' : 'payment.captured',
     subjectId: a.orderId,
-    payload: { paypalOrderId: order.id, amount: formatMoney(a.amount) },
+    // PayPal's own ids and status as it answered, so the order's timeline can show them.
+    payload: {
+      paypalOrderId: order.id,
+      paypalOrderStatus: order.status ?? null,
+      ...(a.intent === 'AUTHORIZE'
+        ? { authorizationId: auth0?.id ?? null, paypalStatus: auth0?.status ?? null }
+        : { captureId: cap0?.id ?? null, paypalStatus: cap0?.status ?? null }),
+      amount: formatMoney(a.amount),
+    },
   });
   return { kind: 'paid', orderId: a.orderId, status: a.intent === 'AUTHORIZE' ? 'authorized' : 'captured', amount: a.amount, receiptId: a.receiptId };
 }

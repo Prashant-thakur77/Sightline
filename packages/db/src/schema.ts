@@ -10,6 +10,7 @@ import {
   timestamp,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   dataType() {
@@ -250,6 +251,68 @@ export const cases = pgTable('cases', {
   createdAt: created(),
   updatedAt: updated(),
 });
+
+/**
+ * The store's case policy: what its agent may send without staff. In the demo every visitor plays
+ * the store for their own demo shopper, so the policy is kept per scope (that shopper's user id),
+ * like the merchant console itself. No row means the defaults in @sightline/agent.
+ */
+export const storePolicies = pgTable('store_policies', {
+  scopeId: text('scope_id').primaryKey(),
+  agentOn: boolean('agent_on').notNull().default(true),
+  autoSend: boolean('auto_send').notNull().default(true),
+  autoReplaceMaxCents: integer('auto_replace_max_cents').notNull().default(6000),
+  askStaffAboveCents: integer('ask_staff_above_cents').notNull().default(10000),
+  partialRefunds: text('partial_refunds').notNull().default('up_to_20'),
+  updatedAt: updated(),
+});
+
+/**
+ * Each time the store's agent looks at a case: what it proposed, why, and what became of it. One
+ * row per trigger (the case arriving, or one declined offer), so a repeated trigger never makes a
+ * second proposal. Amounts are integer cents computed by code from the order and the policy.
+ */
+export const storeAgentProposals = pgTable(
+  'store_agent_proposals',
+  {
+    id: text('id').primaryKey(),
+    caseId: text('case_id')
+      .notNull()
+      .references(() => cases.id, { onDelete: 'cascade' }),
+    /** 'case' when the case arrived; the declined offer's id for a revision. */
+    triggerRef: text('trigger_ref').notNull(),
+    round: integer('round').notNull(),
+    /** thinking, proposed, sent, dismissed, superseded, failed, handed_over */
+    status: text('status').notNull(),
+    optionId: text('option_id'),
+    resolution: text('resolution'),
+    percent: integer('percent'),
+    amountCents: integer('amount_cents'),
+    title: text('title'),
+    reasons: jsonb('reasons').$type<string[]>().notNull().default([]),
+    staffNote: text('staff_note'),
+    /** model or rules */
+    source: text('source'),
+    model: text('model'),
+    auto: boolean('auto').notNull().default(false),
+    staffWhy: text('staff_why'),
+    /** The model's reasons that code set aside, with why, or why the whole answer was. */
+    checkNotes: jsonb('check_notes').$type<{ text: string; why: string }[]>().notNull().default([]),
+    policy: jsonb('policy'),
+    result: text('result'),
+    /** store_agent or staff */
+    decidedBy: text('decided_by'),
+    createdAt: created(),
+    decidedAt: ts('decided_at'),
+  },
+  (t) => [
+    uniqueIndex('store_agent_proposals_trigger_idx').on(t.caseId, t.triggerRef),
+    // At most one live proposal per round: two triggers racing for the same round can't both propose.
+    uniqueIndex('store_agent_proposals_round_idx')
+      .on(t.caseId, t.round)
+      .where(sql`${t.round} > 0 and ${t.status} <> 'failed'`),
+  ],
+);
 
 export const webhookEvents = pgTable('webhook_events', {
   id: text('id').primaryKey(),

@@ -65,6 +65,7 @@ export const MONEY_ACTIONS = [
   'case.no_response',
   'case.hold_released',
   'case.refunded',
+  'case.partial_refunded',
   'webhook.payment.capture.completed',
   'webhook.payment.capture.refunded',
   'webhook.payment.capture.reversed',
@@ -76,6 +77,7 @@ const OFFER: Record<string, string> = {
   REFUND_WITH_RETURN: 'a refund when you send the item back',
   REFUND_WITH_REPLACEMENT: 'a refund and a replacement',
   REPLACEMENT_WITHOUT_REFUND: 'a replacement instead of a refund',
+  PARTIAL_REFUND: 'part of the price back if you keep the item',
 };
 
 /** What accepting each kind of offer meant for the money, in the buyer's words. */
@@ -147,7 +149,7 @@ const LINES: Record<(typeof MONEY_ACTIONS)[number], Line> = {
   },
   'case.offer_accepted': {
     status: { word: 'Offer accepted', glyph: '✓', tone: 'good' },
-    sentence: (_a, p) => ACCEPTED[String(p.type)] ?? `You accepted ${STORE}'s offer.`,
+    sentence: (_a, p) => (p.partial ? `You accepted keeping the item for less from ${STORE}.` : (ACCEPTED[String(p.type)] ?? `You accepted ${STORE}'s offer.`)),
     amount: false,
   },
   'case.offer_declined': {
@@ -168,6 +170,15 @@ const LINES: Record<(typeof MONEY_ACTIONS)[number], Line> = {
   'case.refunded': {
     status: { word: 'Refunded', glyph: '✓', tone: 'good' },
     sentence: (a) => `${STORE} refunded ${a} through PayPal.`,
+    amount: true,
+  },
+  // The amount is the part that came back; a hold was never refunded, only part of it taken.
+  'case.partial_refunded': {
+    status: { word: 'Kept for less', glyph: '✓', tone: 'good' },
+    sentence: (a, p) =>
+      p.held
+        ? `You kept the item for less: PayPal took the rest of your hold and released ${a}.`
+        : `You kept the item for less: ${STORE} refunded ${a} through PayPal.`,
     amount: true,
   },
   'webhook.payment.capture.completed': {

@@ -80,6 +80,21 @@ Injection surfaces: listing title, description, attributes, review quotes (Chann
 
 Evidence of testing: `evals/redteam/run.ts` (60 adversarial listings, 0 payment breaches, local ledger simulation, no live model). The result is about the gate and flow, not about a live model's behaviour.
 
+### 3.1 The store's agent
+
+Demo Store's agent (`apps/web/src/server/store-agent.ts`, `packages/agent/src/store-agent.ts`) answers money-back cases and can send a reply that moves money (release a hold, refund) without a person. Its inputs include the item title from the listing.
+
+| Threat | Control |
+|---|---|
+| The model picks a reply the store did not allow, or names an amount | The output schema makes the option id and the fact ids closed sets; the model writes no amount. `storeOptions` lists only replies the policy allows and computes every amount from the order in integer cents. `checkProposal` refuses an option not in the list. `sendProposal` re-reads the case, recomputes the options and the amount, and sends nothing on a mismatch; an auto-send is re-decided by code at send time. `offerPartialRefund` and `settleKeepForLess` recompute and range-check the part again. Eval: 0 of 30 out-of-policy picks sent, 0 of 370 policy invariant violations (`evals/store-agent/run.ts`). |
+| Invented facts in the reasons the buyer hears | Each reason must cite fact ids; every amount, size, colour, date, number, percentage and quote must be in the cited facts; a reason describing a reply that was not chosen, or saying "refund" on a hold or a replacement, is dropped, and so is one about the buyer or the store's internals. Eval: 0 of 218 scripted invented facts kept. Residual, **open**: the check is token-level, so a false claim with nothing to match passes (40 of 40 probes, a negative result). |
+| Listing text (the item title) instructs the store's agent | The facts and options are marked as data in the prompt. The worst case is a different allowed option with checked reasons: the policy still bounds what is sent and for how much. |
+| A forged or edited evidence pack | The pack's hash and Ed25519 signature are checked before anything else; a pack that does not verify stops the agent and hands the case to staff. |
+| Two replies race (the agent and a staff click, or a reply and the buyer's answer) | One advisory lock per case for every reply and answer, with the case re-read inside it; a reply refuses if the case moved on. A staff reply supersedes the agent's claim, and the agent stops if its claim is gone. "Keep it for less" claims the offer before PayPal moves money and derives request ids from the offer, so a retry or a double press never takes money twice. |
+| The agent loops or keeps pressing the buyer | At most one proposal when the case arrives and one revision after a decline, enforced by unique rows per trigger and per round; then it hands the case to staff. Accepting an offer still takes the buyer's two presses. |
+| An auto-sent refund for a case that may not deserve one | A full refund or hold release goes out without staff only under the staff limit and only with the store's own shipping record of a mistake or a sure check; otherwise it waits on the desk. Everything it sends is audited as `store_agent.step` with the tool and who decided. |
+| Someone else changes the policy or acts on a proposal | The policy page, `/api/merchant/policy` and `/api/merchant/cases/[id]/agent` use the same scope and same-origin checks as the rest of the merchant console. Policies are per demo scope. |
+
 ## 4. Payment gate
 
 Files: `packages/gate/src/*`, `apps/web/src/server/gate-ports.ts`.
@@ -257,6 +272,7 @@ Files: `apps/mcp/src/*`.
 
 | Threat | Control |
 |---|---|
+| A photo the server cannot decode (damaged, GIF from an old phone, iPhone HEIC) | The type is read from the bytes and must be one sharp decodes on this build (checked at runtime); anything else is a 422 with plain words before anything is stored (`apps/web/src/server/blobs.ts`). The browser decodes an added photo first and refuses or re-encodes it. |
 | GPS and camera serial in uploaded photos | `sanitisePhoto` re-encodes through sharp with no metadata passthrough (`apps/web/src/server/blobs.ts`), so EXIF, GPS and maker notes are dropped before storage and before the bytes leave the web server. The vision service removes the EXIF GPS directory and XMP packets again (`services/vision/app/imageio.py`) and reports per photo whether location data was removed. |
 | Photos shown to third parties | Helper sees them only through the 48 hour link. Merchant and evidence pages show hashes, not images. Photos go to Anthropic when a vision model is configured. |
 | Face or background content in the photo | **Open.** No detection or blurring. The camera guidance asks for the item and the tag only. |

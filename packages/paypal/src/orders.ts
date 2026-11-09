@@ -4,6 +4,17 @@ import { findLink } from './hateoas';
 import { assertRequestId, parseWith, pathId, type HttpCore } from './http';
 import { OrderSchema, type Authorization, type Capture, type Order } from './schemas';
 
+/**
+ * PayPal accepts an item image only as an https link ending in .jpg, .jpeg, .gif or .png, with no
+ * query string (its documented pattern); anything else fails the whole order with
+ * INVALID_PARAMETER_SYNTAX. Images from product feeds often have neither, so they are left out
+ * rather than risk the payment. The image is decoration on PayPal's page; nothing depends on it.
+ */
+export function paypalImageUrl(url: string | undefined | null): string | undefined {
+  if (!url || url.length > 2048) return undefined;
+  return /^https:[/.\w\s-]+\.(jpe?g|gif|png)$/i.test(url) ? url : undefined;
+}
+
 /** Plan decision: custom_id carries the first 127 characters of the readback hash (PayPal allows 255). */
 export const CUSTOM_ID_MAX_LENGTH = 127;
 export const INVOICE_ID_MAX_LENGTH = 127;
@@ -185,7 +196,7 @@ export function buildOrderRequest(input: OrderInput): Json {
       ...(it.sku ? { sku: it.sku } : {}),
       ...(it.description ? { description: it.description } : {}),
       ...(it.url ? { url: it.url } : {}),
-      ...(it.imageUrl ? { image_url: it.imageUrl } : {}),
+      ...(paypalImageUrl(it.imageUrl) ? { image_url: paypalImageUrl(it.imageUrl) } : {}),
       category: it.category ?? 'PHYSICAL_GOODS',
     };
   });

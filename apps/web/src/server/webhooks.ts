@@ -13,6 +13,8 @@ type Resource = Record<string, unknown> & {
   id?: string;
   status?: string;
   amount?: { value?: string; currency_code?: string };
+  /** On a refund: PayPal's running total refunded for the capture. */
+  seller_payable_breakdown?: { total_refunded_amount?: { value?: string; currency_code?: string } };
   supplementary_data?: { related_ids?: { order_id?: string; capture_id?: string; authorization_id?: string } };
   disputed_transactions?: { seller_transaction_id?: string }[];
   dispute_id?: string;
@@ -120,7 +122,12 @@ export async function processWebhookEvent(eventRowId: string): Promise<void> {
         break;
       case 'PAYMENT.CAPTURE.REFUNDED':
         if (order) {
-          await db().update(tables.orders).set({ status: 'resolved_refund', updatedAt: now }).where(eq(tables.orders.id, order.id));
+          // A part refund ("keep it for less") leaves the order kept for less; judged on PayPal's running
+          // total for the capture, so a later refund of the rest makes it refunded in full.
+          const total = r.seller_payable_breakdown?.total_refunded_amount ?? r.amount;
+          const refunded = total?.value ? parseMoney(total.value, total.currency_code ?? order.currency).cents : order.amountCents;
+          const partly = refunded < order.amountCents;
+          await db().update(tables.orders).set({ status: partly ? 'resolved_partial_refund' : 'resolved_refund', updatedAt: now }).where(eq(tables.orders.id, order.id));
           const amt = r.amount?.value ? formatMoney(parseMoney(r.amount.value, r.amount.currency_code ?? 'USD')) : 'Your money';
           await notify(order.userId, 'refund', `PayPal refunded ${amt}. It should reach your PayPal balance within minutes.`, `/app/orders/${order.id}`);
         }
@@ -178,7 +185,14 @@ export async function processWebhookEvent(eventRowId: string): Promise<void> {
         break;
     }
     await db().update(tables.webhookEvents).set({ processedAt: now, attempts: row.attempts + 1, lastError: null }).where(eq(tables.webhookEvents.id, row.id));
-    await audit({ actor: 'paypal', action: `webhook.${ev.event_type.toLowerCase()}`, subjectId: order?.id ?? null, userId: order?.userId ?? null, payload: { eventId: ev.id } });
+    // Only signature-verified events reach here; their resource id and status are what PayPal last said.
+    await audit({
+      actor: 'paypal',
+      action: `webhook.${ev.event_type.toLowerCase()}`,
+      subjectId: order?.id ?? null,
+      userId: order?.userId ?? null,
+      payload: { eventId: ev.id, resourceId: r.dispute_id ?? r.id ?? null, paypalStatus: r.status ?? null, verified: true },
+    });
   } catch (e) {
     await db().update(tables.webhookEvents).set({ attempts: row.attempts + 1, lastError: (e as Error).message.slice(0, 500) }).where(eq(tables.webhookEvents.id, row.id));
     throw e;

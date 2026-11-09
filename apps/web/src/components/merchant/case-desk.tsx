@@ -7,6 +7,7 @@ import { useAnnouncer } from '@/components/a11y/announcer';
 import { spokenWhen } from '@/lib/when';
 import type { CaseAction, MerchantCase, MerchantResult } from '@/server/merchant';
 import { StatusChip } from './status-chip';
+import { AgentProposal, agentHistoryLine, type AgentAct } from './agent-proposal';
 
 const OFFER_WORDS: Record<string, string> = {
   REFUND: 'Refund',
@@ -95,14 +96,17 @@ export function CaseDesk({ cases }: { cases: MerchantCase[] }) {
     document.getElementById(`case-${id}-result`)?.focus();
   }, [cases]);
 
-  const respond = async (c: MerchantCase, action: CaseAction) => {
+  const respond = (c: MerchantCase, action: CaseAction) => post(c, `/api/merchant/cases/${c.id}/respond`, { action, confirm: true });
+  const actOnAgent = (c: MerchantCase, a: AgentAct) => post(c, `/api/merchant/cases/${c.id}/agent`, a);
+
+  const post = async (c: MerchantCase, url: string, body: unknown) => {
     setBusy(c.id);
     let r: Result;
     try {
-      const res = await fetch(`/api/merchant/cases/${c.id}/respond`, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action, confirm: true }),
+        body: JSON.stringify(body),
       });
       const data = (await res.json().catch(() => null)) as MerchantResult | null;
       r = {
@@ -131,6 +135,7 @@ export function CaseDesk({ cases }: { cases: MerchantCase[] }) {
       focusResult={focusId === c.id}
       onFocused={() => setFocusId(null)}
       onRespond={(a) => respond(c, a)}
+      onAgent={(a) => actOnAgent(c, a)}
     />
   );
 
@@ -169,6 +174,7 @@ function CaseCard({
   focusResult,
   onFocused,
   onRespond,
+  onAgent,
 }: {
   c: MerchantCase;
   busy: boolean;
@@ -177,6 +183,7 @@ function CaseCard({
   focusResult: boolean;
   onFocused: () => void;
   onRespond: (a: CaseAction) => Promise<void>;
+  onAgent: (a: AgentAct) => Promise<void>;
 }) {
   const [pending, setPending] = useState<CaseAction | null>(null);
   const confirmRef = useRef<HTMLHeadingElement>(null);
@@ -379,16 +386,20 @@ function CaseCard({
                 </div>
               )}
 
-              {(c.offers.length > 0 || c.outcome) && (
+              {(c.offers.length > 0 || c.outcome || c.agent.history.length > 0) && (
                 <div className="mx-block">
                   <h4 id={`${h}-hist`} className="mx-h4">
                     What Demo Store has done
                   </h4>
                   <ul className="mx-history">
+                    {c.agent.history.map((p) => (
+                      <li key={p.id}>{agentHistoryLine(p, c.buyer)}</li>
+                    ))}
                     {c.offers.map((o) => (
                       <li key={o.id}>
-                        {spokenWhen(o.at)} · {OFFER_WORDS[o.type] ?? o.type} offered
-                        {o.via === 'paypal' ? ' through PayPal' : ''}. {o.note}
+                        {spokenWhen(o.at)} · {o.partial ? 'Keep it for less' : (OFFER_WORDS[o.type] ?? o.type)} offered
+                        {o.via === 'paypal' ? ' through PayPal' : ''}
+                        {o.by === 'store_agent' ? ' by your store agent' : ''}. {o.note}
                       </li>
                     ))}
                     {c.outcome && <li>{c.outcome}</li>}
@@ -398,7 +409,8 @@ function CaseCard({
             </div>
 
             <div className="mx-case-act">
-              {c.open && (
+              {!waitingForBuyer && <AgentProposal c={c} h={h} busy={busy} anyBusy={anyBusy} onAct={onAgent} />}
+              {c.open && !(c.agent.pending && !waitingForBuyer) && (
                 <div className="mx-suggest">
                   {waitingForBuyer ? (
                     <>

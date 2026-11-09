@@ -156,6 +156,8 @@ export type OrderStatus =
   | 'verified_unsure'
   | 'case_open'
   | 'resolved_refund'
+  /** The buyer kept the item for less, as agreed with the store: part refunded, or part of the hold captured. */
+  | 'resolved_partial_refund'
   | 'resolved_replacement'
   | 'resolved_seller_favour'
   | 'closed'

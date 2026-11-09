@@ -32,6 +32,19 @@ describe('planOfferAnswer', () => {
     expect(planOfferAnswer({ id: 'ofr_3', type: 'REFUND', via: 'paypal' }, 'decline', AT).paypal).toBe('deny-offer');
   });
 
+  it('keeping the item for less, offered on the store desk, settles on acceptance through PayPal', () => {
+    expect(planOfferAnswer({ id: 'ofr_5', type: 'REFUND', via: 'local', partial: { percent: 20 } }, 'accept', AT)).toEqual({
+      kind: 'partial_refund',
+      stage: 'resolved',
+      status: 'resolved',
+      orderStatus: 'resolved_partial_refund',
+      outcome: { kind: 'partial_refund', by: 'buyer', offerId: 'ofr_5', at: AT },
+      settle: 'partial_refund',
+    });
+    expect(planOfferAnswer({ id: 'ofr_5', type: 'REFUND', via: 'local', partial: { percent: 20 } }, 'decline', AT)).toEqual({ kind: 'partial_refund', stage: 'declined', status: 'open' });
+    expect(offerKind('REFUND', { percent: 50 })).toBe('partial_refund');
+  });
+
   it('declining keeps the case open so the store can try again', () => {
     expect(planOfferAnswer({ id: 'ofr_4', type: 'REPLACEMENT_WITHOUT_REFUND', via: 'local' }, 'decline', AT)).toEqual({
       kind: 'replacement',

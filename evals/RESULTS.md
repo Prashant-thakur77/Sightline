@@ -6,16 +6,17 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 
 | Suite | Results | Negative results | Ran at (UTC) | Git |
 | --- | --- | --- | --- | --- |
-| Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | 0406ebe |
-| Spoken purchase confirmation | 5 | 2 | 2026-11-09T05:11:03.414Z | 0406ebe |
-| Duplicate orders | 8 | 2 | 2026-11-09T05:11:04.743Z | 0406ebe |
-| Grounded answers | 5 | 2 | 2026-11-09T05:11:05.072Z | 0406ebe |
-| Adversarial listings (red team) | 5 | 1 | 2026-11-09T05:11:03.754Z | 0406ebe |
-| SightBench: does the parcel match? | 12 | 5 | 2026-11-09T05:11:02.979Z | 0406ebe |
+| Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | bb47681 |
+| Spoken purchase confirmation | 5 | 2 | 2026-11-09T04:38:03.637Z | bb47681 |
+| Duplicate orders | 8 | 2 | 2026-11-09T04:38:04.924Z | bb47681 |
+| Grounded answers | 5 | 2 | 2026-11-09T04:38:05.241Z | bb47681 |
+| Adversarial listings (red team) | 5 | 1 | 2026-11-09T04:38:03.945Z | bb47681 |
+| SightBench: does the parcel match? | 12 | 5 | 2026-11-09T04:38:03.159Z | bb47681 |
+| Store agent: policy, invented facts, choice | 6 | 1 | 2026-11-09T07:37:31.253Z | uncommitted |
 
 ## Checkout Barrier Index
 
-Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git 0406ebe
+Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git bb47681
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -57,7 +58,7 @@ Full per-item data: `evals/results/barrier.json` (`details`).
 
 ## Spoken purchase confirmation
 
-Suite `confirmation` · ran 2026-11-09T05:11:03.414Z · git 0406ebe
+Suite `confirmation` · ran 2026-11-09T04:38:03.637Z · git bb47681
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -86,7 +87,7 @@ Full per-item data: `evals/results/confirmation.json` (`details`).
 
 ## Duplicate orders
 
-Suite `duplicates` · ran 2026-11-09T05:11:04.743Z · git 0406ebe
+Suite `duplicates` · ran 2026-11-09T04:38:04.924Z · git bb47681
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -124,7 +125,7 @@ Full per-item data: `evals/results/duplicates.json` (`details`).
 
 ## Grounded answers
 
-Suite `grounding` · ran 2026-11-09T05:11:05.072Z · git 0406ebe
+Suite `grounding` · ran 2026-11-09T04:38:05.241Z · git bb47681
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -152,7 +153,7 @@ Full per-item data: `evals/results/grounding.json` (`details`).
 
 ## Adversarial listings (red team)
 
-Suite `redteam` · ran 2026-11-09T05:11:03.754Z · git 0406ebe
+Suite `redteam` · ran 2026-11-09T04:38:03.945Z · git bb47681
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -182,7 +183,7 @@ Full per-item data: `evals/results/redteam.json` (`details`).
 
 ## SightBench: does the parcel match?
 
-Suite `sightbench` · ran 2026-11-09T05:11:02.979Z · git 0406ebe
+Suite `sightbench` · ran 2026-11-09T04:38:03.159Z · git bb47681
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -227,3 +228,33 @@ Limitations:
 - Ablations are decision rules applied to the module outputs of the same /verify calls, not separate service runs.
 
 Full per-item data: `evals/results/sightbench.json` (`details`).
+
+## Store agent: policy, invented facts, choice
+
+Suite `store-agent` · ran 2026-11-09T07:37:31.253Z · git uncommitted
+
+| Result | Value | Baseline | Interval | n | Script |
+| --- | --- | --- | --- | --- | --- |
+| Store-agent replies offered or auto-sent outside the store policy | 0 of 370 | model picks any reply: 30 of 100 not allowed | — | 370 | `evals/store-agent/run.ts` |
+| Invented facts in store-agent reasons that reach the buyer | 0 of 218 | no check: 218 of 218 | 95% Wilson 0.0%–1.7% | 218 | `evals/store-agent/run.ts` |
+| Grounded store-agent reasons kept by the check | 60 of 60 | — | 95% Wilson 94.0%–100.0% | 60 | `evals/store-agent/run.ts` |
+| Model picks of a reply the policy does not allow that get sent | 0 of 30 | no code options: 30 of 30 | — | 30 | `evals/store-agent/run.ts` |
+| Rule-based fallback (no model) picks a reply a fair store would | 20 of 20 | — | 95% Wilson 83.9%–100.0% | 20 | `evals/store-agent/run.ts` |
+| Invented claims with no amount, size, colour, date or number that pass the check **(negative result)** | 40 of 40 | — | — | 40 | `evals/store-agent/run.ts` |
+
+Notes:
+
+- Store-agent replies offered or auto-sent outside the store policy: Invariant checks over 20 cases and 70 offered replies (50 inside the policy, so sent without staff): declined replies, part-refund percent and amount, the staff limit, auto-send rules.
+- Invented facts in store-agent reasons that reach the buyer: Scripted model answers on hand-labelled cases; run --live for a real model. One invented amount, size, colour, date, number, percentage or quote per answer, a reason citing no fact or a fact that does not exist, a reason describing a reply that was not chosen, or "refund" where nothing is refunded.
+- Grounded store-agent reasons kept by the check: Scripted model answers on hand-labelled cases; run --live for a real model. Reasons that restate the case's facts, some reworded.
+- Model picks of a reply the policy does not allow that get sent: Scripted model answers on hand-labelled cases; run --live for a real model. Includes replies the buyer already declined and part refunds the policy does not allow.
+- Rule-based fallback (no model) picks a reply a fair store would: Labels written by hand before any model ran, by the author of the code.
+- Invented claims with no amount, size, colour, date or number that pass the check: Known limit: the check is token-level, like the listing grounding guard. A claim with nothing to match (for example, that the item is a favourite with returning customers) passes.
+
+Limitations:
+
+- Model answers are scripted; the suite does not call a model. `pnpm --filter @sightline/evals store-agent -- --live` sends a few cases to the fast model and prints what it picked, without writing results.
+- The 20 cases and their "fair reply" labels were written by the author of the code.
+- The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A false claim with none of those passes (negative result above).
+
+Full per-item data: `evals/results/store-agent.json` (`details`).

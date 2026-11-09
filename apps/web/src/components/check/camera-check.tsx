@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 import { analyzeFrame, AutoCapture, GuidanceCoach, modeForShot, type GuidanceCode } from '@/lib/quality';
 import { cue } from '@/lib/feedback';
+import { readPhotoFile } from '@/lib/photo-file';
 
 export type ShotKind = 'item' | 'label' | 'damage';
 
@@ -262,11 +263,27 @@ export function CameraCheck({
     }
   }, [announce, index, quiet, shot, stopCamera]);
 
-  const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !shot) return;
-    addShot({ kind: shot.kind, blob: file, url: URL.createObjectURL(file), source: 'upload' });
-    e.target.value = '';
+  /** Why the last added photo was refused, shown under the photo field and tied to it. */
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
+  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const file = input.files?.[0];
+    if (!file || !shot || reading) return;
+    // Cleared first, so choosing the same file again still fires a change.
+    input.value = '';
+    setReading(true);
+    const read = await readPhotoFile(file);
+    setReading(false);
+    if (!read.ok) {
+      // Focus stays on the photo field, which is described by this message; the announcer says it now.
+      setUploadError(read.say);
+      cue('error');
+      announce(read.say, { politeness: 'assertive', source: 'camera' });
+      return;
+    }
+    setUploadError(null);
+    addShot({ kind: shot.kind, blob: read.blob, url: URL.createObjectURL(read.blob), source: 'upload' });
   };
 
   const useDemo = async () => {
@@ -289,6 +306,7 @@ export function CameraCheck({
 
   const restart = () => {
     onRetake?.();
+    setUploadError(null);
     setShots([]);
     setIndex(0);
     setPhase('intro');
@@ -453,7 +471,22 @@ export function CameraCheck({
               ? `Or use your phone's camera app: photo of ${shot.title.toLowerCase()}`
               : `Or take or choose a photo of ${shot.title.toLowerCase()}`}
           </label>
-          <input id="upload" type="file" accept="image/*" capture="environment" onChange={onUpload} className="file-input" />
+          <input
+            id="upload"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => void onUpload(e)}
+            className="file-input"
+            aria-invalid={uploadError ? true : undefined}
+            aria-describedby={uploadError ? 'upload-error' : undefined}
+          />
+          {uploadError && (
+            <p id="upload-error" className="field-error">
+              <span aria-hidden="true">✕ </span>
+              {uploadError}
+            </p>
+          )}
           {phase !== 'live' && index > 0 && (
             <button type="button" className="btn" onClick={skip}>
               Skip this shot

@@ -10,7 +10,9 @@ import { verifyDelivery } from './vision';
 import { putBlob } from './blobs';
 import { afterVerdict } from './after-check';
 import { prepareMoneyBack, sendMoneyBack, notify } from './cases';
-import { respondToCase } from './merchant';
+import { deliveredNotice, respondToCase } from './merchant';
+import { runStoreAgent, sendProposal } from './store-agent';
+import { findOpenOffer } from './offers';
 import { audit } from './audit';
 
 export interface StepEvent {
@@ -23,7 +25,8 @@ export interface StepEvent {
   link?: string;
 }
 
-const JUDGE_EMAIL = 'maya.run@demo.sightline.app';
+/** The scripted run's own shopper; the judge page shows its latest order's timeline to visitors without one. */
+export const JUDGE_EMAIL = 'maya.run@demo.sightline.app';
 
 async function judgeUser(): Promise<string> {
   const [u] = await db().select({ id: tables.users.id }).from(tables.users).where(eq(tables.users.email, JUDGE_EMAIL)).limit(1);
@@ -38,8 +41,9 @@ async function judgeUser(): Promise<string> {
 }
 
 /**
- * The whole lifecycle in about ninety seconds, against the real sandbox: shop, read back,
- * confirm with two keys, PayPal hold, wrong item shipped, camera check, money back.
+ * The whole lifecycle in about two minutes, against the real sandbox: shop, read back, confirm with
+ * two keys, PayPal hold, wrong item shipped, camera check, money back, then the store's agent
+ * answering the case and Maya's agent answering the store's offer.
  */
 export async function* runLifecycle(): AsyncGenerator<StepEvent> {
   const userId = await judgeUser();
@@ -95,8 +99,10 @@ export async function* runLifecycle(): AsyncGenerator<StepEvent> {
     });
   await db().update(tables.orders).set({ status: 'delivered', updatedAt: new Date().toISOString() }).where(eq(tables.orders.id, orderId));
   await audit({ userId, actor: 'merchant', action: 'shipment.delivered', subjectId: orderId, payload: { demoControl: 'wrong_size' } });
-  await notify(userId, 'delivery', 'Your parcel from Demo Store was delivered. Want to check it now?', `/app/check/${orderId}`);
-  yield { step: 4, title: 'Demo Store ships the wrong size (demo control)', status: 'done', spoken: 'Your parcel from Demo Store was delivered. Want to check it now?' };
+  const [shippedOrder] = await db().select().from(tables.orders).where(eq(tables.orders.id, orderId)).limit(1);
+  const deliveredSay = deliveredNotice(shippedOrder!);
+  await notify(userId, 'delivery', deliveredSay, `/app/check/${orderId}`);
+  yield { step: 4, title: 'Demo Store ships the wrong size (demo control)', status: 'done', spoken: deliveredSay };
 
   yield { step: 5, title: 'She checks the parcel with her camera', status: 'running', detail: 'Using the demo parcel photos: a black sweater with a size L tag.' };
   const [order] = await db().select().from(tables.orders).where(eq(tables.orders.id, orderId)).limit(1);
@@ -141,19 +147,75 @@ export async function* runLifecycle(): AsyncGenerator<StepEvent> {
     return;
   }
   const [kase] = await db().select().from(tables.cases).where(and(eq(tables.cases.orderId, orderId), eq(tables.cases.userId, userId))).orderBy(desc(tables.cases.createdAt)).limit(1);
-  // The store sees the evidence and accepts the return; for a held payment that voids the hold.
-  yield { step: 7, title: 'Demo Store accepts the return (demo control)', status: 'running' };
-  const reply = kase ? await respondToCase(kase.id, 'refund') : null;
-  if (!reply?.ok) {
-    yield { step: 7, title: 'Demo Store accepts the return (demo control)', status: 'failed', detail: reply?.message ?? 'No case was found for this order.' };
+  if (!kase) {
+    yield { step: 7, title: 'Demo Store’s agent reads the case', status: 'failed', detail: 'No case was found for this order.' };
     return;
   }
-  yield { step: 7, title: 'Demo Store accepts the return (demo control)', status: 'done', detail: reply.message };
+  // The store's agent answers, inside the store's policy; Maya's agent reads her the offer and its
+  // reasons; she declines once (she wants her money back), and the store's agent revises once.
+  let n = 7;
+  for (let round = 1; round <= 2; round++) {
+    const title = round === 1 ? 'Demo Store’s agent reads the signed evidence and answers' : 'Demo Store’s agent revises its offer, once';
+    yield { step: n, title, status: 'running' };
+    const [current] = await db().select().from(tables.cases).where(eq(tables.cases.id, kase.id)).limit(1);
+    const lastOffer = ((current?.offers as { id: string }[] | null) ?? []).at(-1);
+    const run = await runStoreAgent(kase.id, round === 1 || !lastOffer ? { kind: 'case_received' } : { kind: 'offer_declined', offerId: lastOffer.id });
+    if (run.kind === 'sent' || run.kind === 'waiting') {
+      const who = run.source === 'model' ? 'Claude chose among the replies the store policy allows' : 'The store rules chose (Claude is not connected here)';
+      yield {
+        step: n,
+        title,
+        status: 'done',
+        detail: `${who}: ${run.title}. ${(run.reasons ?? []).join(' ')} ${run.kind === 'sent' ? 'Inside the store policy, so it was sent at once.' : `It waits for staff: ${run.message}`}`,
+      };
+      n++;
+      if (run.kind === 'waiting' && run.proposalId) {
+        yield { step: n, title: 'Store staff approve the proposal (demo control)', status: 'running' };
+        const sent = await sendProposal(run.proposalId, 'staff');
+        yield { step: n, title: 'Store staff approve the proposal (demo control)', status: sent.kind === 'sent' ? 'done' : 'failed', detail: sent.message };
+        n++;
+        if (sent.kind !== 'sent') return;
+      }
+    } else {
+      // The agent stopped (no key needed for this, so only a broken pack or no allowed reply): staff answer instead.
+      yield { step: n, title, status: 'skipped', detail: run.message };
+      n++;
+      yield { step: n, title: 'Demo Store accepts the return (demo control)', status: 'running' };
+      const reply = await respondToCase(kase.id, 'refund');
+      yield { step: n, title: 'Demo Store accepts the return (demo control)', status: reply.ok ? 'done' : 'failed', detail: reply.message };
+      n++;
+      break;
+    }
+    const open = await findOpenOffer(userId);
+    if (!open || open.caseId !== kase.id) break;
+    const answer = round === 1 ? 'decline' : 'accept';
+    const answerTitle = round === 1 ? 'Maya hears the offer and its reasons, and declines: she wants her money back' : 'Maya hears the new offer and accepts it, with two presses';
+    yield { step: n, title: answerTitle, status: 'running' };
+    const heard = await handleTurn(userId, { action: 'offer' });
+    yield { step: n, title: answerTitle, status: 'running', spoken: heard.say };
+    let answered = await handleTurn(userId, { action: answer === 'decline' ? 'offer-decline' : 'offer-accept', offerId: open.offer.id });
+    if (answer === 'accept') {
+      await new Promise((r) => setTimeout(r, 650));
+      answered = await handleTurn(userId, { action: 'offer-accept', offerId: open.offer.id });
+    }
+    yield { step: n, title: answerTitle, status: 'done', spoken: answered.say };
+    n++;
+    if (answer === 'accept') break;
+  }
   const [o] = await db().select().from(tables.orders).where(eq(tables.orders.id, orderId)).limit(1);
   yield {
-    step: 8,
+    step: n,
     title: 'Done',
     status: 'done',
-    detail: o?.status === 'voided' ? 'PayPal cancelled the hold. Demo Store was never paid, and Maya was never charged.' : 'Demo Store refunded the payment through PayPal.',
+    detail:
+      o?.status === 'voided'
+        ? 'PayPal cancelled the hold. Demo Store was never paid, and Maya was never charged.'
+        : o?.status === 'resolved_partial_refund'
+          ? 'Maya kept the item for less: PayPal took only the agreed part of the hold and released the rest.'
+          : o?.status === 'resolved_replacement'
+            ? 'Maya accepted a replacement. The hold stays until a week after the agreement, then Demo Store is paid.'
+            : o?.status === 'resolved_refund'
+              ? 'Demo Store refunded the payment through PayPal.'
+              : 'The case is with Demo Store.',
   };
 }
