@@ -2,20 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import {
-  CONFIDENCE_WORD,
-  FINDING,
-  MODULE_LABEL,
-  caseStatus,
-  formatMoney,
-  paymentStatus,
-  shipmentStatus,
-  spokenDate,
-  verdictStatus,
-  type StatusWord,
-} from '@sightline/core';
+import { CONFIDENCE_WORD, FINDING, MODULE_LABEL, caseStatus, formatMoney, paymentStatus, shipmentStatus, spokenDate, verdictStatus, type StatusWord, shortRef } from '@sightline/core';
 import { currentUser, requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { db } from '@/server/runtime';
@@ -148,6 +137,23 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     ? await db().select().from(tables.evidencePacks).where(eq(tables.evidencePacks.id, kase.evidencePackId)).limit(1)
     : [];
   const [helper] = await db().select({ name: tables.helpers.name }).from(tables.helpers).where(eq(tables.helpers.userId, user.id)).limit(1);
+  // A helper link made earlier and still live (not answered, not cancelled, not expired).
+  const [liveLink] = verification
+    ? await db()
+        .select({ expiresAt: tables.helperRequests.expiresAt })
+        .from(tables.helperRequests)
+        .where(
+          and(
+            eq(tables.helperRequests.verificationId, verification.id),
+            isNull(tables.helperRequests.revokedAt),
+            isNull(tables.helperRequests.answeredAt),
+            gt(tables.helperRequests.expiresAt, new Date().toISOString()),
+          ),
+        )
+        .orderBy(desc(tables.helperRequests.createdAt))
+        .limit(1)
+    : [];
+  const liveHelperUntil = liveLink ? spokenWhen(liveLink.expiresAt) : null;
   const history = await db().select().from(tables.auditLog).where(eq(tables.auditLog.subjectId, o.id)).orderBy(desc(tables.auditLog.seq)).limit(20);
   const amount = formatMoney({ cents: o.amountCents, currency: o.currency });
   const verdict = verification?.verdict ?? null;
@@ -171,7 +177,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </Link>
       </p>
       <header className="grid gap-2">
-        <p className="eyebrow">Order {o.id.slice(-8).toUpperCase()}</p>
+        <p className="eyebrow">Order {shortRef(o.id)}</p>
         <h1 className="text-[length:var(--step-4)] max-w-[20ch]">{s.title}</h1>
         <p className="text-[length:var(--step-1)]">
           {[s.attributes.colour, s.attributes.size && `size ${s.attributes.size}`].filter(Boolean).join(', ')} · {amount} · Demo Store
@@ -271,7 +277,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 : ''}
             </p>
           ) : verdict?.kind === 'unsure' && helper ? (
-            <AskHelper orderId={o.id} helperName={helper.name} />
+            <AskHelper orderId={o.id} helperName={helper.name} waitingUntil={liveHelperUntil} />
           ) : null}
           <p>
             <Link className={verdict ? 'btn' : 'btn btn-primary btn-xl'} href={`/app/check/${o.id}`}>

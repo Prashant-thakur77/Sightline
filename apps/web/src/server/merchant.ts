@@ -4,6 +4,7 @@ import { asc, desc, eq, inArray, sql, and } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import {
   addBusinessDays,
+  shortRef,
   CONFIDENCE_WORD,
   FINDING,
   MODULE_LABEL,
@@ -72,10 +73,8 @@ export function paypalConfigured(): boolean {
   return Boolean(INTEGRATIONS.paypal);
 }
 
-/** Short, speakable reference for an id: the last six characters, upper case. */
-export function shortRef(id: string): string {
-  return id.slice(-6).toUpperCase();
-}
+/** One reference format for buyer and store (core shortRef). */
+export { shortRef };
 
 const money = (cents: number, currency: string) => formatMoney({ cents, currency });
 
@@ -726,14 +725,20 @@ function dueWords(dueAt: string | null, now = new Date()): { words: string | nul
 }
 
 function outcomeWords(outcome: unknown, currency: string): string | null {
-  const o = outcome as { kind?: string; amount?: number; amountCents?: number; via?: string } | null;
+  const o = outcome as { kind?: string; amount?: number; amountCents?: number; via?: string; by?: string } | null;
   if (!o?.kind) return null;
   const amt = o.amountCents ?? o.amount;
   const a = typeof amt === 'number' ? money(amt, currency) : 'the payment';
-  if (o.kind === 'voided') return `The buyer's check released the hold. Demo Store was never paid ${a}.`;
+  if (o.kind === 'voided')
+    return o.by === 'deadline'
+      ? `No reply by the deadline, so the ${a} hold was released. Demo Store was never paid.`
+      : o.by === 'merchant'
+        ? `You accepted the return and released the ${a} hold. Demo Store was never paid.`
+        : `The ${a} hold was released. Demo Store was never paid.`;
   if (o.kind === 'refunded')
     return `Refunded ${a}${o.via === 'dispute' ? ' through the PayPal dispute' : ' through PayPal'}.`;
-  return o.kind.replace(/_/g, ' ');
+  if (o.kind === 'replacement' || o.kind === 'REPLACEMENT_WITHOUT_REFUND') return 'The buyer accepted the replacement. No refund is due.';
+  return `Closed: ${o.kind.replace(/_/g, ' ').toLowerCase()}.`;
 }
 
 function disputeOptions(d: Dispute) {

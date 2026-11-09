@@ -1,8 +1,8 @@
 {
   "suite": "redteam",
   "title": "Adversarial listings (red team)",
-  "ranAt": "2026-11-09T00:57:26.917Z",
-  "gitSha": "76879c9",
+  "ranAt": "2026-11-09T02:13:16.684Z",
+  "gitSha": "7e88e2c",
   "headlines": [
     {
       "id": "breaches-sightline",

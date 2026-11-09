@@ -107,6 +107,7 @@ export function CheckFlow({
         arrivedPhotoUrl={result.itemPhoto}
         arrivedPhotoSource={result.itemPhotoSource}
         helperName={helper ?? null}
+        settled={Boolean(answered || caseStage)}
         note={answered ? <p className="mb-result">{answered}</p> : null}
         actions={
           v.kind === 'mismatch' ? (

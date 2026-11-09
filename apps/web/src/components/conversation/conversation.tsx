@@ -106,8 +106,9 @@ export function Conversation({
       busyRef.current = true;
       setBusy(true);
       setError(null);
-      cue('thinking');
       const greeting = 'action' in req && req.action === 'start';
+      // No sound or vibration as the page opens (nothing autoplays); cues follow what the person does.
+      if (!greeting) cue('thinking');
       if (!greeting) setCompact(true);
       // Focus inside the card is about to disappear with the card; remember to move it.
       // An offer opened from an order page's link always lands on the offer card: focus may still be
@@ -144,8 +145,10 @@ export function Conversation({
         // One channel: the reply is announced; focus stays where the person is unless the
         // control they used just went away, in which case it goes to the new card's heading.
         announce(data.say, { politeness: data.politeness, source: 'assistant' });
-        if (data.cue) cue(data.cue);
-        else cue('done');
+        if (!greeting) {
+          if (data.cue) cue(data.cue);
+          else cue('done');
+        }
         clearTimeout(slow);
         // Moved after React has drawn the new card (see the effect on focusTick), never on a timer,
         // so a slow render can't send focus to the text box instead of the card.

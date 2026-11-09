@@ -6,8 +6,7 @@ import { CONFIDENCE_WORD, FINDING, MODULE_LABEL, verdictStatus, type Verdict, ty
 function Mark({ finding }: { finding: VerdictReason['finding'] }) {
   return (
     <span className="verdict-mark" data-finding={finding}>
-      <span aria-hidden="true">{FINDING[finding].glyph}</span>
-      <span className="sr-only">{FINDING[finding].word}</span>
+      <span aria-hidden="true">{FINDING[finding].glyph}</span> {FINDING[finding].word}
     </span>
   );
 }
@@ -49,6 +48,7 @@ export function VerdictView({
   note,
   helperName,
   focusOnMount = true,
+  settled = false,
 }: {
   verdict: Verdict;
   ordered: { title: string; imageUrl?: string; colour?: string; size?: string };
@@ -60,7 +60,11 @@ export function VerdictView({
   /** The buyer's helper, named in the steps instead of "a helper". */
   helperName?: string | null;
   focusOnMount?: boolean;
+  /** The helper has answered or a money-back case exists: steps that suggest those are dropped. */
+  settled?: boolean;
 }) {
+  // Once the helper answered or a case exists, "ask a helper" and "get your money back" are done.
+  const steps = namedSteps(verdict.nextSteps, helperName).filter((t) => !settled || !/\b(ask|money back|refund)\b/i.test(t));
   const headingRef = useRef<HTMLHeadingElement>(null);
   // Focus moves to a new verdict, not to one that was already there when the page loaded. Comparing
   // against the first verdict (not a "first run" flag) stays right when Strict Mode runs this twice.
@@ -132,11 +136,11 @@ export function VerdictView({
         </tbody>
       </table>
 
-      {verdict.nextSteps.length > 0 && (
+      {steps.length > 0 && (
         <div>
           <h3 className="text-[length:var(--step-1)]">What you can do</h3>
           <ul className="list-disc pl-6">
-            {namedSteps(verdict.nextSteps, helperName).map((s) => (
+            {steps.map((s) => (
               <li key={s}>{s}</li>
             ))}
           </ul>

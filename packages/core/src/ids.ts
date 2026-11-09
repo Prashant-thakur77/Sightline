@@ -14,3 +14,9 @@ export function newId(prefix: string): string {
   for (const b of rnd) r += ALPHABET[b % 32];
   return `${prefix}_${time}${r}`;
 }
+
+/** Short, speakable reference for an order or case id: the last eight characters, upper case.
+ *  One format everywhere, so the buyer and the store say the same thing. */
+export function shortRef(id: string): string {
+  return id.slice(-8).toUpperCase();
+}

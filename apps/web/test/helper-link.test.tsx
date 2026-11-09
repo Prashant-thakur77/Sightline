@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnnouncerProvider } from '@/components/a11y/announcer';
 import { AskHelper } from '@/components/orders/ask-helper';
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: () => undefined, push: () => undefined }) }));
+
 /* Sending the helper's link: the share sheet when the phone has one, else copy, with the text
    field kept as a fallback, focus kept on the button, and errors that say what to do. */
 
@@ -99,5 +101,19 @@ describe('sending the helper link', () => {
     await settle();
     expect(writeText).toHaveBeenCalledWith(LINK);
     expect(announced()).toContain('Link copied. Paste it into a message to Asha.');
+  });
+});
+
+describe('a helper link made before this page loaded', () => {
+  afterEach(cleanup);
+  it('says it is waiting and offers to cancel it, instead of making a second live link', () => {
+    render(
+      <AnnouncerProvider>
+        <AskHelper orderId="ord_1" helperName="Asha" waitingUntil="Tuesday 10 November, 9:00 am UTC" />
+      </AnnouncerProvider>,
+    );
+    expect(screen.getByText(/Waiting for Asha\. The link you made works until Tuesday 10 November, 9:00 am UTC\./)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cancel the link' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Ask Asha to look' })).toBeNull();
   });
 });

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
 
@@ -10,8 +11,19 @@ function canShare(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 }
 
-export function AskHelper({ orderId, helperName }: { orderId: string; helperName: string }) {
+export function AskHelper({
+  orderId,
+  helperName,
+  waitingUntil = null,
+}: {
+  orderId: string;
+  helperName: string;
+  /** A link made earlier is still live (its address isn't stored, only its fingerprint): until when. */
+  waitingUntil?: string | null;
+}) {
   const { announce } = useAnnouncer();
+  const router = useRouter();
+  const [waiting, setWaiting] = useState<string | null>(waitingUntil);
   const [link, setLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -51,6 +63,8 @@ export function AskHelper({ orderId, helperName }: { orderId: string; helperName
       setStatus(null);
       setLink(data.link);
       announce(`I made a private link for ${helperName}. It shows only the photos and the listing, and lasts 48 hours.`, { source: 'helper' });
+      // The order's history gains a line; refresh the server parts of the page.
+      router.refresh();
     } catch {
       fail(OFFLINE);
     } finally {
@@ -119,7 +133,9 @@ export function AskHelper({ orderId, helperName }: { orderId: string; helperName
       moveFocus.current = true;
       setStatus(null);
       setLink(null);
+      setWaiting(null);
       announce(`The link for ${helperName} is cancelled. It no longer opens.`, { source: 'helper' });
+      router.refresh();
     } catch {
       fail(OFFLINE);
     } finally {
@@ -130,7 +146,16 @@ export function AskHelper({ orderId, helperName }: { orderId: string; helperName
   return (
     <div id="helper" className="grid gap-3">
       {error && <p className="card-refusal">{error}</p>}
-      {!link ? (
+      {!link && waiting ? (
+        <div className="grid gap-2">
+          <p>
+            Waiting for {helperName}. The link you made works until {waiting}. If you didn’t send it, cancel it and make a new one.
+          </p>
+          <button ref={askRef} type="button" className="btn" onClick={cancel} aria-disabled={busy || undefined} data-focus-target="">
+            {busy ? 'Cancelling…' : 'Cancel the link'}
+          </button>
+        </div>
+      ) : !link ? (
         <button ref={askRef} type="button" className="btn btn-xl" onClick={ask} aria-disabled={busy || undefined} data-focus-target="">
           {busy ? 'Making a link…' : `Ask ${helperName} to look`}
         </button>

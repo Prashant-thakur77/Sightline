@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { tables } from '@sightline/db';
-import { paymentStatus, type Confidence, type ProductSnapshot, type Verdict, type VerdictReason } from '@sightline/core';
+import { paymentStatus, type Confidence, type ProductSnapshot, type Verdict, type VerdictReason, shortRef } from '@sightline/core';
 import { centsText, durationText } from '@/components/studio/formats';
 import type {
   BarrierData,
@@ -114,8 +114,7 @@ function moneyState(o: OrderRecord): MoneyState {
   return paymentStatus(o).word;
 }
 
-/** Short, speakable reference for an id: the last six characters, upper case. */
-const shortRef = (id: string) => id.slice(-6).toUpperCase();
+
 
 function stageText(stage: string, outcome: unknown): string {
   switch (stage) {
@@ -133,7 +132,7 @@ function stageText(stage: string, outcome: unknown): string {
       return 'PayPal is reviewing';
     case 'resolved': {
       const kind = (outcome as { kind?: string } | null)?.kind;
-      return `Resolved${kind === 'voided' ? ': hold released' : kind === 'refunded' ? ': refunded' : ''}`;
+      return `Resolved${kind === 'voided' ? ': hold released' : kind === 'refunded' ? ': refunded' : kind === 'replacement' ? ': replacement accepted' : ''}`;
     }
     default:
       return stage.replace(/_/g, ' ');
@@ -353,7 +352,9 @@ export async function loadVerifiedDelivery(scopeUserId: string): Promise<Verifie
             ? 'Hold released'
             : outcome === 'refunded'
               ? 'Refunded'
-              : 'Resolved',
+              : outcome === 'replacement'
+                ? 'Replacement accepted'
+                : 'Closed',
         openedAt: iso(c.createdAt),
         resolvedAt: resolved ? iso(c.updatedAt) : null,
         hoursToResolution: resolved && span >= 0 ? span / 3_600_000 : null,
@@ -483,11 +484,11 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
     {
       id: 'median',
       label: 'Median time to resolution',
-      value: s.medianResolutionMs === null ? 'None yet' : `${(s.medianResolutionMs / 3_600_000).toFixed(1)} hours`,
+      value: s.medianResolutionMs === null ? 'None yet' : durationText(s.medianResolutionMs),
       detail:
         s.medianResolutionMs === null
           ? `No case resolved yet. ${plural(s.openCases, 'case')} still open.`
-          : `That is ${durationText(s.medianResolutionMs)}, across ${plural(s.resolvedCases, 'resolved case')}. ${plural(s.openCases, 'case')} still open.`,
+          : `Across ${plural(s.resolvedCases, 'resolved case')}. ${plural(s.openCases, 'case')} still open.`,
     },
   ];
 }

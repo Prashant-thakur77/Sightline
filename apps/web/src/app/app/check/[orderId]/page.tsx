@@ -7,7 +7,7 @@ import { MomentsStrip, type Moment } from '@/components/shell/moments';
 import { currentUser, requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { existingBlobIds } from '@/server/blobs';
-import { paymentStatus } from '@sightline/core';
+import { paymentStatus, shortRef } from '@sightline/core';
 import { eq } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { db } from '@/server/runtime';
@@ -93,11 +93,11 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
       </p>
       <header className="grid gap-2">
         <MomentsStrip done={done} current={current} currentNote={currentNote} notDone={notDone} />
-        <p className="eyebrow">Order {found.order.id.slice(-8).toUpperCase()}</p>
+        <p className="eyebrow">Order {shortRef(found.order.id)}</p>
         <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title} you paid for?</h1>
         <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">
           You ordered {s.attributes.colour ?? 'the listed colour'}, size {s.attributes.size ?? 'as listed'}.{' '}
-          {found.order.status === 'authorized' ? 'Your payment is on hold. Demo Store is paid only if this matches.' : ''}
+          {pay.word === 'On hold' ? 'Your payment is on hold. Demo Store is paid only if this matches.' : ''}
         </p>
       </header>
       <CheckFlow

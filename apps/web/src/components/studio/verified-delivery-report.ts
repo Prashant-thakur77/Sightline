@@ -86,7 +86,7 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
             description:
               'What decided the verdict: Wrong colour, Wrong size, Wrong item or Damaged for a mismatch; for a check that was not sure, what it was not sure of, such as Size may be wrong or Could not check colour; or No mismatch.',
           },
-          { id: 'confidence', name: 'Confidence', format: 'textFormat', description: 'How sure the deciding finding was, in words: sure, fairly sure, not sure.' },
+          { id: 'confidence', name: 'How sure (deciding reason)', format: 'textFormat', description: 'How sure the check was of the reason that decided the verdict, in words: sure, fairly sure, not sure.' },
           { id: 'headline', name: 'What the buyer heard', format: 'textFormat' },
           {
             id: 'latencyMs',

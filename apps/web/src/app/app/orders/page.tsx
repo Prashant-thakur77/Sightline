@@ -3,7 +3,7 @@
    table semantics when a table's display changes. Stating each role (table, row, cell…) keeps it a
    table for them; the plugin reads td as a grid cell, so role="cell" looks like a change to it. */
 import Link from 'next/link';
-import { caseStatus, formatMoney, paymentStatus, verdictStatus } from '@sightline/core';
+import { caseStatus, formatMoney, paymentStatus, verdictStatus, shortRef } from '@sightline/core';
 import { requireUser } from '@/server/session';
 import { ordersPageData } from '@/server/orders-read';
 import { isHeld } from '@/server/after-check';
@@ -22,7 +22,7 @@ function orderRefs(orders: { id: string; title: string; createdAt: string }[]): 
   const when = (o: { createdAt: string }) => `ordered ${spokenWhen(o.createdAt)}`;
   const seen = new Map<string, number>();
   for (const o of orders) seen.set(`${o.title}|${when(o)}`, (seen.get(`${o.title}|${when(o)}`) ?? 0) + 1);
-  return new Map(orders.map((o) => [o.id, seen.get(`${o.title}|${when(o)}`)! > 1 ? `${when(o)}, order ${o.id.slice(-8).toUpperCase()}` : when(o)]));
+  return new Map(orders.map((o) => [o.id, seen.get(`${o.title}|${when(o)}`)! > 1 ? `${when(o)}, order ${shortRef(o.id)}` : when(o)]));
 }
 
 /** Titles that more than one order shares; only those links need more than the title to tell them apart. */

@@ -1130,6 +1130,9 @@ async function unreadUpdates(userId: string) {
  * Hello, then any updates, then where things stand: a readback or options brought back from
  * before, a parcel to check, or the opening question. The welcome is said on the first visit only.
  */
+/** Turns whose reply is spoken but not stored (a plain greeting on a return visit). */
+const quietGreetings = new WeakSet<Ctx>();
+
 async function greet(ctx: Ctx): Promise<Reply> {
   const userId = ctx.userId;
   const [earlier] = await db().select({ id: tables.messages.id }).from(tables.messages).where(eq(tables.messages.conversationId, ctx.conversationId)).limit(1);
@@ -1172,6 +1175,9 @@ async function greet(ctx: Ctx): Promise<Reply> {
     return { say: `${hello} ${restored.say}`, politeness: 'polite', card: restored.card, suggestions: restored.suggestions };
   }
   ctx.state = { phase: 'browsing' };
+  // A return visit with nothing new: said, but not stored, so greetings never pile up in the
+  // conversation (a screen reader would read every one, and they would push real history out).
+  if (earlier && !updates) quietGreetings.add(ctx);
   return { say: `${hello} What do you need today?`, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
 }
 
@@ -1291,6 +1297,11 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
     }
   }
   ctx.state.lastSay = reply.say;
+  if (quietGreetings.has(ctx)) {
+    // Not stored and not counted as activity, so the resume window and history stay as they were.
+    await db().update(tables.conversations).set({ state: ctx.state as unknown as Record<string, unknown> }).where(eq(tables.conversations.id, ctx.conversationId));
+    return { ...reply, messages: ctx.out.messages, phase: ctx.state.phase };
+  }
   await record(ctx, 'agent', reply.say);
   await db().update(tables.conversations).set({ state: ctx.state as unknown as Record<string, unknown>, updatedAt: new Date().toISOString() }).where(eq(tables.conversations.id, ctx.conversationId));
   return { ...reply, messages: ctx.out.messages, phase: ctx.state.phase };
