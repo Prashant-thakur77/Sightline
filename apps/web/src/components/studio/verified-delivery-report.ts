@@ -1,5 +1,5 @@
 import type { AgDataSourcesDefinition, AgPageState, AgReportState } from 'ag-studio';
-import { centsText, hoursText, msText } from './formats';
+import { centsText, hoursText, msText, shortHoursText } from './formats';
 import { at, count, field, flag, groupRows, kpi, largestFirst, manyToOne, money, outlined, rate, sum, title, whenText, type Spec } from './report-kit';
 import type { ChartTable, VerifiedDeliveryData } from './types';
 
@@ -182,9 +182,9 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
       {
         id: 'medianResolutionHours',
         name: 'Median time to resolution',
-        description: 'Median time from case opened to resolved, over resolved cases, in the same words as the ticket.',
+        description: 'Median time from case opened to resolved, over resolved cases. The tile says it short (1 min, 2 h 5 min); the ticket says it in full.',
         format: 'decimalFormat',
-        createValueFormatter: () => hoursText as (v: unknown) => string,
+        createValueFormatter: () => shortHoursText as (v: unknown) => string,
         isMeasure: true,
         expression: { operator: 'median', inputs: [{ id: 'cases.hoursToResolution' }] },
       },
@@ -257,7 +257,12 @@ const overview: AgPageState = {
       sort: [{ field: count('checks.id'), direction: 'desc' }],
       format: {
         ...title(CHARTS.verdicts.title, CHARTS.verdicts.caption),
-        style: { theme: { common: { legend: { enabled: true, position: 'bottom' } } }, ...outlined },
+        // Counts of checks are whole numbers: each bar says its count, and the value axis (which
+        // Studio can't be told to step in whole numbers) shows no fractional ticks or grid lines.
+        style: {
+          theme: { common: { legend: { enabled: true, position: 'bottom' } }, bar: { series: { label: { enabled: true } } } },
+          custom: { ...outlined.custom, valueAxis: { label: { color: 'transparent' }, gridLine: { enabled: false } } },
+        },
       },
     },
     'money-state': {

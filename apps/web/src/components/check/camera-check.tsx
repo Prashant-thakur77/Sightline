@@ -340,16 +340,19 @@ export function CameraCheck({
     );
   }
 
+  // Photos added or skipped already (by camera or upload): the page says which photo is next.
+  const started = index > 0 || shots.length > 0;
   return (
     <section aria-labelledby="cam-h" className="grid gap-5">
       <h2 id="cam-h" ref={headingRef} tabIndex={-1} className="text-[length:var(--step-2)]">
-        {phase === 'intro' ? 'Check your parcel' : `Photo ${index + 1} of ${SHOTS.length}: ${shot?.title}`}
+        {phase === 'intro' && !started ? 'Check your parcel' : `Photo ${index + 1} of ${SHOTS.length}: ${shot?.title}`}
       </h2>
       {phase === 'intro' && (
         <div className="grid gap-4 max-w-[var(--measure)]">
           <p>
-            I’ll guide you with my voice while you point the camera, then take each photo for you. Three photos: the whole item,
-            the size tag, and any damage. You can skip any of them.
+            {started
+              ? shot?.prompt
+              : 'I’ll guide you with my voice while you point the camera, then take each photo for you. Three photos: the whole item, the size tag, and any damage. You can skip any of them.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button type="button" className="btn btn-primary btn-xl" onClick={start}>
@@ -413,6 +416,7 @@ export function CameraCheck({
             I couldn’t use the camera. The browser may be blocking it: allow the camera for this site in the browser’s settings, then try again. Or
             take or choose a photo instead.
           </p>
+          {started && <p>{shot?.prompt}</p>}
           <p>
             <button type="button" className="btn btn-primary" onClick={start}>
               Try the camera again
@@ -421,14 +425,33 @@ export function CameraCheck({
         </div>
       )}
 
-      {(phase === 'live' || phase === 'denied' || phase === 'intro') && shot && (
+      {phase !== 'live' && shots.length > 0 && (
         <div className="grid gap-2">
+          <h3 className="text-[length:var(--step-1)]">Photos so far</h3>
+          <ul className="shots-so-far">
+            {shots.map((s) => (
+              <li key={s.kind}>
+                <img src={s.url} alt="" />
+                <span>{SHOTS.find((x) => x.kind === s.kind)?.title}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {(phase === 'live' || phase === 'denied' || phase === 'intro') && shot && (
+        <div className="grid gap-2 justify-items-start">
           <label htmlFor="upload" className="font-bold">
             {phase === 'intro' && touch
               ? `Or use your phone's camera app: photo of ${shot.title.toLowerCase()}`
               : `Or take or choose a photo of ${shot.title.toLowerCase()}`}
           </label>
           <input id="upload" type="file" accept="image/*" capture="environment" onChange={onUpload} className="file-input" />
+          {phase !== 'live' && (started || shot.optional) && (
+            <button type="button" className="btn" onClick={skip}>
+              Skip this shot
+            </button>
+          )}
           {phase === 'denied' && demoShots && (
             <button type="button" className="btn" onClick={useDemo}>
               Use the demo parcel photos

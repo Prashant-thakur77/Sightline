@@ -15,9 +15,12 @@ export function AskHelper({
   orderId,
   helperName,
   waitingUntil = null,
+  primary = false,
 }: {
   orderId: string;
   helperName: string;
+  /** Asking the helper is the main thing to do on the page now. */
+  primary?: boolean;
   /** A link made earlier is still live (its address isn't stored, only its fingerprint): until when. */
   waitingUntil?: string | null;
 }) {
@@ -144,10 +147,10 @@ export function AskHelper({
   };
 
   return (
-    <div id="helper" className="grid gap-3">
+    <div id="helper" className="grid gap-3 justify-items-start">
       {error && <p className="card-refusal">{error}</p>}
       {!link && waiting ? (
-        <div className="grid gap-2">
+        <div className="grid gap-2 justify-items-start">
           <p>
             Waiting for {helperName}. The link you made works until {waiting}. If you didn’t send it, cancel it and make a new one.
           </p>
@@ -156,22 +159,22 @@ export function AskHelper({
           </button>
         </div>
       ) : !link ? (
-        <button ref={askRef} type="button" className="btn btn-xl" onClick={ask} aria-disabled={busy || undefined} data-focus-target="">
+        <button ref={askRef} type="button" className={primary ? 'btn btn-primary' : 'btn'} onClick={ask} aria-disabled={busy || undefined} data-focus-target="">
           {busy ? 'Making a link…' : `Ask ${helperName} to look`}
         </button>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-2 justify-items-start">
           <p>
             Send this private link to {helperName}. It shows only the photos and the listing, never payment details, and expires in 48 hours.
           </p>
-          <button ref={sendRef} type="button" className="btn btn-primary btn-xl" onClick={send}>
+          <button ref={sendRef} type="button" className="btn btn-primary" onClick={send}>
             {share ? 'Share the link' : 'Copy the link'}
           </button>
           {status && <p className="helper-status">{status}</p>}
           <label htmlFor="helper-link" className="font-bold">
             Link for {helperName}
           </label>
-          <input id="helper-link" type="text" readOnly value={link} onFocus={(e) => e.currentTarget.select()} />
+          <input id="helper-link" type="text" readOnly value={link} onFocus={(e) => e.currentTarget.select()} className="w-full" />
           <button type="button" className="btn" onClick={cancel} aria-disabled={busy || undefined}>
             {busy ? 'Cancelling…' : 'Cancel this link'}
           </button>

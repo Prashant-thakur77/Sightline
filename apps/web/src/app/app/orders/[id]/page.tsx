@@ -38,15 +38,21 @@ function Section({ n, id, tab, state, current, children }: { n: number; id: Step
       className="folder case-folder"
       data-tone={state.tone}
       data-current={here || undefined}
-      aria-current={here ? 'step' : undefined}
       style={{ ['--k' as string]: n - 1 }}
     >
-      <h2 className="folder-tab">
+      {/* The current step is said on its heading (where heading navigation lands) and shown in
+          words on its tab, not by the yellow alone. */}
+      <h2 className="folder-tab" aria-current={here ? 'step' : undefined}>
         <span className="case-glyph" aria-hidden="true">
           {state.glyph}
         </span>{' '}
         {tab}
         <span className="sr-only">, {state.word}</span>
+        {here && (
+          <span className="folder-now" aria-hidden="true">
+            Now
+          </span>
+        )}
       </h2>
       <div className="folder-body case-body">{children}</div>
     </li>
@@ -299,7 +305,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 : ''}
             </p>
           ) : verdict?.kind === 'unsure' && helper && kase?.stage !== 'resolved' ? (
-            <AskHelper orderId={o.id} helperName={helper.name} waitingUntil={liveHelperUntil} />
+            <AskHelper orderId={o.id} helperName={helper.name} waitingUntil={liveHelperUntil} primary={current === 'checked'} />
           ) : null}
           <p>
             <Link className={verdict ? 'btn' : 'btn btn-primary btn-xl'} href={`/app/check/${o.id}`}>

@@ -9,7 +9,7 @@ function Mark({ finding }: { finding: VerdictReason['finding'] }) {
       <span className="verdict-mark" data-finding={finding} aria-hidden="true">
         {FINDING[finding].glyph}
       </span>
-      {FINDING[finding].word}
+      <span className="verdict-word">{FINDING[finding].word}</span>
     </span>
   );
 }
@@ -52,6 +52,7 @@ export function VerdictView({
   helperName,
   focusOnMount = true,
   settled = false,
+  closed = false,
 }: {
   verdict: Verdict;
   ordered: { title: string; imageUrl?: string; colour?: string; size?: string };
@@ -65,9 +66,11 @@ export function VerdictView({
   focusOnMount?: boolean;
   /** The helper has answered or a money-back case exists: steps that suggest those are dropped. */
   settled?: boolean;
+  /** The money-back case is closed: no steps are suggested any more. */
+  closed?: boolean;
 }) {
   // Once the helper answered or a case exists, "ask a helper" and "get your money back" are done.
-  const steps = namedSteps(verdict.nextSteps, helperName).filter((t) => !settled || !/\b(ask|money back|refund)\b/i.test(t));
+  const steps = closed ? [] : namedSteps(verdict.nextSteps, helperName).filter((t) => !settled || !/\b(ask|money back|refund)\b/i.test(t));
   const headingRef = useRef<HTMLHeadingElement>(null);
   // Focus moves to a new verdict, not to one that was already there when the page loaded. Comparing
   // against the first verdict (not a "first run" flag) stays right when Strict Mode runs this twice.

@@ -82,8 +82,27 @@ export interface StudioFrameProps {
   harness?: AgAiHarnessSetup;
 }
 
-/** Studio's own empty-widget text, in the same words as the ticket of figures. */
-const STUDIO_WORDS = { widgetOverlayNoData: 'None yet.' };
+/** Studio's own empty-widget and empty-value text, in the same words as the ticket of figures. */
+const STUDIO_WORDS = { widgetOverlayNoData: 'None yet.', valueNotApplicable: 'None yet' };
+
+/**
+ * The grids and charts inside Studio have their own empty-state text ("No Rows To Show", "No data
+ * to display"), which screen readers reach even under Studio's overlay: each says "None yet." too.
+ */
+function inOurWords<T extends object>(widgets: T): T {
+  const out = { ...widgets } as Record<string, unknown>;
+  for (const [type, value] of Object.entries(widgets)) {
+    const cfg = value as { options?: Record<string, unknown> } | undefined;
+    if (!cfg || typeof cfg !== 'object') continue;
+    if (type === 'grid') {
+      const localeText = { ...(cfg.options?.localeText as object | undefined), noRowsToShow: 'None yet.' };
+      out[type] = { ...cfg, options: { ...cfg.options, localeText } };
+    } else if (type.includes('chart')) {
+      out[type] = { ...cfg, options: { ...cfg.options, locale: { localeText: { overlayNoData: 'None yet.' } } } };
+    }
+  }
+  return out as T;
+}
 
 export function StudioFrame({ id, title, data, report, licenseKey, agent, harness }: StudioFrameProps) {
   const inBrowser = useSyncExternalStore(noSubscription, () => true, () => false);
@@ -227,6 +246,7 @@ export function StudioFrame({ id, title, data, report, licenseKey, agent, harnes
               responsiveLayoutBreakpoints={BREAKPOINTS}
               layout={{ widgetBorderEnabled: true }}
               localeText={STUDIO_WORDS}
+              widgets={inOurWords}
               onApiReady={(e) => {
                 api.current = e.api;
               }}

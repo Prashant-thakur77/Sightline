@@ -27,6 +27,22 @@ export function hoursText(hours: number | null | undefined): string {
   return durationText(Math.round(hours * 3_600_000));
 }
 
+/**
+ * The same span as hoursText, short enough for a dashboard tile ("<1 min", "1 min", "2 h 5 min",
+ * "3 d 4 h"): Studio swaps text too long for its tile for a cut-off number.
+ */
+export function shortHoursText(hours: number | null | undefined): string {
+  if (hours === null || hours === undefined || !Number.isFinite(hours)) return 'None yet';
+  const min = Math.floor(Math.round(hours * 3_600_000) / 60_000);
+  if (min < 1) return '<1 min';
+  const d = Math.floor(min / 1440);
+  const h = Math.floor((min % 1440) / 60);
+  const m = min % 60;
+  if (d) return h ? `${d} d ${h} h` : `${d} d`;
+  if (h) return m ? `${h} h ${m} min` : `${h} h`;
+  return `${m} min`;
+}
+
 export function percentText(ratio: number | null | undefined): string {
   if (ratio === null || ratio === undefined || !Number.isFinite(ratio)) return '–';
   return `${Math.round(ratio * 100)}%`;

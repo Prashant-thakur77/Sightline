@@ -112,6 +112,22 @@ test.describe('money back after a wrong item', () => {
     await expectNoAxeViolations(page);
   });
 
+  test('adding photos without the camera says which photo is next, shows the ones added and can skip', async ({ page }) => {
+    const orderId = await seededOrder(page);
+    await page.goto(`/app/check/${orderId}`);
+    const photo = (name: string) => path.join(REPO, 'apps/web/public/demo-parcel', name);
+    await page.getByLabel(/photo of the whole item/).setInputFiles(photo('right-item.jpg'));
+    await expect(page.getByRole('heading', { name: 'Photo 2 of 3: The size tag' })).toBeFocused();
+    await expect(page.getByRole('list').filter({ hasText: 'The whole item' })).toBeVisible();
+    await page.getByLabel(/photo of the size tag/).setInputFiles(photo('right-tag.jpg'));
+    await expect(page.getByRole('heading', { name: 'Photo 3 of 3: Any damage' })).toBeFocused();
+    await expect(page.getByRole('region', { name: 'Photo 3 of 3: Any damage' }).getByText('If not, press Skip this shot.')).toBeVisible();
+    await page.getByRole('button', { name: 'Skip this shot' }).click();
+    await expect(page.getByRole('heading', { name: 'Ready to check' })).toBeFocused();
+    await expect(page.getByRole('list', { name: 'Photos to send' }).getByRole('listitem')).toHaveCount(2);
+    await expectNoAxeViolations(page);
+  });
+
   test('check, then money back with focus on each step and one deadline', async ({ page }) => {
     const orderId = await seededOrder(page);
 

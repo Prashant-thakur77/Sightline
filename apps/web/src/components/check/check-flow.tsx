@@ -94,6 +94,8 @@ export function CheckFlow({
     const helper = result.next?.helperName ?? helperName;
     // The helper's answer is about the check that was on the page, not a new one.
     const answered = result.fresh ? null : helperAnswer;
+    // A closed case: nothing left to do here but read how it ended.
+    const closed = caseStage === 'resolved';
     const caseLink = caseStage ? (
       <Link className="btn btn-primary btn-xl" href={`/app/orders/${orderId}#money-back`}>
         {caseStage === 'resolved' ? 'See how your case ended' : 'See your money-back case'}
@@ -108,9 +110,12 @@ export function CheckFlow({
         arrivedPhotoSource={result.itemPhotoSource}
         helperName={helper ?? null}
         settled={Boolean(answered || caseStage)}
+        closed={closed}
         note={answered ? <p className="mb-result">{answered}</p> : null}
         actions={
-          v.kind === 'mismatch' ? (
+          closed ? (
+            caseLink
+          ) : v.kind === 'mismatch' ? (
             <>
               {caseLink ?? (
                 <Link className="btn btn-primary btn-xl" href={`/app/orders/${orderId}#money-back`}>

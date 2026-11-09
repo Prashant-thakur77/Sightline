@@ -1239,6 +1239,29 @@ async function record(ctx: Ctx, role: 'user' | 'agent', text: string, meta?: Rec
   ctx.out.messages.push(m);
 }
 
+/** What a card button press says in the transcript; null for actions that aren't a choice. */
+function pressedWords(req: Exclude<TurnRequest, { text: string }>): string | null {
+  switch (req.action) {
+    case 'choose':
+    case 'details':
+      return `Tell me more about option ${req.index}`;
+    case 'buy':
+      return `Buy option ${req.index}`;
+    case 'confirm-button':
+      return 'Confirm';
+    case 'hold':
+      return 'Wait, hold on';
+    case 'cancel':
+      return 'Cancel';
+    case 'offer-accept':
+      return 'Accept the offer';
+    case 'offer-decline':
+      return 'Decline the offer';
+    default:
+      return null;
+  }
+}
+
 export async function handleTurn(userId: string, req: TurnRequest): Promise<TurnResponse> {
   const ctx = await loadContext(userId);
   // A question is only answered by the very next turn; anything else drops it.
@@ -1254,6 +1277,10 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
     const parsed = parseIntent(text, grammarCtx(ctx));
     reply = await route(ctx, parsed, text, asked);
   } else {
+    // A button press is the buyer's side of the conversation too: written in plain words, so the
+    // transcript reads both sides ("Accept the offer", then the reply).
+    const pressed = pressedWords(req);
+    if (pressed) await record(ctx, 'user', pressed, { source: 'button' });
     switch (req.action) {
       case 'start':
         reply = await greet(ctx);

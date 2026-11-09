@@ -419,7 +419,7 @@ export async function loadVerifiedDelivery(scopeUserId: string): Promise<Verifie
 }
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-const pct = (k: number, n: number) => (n ? `${Math.round((k / n) * 100)}%` : 'no data yet');
+const pct = (k: number, n: number) => (n ? `${Math.round((k / n) * 100)}%` : 'None yet');
 const usd = centsText;
 
 export interface SpokenFigure {

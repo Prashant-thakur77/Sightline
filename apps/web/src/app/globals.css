@@ -389,6 +389,30 @@ a {
     background: var(--paper-2);
   }
 
+  /* Photos added so far, small, each named under it (the names say what they are). */
+  .shots-so-far {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .shots-so-far li {
+    display: grid;
+    gap: var(--space-1);
+    inline-size: 7rem;
+    font-weight: 700;
+    overflow-wrap: break-word;
+  }
+  .shots-so-far img {
+    inline-size: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border: 2px solid var(--line);
+    border-radius: var(--radius-m);
+  }
+
   .viewfinder {
     position: relative;
     aspect-ratio: 3 / 4;
@@ -798,6 +822,9 @@ a {
       border: 0;
       padding: 0;
     }
+    /* Each part of a row on its own line: the check's name, its result, what was found, how sure. */
+    .verdict-table th,
+    .verdict-table td:nth-child(2),
     .verdict-table td:nth-child(3),
     .verdict-table td:nth-child(4) {
       grid-column: 1 / -1;
@@ -899,8 +926,10 @@ a {
     left: -10px;
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    /* Sized in em with a 44px floor, so the number stays inside its circle at the largest text. */
+    width: max(44px, 1.9em);
+    height: max(44px, 1.9em);
+    line-height: 1;
     border-radius: 50%;
     background: var(--yellow);
     color: var(--yellow-ink);
@@ -1900,6 +1929,20 @@ a {
   :root[data-theme='contrast'] :is(.folder:not(.case-folder):last-child, .case-folder[data-current]) :is(.folder-tab, .folder-body) {
     color: var(--ink);
   }
+  /* "Now" on the current step's tab: the step is marked in words, not only by its colour. */
+  .folder-now {
+    display: inline-block;
+    margin-inline-start: var(--space-2);
+    padding: 0 var(--space-2);
+    border: 2px solid currentColor;
+    border-radius: var(--radius-s);
+    font-size: var(--step--1);
+    font-weight: 800;
+    vertical-align: middle;
+  }
+  :root[data-theme='contrast'] .case-folder[data-current] :is(.folder-tab, .folder-body) {
+    border-width: 6px;
+  }
   /* On the yellow folder the main action is filled with ink, so it is the strongest thing there. */
   :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary {
     background: var(--yellow-ink);
@@ -1910,8 +1953,8 @@ a {
   :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary:hover {
     background: #26262a;
   }
-  /* Secondary buttons in a folder share one width, so a pair reads as a pair. */
-  .case-body .btn:not(.btn-primary) {
+  /* Buttons of the usual size in a folder share one width, so a pair reads as a pair. */
+  .case-body .btn:not(.btn-xl) {
     min-inline-size: min(100%, 16rem);
   }
   /* The side padding shrinks on a narrow screen (vw, not rem), so large text keeps the room. */
@@ -3227,10 +3270,17 @@ a {
   display: none;
 }
 
-/* A check finding: the shape in its circle, then the word beside it (never inside the circle). */
+/* A check finding: the shape in its circle, then the word beside it (never inside the circle).
+   The word wraps beside the circle, never under it. */
 .verdict-result {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+.verdict-result .verdict-mark {
+  flex-shrink: 0;
+}
+.verdict-word {
+  min-width: 0;
 }
