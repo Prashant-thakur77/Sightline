@@ -1,8 +1,8 @@
 {
   "suite": "sightbench",
   "title": "SightBench: does the parcel match?",
-  "ranAt": "2026-11-09T04:38:03.159Z",
-  "gitSha": "bb47681",
+  "ranAt": "2026-11-09T05:11:02.979Z",
+  "gitSha": "0406ebe",
   "headlines": [
     {
       "id": "mismatch-recall",
@@ -9839,7 +9839,7 @@
             "clip": "match (0.881039)"
           }
         ],
-        "rescoredAt": "2026-11-09T04:38:03.158Z"
+        "rescoredAt": "2026-11-09T05:11:02.978Z"
       }
     ],
     "navyBlack": {

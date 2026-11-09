@@ -1,0 +1,151 @@
+/*
+ * Illustrations: one ink line (rounded ends) over flat fills set a few pixels off the line, like
+ * soft print. Colours come from the theme, so the drawings follow light, dark and high contrast.
+ */
+:root {
+  --ill-line: var(--ink);
+  --ill-a: var(--accent-bright);
+  --ill-b: var(--accent-soft);
+  --ill-c: var(--warm);
+  --ill-paper: var(--surface);
+}
+:root[data-theme='contrast'] {
+  --ill-a: #000;
+  --ill-b: #000;
+  --ill-c: #000;
+  --ill-paper: #000;
+}
+
+.art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.art .ln {
+  fill: none;
+  stroke: var(--ill-line);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.art .ln-thin {
+  stroke-width: 1.8;
+}
+.art .ln-dash {
+  stroke-dasharray: 4 7;
+}
+.art .fa {
+  fill: var(--ill-a);
+}
+.art .fb {
+  fill: var(--ill-b);
+}
+.art .fc {
+  fill: var(--ill-c);
+}
+.art .fp {
+  fill: var(--ill-paper);
+}
+.art .fi {
+  fill: var(--ill-line);
+}
+/* The fills sit a few pixels off the lines. */
+.art .off {
+  transform: translate(5px, 5px);
+}
+
+/* Drawing in, once. Every line has pathLength="1". */
+.art[data-state='ready'] .ln:not(.ln-dash) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.art[data-state='ready'] .off,
+.art[data-state='ready'] .pop {
+  opacity: 0;
+}
+.art[data-state='drawn'] .ln:not(.ln-dash) {
+  stroke-dasharray: 1;
+  animation: art-draw var(--dur-draw) var(--ease-out) both;
+  animation-delay: calc(var(--art-delay, 0ms) + var(--i, 0) * 70ms);
+}
+.art[data-state='drawn'] .off {
+  animation: art-fill 700ms var(--ease-out) both;
+  animation-delay: calc(var(--art-delay, 0ms) + 360ms);
+}
+.art[data-state='drawn'] .pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-pop 520ms var(--ease-out) both;
+  animation-delay: calc(var(--art-delay, 0ms) + 700ms + var(--i, 0) * 90ms);
+}
+@keyframes art-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes art-fill {
+  from {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(5px, 5px);
+  }
+}
+@keyframes art-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* Gentle life after drawing: sound waves breathe twice and stop (under 5 seconds, so nothing keeps
+   moving on its own). */
+.art[data-state='drawn'] .wave {
+  animation: art-wave 1.6s var(--ease-in-out) 1.4s 2;
+}
+.art .wave:nth-of-type(2) {
+  animation-delay: 1.9s;
+}
+.art .wave:nth-of-type(3) {
+  animation-delay: 2.2s;
+}
+@keyframes art-wave {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art .ln,
+  .art .off,
+  .art .pop,
+  .art .wave {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+  }
+}
+@media (forced-colors: active) {
+  .art .ln {
+    stroke: CanvasText;
+  }
+  .art .fa,
+  .art .fb,
+  .art .fc,
+  .art .fp {
+    fill: Canvas;
+  }
+}

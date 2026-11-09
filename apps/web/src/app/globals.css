@@ -5,25 +5,44 @@
  * Status never relies on colour alone: each status also has a word and a shape.
  */
 :root {
-  --paper: #fbfbf8;
-  --paper-2: #f1f1ec;
-  --ink: #0b0b0c;
-  --muted: #3f3f43;
-  --line: #0b0b0c;
-  --hairline: #c9c9c2;
-  --yellow: #ffd60a;
-  --yellow-ink: #0b0b0c;
-  --signal: #0b3fd9;
-  --match: #075e31;
-  --mismatch: #a4161a;
-  --unsure: #6b4500;
+  /* Ice & cobalt. Surfaces */
+  --paper: #f3f6fb; /* ice: the page */
+  --paper-2: #e8eef9; /* quiet fills */
+  --surface: #ffffff; /* cards */
   --receipt: #ffffff;
-  --focus-outer: #ffd60a;
-  --focus-inner: #0b0b0c;
-  --shadow-emboss: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 -1px 0 rgba(0, 0, 0, 0.12) inset;
+  /* Text */
+  --ink: #0d1530; /* night: 16.6:1 on ice */
+  --muted: #3b4565; /* 8.7:1 on ice */
+  /* Lines: --line marks controls (5:1+), --hairline only decorates */
+  --line: #5c6688;
+  --hairline: #d3daea;
+  /* The one action colour */
+  --accent: #1a33d6; /* cobalt: 7.8:1 on ice, white on it 8.4:1 */
+  --accent-hover: #1429b3;
+  --accent-ink: #ffffff;
+  --accent-bright: #2442ff; /* illustration and large display only */
+  --accent-soft: #dce6ff; /* sky: the current step; ink on it 14:1 */
+  --warm: #ffe3d6; /* peach: warmth in small doses */
+  --signal: var(--accent);
+  /* Status (always with a word and a shape) */
+  --match: #08572f;
+  --mismatch: #a01b12;
+  --unsure: #6b4300;
+  /* Legacy names, kept so older rules read the new palette */
+  --yellow: var(--accent);
+  --yellow-ink: var(--accent-ink);
+  /* Focus: a night ring with a cobalt halo, visible on every surface */
+  --focus-outer: #2442ff;
+  --focus-inner: #0d1530;
+  /* Depth: soft, cool, long */
+  --shadow-1: 0 1px 2px rgba(13, 21, 48, 0.06), 0 2px 8px rgba(13, 21, 48, 0.04);
+  --shadow-2: 0 2px 4px rgba(13, 21, 48, 0.04), 0 14px 36px rgba(13, 21, 48, 0.08);
+  --shadow-3: 0 4px 8px rgba(13, 21, 48, 0.05), 0 28px 64px rgba(13, 21, 48, 0.12);
+  --shadow-emboss: none;
 
   --font-sans: var(--font-atkinson), 'Atkinson Hyperlegible Next', system-ui, sans-serif;
   --font-mono: var(--font-atkinson-mono), 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+  --font-display: var(--font-fraunces), 'Fraunces', Georgia, 'Times New Roman', serif;
 
   /* Fluid type scale (rem so browser zoom and text-size settings scale it). The heading steps
      also have a viewport cap: it never bites at the default text size, but with Larger or Largest
@@ -31,10 +50,10 @@
   --step--1: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
   --step-0: clamp(1.125rem, 1.08rem + 0.25vw, 1.3rem);
   --step-1: clamp(1.35rem, 1.25rem + 0.5vw, 1.65rem);
-  --step-2: min(clamp(1.7rem, 1.5rem + 1vw, 2.3rem), 13.5vw);
-  --step-3: min(clamp(2.2rem, 1.8rem + 2vw, 3.4rem), 12vw);
-  --step-4: min(clamp(2.9rem, 2.2rem + 3.6vw, 5.4rem), 15vw);
-  --step-5: min(clamp(3.6rem, 2.4rem + 6vw, 8.6rem), 18vw);
+  --step-2: min(clamp(1.75rem, 1.5rem + 1.1vw, 2.4rem), 13.5vw);
+  --step-3: min(clamp(2.3rem, 1.8rem + 2.2vw, 3.6rem), 12vw);
+  --step-4: min(clamp(3rem, 2.2rem + 3.8vw, 5.6rem), 15vw);
+  --step-5: min(clamp(3.6rem, 2.4rem + 6vw, 8.4rem), 18vw);
 
   /* The larger spaces grow with the text size too, but on a narrow screen they stop at their
      default size plus a little, so Larger and Largest text get the room instead of the padding.
@@ -49,16 +68,20 @@
   --space-8: min(4.5rem, 72px + 2vw);
   --space-9: min(7rem, 112px + 2vw);
 
-  --radius-s: 6px;
-  --radius-m: 12px;
-  --radius-l: 22px;
+  /* Radius by hierarchy: keys and tags, controls, cards, large panels, pills */
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
 
-  --dur-fast: 140ms;
+  --dur-fast: 160ms;
   --dur-base: 240ms;
-  --dur-slow: 560ms;
+  --dur-slow: 640ms;
+  --dur-draw: 900ms;
   --dur-print: 90ms;
-  --ease-out: cubic-bezier(0.2, 0, 0, 1);
-  --ease-in-out: cubic-bezier(0.6, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   --target: 48px;
   --measure: 62ch;
@@ -67,57 +90,84 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-theme='contrast']) {
-    --paper: #0e1013;
-    --paper-2: #171a1f;
-    --ink: #fbfbf8;
-    --muted: #b9bcc4;
-    --line: #fbfbf8;
-    --hairline: #3a3e46;
-    --signal: #8db4ff;
-    --match: #5fd394;
-    --mismatch: #ff8a80;
-    --unsure: #ffc56b;
-    --receipt: #f6f6f1;
-    --focus-inner: #0b0b0c;
-    --shadow-emboss: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 -1px 0 rgba(0, 0, 0, 0.5) inset;
+    --paper: #0a0f1f;
+    --paper-2: #111831;
+    --surface: #121a30;
+    --receipt: #f6f8fd;
+    --ink: #eef2fb;
+    --muted: #b4beda;
+    --line: #8790b0;
+    --hairline: #263155;
+    --accent: #8ea2ff;
+    --accent-hover: #a9b9ff;
+    --accent-ink: #0a0f1f;
+    --accent-bright: #8ea2ff;
+    --accent-soft: #1c2a55;
+    --warm: #3b2a2c;
+    --match: #5fd39a;
+    --mismatch: #ff8f85;
+    --unsure: #f5c36b;
+    --focus-outer: #8ea2ff;
+    --focus-inner: #eef2fb;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.3), 0 14px 36px rgba(0, 0, 0, 0.35);
+    --shadow-3: 0 4px 8px rgba(0, 0, 0, 0.3), 0 28px 64px rgba(0, 0, 0, 0.45);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --paper: #0e1013;
-  --paper-2: #171a1f;
-  --ink: #fbfbf8;
-  --muted: #b9bcc4;
-  --line: #fbfbf8;
-  --hairline: #3a3e46;
-  --signal: #8db4ff;
-  --match: #5fd394;
-  --mismatch: #ff8a80;
-  --unsure: #ffc56b;
-  --receipt: #f6f6f1;
-  --shadow-emboss: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 -1px 0 rgba(0, 0, 0, 0.5) inset;
+  --paper: #0a0f1f;
+  --paper-2: #111831;
+  --surface: #121a30;
+  --receipt: #f6f8fd;
+  --ink: #eef2fb;
+  --muted: #b4beda;
+  --line: #8790b0;
+  --hairline: #263155;
+  --accent: #8ea2ff;
+  --accent-hover: #a9b9ff;
+  --accent-ink: #0a0f1f;
+  --accent-bright: #8ea2ff;
+  --accent-soft: #1c2a55;
+  --warm: #3b2a2c;
+  --match: #5fd39a;
+  --mismatch: #ff8f85;
+  --unsure: #f5c36b;
+  --focus-outer: #8ea2ff;
+  --focus-inner: #eef2fb;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.3), 0 14px 36px rgba(0, 0, 0, 0.35);
+  --shadow-3: 0 4px 8px rgba(0, 0, 0, 0.3), 0 28px 64px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
 
-/* Low-vision high-contrast theme: yellow on black, the scheme many low-vision readers choose. */
+/* Low-vision high-contrast theme: yellow on black, the scheme many low-vision readers choose. It is
+   an accessibility mode, so it keeps hard edges and no shadows whatever the brand palette is. */
 :root[data-theme='contrast'] {
   --paper: #000000;
   --paper-2: #000000;
+  --surface: #000000;
+  --receipt: #000000;
   --ink: #ffd60a;
   --muted: #ffe45c;
   --line: #ffd60a;
   --hairline: #ffd60a;
-  --yellow: #ffd60a;
-  --yellow-ink: #000000;
+  --accent: #ffd60a;
+  --accent-hover: #ffe45c;
+  --accent-ink: #000000;
+  --accent-bright: #ffd60a;
+  --accent-soft: #000000;
+  --warm: #000000;
   --signal: #ffffff;
   --match: #7dffb0;
   --mismatch: #ff9c94;
   --unsure: #ffffff;
-  --receipt: #000000;
   --focus-outer: #ffffff;
   --focus-inner: #000000;
-  --shadow-emboss: none;
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-3: none;
   color-scheme: dark;
 }
 
@@ -146,10 +196,21 @@ h1,
 h2,
 h3,
 h4 {
-  line-height: 1.08;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   text-wrap: balance;
+}
+/* The serif speaks for page and section titles (large sizes only, weight 560+, soft optical
+   size); smaller headings stay in the reading face so they are crisp at any zoom. */
+h1,
+h2,
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 100, 'opsz' 96;
+  letter-spacing: -0.015em;
+  line-height: 1.06;
 }
 
 p {
@@ -161,8 +222,12 @@ p {
 a {
   color: inherit;
   text-decoration-line: underline;
-  text-decoration-thickness: 0.09em;
-  text-underline-offset: 0.18em;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+a:hover {
+  text-decoration-color: currentColor;
 }
 
 }
@@ -173,12 +238,11 @@ a {
   outline: 3px solid var(--focus-inner);
   outline-offset: 2px;
   box-shadow: 0 0 0 7px var(--focus-outer);
-  border-radius: var(--radius-s);
 }
 
 ::selection {
-  background: var(--yellow);
-  color: var(--yellow-ink);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .sr-only {
@@ -201,12 +265,12 @@ a {
   transform: translateY(-120%);
   max-width: calc(100% - 2 * var(--space-4));
   z-index: 100;
-  background: var(--yellow);
-  color: var(--yellow-ink);
+  background: var(--accent);
+  color: var(--accent-ink);
   padding: var(--space-3) var(--space-5);
   font-weight: 700;
-  border: 3px solid var(--yellow-ink);
-  border-radius: var(--radius-m);
+  border: 2px solid var(--accent-ink);
+  border-radius: var(--radius-pill);
 }
 /* When focused it takes its own row, so it never covers the header links. */
 .skip-link:focus {
@@ -283,62 +347,69 @@ a {
     gap: var(--space-2);
     min-height: var(--target);
     min-width: var(--target);
-    padding: var(--space-3) var(--space-5);
-    border: 2.5px solid var(--line);
-    border-radius: var(--radius-m);
-    background: var(--paper);
+    padding: var(--space-3) var(--space-6);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
     color: var(--ink);
     font: inherit;
     font-weight: 700;
     line-height: 1.2;
     text-align: center;
     cursor: pointer;
+    box-shadow: var(--shadow-1);
     transition:
       transform var(--dur-fast) var(--ease-out),
-      background-color var(--dur-fast) var(--ease-out);
+      background-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
   }
   .btn:hover {
     background: var(--paper-2);
+    border-color: var(--ink);
   }
   .btn:active {
     transform: translateY(1px);
+    box-shadow: none;
   }
   .btn:disabled,
   .btn[aria-disabled='true'] {
     cursor: not-allowed;
   }
   .btn-primary {
-    background: var(--yellow);
-    color: var(--yellow-ink);
-    border-color: var(--yellow-ink);
-    box-shadow: 0 4px 0 var(--yellow-ink);
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    box-shadow: 0 1px 2px rgba(13, 21, 48, 0.12), 0 8px 20px color-mix(in srgb, var(--accent) 28%, transparent);
   }
   .btn-primary:hover {
-    background: #ffe24d;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
   }
   .btn-primary:active {
-    box-shadow: 0 1px 0 var(--yellow-ink);
-    transform: translateY(3px);
+    box-shadow: 0 1px 2px rgba(13, 21, 48, 0.12);
+    transform: translateY(1px);
   }
   :root[data-theme='contrast'] .btn-primary {
-    background: var(--yellow);
+    background: var(--accent);
     color: #000;
     border-color: #fff;
     box-shadow: none;
   }
   .btn-xl {
-    min-height: 72px;
+    min-height: 68px;
     font-size: var(--step-1);
+    padding-inline: min(var(--space-7), 6vw);
   }
-  /* Destructive confirm: same ink-on-paper text as any button; the label says what it deletes. */
+  /* Destructive confirm: same ink-on-surface text as any button; the label says what it deletes. */
   .btn-danger {
     border-color: var(--mismatch);
-    border-width: 3px;
-    box-shadow: 0 4px 0 var(--mismatch);
+    border-width: 2px;
+    color: var(--mismatch);
   }
-  .btn-danger:active {
-    box-shadow: 0 1px 0 var(--mismatch);
-    transform: translateY(3px);
+  .btn-danger:hover {
+    border-color: var(--mismatch);
+    background: color-mix(in srgb, var(--mismatch) 8%, var(--surface));
   }
   .btn-quiet {
     border-color: transparent;
@@ -353,7 +424,7 @@ a {
   .btn:is(:disabled, [aria-disabled='true']):active {
     background: var(--paper-2);
     color: var(--muted);
-    border-color: var(--muted);
+    border-color: var(--line);
     border-style: dashed;
     box-shadow: none;
     transform: none;
@@ -382,9 +453,9 @@ a {
     min-height: var(--target);
     padding: var(--space-2) var(--space-4);
     margin-inline-end: var(--space-3);
-    border: 2.5px solid var(--line);
-    border-radius: var(--radius-m);
-    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
     color: var(--ink);
     cursor: pointer;
   }
@@ -424,8 +495,9 @@ a {
     inline-size: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border: 2px solid var(--line);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-m);
+    box-shadow: var(--shadow-1);
   }
 
   .viewfinder {
@@ -433,10 +505,10 @@ a {
     aspect-ratio: 3 / 4;
     max-height: 62vh;
     width: 100%;
-    background: #000;
-    border-radius: var(--radius-l);
+    background: #0a0f1f;
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    border: 3px solid var(--line);
+    box-shadow: var(--shadow-3);
   }
   @media (min-width: 640px) {
     .viewfinder {
@@ -447,7 +519,7 @@ a {
     position: absolute;
     inset: 9%;
     border-radius: var(--radius-m);
-    --c: var(--yellow);
+    --c: #ffffff;
     background:
       linear-gradient(var(--c) 0 0) top left / 48px 6px no-repeat,
       linear-gradient(var(--c) 0 0) top left / 6px 48px no-repeat,
@@ -469,19 +541,19 @@ a {
     bottom: 0;
     height: 8px;
     width: calc(var(--p, 0) * 100%);
-    background: var(--yellow);
+    background: #8ea2ff;
   }
   .viewfinder-caption {
     position: absolute;
     left: 50%;
     bottom: 22px;
     transform: translateX(-50%);
-    background: #000;
-    color: var(--yellow);
-    font-weight: 800;
+    background: rgba(10, 15, 31, 0.82);
+    color: #ffffff;
+    font-weight: 700;
     font-size: var(--step-1);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-m);
+    padding: var(--space-2) var(--space-5);
+    border-radius: var(--radius-pill);
     max-width: 92%;
     text-align: center;
   }
@@ -501,16 +573,31 @@ a {
     opacity: 0.3;
   }
   .braille-dot[data-on] {
-    background: currentColor;
+    background: var(--accent-bright);
     opacity: 1;
-    box-shadow: var(--shadow-emboss);
+    box-shadow: none;
+  }
+  .wordmark .braille-cell {
+    background: var(--accent-soft);
+    border-radius: 32%;
+    padding: calc(var(--cell) * 0.16) calc(var(--cell) * 0.2);
+    color: var(--accent-bright);
+  }
+  :root[data-theme='contrast'] .braille-dot[data-on] {
+    background: var(--ink);
+  }
+  :root[data-theme='contrast'] .wordmark .braille-cell {
+    background: transparent;
+    color: var(--ink);
   }
   .wordmark {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-variation-settings: 'SOFT' 100, 'opsz' 48;
+    letter-spacing: -0.01em;
     font-size: var(--step-1);
   }
 
@@ -522,8 +609,21 @@ a {
     gap: var(--space-3) var(--space-5);
     /* px floor, like the page under it, so Largest text on a phone keeps the width. */
     padding: var(--space-3) clamp(16px, 3vw, 2.5rem);
+    border-bottom: 1px solid var(--hairline);
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+  }
+  @media (min-width: 60rem) {
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+  }
+  :root[data-theme='contrast'] .app-header {
     border-bottom: 3px solid var(--line);
-    background: var(--paper);
+    background: #000;
+    backdrop-filter: none;
   }
   .app-header .theme-switch select {
     max-width: calc(100vw - 2 * clamp(16px, 3vw, 2.5rem));
@@ -546,17 +646,22 @@ a {
     display: inline-flex;
     align-items: center;
     min-height: var(--target);
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-m);
+    padding: 0 var(--space-5);
+    border-radius: var(--radius-pill);
     font-weight: 700;
     text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease-out);
   }
   .app-nav a:hover {
     background: var(--paper-2);
   }
   .app-nav a[aria-current='page'] {
     background: var(--ink);
-    color: var(--paper);
+    color: var(--surface);
+  }
+  :root[data-theme='contrast'] .app-nav a[aria-current='page'] {
+    background: var(--ink);
+    color: #000;
   }
   .app-header-tools {
     display: flex;
@@ -589,11 +694,15 @@ a {
   textarea {
     font: inherit;
     color: var(--ink);
-    background: var(--paper);
-    border: 2.5px solid var(--line);
+    background: var(--surface);
+    border: 1.5px solid var(--line);
     border-radius: var(--radius-m);
     min-height: var(--target);
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+  :is(select, input, textarea):hover {
+    border-color: var(--ink);
   }
 
   .speech-viewer {
@@ -607,22 +716,24 @@ a {
     max-width: calc(100vw - 1rem);
   }
   .speech-viewer-toggle {
-    background: var(--ink);
-    color: var(--paper);
-    border-color: var(--ink);
+    background: #0d1530;
+    color: #ffffff;
+    border-color: #0d1530;
+    box-shadow: var(--shadow-2);
   }
   /* Its own hover, so the generic pale .btn:hover never puts pale text on a pale fill. */
   .speech-viewer-toggle:hover {
-    background: var(--ink);
-    color: var(--paper);
+    background: #0d1530;
+    color: #ffffff;
+    border-color: #0d1530;
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
   .speech-viewer-toggle[aria-pressed='true'],
   .speech-viewer-toggle[aria-pressed='true']:hover {
-    background: var(--yellow);
-    color: var(--yellow-ink);
-    border-color: var(--yellow-ink);
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
   }
   .sv-dots {
     display: inline-grid;
@@ -639,32 +750,40 @@ a {
     max-height: min(56vh, 520px);
     display: grid;
     grid-template-rows: auto 1fr;
-    background: #0b0b0c;
-    color: #fbfbf8;
-    border: 3px solid var(--yellow);
+    background: #0a0f1f;
+    color: #eef2fb;
+    border: 1px solid #263155;
     border-radius: var(--radius-l);
     overflow: hidden;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-3);
+  }
+  :root[data-theme='contrast'] .speech-viewer-panel {
+    background: #000;
+    border: 3px solid var(--ink);
   }
   .sv-head {
     padding: var(--space-3) var(--space-4);
-    border-bottom: 2px solid #2a2c31;
+    border-bottom: 1px solid #263155;
     display: grid;
     gap: var(--space-2);
   }
   .sv-title {
-    font-weight: 800;
-    color: var(--yellow);
+    font-weight: 700;
+    color: #8ea2ff;
     margin: 0;
+  }
+  :root[data-theme='contrast'] .sv-title {
+    color: var(--ink);
   }
   .sv-actions {
     display: flex;
     gap: var(--space-2);
   }
   .sv-actions .btn {
-    background: #17181b;
-    color: #fbfbf8;
-    border-color: #fbfbf8;
+    background: #121a30;
+    color: #eef2fb;
+    border-color: #8790b0;
+    box-shadow: none;
     min-height: 44px;
     padding: var(--space-2) var(--space-3);
     font-size: var(--step--1);
@@ -702,21 +821,24 @@ a {
     align-content: start;
   }
   .sv-lines li {
-    border-left: 4px solid #5a5d66;
+    border-left: 3px solid #3b4565;
     padding-left: var(--space-3);
   }
   .sv-lines li[data-kind='live'] {
-    border-left-color: var(--yellow);
+    border-left-color: #8ea2ff;
   }
   .sv-lines li[data-kind='read'] {
-    border-left-color: #8db4ff;
+    border-left-color: #ffb89a;
   }
   .sv-lines li:last-child {
-    color: var(--yellow);
+    color: #ffffff;
     font-weight: 700;
   }
+  :root[data-theme='contrast'] .sv-lines li:last-child {
+    color: var(--ink);
+  }
   .sv-empty {
-    color: #b9bcc4;
+    color: #b4beda;
   }
 
   /* A size container: the table below switches to one line per part by the verdict's own width
@@ -742,7 +864,7 @@ a {
     width: 2.2em;
     height: 2.2em;
     border-radius: 50%;
-    border: 3px solid currentColor;
+    border: 2px solid currentColor;
   }
   .verdict[data-kind='match'] .verdict-kind {
     color: var(--match);
@@ -780,9 +902,9 @@ a {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: var(--radius-m);
-    border: 2.5px solid var(--line);
+    border-radius: var(--radius-l);
     background: var(--paper-2);
+    box-shadow: var(--shadow-2);
   }
   .verdict-compare figcaption {
     display: grid;
@@ -801,13 +923,13 @@ a {
   .verdict-table td {
     text-align: left;
     padding: var(--space-3);
-    border-bottom: 2px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
     vertical-align: top;
   }
   .verdict-table thead th {
     font-size: var(--step--1);
     color: var(--muted);
-    border-bottom: 3px solid var(--line);
+    border-bottom: 1.5px solid var(--line);
   }
   .verdict-mark {
     display: inline-grid;
@@ -836,7 +958,7 @@ a {
       grid-template-columns: auto 1fr;
       gap: var(--space-1) var(--space-3);
       padding: var(--space-3) 0;
-      border-bottom: 2px solid var(--hairline);
+      border-bottom: 1px solid var(--hairline);
     }
     .verdict-table th,
     .verdict-table td {
@@ -858,10 +980,11 @@ a {
     display: grid;
     gap: var(--space-4);
     align-content: start;
-    padding: var(--space-5);
-    border: 3px solid var(--line);
-    border-radius: var(--radius-l);
-    background: var(--paper);
+    padding: var(--space-6);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
   }
 }
 
@@ -930,11 +1053,12 @@ a {
     position: relative;
     display: grid;
     grid-template-columns: 120px minmax(0, 1fr);
-    gap: var(--space-4);
-    padding: var(--space-4);
-    border: 3px solid var(--line);
-    border-radius: var(--radius-l);
-    background: var(--paper);
+    gap: var(--space-5);
+    padding: var(--space-5);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
   }
   @media (max-width: 520px) {
     .option {
@@ -952,17 +1076,19 @@ a {
     height: max(44px, 1.9em);
     line-height: 1;
     border-radius: 50%;
-    background: var(--yellow);
-    color: var(--yellow-ink);
-    border: 3px solid var(--yellow-ink);
-    font-weight: 800;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 3px solid var(--paper);
+    font-family: var(--font-display);
+    font-weight: 600;
     font-size: var(--step-1);
+    box-shadow: var(--shadow-1);
   }
   .option-img {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: var(--radius-m);
+    border-radius: var(--radius-l);
     background: var(--paper-2);
   }
   @media (max-width: 520px) {
@@ -1019,8 +1145,8 @@ a {
   }
   .details-img {
     width: 100%;
-    border-radius: var(--radius-l);
-    border: 3px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2);
   }
   .details-facts {
     display: grid;
@@ -1035,9 +1161,9 @@ a {
   .quote {
     margin: 0;
     padding: var(--space-3) var(--space-4);
-    border-left: 6px solid var(--yellow);
-    background: var(--paper-2);
-    border-radius: 0 var(--radius-m) var(--radius-m) 0;
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 var(--radius-l) var(--radius-l) 0;
   }
   .quote p {
     margin: 0;
@@ -1057,20 +1183,20 @@ a {
   .compare th,
   .compare td {
     padding: var(--space-3);
-    border-bottom: 2px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
     text-align: left;
   }
 
-  /* The readback: thermal receipt paper. */
+  /* The readback: a receipt on ice. */
   .receipt {
     position: relative;
     container-type: inline-size;
     max-width: 560px;
     background: var(--receipt);
-    color: #0b0b0c;
+    color: #0d1530;
     font-family: var(--font-mono);
-    padding: var(--space-6) var(--space-5);
-    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.12));
+    padding: var(--space-6) var(--space-6);
+    filter: drop-shadow(0 18px 32px rgba(13, 21, 48, 0.12));
   }
   :root[data-theme='contrast'] .receipt {
     color: var(--ink);
@@ -1102,7 +1228,7 @@ a {
     grid-template-columns: minmax(0, 9ch) minmax(0, 1fr);
     gap: var(--space-3);
     padding-bottom: var(--space-2);
-    border-bottom: 2px dashed #b9b9b2;
+    border-bottom: 1.5px dashed #b6c2df;
     animation: print var(--dur-base) steps(4) both;
   }
   .receipt-line:nth-child(n) {
@@ -1153,7 +1279,7 @@ a {
   .receipt-warn {
     color: var(--ink);
     font-weight: 700;
-    border-left: 6px solid var(--unsure);
+    border-left: 4px solid var(--unsure);
     padding-left: var(--space-3);
   }
   /* The KEEP stub, as on the landing ticket: the readback is kept as evidence. */
@@ -1164,10 +1290,10 @@ a {
     gap: var(--space-1) var(--space-3);
     margin: var(--space-4) calc(var(--space-5) * -1) 0;
     padding: var(--space-3) var(--space-5);
-    border-top: 3px dashed currentColor;
-    background: var(--yellow);
-    color: #0b0b0c;
-    font-weight: 800;
+    border-top: 1.5px dashed #b6c2df;
+    background: #dce6ff;
+    color: #0d1530;
+    font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-size: var(--step--1);
@@ -1184,11 +1310,11 @@ a {
     grid-column: 1 / -1;
   }
   .card-paid {
-    border-left: 8px solid var(--match);
+    border-left: 4px solid var(--match);
     padding-left: var(--space-5);
   }
   .card-refusal {
-    border-left: 8px solid var(--mismatch);
+    border-left: 4px solid var(--mismatch);
     padding-left: var(--space-5);
   }
   .help-groups {
@@ -1217,24 +1343,65 @@ a {
     gap: var(--space-4);
     min-height: 96px;
     width: 100%;
-    border-radius: 999px;
-    border: 3px solid var(--yellow-ink);
-    background: var(--yellow);
-    color: var(--yellow-ink);
+    border-radius: var(--radius-pill);
+    border: 0;
+    background: var(--accent);
+    color: var(--accent-ink);
     font: inherit;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-variation-settings: 'SOFT' 100, 'opsz' 72;
     font-size: var(--step-2);
     cursor: pointer;
     touch-action: none;
     user-select: none;
-    box-shadow: 0 6px 0 var(--yellow-ink);
+    position: relative;
+    isolation: isolate;
+    box-shadow: 0 2px 4px rgba(13, 21, 48, 0.12), 0 18px 40px color-mix(in srgb, var(--accent) 34%, transparent);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
   }
+  .talk:hover {
+    background: var(--accent-hover);
+  }
+  /* Listening: night fill and soft sound rings that breathe out from the button. */
   .talk[aria-pressed='true'] {
     background: var(--ink);
-    color: var(--yellow);
-    border-color: var(--yellow);
-    box-shadow: 0 2px 0 var(--yellow-ink);
-    transform: translateY(4px);
+    color: var(--surface);
+    transform: scale(0.99);
+  }
+  .talk[aria-pressed='true']::before,
+  .talk[aria-pressed='true']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid var(--accent-bright);
+    z-index: -1;
+    animation: talk-ring 1.8s var(--ease-out) infinite;
+  }
+  .talk[aria-pressed='true']::after {
+    animation-delay: 0.9s;
+  }
+  @keyframes talk-ring {
+    from {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    to {
+      transform: scale(1.08, 1.35);
+      opacity: 0;
+    }
+  }
+  :root[data-theme='contrast'] .talk {
+    border: 3px solid #fff;
+    box-shadow: none;
+  }
+  :root[data-theme='contrast'] .talk[aria-pressed='true'] {
+    background: #000;
+    color: var(--ink);
+    border-color: var(--ink);
   }
   .talk-dots {
     display: inline-flex;
@@ -1314,6 +1481,10 @@ a {
     border-radius: 1.3em;
     font-weight: 700;
     max-width: 100%;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    background: var(--surface);
+    box-shadow: none;
   }
   /* Suggestions and the shortcuts sit close under the composer (whose last line is the status
      line), not a whole section's gap away. */
@@ -1338,12 +1509,13 @@ a {
   .keys td {
     text-align: left;
     padding: var(--space-2) var(--space-3);
-    border-bottom: 2px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
   }
   kbd {
     font-family: var(--font-mono);
-    border: 2px solid var(--line);
-    border-bottom-width: 4px;
+    border: 1.5px solid var(--line);
+    border-bottom-width: 3px;
+    background: var(--surface);
     border-radius: var(--radius-s);
     padding: 0 0.4em;
     font-weight: 700;
@@ -1351,9 +1523,11 @@ a {
   /* minmax(0, 1fr): the column is the box's width, not its longest word, so long words wrap whole
      instead of running out of the box. Side padding in vw leaves large text the room on a phone. */
   .transcript {
-    border: 3px solid var(--line);
-    border-radius: var(--radius-l);
-    padding: var(--space-4) min(var(--space-4), 3vw);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
+    padding: var(--space-4) min(var(--space-5), 3vw);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
@@ -1371,7 +1545,7 @@ a {
     margin-top: calc(var(--space-4) * -1);
     padding-block: calc(var(--space-2) + var(--space-4)) var(--space-2);
     z-index: 1;
-    background: var(--paper);
+    background: var(--surface);
   }
   /* position: relative keeps each message's hidden "You said:" inside the scrolling box; without it
      those hidden words sat below the box and made the page much longer than its content. */
@@ -1389,15 +1563,18 @@ a {
     gap: var(--space-3);
   }
   .transcript li {
-    padding: var(--space-2) min(var(--space-3), 2.5vw);
-    border-radius: var(--radius-m);
+    padding: var(--space-3) min(var(--space-4), 3vw);
+    border-radius: 20px 20px 20px 6px;
     background: var(--paper-2);
   }
   .transcript li[data-role='user'] {
-    background: transparent;
-    border: 2px solid var(--line);
+    background: var(--accent-soft);
+    border-radius: 20px 20px 6px 20px;
     justify-self: end;
     max-width: 90%;
+  }
+  :root[data-theme='contrast'] .transcript li {
+    border: 2px solid var(--line);
   }
   .muted {
     color: var(--muted);
@@ -1410,7 +1587,7 @@ a {
   paypal-button {
     width: 100%;
     max-width: 420px;
-    --paypal-button-border-radius: 12px;
+    --paypal-button-border-radius: 999px;
   }
 }
 
@@ -1434,9 +1611,11 @@ a {
     overflow-wrap: anywhere;
     gap: var(--space-3);
     align-items: start;
-    padding: var(--space-3) var(--space-4);
-    border: 2.5px solid var(--line);
-    border-radius: var(--radius-m);
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-l);
+    background: var(--surface);
+    box-shadow: var(--shadow-1);
   }
   .rcheck-mark {
     display: grid;
@@ -1444,7 +1623,7 @@ a {
     width: 2em;
     height: 2em;
     border-radius: 50%;
-    border: 2.5px solid currentColor;
+    border: 2px solid currentColor;
     font-weight: 800;
   }
   .rcheck[data-ok='true'] .rcheck-mark {
@@ -1455,10 +1634,10 @@ a {
   }
   .code {
     font-family: var(--font-mono);
-    background: var(--ink);
-    color: var(--paper);
-    padding: var(--space-4);
-    border-radius: var(--radius-m);
+    background: #0d1530;
+    color: #eef2fb;
+    padding: var(--space-5);
+    border-radius: var(--radius-l);
     overflow-x: auto;
     font-size: var(--step--1);
   }
@@ -1498,7 +1677,23 @@ a {
     justify-content: space-between;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-4) var(--gutter);
+    padding: var(--space-3) var(--gutter);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid color-mix(in srgb, var(--hairline) 70%, transparent);
+  }
+  /* Sticky only when it fits on one row; on a phone it scrolls away with the page. */
+  @media (min-width: 60rem) {
+    .lp-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+  }
+  :root[data-theme='contrast'] .lp-header {
+    background: #000;
+    backdrop-filter: none;
+    border-bottom: 1px solid var(--hairline);
   }
   .lp-nav {
     display: flex;
@@ -1557,7 +1752,7 @@ a {
     width: 0.8em;
     height: 0.8em;
     border-radius: 50%;
-    background: var(--yellow);
+    background: var(--accent-soft);
     box-shadow: 0 0 0 2px var(--ink);
   }
   .lp-h1 {
@@ -1569,8 +1764,8 @@ a {
   }
   .lp-band {
     display: inline;
-    background: var(--yellow);
-    color: var(--yellow-ink);
+    background: var(--accent-soft);
+    color: var(--ink);
     padding: 0 0.12em;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
@@ -1629,12 +1824,12 @@ a {
     font-size: var(--step-1);
     font-weight: 700;
     line-height: 1.7;
-    background: var(--yellow);
-    color: var(--yellow-ink);
+    background: var(--accent-soft);
+    color: var(--ink);
     /* vw, not rem: on a phone with large text the words get the room, not the padding. */
     padding: var(--space-2) min(var(--space-4), 3vw);
     border-radius: var(--radius-m);
-    border: 3px solid var(--yellow-ink);
+    border: 0;
   }
   .rbh-tagged {
     position: relative;
@@ -1652,7 +1847,7 @@ a {
     font-weight: 700;
     font-size: var(--step--1);
     background: var(--ink);
-    color: var(--yellow);
+    color: var(--accent-soft);
     padding: 0.2em 0.6em;
     border-radius: 0.8em;
     max-width: 100%;
@@ -1704,12 +1899,12 @@ a {
     min-width: 0;
     container-type: inline-size;
     background: var(--receipt);
-    color: #0b0b0c;
+    color: #0d1530;
     font-family: var(--font-mono);
     padding: var(--space-5) var(--tk-pad) 0;
     border: 3px solid #0b0b0c;
     border-radius: var(--radius-m) var(--radius-m) 0 0;
-    box-shadow: 10px 10px 0 var(--ink);
+    box-shadow: var(--shadow-2);
   }
   :root[data-theme='contrast'] .rbh-ticket {
     color: var(--ink);
@@ -1738,7 +1933,7 @@ a {
     grid-template-columns: 2.4ch minmax(0, 8ch) minmax(0, 1fr);
     gap: var(--space-2);
     padding: var(--space-2) 0;
-    border-top: 2px dashed #a9a9a2;
+    border-top: 1.5px dashed var(--hairline);
     font-weight: 700;
   }
   /* break-word, not anywhere: a word moves to the next line whole, and is only split when it is
@@ -1791,9 +1986,9 @@ a {
     gap: var(--space-1) var(--space-3);
     margin: 0 calc(var(--tk-pad) * -1);
     padding: var(--space-3) var(--tk-pad);
-    border-top: 3px dashed currentColor;
-    background: var(--yellow);
-    color: #0b0b0c;
+    border-top: 1.5px dashed var(--hairline);
+    background: var(--accent-soft);
+    color: #0d1530;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1812,7 +2007,7 @@ a {
     gap: var(--space-6);
   }
   .lp-problem a {
-    color: var(--yellow);
+    color: var(--accent-soft);
   }
   .lp-numbers {
     list-style: none;
@@ -1823,7 +2018,7 @@ a {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }
   .lp-numbers li {
-    border-top: 6px solid var(--yellow);
+    border-top: 4px solid var(--accent);
     padding-top: var(--space-4);
     display: grid;
     gap: var(--space-2);
@@ -1840,7 +2035,7 @@ a {
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.04em;
-    color: var(--yellow);
+    color: var(--accent-soft);
   }
   .lp-source {
     font-size: var(--step--1);
@@ -1871,7 +2066,7 @@ a {
     gap: var(--space-2);
     min-height: var(--target);
     padding: 0 var(--space-4) 0 var(--space-2);
-    border: 2.5px solid var(--line);
+    border: 1px solid var(--hairline);
     border-radius: 999px;
     font-weight: 700;
     text-decoration: none;
@@ -1882,134 +2077,85 @@ a {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--yellow);
-    color: var(--yellow-ink);
+    background: var(--accent-soft);
+    color: var(--ink);
     font-weight: 800;
   }
+  /* An order's journey: five steps on a rail. Each step is a card; the current one sits on sky
+     with "Now" on its heading; a finished one carries its tick. */
   .folders {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
+    gap: var(--space-5);
+    position: relative;
+  }
+  .folders::before {
+    content: '';
+    position: absolute;
+    left: 21px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: var(--hairline);
   }
   .folder {
-    --tint: var(--paper-2);
     position: relative;
-    margin-top: calc(var(--space-3) * -1);
-    scroll-margin-top: var(--space-6);
-  }
-  .folder:first-child {
-    margin-top: 0;
-  }
-  .folder:nth-child(odd) {
-    --tint: #f3edd9;
-  }
-  .folder:nth-child(even) {
-    --tint: #e9e3cf;
-  }
-  /* The front folder is yellow: the last one on the landing page, the current step on an order. */
-  .folder:not(.case-folder):last-child,
-  .case-folder[data-current] {
-    --tint: var(--yellow);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']):not([data-theme='contrast']) .folder:nth-child(odd) {
-      --tint: #1d2026;
-    }
-    :root:not([data-theme='light']):not([data-theme='contrast']) .folder:nth-child(even) {
-      --tint: #252932;
-    }
-  }
-  :root[data-theme='dark'] .folder:nth-child(odd) {
-    --tint: #1d2026;
-  }
-  :root[data-theme='dark'] .folder:nth-child(even) {
-    --tint: #252932;
-  }
-  :root[data-theme='contrast'] .folder {
-    --tint: #000 !important;
+    padding-left: clamp(52px, 8vw, 68px);
+    scroll-margin-top: var(--space-8);
+    min-width: 0;
   }
   .folder-tab {
-    display: inline-block;
-    margin: 0 0 -3px calc(var(--k) * clamp(8px, 4vw, 5rem));
-    max-width: 100%;
-    overflow-wrap: break-word;
-    padding: var(--space-2) var(--space-6) var(--space-2) var(--space-5);
-    background: var(--tint);
-    border: 3px solid var(--line);
-    border-bottom: 0;
-    border-radius: var(--radius-l) var(--radius-l) 0 0;
-    font-weight: 800;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    margin: 0 0 var(--space-3);
+    min-height: 44px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-variation-settings: 'SOFT' 100;
     font-size: var(--step-1);
-    position: relative;
-    z-index: 1;
+    overflow-wrap: break-word;
   }
-  :is(.folder:not(.case-folder):last-child, .case-folder[data-current]) :is(.folder-tab, .folder-body) {
-    color: var(--yellow-ink);
-  }
-  :root[data-theme='contrast'] :is(.folder:not(.case-folder):last-child, .case-folder[data-current]) :is(.folder-tab, .folder-body) {
-    color: var(--ink);
-  }
-  /* "Now" on the current step's tab: the step is marked in words, not only by its colour. */
+  /* "Now" on the current step's heading: the step is marked in words, not only by its colour. */
   .folder-now {
-    display: inline-block;
-    margin-inline-start: var(--space-2);
-    padding: 0 var(--space-2);
-    border: 2px solid currentColor;
-    border-radius: var(--radius-s);
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1em 0.7em;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: var(--font-sans);
     font-size: var(--step--1);
-    font-weight: 800;
-    vertical-align: middle;
-  }
-  :root[data-theme='contrast'] .case-folder[data-current] :is(.folder-tab, .folder-body) {
-    border-width: 6px;
-  }
-  /* On the yellow folder, muted words and the check marks take the folder's own dark ink: the
-     dark theme's light greys and greens are unreadable on yellow. The marks' shapes still differ. */
-  :root:not([data-theme='contrast']) .case-folder[data-current] :is(.muted, .reason-glyph) {
-    color: inherit;
-  }
-  /* On the yellow folder the main action is filled with ink, so it is the strongest thing there. */
-  :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary {
-    background: var(--yellow-ink);
-    color: var(--yellow);
-    border-color: var(--yellow-ink);
-    box-shadow: 0 4px 0 color-mix(in srgb, var(--yellow-ink) 45%, var(--yellow));
-  }
-  :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary:hover {
-    background: #26262a;
-  }
-  /* The other buttons there are outlined in the same ink, in light and dark themes alike, so the
-     filled one is the main action. */
-  :root:not([data-theme='contrast']) .case-folder[data-current] .btn:not(.btn-primary) {
-    background: transparent;
-    color: var(--yellow-ink);
-    border-color: var(--yellow-ink);
-  }
-  :root:not([data-theme='contrast']) .case-folder[data-current] .btn:not(.btn-primary):hover {
-    background: color-mix(in srgb, var(--yellow-ink) 10%, transparent);
-  }
-  /* Buttons of the usual size in a folder share one width, so a pair reads as a pair. */
-  .case-body .btn:not(.btn-xl) {
-    min-inline-size: min(100%, 16rem);
-  }
-  /* The side padding shrinks on a narrow screen (vw, not rem), so large text keeps the room. */
-  /* A phone: the tabs step in less and pad less, so a tab's words fit whole at large text sizes. */
-  @media (max-width: 480px) {
-    .folder-tab {
-      margin-left: calc(var(--k) * 6px);
-      padding-inline: min(var(--space-5), 3vw) min(var(--space-6), 4vw);
-    }
+    font-weight: 700;
   }
   .folder-body {
-    background: var(--tint);
-    border: 3px solid var(--line);
-    border-radius: 0 var(--radius-l) var(--radius-l) var(--radius-l);
-    padding: var(--space-5) min(var(--space-5), 3.5vw) var(--space-7);
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-1);
+    padding: var(--space-6) min(var(--space-6), 4vw);
     overflow-wrap: break-word;
     display: grid;
     gap: var(--space-3);
     grid-template-columns: minmax(0, 1fr);
+  }
+  .case-folder[data-current] .folder-body {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    box-shadow: var(--shadow-3);
+  }
+  :root[data-theme='contrast'] .folder-body {
+    border: 2px solid var(--line);
+  }
+  :root[data-theme='contrast'] .case-folder[data-current] .folder-body {
+    border-width: 6px;
+  }
+  /* Buttons of the usual size in a step share one width, so a pair reads as a pair. */
+  .case-body .btn:not(.btn-xl) {
+    min-inline-size: min(100%, 16rem);
   }
   @media (min-width: 900px) {
     .folder-body {
@@ -2023,22 +2169,22 @@ a {
   .folder-h {
     font-size: var(--step-2);
     margin: 0;
-    max-width: 24ch;
-    overflow-wrap: anywhere;
+    max-width: 26ch;
+    overflow-wrap: break-word;
   }
   .folder-body p {
     margin: 0;
-    max-width: 52ch;
+    max-width: 56ch;
   }
-  /* Capped by the screen width too: a quoted phrase in this wide font keeps its words whole on a
-     phone at the largest text size. */
+  /* Capped by the screen width too: a quoted phrase keeps its words whole on a phone at the
+     largest text size. */
   .folder-said {
     overflow-wrap: break-word;
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: min(var(--step-1), 9vw);
+    font-size: min(var(--step-0), 8vw);
     align-self: start;
-    border-left: 6px solid currentColor;
+    border-left: 4px solid var(--accent);
     padding-left: var(--space-4);
   }
 
@@ -2047,7 +2193,7 @@ a {
     padding: var(--space-8) var(--gutter);
     display: grid;
     gap: var(--space-6);
-    border-top: 3px solid var(--line);
+    border-top: 1px solid var(--hairline);
   }
   @media (min-width: 980px) {
     .lp-money {
@@ -2074,7 +2220,7 @@ a {
     gap: var(--space-1) var(--space-3);
     align-items: center;
     padding: var(--space-4);
-    border: 3px solid var(--line);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-m);
     font-weight: 700;
   }
@@ -2108,10 +2254,16 @@ a {
     max-width: 70ch;
   }
   .lp-footer {
-    padding: var(--space-6) var(--gutter);
+    padding: var(--space-7) var(--gutter);
     display: grid;
-    gap: var(--space-2);
-    border-top: 3px solid var(--line);
+    gap: var(--space-3);
+    border-top: 1px solid var(--hairline);
+    background: var(--surface);
+    color: var(--muted);
+  }
+  :root[data-theme='contrast'] .lp-footer {
+    border-top: 1px solid var(--hairline);
+    background: #000;
   }
   .lp-footer p {
     margin: 0;
@@ -2156,7 +2308,6 @@ a {
 @layer components {
   .case-folder .folder-tab {
     font-size: var(--step-1);
-    margin-bottom: -3px;
   }
   .case-body {
     grid-template-columns: minmax(0, 1fr) !important;
@@ -2170,7 +2321,7 @@ a {
     margin: 0;
     display: grid;
     gap: var(--space-2);
-    border-left: 4px solid var(--line);
+    border-left: 2px solid var(--accent-soft);
     padding-left: var(--space-4);
   }
   /* The orders table. The container query is in rem, so Larger and Largest text switch to the
@@ -2190,7 +2341,7 @@ a {
     border-bottom: 2px solid var(--hairline);
   }
   .orders-table thead th {
-    border-bottom: 3px solid var(--line);
+    border-bottom: 1.5px solid var(--line);
     font-size: var(--step--1);
     color: var(--muted);
   }
@@ -2283,7 +2434,7 @@ a {
     list-style: none;
     margin: 0;
     padding: 0 0 0 var(--space-4);
-    border-left: 4px solid var(--line);
+    border-left: 2px solid var(--accent-soft);
     display: grid;
     gap: var(--space-4);
     max-width: var(--measure);
@@ -2295,7 +2446,7 @@ a {
     overflow-wrap: anywhere;
   }
   .money-timeline li[data-upcoming] {
-    border: 3px dashed var(--line);
+    border: 1.5px dashed var(--line);
     border-radius: var(--radius-m);
     padding: var(--space-3) var(--space-4);
   }
@@ -2360,7 +2511,9 @@ a {
     grid-template-columns: auto 1fr;
     gap: var(--space-4);
     padding: var(--space-5);
-    border: 3px solid var(--line);
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
     border-radius: var(--radius-l);
     align-items: start;
   }
@@ -2382,9 +2535,9 @@ a {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--yellow);
-    color: var(--yellow-ink);
-    border: 3px solid var(--yellow-ink);
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 3px solid var(--surface);
     font-weight: 800;
     font-size: var(--step-1);
   }
@@ -2417,7 +2570,9 @@ a {
   /* The side padding shrinks on a narrow screen (vw, not rem), so large text keeps its room. */
   .settings fieldset,
   .settings-box {
-    border: 3px solid var(--line);
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
     border-radius: var(--radius-l);
     padding: var(--space-4) min(var(--space-5), 3.5vw) var(--space-5);
     display: grid;
@@ -2597,7 +2752,7 @@ a {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }
   .bi-heads li {
-    border-top: 6px solid var(--yellow);
+    border-top: 4px solid var(--accent);
     padding-top: var(--space-3);
     display: grid;
     gap: var(--space-1);
@@ -2631,7 +2786,9 @@ a {
     grid-template-columns: auto 1fr;
     gap: var(--space-3);
     padding: var(--space-4);
-    border: 3px solid var(--line);
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
     border-radius: var(--radius-m);
   }
   .run-steps li[data-status='done'] .run-mark {
@@ -2793,10 +2950,7 @@ a {
 }
 
 @layer components {
-  /* The front folder stays yellow in light and dark themes. */
-  :root:not([data-theme='contrast']) .folders > :is(.folder:not(.case-folder):last-child, .case-folder[data-current]) {
-    --tint: var(--yellow) !important;
-  }
+
 }
 
 @layer components {
@@ -2824,9 +2978,9 @@ a {
     color: var(--ink);
   }
   .moments li[aria-current='step'] {
-    border-color: var(--yellow-ink);
-    background: var(--yellow);
-    color: var(--yellow-ink);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--ink);
   }
   .moments-dot {
     display: grid;
@@ -2869,12 +3023,12 @@ a {
     gap: var(--space-2);
     align-content: start;
     padding: var(--space-5) min(var(--space-5), 4vw);
-    border: 3px solid var(--line);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-l);
     background: var(--receipt);
-    color: #0b0b0c;
+    color: #0d1530;
     font-family: var(--font-mono);
-    box-shadow: 8px 8px 0 var(--ink);
+    box-shadow: var(--shadow-2);
   }
   :root[data-theme='contrast'] .lp-mlist li {
     color: var(--ink);
@@ -2971,17 +3125,40 @@ a {
     width: 1.6em;
     height: 1.6em;
     border-radius: 50%;
-    border: 2.5px solid currentColor;
+    border: 2px solid currentColor;
     font-size: 0.8em;
+  }
+  /* On the journey the step's mark sits on the rail, as its dot. */
+  .case-folder .case-glyph {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 44px;
+    height: 44px;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 700;
+    background: var(--surface);
+    color: var(--muted);
+    border-color: var(--hairline);
+    box-shadow: var(--shadow-1);
   }
   .case-folder[data-tone='bad'] .case-glyph {
     color: var(--mismatch);
+    border-color: currentColor;
   }
   .case-folder[data-tone='good'] .case-glyph {
     color: var(--match);
+    border-color: currentColor;
   }
   .folders > .case-folder[data-current] .case-glyph {
-    color: inherit;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+  :root[data-theme='contrast'] .case-folder .case-glyph {
+    background: #000;
+    border: 2px solid var(--ink);
   }
   .reason-list {
     list-style: none;
@@ -3070,7 +3247,8 @@ a {
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: var(--radius-m);
-    border: 2.5px solid var(--line);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-1);
   }
 }
 
@@ -3090,7 +3268,9 @@ a {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   }
   .jcards > li {
-    border: 2.5px solid var(--line);
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    box-shadow: var(--shadow-2);
     border-radius: var(--radius-m);
     padding: var(--space-4);
     display: grid;
@@ -3175,7 +3355,8 @@ a {
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: var(--radius-m);
-    border: 2.5px solid var(--line);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-1);
     background: var(--paper-2);
   }
   .helper-top {
@@ -3233,8 +3414,53 @@ a {
   /* After the first request the greeting shrinks, so the active card (a readback and its Confirm
      button) stays above the fold. It is the same h1 with the same words; only its size changes. */
   .convo-h[data-compact] {
-    font-size: var(--step-1);
+    font-size: var(--step-2);
     max-width: none;
+    color: var(--muted);
+  }
+  /* A page heading with an illustration beside it on a wide screen (decorative, hidden from
+     screen readers; it never shows on a phone, where the words come first). */
+  .page-head {
+    display: grid;
+    gap: var(--space-5);
+    align-items: center;
+  }
+  .page-head-art {
+    display: none;
+  }
+  @media (min-width: 64rem) {
+    .page-head[data-with-art] {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+    }
+    .page-head[data-with-art] .page-head-art {
+      display: block;
+    }
+  }
+  /* The composer is one calm dock: Talk, the text box and the status line together. */
+  .composer {
+    padding: var(--space-6) min(var(--space-6), 4vw);
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2);
+    position: relative;
+    isolation: isolate;
+  }
+  .composer::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      radial-gradient(28rem 10rem at 50% 0%, color-mix(in srgb, var(--accent-soft) 80%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  :root[data-theme='contrast'] .composer {
+    border: 2px solid var(--line);
+  }
+  :root[data-theme='contrast'] .composer::before {
+    display: none;
   }
   /* The readback's actions (Confirm, Wait, Cancel and the notes) come after the receipt in reading
      order. When the card is wide enough, measured in rem so large text keeps one column, they sit
@@ -3279,7 +3505,7 @@ a {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    border: 0 solid var(--yellow);
+    border: 0 solid #8ea2ff;
   }
   .viewfinder-edges[data-edges~='left'] {
     border-left-width: 12px;

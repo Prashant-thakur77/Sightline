@@ -5,36 +5,36 @@
 
 /* Chart series colours. None of them stands for a status; every series is named in its legend. */
 :root {
-  --sx-chart-1: #0b3fd9;
-  --sx-chart-2: #0b0b0c;
+  --sx-chart-1: #2442ff;
+  --sx-chart-2: #0d1530;
   --sx-chart-3: #8a5a00;
   --sx-chart-4: #5c6670;
   --sx-chart-5: #6a3fc0;
   --sx-chart-6: #0a6f78;
-  --sx-chart-stroke: #0b0b0c;
+  --sx-chart-stroke: #ffffff;
   --sx-chart-label-inside: #ffffff;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-theme='contrast']) {
     --sx-chart-1: #8db4ff;
-    --sx-chart-2: #fbfbf8;
+    --sx-chart-2: #eef2fb;
     --sx-chart-3: #ffc56b;
     --sx-chart-4: #b9bcc4;
     --sx-chart-5: #c9a7ff;
     --sx-chart-6: #6fd8e0;
     --sx-chart-stroke: #0e1013;
-    --sx-chart-label-inside: #0b0b0c;
+    --sx-chart-label-inside: #0d1530;
   }
 }
 :root[data-theme='dark'] {
   --sx-chart-1: #8db4ff;
-  --sx-chart-2: #fbfbf8;
+  --sx-chart-2: #eef2fb;
   --sx-chart-3: #ffc56b;
   --sx-chart-4: #b9bcc4;
   --sx-chart-5: #c9a7ff;
   --sx-chart-6: #6fd8e0;
   --sx-chart-stroke: #0e1013;
-  --sx-chart-label-inside: #0b0b0c;
+  --sx-chart-label-inside: #0d1530;
 }
 :root[data-theme='contrast'] {
   --sx-chart-1: #ffd60a;
@@ -81,11 +81,11 @@
   margin: 0 10px 10px 0;
   padding: var(--space-5) var(--space-5) 0;
   background: var(--receipt);
-  color: #0b0b0c;
+  color: #0d1530;
   font-family: var(--font-mono);
-  border: 3px solid #0b0b0c;
-  border-radius: var(--radius-m) var(--radius-m) 0 0;
-  box-shadow: 10px 10px 0 var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
+  box-shadow: var(--shadow-2);
   min-width: 0;
 }
 :root[data-theme='contrast'] .sx-receipt {
@@ -121,7 +121,7 @@
   display: grid;
   gap: var(--space-1);
   padding: var(--space-3) 0;
-  border-top: 2px dashed #8a8a84;
+  border-top: 1.5px dashed var(--hairline);
 }
 :root[data-theme='contrast'] .sx-figure {
   border-top-color: var(--ink);
@@ -155,14 +155,14 @@
   gap: var(--space-1) var(--space-3);
   margin: 0 calc(var(--space-5) * -1);
   padding: var(--space-3) var(--space-5);
-  border-top: 3px dashed currentColor;
-  background: var(--yellow);
-  color: var(--yellow-ink);
+  border-top: 1.5px dashed var(--hairline);
+  background: var(--accent-soft);
+  color: var(--ink);
   font-size: var(--step--1);
   font-weight: 700;
 }
 :root[data-theme='contrast'] .sx-stub {
-  background: var(--yellow);
+  background: var(--accent-soft);
   color: #000;
   border-top-color: #000;
 }
@@ -196,7 +196,7 @@
   display: inline-flex;
   padding: 4px;
   gap: 4px;
-  border: 2.5px solid var(--line);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-m);
   background: var(--paper);
 }
@@ -263,21 +263,21 @@
   align-items: center;
   min-height: var(--target);
   padding: 0 var(--space-5);
-  background: var(--yellow);
-  color: var(--yellow-ink);
-  border: 3px solid var(--yellow-ink);
+  background: var(--accent-soft);
+  color: var(--ink);
+  border: 0;
   border-radius: var(--radius-m);
   font-weight: 700;
 }
 .sx-canvas {
   position: relative;
   min-width: 0;
-  border-top: 3px solid var(--line);
+  border-top: 1px solid var(--hairline);
   padding-top: var(--space-3);
   box-sizing: content-box;
 }
 .sx-canvas[data-mode='edit'] {
-  border: 3px solid var(--line);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-l);
   overflow: hidden;
   padding: 0;
@@ -318,7 +318,7 @@
 .sx-empty {
   margin: 0;
   padding: var(--space-5);
-  border: 3px dashed var(--line);
+  border: 1.5px dashed var(--hairline);
   border-radius: var(--radius-l);
   display: grid;
   gap: var(--space-2);
@@ -346,7 +346,7 @@
   gap: var(--space-3);
   margin-top: var(--space-4);
   padding-top: var(--space-4);
-  border-top: 3px solid var(--line);
+  border-top: 1px solid var(--hairline);
   max-width: 62ch;
 }
 .sx-defs-h {
@@ -362,7 +362,7 @@
   display: grid;
   gap: 2px;
   padding-left: var(--space-4);
-  border-left: 6px solid var(--yellow);
+  border-left: 4px solid var(--accent);
 }
 :root[data-theme='contrast'] .sx-defs div {
   border-left-color: var(--ink);
@@ -442,7 +442,7 @@
 }
 .sx-data-table thead th {
   font-size: var(--step--1);
-  border-bottom: 3px solid var(--line);
+  border-bottom: 1px solid var(--hairline);
 }
 .sx-data-empty {
   margin: 0 0 var(--space-4);

@@ -48,3 +48,6 @@ tests/sr/logs/*.txt
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
 tests/.*.tmp.mjs
+
+# Agent worktrees
+.claude/worktrees/

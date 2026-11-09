@@ -1,15 +1,23 @@
 import type { Metadata, Viewport } from 'next';
-import { Atkinson_Hyperlegible_Mono, Atkinson_Hyperlegible_Next } from 'next/font/google';
+import { Atkinson_Hyperlegible_Mono, Atkinson_Hyperlegible_Next, Fraunces } from 'next/font/google';
 import { PRODUCT_NAME } from '@sightline/core';
 import { AnnouncerProvider } from '@/components/a11y/announcer';
 import { ThemeBoot } from '@/components/shell/theme-boot';
 import './globals.css';
+import '@/components/art/art.css';
 
 const sans = Atkinson_Hyperlegible_Next({
   subsets: ['latin'],
   variable: '--font-atkinson',
   display: 'swap',
   weight: ['400', '500', '700', '800'],
+});
+/** Display serif for headlines only (28px and up); soft and warm at heavy weights. */
+const display = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  display: 'swap',
+  axes: ['SOFT', 'opsz'],
 });
 const mono = Atkinson_Hyperlegible_Mono({
   subsets: ['latin'],
@@ -28,8 +36,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#fbfbf8' },
-    { media: '(prefers-color-scheme: dark)', color: '#0e1013' },
+    { media: '(prefers-color-scheme: light)', color: '#f3f6fb' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0f1f' },
   ],
 };
 
@@ -41,7 +49,7 @@ const themeScript = `(function(){try{var t=localStorage.getItem('sl-theme');if(t
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${sans.variable} ${mono.variable} ${display.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

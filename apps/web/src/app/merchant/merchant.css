@@ -14,8 +14,11 @@
 
 /* ---------- Header ---------- */
 .mx-header {
-  background: var(--paper);
-  border-bottom: 3px solid var(--line);
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+}
+:root[data-theme='contrast'] .mx-header {
+  border-bottom: 1px solid var(--hairline);
 }
 .mx-banner {
   position: relative;
@@ -25,11 +28,11 @@
   align-items: center;
   gap: var(--space-2) var(--space-3);
   padding: var(--space-2) clamp(1rem, 3vw, 2.5rem) var(--space-2) calc(clamp(1rem, 3vw, 2.5rem) + 28px);
-  background: var(--yellow);
-  color: var(--yellow-ink);
+  background: var(--warm);
+  color: var(--ink);
   font-weight: 700;
   font-size: var(--step--1);
-  border-bottom: 3px solid var(--yellow-ink);
+  border-bottom: 1px solid var(--hairline);
 }
 /* Tactile paving: a strip of raised domes at the start of the banner. Decorative. */
 .mx-banner::before {
@@ -40,14 +43,14 @@
   width: 18px;
   height: 18px;
   transform: translateY(-50%);
-  background: radial-gradient(circle, var(--yellow-ink) 2.2px, transparent 2.6px) 0 0 / 6px 6px;
+  background: radial-gradient(circle, var(--ink) 2.2px, transparent 2.6px) 0 0 / 6px 6px;
 }
 .mx-banner-tag {
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: var(--yellow-ink);
-  color: var(--yellow);
+  background: var(--ink);
+  color: var(--surface);
   padding: 0.05em 0.6em;
   border-radius: 999px;
 }
@@ -203,7 +206,7 @@
   gap: var(--space-2);
   min-height: 44px;
   padding: var(--space-1) var(--space-4) var(--space-1) var(--space-2);
-  border: 2.5px solid var(--line);
+  border: 1px solid var(--hairline);
   border-radius: 999px;
   font-weight: 700;
 }
@@ -213,8 +216,8 @@
   min-width: 1.9em;
   height: 1.9em;
   border-radius: 999px;
-  background: var(--yellow);
-  color: var(--yellow-ink);
+  background: var(--accent-soft);
+  color: var(--ink);
   font-family: var(--font-mono);
   font-weight: 800;
 }
@@ -240,10 +243,11 @@
   display: grid;
   gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
-  border: 3px solid var(--line);
-  border-left-width: 12px;
-  border-radius: var(--radius-m);
-  background: var(--paper-2);
+  border: 1px solid var(--hairline);
+  border-left-width: 4px;
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
   max-width: 80ch;
 }
 .mx-notice p {
@@ -258,7 +262,7 @@
 .mx-empty {
   margin: 0;
   padding: var(--space-5);
-  border: 3px dashed var(--line);
+  border: 1.5px dashed var(--line);
   border-radius: var(--radius-l);
   display: grid;
   gap: var(--space-2);
@@ -402,7 +406,7 @@
 }
 .mx-grid .ag-row-selected .ag-cell:first-child:not(.ag-cell-focus) {
   box-shadow:
-    inset 8px 0 0 var(--yellow),
+    inset 4px 0 0 var(--accent),
     inset 10px 0 0 var(--ink);
 }
 .mx-grid .ag-row {
@@ -418,7 +422,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  border: 3px solid var(--line);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-l);
   overflow: clip;
   font-size: var(--step--1);
@@ -428,7 +432,7 @@
   font-weight: 800;
   text-align: left;
   padding: var(--space-3);
-  border-bottom: 3px solid var(--line);
+  border-bottom: 1px solid var(--hairline);
   vertical-align: bottom;
 }
 .mx-table tbody th,
@@ -454,7 +458,7 @@
 }
 .mx-table tr[data-selected] > th {
   box-shadow:
-    inset 8px 0 0 var(--yellow),
+    inset 4px 0 0 var(--accent),
     inset 10px 0 0 var(--ink);
 }
 .mx-t-label {
@@ -465,7 +469,7 @@
   align-items: center;
   min-height: var(--target);
   padding: 0 var(--space-3);
-  border: 2.5px solid var(--line);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-m);
   background: var(--paper);
   color: var(--ink);
@@ -508,7 +512,7 @@
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
     gap: var(--space-3) var(--space-4);
     padding: var(--space-4);
-    border: 3px solid var(--line);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-l);
   }
   .mx-table tbody th,
@@ -549,7 +553,7 @@
 
 /* ---------- Selected order panel ---------- */
 .mx-panel {
-  border: 3px solid var(--line);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-l);
   overflow: clip;
   display: grid;
@@ -563,7 +567,7 @@
   gap: var(--space-2) var(--space-4);
   padding: var(--space-4) var(--space-5);
   background: var(--paper-2);
-  border-bottom: 3px solid var(--line);
+  border-bottom: 1px solid var(--hairline);
 }
 .mx-panel-pick select {
   flex: 1 1 260px;
@@ -646,7 +650,7 @@
   display: grid;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-5) var(--space-5);
-  border: 3px dashed var(--line);
+  border: 1.5px dashed var(--line);
   border-radius: var(--radius-l);
 }
 .mx-demo legend {
@@ -659,9 +663,9 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: var(--step--1);
-  background: var(--yellow);
-  color: var(--yellow-ink);
-  border: 2.5px solid var(--yellow-ink);
+  background: var(--accent-soft);
+  color: var(--ink);
+  border: 0;
   border-radius: 999px;
   padding: 0.15em 0.9em;
 }
@@ -750,7 +754,7 @@
   gap: var(--space-3);
   margin: 0 var(--space-5) var(--space-5);
   padding: var(--space-3) var(--space-4);
-  border: 3px solid var(--line);
+  border: 1px solid var(--hairline);
   border-left-width: 10px;
   border-radius: var(--radius-m);
   font-weight: 700;
@@ -794,15 +798,14 @@
 .mx-case > article {
   display: grid;
 }
-/* A manila case folder: a tab, then the folder itself. */
+/* A case: its references in a small pill above the card. */
 .mx-case-tab {
   justify-self: start;
-  margin: 0 0 -3px var(--space-5);
-  padding: var(--space-2) var(--space-5);
-  background: var(--paper-2);
-  border: 3px solid var(--line);
-  border-bottom: 0;
-  border-radius: var(--radius-l) var(--radius-l) 0 0;
+  margin: 0 0 var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: var(--step--1);
@@ -810,13 +813,15 @@
   z-index: 1;
 }
 .mx-case[data-open] .mx-case-tab {
-  background: var(--yellow);
-  color: var(--yellow-ink);
+  background: var(--accent-soft);
+  color: var(--ink);
 }
 .mx-case-box {
-  border: 3px solid var(--line);
-  border-radius: var(--radius-l);
-  background: var(--paper-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-width: 0;
@@ -824,8 +829,11 @@
 .mx-case-head {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-5) var(--space-5) var(--space-4);
-  border-bottom: 2px solid var(--hairline);
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+}
+.mx-case[data-open] .mx-case-head {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 70%, transparent), transparent);
 }
 .mx-case-h {
   font-size: var(--step-2);
@@ -873,11 +881,11 @@
   margin: 0;
   padding: var(--space-4) var(--space-5);
   background: var(--receipt);
-  color: #0b0b0c;
+  color: #0d1530;
   font-family: var(--font-mono);
   font-weight: 700;
-  border-top: 3px dashed #0b0b0c;
-  border-bottom: 3px dashed #0b0b0c;
+  border-top: 1.5px dashed #b6c2df;
+  border-bottom: 1.5px dashed #b6c2df;
   max-width: 70ch;
 }
 :root[data-theme='contrast'] .mx-readback {
@@ -920,7 +928,7 @@
 }
 .mx-dispute {
   padding: var(--space-4);
-  border: 2.5px solid var(--line);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-m);
   background: var(--paper);
 }
@@ -937,7 +945,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
-  border: 3px dashed var(--line);
+  border: 1.5px dashed var(--line);
   border-radius: var(--radius-l);
   background: var(--paper);
 }
@@ -988,7 +996,7 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
-  border: 3px solid var(--line);
+  border: 1px solid var(--hairline);
   border-left-width: 12px;
   border-radius: var(--radius-m);
   background: var(--paper);
@@ -1109,4 +1117,20 @@
   .mx-case:not([data-open]) .mx-case-body {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+
+/* ---------- v2: cards on ice ---------- */
+.mx-counts li,
+.mx-panel,
+.mx-result,
+.mx-dispute,
+.mx-confirm {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-1);
+}
+:root[data-theme='contrast'] :is(.mx-counts li, .mx-panel, .mx-result, .mx-dispute, .mx-confirm, .mx-case-box, .mx-notice) {
+  border: 2px solid var(--line);
+  background: #000;
 }

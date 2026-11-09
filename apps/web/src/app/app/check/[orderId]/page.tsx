@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { cache } from 'react';
 import { CheckFlow } from '@/components/check/check-flow';
 import { MomentsStrip, type Moment } from '@/components/shell/moments';
+import { CheckArt } from '@/components/art/illustrations';
 import { currentUser, requireUser } from '@/server/session';
 import { orderForUser } from '@/server/orders-read';
 import { existingBlobIds } from '@/server/blobs';
@@ -91,14 +92,21 @@ export default async function CheckPage({ params }: { params: Promise<{ orderId:
           Back to the order
         </Link>
       </p>
-      <header className="grid gap-2">
-        <MomentsStrip done={done} current={current} currentNote={currentNote} notDone={notDone} />
-        <p className="eyebrow">Order {shortRef(found.order.id)}</p>
-        <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title} you paid for?</h1>
-        <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">
-          You ordered {s.attributes.colour ?? 'the listed colour'}, size {s.attributes.size ?? 'as listed'}.{' '}
-          {pay.word === 'On hold' ? 'Your payment is on hold. Demo Store is paid only if this matches.' : ''}
-        </p>
+      <header className="page-head" data-with-art={!found.verification?.verdict || undefined}>
+        <div className="grid gap-2">
+          <MomentsStrip done={done} current={current} currentNote={currentNote} notDone={notDone} />
+          <p className="eyebrow">Order {shortRef(found.order.id)}</p>
+          <h1 className="text-[length:var(--step-4)] max-w-[18ch]">Is this the {s.title} you paid for?</h1>
+          <p className="text-[length:var(--step-1)] max-w-[var(--measure)]">
+            You ordered {s.attributes.colour ?? 'the listed colour'}, size {s.attributes.size ?? 'as listed'}.{' '}
+            {pay.word === 'On hold' ? 'Your payment is on hold. Demo Store is paid only if this matches.' : ''}
+          </p>
+        </div>
+        {!found.verification?.verdict && (
+          <div className="page-head-art">
+            <CheckArt />
+          </div>
+        )}
       </header>
       <CheckFlow
         orderId={orderId}
