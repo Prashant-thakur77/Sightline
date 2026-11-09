@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 type Step = 'asked' | 'paid' | 'arrived' | 'checked' | 'money-back';
 
-function Section({ n, id, tab, state, current, children }: { n: number; id: Step; tab: string; state: StatusWord; current: Step; children: React.ReactNode }) {
+function Section({ n, id, tab, state, current, children }: { n: number; id: Step; tab: string; state: StatusWord; current: Step | null; children: React.ReactNode }) {
   const here = id === current;
   return (
     <li
@@ -185,8 +185,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const resolved = kase?.stage === 'resolved' ? resolvedOutcome(kase.outcome, o.status, o.currency, amount) : null;
   // The front (yellow) folder is where the order is now, read from the furthest step it reached:
   // a case or a wrong item, then the check, then payment still waiting, then the parcel on its way.
-  const current: Step =
-    kase || verdict?.kind === 'mismatch'
+  // A closed case or a matching check leaves nothing to do: no folder is in front.
+  const finished = kase?.stage === 'resolved' || (verdict?.kind === 'match' && !kase);
+  const current: Step | null = finished
+    ? null
+    : kase || verdict?.kind === 'mismatch'
       ? 'money-back'
       : verdict || shipment?.deliveredAt
         ? 'checked'
@@ -307,11 +310,14 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           ) : verdict?.kind === 'unsure' && helper && kase?.stage !== 'resolved' ? (
             <AskHelper orderId={o.id} helperName={helper.name} waitingUntil={liveHelperUntil} primary={current === 'checked'} />
           ) : null}
-          <p>
-            <Link className={verdict ? 'btn' : 'btn btn-primary btn-xl'} href={`/app/check/${o.id}`}>
-              {verdict ? 'Check again' : 'Check the parcel with your camera'}
-            </Link>
-          </p>
+          {/* Once the case is closed there is nothing a new check could change. */}
+          {kase?.stage !== 'resolved' && (
+            <p>
+              <Link className={verdict ? 'btn' : 'btn btn-primary btn-xl'} href={`/app/check/${o.id}`}>
+                {verdict ? 'Check again' : 'Check the parcel with your camera'}
+              </Link>
+            </p>
+          )}
         </Section>
 
         <Section n={5} id="money-back" tab="Money back" state={moneyBack} current={current}>

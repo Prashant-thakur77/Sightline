@@ -364,7 +364,10 @@ a {
     border-color: var(--ink);
   }
 
+  /* The browser's "No file chosen" is hidden: a chosen photo goes straight to "Photos so far",
+     so the field never names a file, and the words were cut off at large text. */
   .file-input {
+    color: transparent;
     font: inherit;
     padding: var(--space-2) 0;
     min-height: var(--target);
@@ -704,9 +707,14 @@ a {
     color: #b9bcc4;
   }
 
+  /* A size container: the table below switches to one line per part by the verdict's own width
+     in em, so larger text switches sooner (a viewport media query can't follow the text size). */
   .verdict {
     display: grid;
+    /* minmax(0, 1fr): the column is the page's width, not the widest child's minimum. */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);
+    container: verdict / inline-size;
   }
   .verdict-kind {
     display: inline-flex;
@@ -806,7 +814,7 @@ a {
   .verdict-mark[data-finding='unknown'] {
     color: var(--unsure);
   }
-  @media (max-width: 560px) {
+  @container verdict (max-width: 34em) {
     .verdict-table thead {
       display: none;
     }

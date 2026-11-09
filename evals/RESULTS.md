@@ -6,16 +6,16 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 
 | Suite | Results | Negative results | Ran at (UTC) | Git |
 | --- | --- | --- | --- | --- |
-| Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | 28b8f62 |
-| Spoken purchase confirmation | 5 | 2 | 2026-11-09T02:50:21.890Z | 28b8f62 |
-| Duplicate orders | 8 | 2 | 2026-11-09T02:50:23.219Z | 28b8f62 |
-| Grounded answers | 5 | 2 | 2026-11-09T02:50:23.542Z | 28b8f62 |
-| Adversarial listings (red team) | 5 | 1 | 2026-11-09T02:50:22.200Z | 28b8f62 |
-| SightBench: does the parcel match? | 12 | 5 | 2026-11-09T02:50:21.459Z | 28b8f62 |
+| Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | e9a5149 |
+| Spoken purchase confirmation | 5 | 2 | 2026-11-09T04:04:47.513Z | e9a5149 |
+| Duplicate orders | 8 | 2 | 2026-11-09T04:04:48.827Z | e9a5149 |
+| Grounded answers | 5 | 2 | 2026-11-09T04:04:49.147Z | e9a5149 |
+| Adversarial listings (red team) | 5 | 1 | 2026-11-09T04:04:47.833Z | e9a5149 |
+| SightBench: does the parcel match? | 12 | 5 | 2026-11-09T04:04:47.073Z | e9a5149 |
 
 ## Checkout Barrier Index
 
-Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git 28b8f62
+Suite `barrier` · ran 2026-11-08T22:07:14.585Z · git e9a5149
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -57,7 +57,7 @@ Full per-item data: `evals/results/barrier.json` (`details`).
 
 ## Spoken purchase confirmation
 
-Suite `confirmation` · ran 2026-11-09T02:50:21.890Z · git 28b8f62
+Suite `confirmation` · ran 2026-11-09T04:04:47.513Z · git e9a5149
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -86,7 +86,7 @@ Full per-item data: `evals/results/confirmation.json` (`details`).
 
 ## Duplicate orders
 
-Suite `duplicates` · ran 2026-11-09T02:50:23.219Z · git 28b8f62
+Suite `duplicates` · ran 2026-11-09T04:04:48.827Z · git e9a5149
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -124,7 +124,7 @@ Full per-item data: `evals/results/duplicates.json` (`details`).
 
 ## Grounded answers
 
-Suite `grounding` · ran 2026-11-09T02:50:23.542Z · git 28b8f62
+Suite `grounding` · ran 2026-11-09T04:04:49.147Z · git e9a5149
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -152,7 +152,7 @@ Full per-item data: `evals/results/grounding.json` (`details`).
 
 ## Adversarial listings (red team)
 
-Suite `redteam` · ran 2026-11-09T02:50:22.200Z · git 28b8f62
+Suite `redteam` · ran 2026-11-09T04:04:47.833Z · git e9a5149
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -182,7 +182,7 @@ Full per-item data: `evals/results/redteam.json` (`details`).
 
 ## SightBench: does the parcel match?
 
-Suite `sightbench` · ran 2026-11-09T02:50:21.459Z · git 28b8f62
+Suite `sightbench` · ran 2026-11-09T04:04:47.073Z · git e9a5149
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -197,7 +197,7 @@ Suite `sightbench` · ran 2026-11-09T02:50:21.459Z · git 28b8f62
 | Wrong size delivered: caught by Sightline without model reads **(negative result)** | 1 of 53 | size-tag OCR alone: 51 of 53 | 95% Wilson 0.3%–9.9% | 53 | `evals/sightbench/run.ts` |
 | Different model or damage marks: caught by Sightline without model reads **(negative result)** | model 0 of 52, damage 0 of 52 | CLIP: model 52 of 52, damage 48 of 52 | — | 104 | `evals/sightbench/run.ts` |
 | Colour check gave up ("heavy colour cast") on wood tables and plank floors **(negative result)** | 109 of 113 | other surfaces: 42 of 307 | 95% Wilson 91.3%–98.6% | 113 | `evals/sightbench/run.ts` |
-| POST /verify latency on the dev laptop, p50 / p95 | 1.12 s / 1.44 s | — | — | 420 | `evals/sightbench/run.ts` |
+| POST /verify latency on the dev laptop, p50 / p95 | 1.06 s / 1.25 s | — | — | 420 | `evals/sightbench/run.ts` |
 
 Notes:
 
@@ -206,19 +206,19 @@ Notes:
 - Pairs where Sightline answered "not sure" (abstained): Coverage 3 of 420 (0.7%). Accuracy when Sightline did answer: 2 of 3 (66.7%); CLIP accuracy: 215 of 420 (51.2%). No model reads in this run: identity and damage report unknown, so the service never says match.
 - Secondary metric, added after the first test run: mismatches where Sightline names the difference (mismatch, or "not sure" with the right module disagreeing): Synthetic renders, not real photos. What the buyer hears, for example "The size tag seems to read L, you ordered M, but I'm only fairly sure.", and the money-back path stays open for "not sure". Per type: colour 14 of 53, damage 0 of 52, model 0 of 52, size 51 of 53. Defined after the first test run's primary numbers were known, so it is reported next to them, never instead of them.
 - False-alarm twin of the secondary metric: matching items called a mismatch or given any disagreeing reason: Synthetic renders, not real photos. The buyer hears a difference that is not there, even if only as "not sure". Disagreeing modules on these pairs: colour 21.
-- First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure: The frozen test split has been run 2 times: first with the hand-set thresholds, then with thresholds fitted on the dev split only. Nothing was tuned on test. Every run's numbers are in details.testRuns. Mismatches flagged per type, first run -> this run: colour 4 -> 1 of 53, damage 2 -> 0 of 52, model 0 -> 0 of 52, size 1 -> 1 of 53. Secondary metric, first run -> this run: named 76 of 210 -> 65 of 210, twin false alarms 45 of 210 -> 21 of 210.
+- First test run (unfitted thresholds, 2026-11-08): mismatches flagged / false alarms / not sure: The frozen test split has been run 3 times: first with the hand-set thresholds, then with thresholds fitted on the dev split only. Nothing was tuned on test. Every run's numbers are in details.testRuns. Mismatches flagged per type, first run -> this run: colour 4 -> 1 of 53, damage 2 -> 0 of 52, model 0 -> 0 of 52, size 1 -> 1 of 53. Secondary metric, first run -> this run: named 76 of 210 -> 65 of 210, twin false alarms 45 of 210 -> 21 of 210.
 - Navy delivered for black (or black for navy) in dim light: mismatches caught by Sightline: Synthetic renders, not real photos. In dim light the colour module disagreed on 0, but dim light lowers its confidence below "sure", so the verdict was "not sure"; it agreed (wrongly) on 0 and gave up on 7. CLIP's 7 of 7 means little: it flags 90.0% of matching pairs too. Only 7 pairs per light level, so intervals are wide.
 - Wrong size delivered: caught by Sightline without model reads: With OCR as the only tag read, a size is at most "fairly sure", and fusion needs "sure" to call a mismatch, so these end as "not sure". OCR alone called 0 of 210 matching pairs a mismatch (synthetic tags).
 - Different model or damage marks: caught by Sightline without model reads: Identity and damage checks need the vision model, which this run did not have.
 - Colour check gave up ("heavy colour cast") on wood tables and plank floors: Synthetic renders, not real photos. Without a sheet of white paper in view, white balance is gray world over the background, so an orange wood surface reads as a strong colour cast and the colour module abstains. Holds in daylight too. Checked on dev: the item masks on wood are tight and the background pixels are plain wood, so this is the gray-world assumption, not a mask bug; it was not fitted away.
-- POST /verify latency on the dev laptop, p50 / p95: Client wall time, one request at a time over localhost, CPU only, no model calls. Server-side total p50 1116 ms.
+- POST /verify latency on the dev laptop, p50 / p95: Client wall time, one request at a time over localhost, CPU only, no model calls. Server-side total p50 1056 ms.
 
 Limitations:
 
 - Synthetic renders, not real photos: listing images are clean procedural renders and delivered photos are phone-like renders (perspective, rotation, uneven light, colour casts, blur, noise, JPEG). Real photos will differ; the real photo set (evals/sightbench/real/SHOTLIST.md) is not collected yet.
 - No vision-model reads in this run (no ANTHROPIC_API_KEY): the service ran colour, OCR, quality and fusion only. Identity and damage report unknown, so it can never answer match, and a size read once by OCR is at most fairly sure. Re-run with --with-model once the service has a key.
 - Service thresholds: fitted-dev-2026-11-09, fitted on the dev split only (services/vision/app/thresholds.json, "fitted"); the hand-set set is kept as initial-unfitted. The CLIP threshold was also fitted on dev only: 0.880224 (maximise balanced accuracy on dev over midpoints of sorted dev scores; ties -> median tied candidate). Dev has only 180 pairs (23 colour mismatches), so the fit is coarse.
-- The frozen test split has been run 2 times: run 1 on 2026-11-08 (no-model, unfitted thresholds); run 2 on 2026-11-08 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)). Each run's numbers are in details.testRuns; nothing was tuned on test.
+- The frozen test split has been run 3 times: run 1 on 2026-11-08 (no-model, unfitted thresholds); run 2 on 2026-11-08 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)); run 3 on 2026-11-09 (no-model, thresholds fitted on dev (fitted-dev-2026-11-09)). Each run's numbers are in details.testRuns; nothing was tuned on test.
 - The secondary metric ("names the difference" and its false-alarm twin) was defined after the first test run had been scored. It is reported next to the primary metrics, never instead of them.
 - The test split (420 pairs, sha256 e7561f6ddae5) was frozen before any system ran. Products never cross splits (check-splits.mjs).
 - One delivered photo, one tag photo (not for mugs) and one listing image per pair; no damage close-up was sent, because a blind buyer may not know where to aim.

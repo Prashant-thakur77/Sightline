@@ -128,6 +128,23 @@ test.describe('money back after a wrong item', () => {
     await expectNoAxeViolations(page);
   });
 
+  test('skipping every photo says there is nothing to check yet, instead of an empty check', async ({ page }) => {
+    const orderId = await seededOrder(page);
+    await page.goto(`/app/check/${orderId}`);
+    await page.getByRole('button', { name: 'Start the camera' }).click();
+    // No camera in the test browser: the photo field and Skip are the way on.
+    await expect(page.getByRole('button', { name: 'Try the camera again' })).toBeVisible();
+    for (const next of ['Photo 2 of 3: The size tag', 'Photo 3 of 3: Any damage']) {
+      await page.getByRole('button', { name: 'Skip this shot' }).click();
+      await expect(page.getByRole('heading', { name: next })).toBeFocused();
+    }
+    await page.getByRole('button', { name: 'Skip this shot' }).click();
+    await expect(page.locator('#main .card-refusal').filter({ hasText: 'No photos yet' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Check your parcel' })).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Check it now' })).toHaveCount(0);
+    await expectNoAxeViolations(page);
+  });
+
   test('check, then money back with focus on each step and one deadline', async ({ page }) => {
     const orderId = await seededOrder(page);
 

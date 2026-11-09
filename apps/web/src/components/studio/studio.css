@@ -464,3 +464,9 @@
 .ag-charts-shared-toolbar:empty {
   display: none !important;
 }
+
+/* An empty widget shows Studio's "None yet." over its content. The content under it (blank
+   tiles, an empty grid or chart) is hidden too, so a screen reader hears "None yet." once. */
+.ag-studio-layout-widget-body:has(> .ag-studio-layout-widget-no-data-overlay-active) > .ag-studio-layout-widget-content {
+  visibility: hidden;
+}

@@ -73,6 +73,8 @@ export function CameraCheck({
   /** The last thing said, shown on the viewfinder. */
   const [caption, setCaption] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  /** Said when every photo was skipped: there is nothing to check yet. */
+  const [notice, setNotice] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const sampleRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -128,6 +130,7 @@ export function CameraCheck({
 
   const addShot = useCallback(
     (s: CapturedShot) => {
+      setNotice(null);
       setShots((prev) => [...prev.filter((p) => p.kind !== s.kind), s]);
       const next = index + 1;
       if (next >= SHOTS.length) {
@@ -246,8 +249,18 @@ export function CameraCheck({
 
   const skip = useCallback(() => {
     if (!shot) return;
-    announce(`Skipped ${shot.title.toLowerCase()}.`, { source: 'camera' });
     const next = index + 1;
+    if (next >= SHOTS.length && shots.length === 0) {
+      // Every photo skipped: nothing to check. Start the photos again rather than offer an empty check.
+      const msg = 'No photos yet, so there is nothing to check. Add at least one: the whole item or the size tag.';
+      stopCamera();
+      setNotice(msg);
+      setIndex(0);
+      setPhase('intro');
+      announce(msg, { politeness: 'assertive', source: 'camera' });
+      return;
+    }
+    announce(`Skipped ${shot.title.toLowerCase()}.`, { source: 'camera' });
     if (next >= SHOTS.length) {
       stopCamera();
       setPhase('review');
@@ -256,7 +269,7 @@ export function CameraCheck({
       setIndex(next);
       announce(`Next: ${SHOTS[next]!.title}. ${SHOTS[next]!.prompt}`, { source: 'camera' });
     }
-  }, [announce, index, quiet, shot, stopCamera]);
+  }, [announce, index, quiet, shot, shots.length, stopCamera]);
 
   const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -276,6 +289,7 @@ export function CameraCheck({
         loaded.push({ kind: d.kind, blob: await res.blob(), url: d.url, source: 'demo' });
       }
       setShots(loaded);
+      setNotice(null);
       setPhase('review');
       announce('Loaded the demo parcel photos. Review what will be sent, then check it.', { source: 'camera' });
     } catch {
@@ -284,6 +298,7 @@ export function CameraCheck({
   };
 
   const restart = () => {
+    setNotice(null);
     setShots([]);
     setIndex(0);
     setPhase('intro');
@@ -347,6 +362,7 @@ export function CameraCheck({
       <h2 id="cam-h" ref={headingRef} tabIndex={-1} className="text-[length:var(--step-2)]">
         {phase === 'intro' && !started ? 'Check your parcel' : `Photo ${index + 1} of ${SHOTS.length}: ${shot?.title}`}
       </h2>
+      {notice && phase === 'intro' && <p className="card-refusal">{notice}</p>}
       {phase === 'intro' && (
         <div className="grid gap-4 max-w-[var(--measure)]">
           <p>
@@ -447,7 +463,7 @@ export function CameraCheck({
               : `Or take or choose a photo of ${shot.title.toLowerCase()}`}
           </label>
           <input id="upload" type="file" accept="image/*" capture="environment" onChange={onUpload} className="file-input" />
-          {phase !== 'live' && (started || shot.optional) && (
+          {phase !== 'live' && (started || shot.optional || phase === 'denied') && (
             <button type="button" className="btn" onClick={skip}>
               Skip this shot
             </button>

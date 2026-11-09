@@ -89,19 +89,17 @@ const STUDIO_WORDS = { widgetOverlayNoData: 'None yet.', valueNotApplicable: 'No
  * The grids and charts inside Studio have their own empty-state text ("No Rows To Show", "No data
  * to display"), which screen readers reach even under Studio's overlay: each says "None yet." too.
  */
-function inOurWords<T extends object>(widgets: T): T {
-  const out = { ...widgets } as Record<string, unknown>;
-  for (const [type, value] of Object.entries(widgets)) {
-    const cfg = value as { options?: Record<string, unknown> } | undefined;
-    if (!cfg || typeof cfg !== 'object') continue;
-    if (type === 'grid') {
-      const localeText = { ...(cfg.options?.localeText as object | undefined), noRowsToShow: 'None yet.' };
-      out[type] = { ...cfg, options: { ...cfg.options, localeText } };
-    } else if (type.includes('chart')) {
-      out[type] = { ...cfg, options: { ...cfg.options, locale: { localeText: { overlayNoData: 'None yet.' } } } };
+function inOurWords<T extends object>(config: T): T {
+  const { widgets } = config as unknown as { widgets: { id: string; options?: Record<string, unknown> }[] };
+  const words = widgets.map((w) => {
+    if (w.id === 'grid') {
+      const localeText = { ...(w.options?.localeText as object | undefined), noRowsToShow: 'None yet.' };
+      return { ...w, options: { ...w.options, localeText } };
     }
-  }
-  return out as T;
+    if (w.id.includes('chart')) return { ...w, options: { ...w.options, locale: { localeText: { overlayNoData: 'None yet.' } } } };
+    return w;
+  });
+  return { ...config, widgets: words };
 }
 
 export function StudioFrame({ id, title, data, report, licenseKey, agent, harness }: StudioFrameProps) {

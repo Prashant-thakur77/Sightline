@@ -438,7 +438,8 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
       id: 'orders',
       label: 'Orders',
       value: String(s.orders),
-      detail: `${plural(s.delivered, 'order')} delivered so far.`,
+      // Notes never open with the figure read just before them ("2. 2 orders…").
+      detail: `Delivered so far: ${s.delivered}.`,
     },
     {
       // Says what it counts: a check that found the wrong item is still a check, so the figure is
@@ -449,7 +450,7 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
       detail:
         s.delivered === 0
           ? 'No parcel has been delivered yet.'
-          : `${s.verifiedDeliveries} of ${plural(s.delivered, 'delivered order')} checked by the buyer with the camera. ` +
+          : 'Delivered orders the buyer checked with the camera. ' +
             (s.checks === 0
               ? 'No check has answered yet.'
               : `Of ${plural(s.checks, 'check')}, ${s.matches} matched the order, ${s.mismatches} did not, and ${s.unsure} could not tell.`),
@@ -479,7 +480,7 @@ export function verifiedDeliveryFigures(d: VerifiedDeliveryData): SpokenFigure[]
       id: 'avoided',
       label: 'Cases avoided by pay after check',
       value: String(s.casesAvoided),
-      detail: `${plural(s.casesAvoided, 'hold')} released after the check found a mismatch, so no dispute was needed.`,
+      detail: 'Holds released after the check found a mismatch, so no dispute was needed.',
     },
     {
       id: 'median',
