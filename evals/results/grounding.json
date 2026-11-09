@@ -1,8 +1,8 @@
 {
   "suite": "grounding",
   "title": "Grounded answers",
-  "ranAt": "2026-11-09T02:13:18.008Z",
-  "gitSha": "7e88e2c",
+  "ranAt": "2026-11-09T02:50:23.542Z",
+  "gitSha": "28b8f62",
   "headlines": [
     {
       "id": "catch-rate",

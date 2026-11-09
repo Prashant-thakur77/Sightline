@@ -724,7 +724,7 @@ function dueWords(dueAt: string | null, now = new Date()): { words: string | nul
   return { words: `Reply by ${when}, in ${days} days`, overdue: false };
 }
 
-function outcomeWords(outcome: unknown, currency: string): string | null {
+function outcomeWords(outcome: unknown, currency: string, buyer = 'The buyer'): string | null {
   const o = outcome as { kind?: string; amount?: number; amountCents?: number; via?: string; by?: string } | null;
   if (!o?.kind) return null;
   const amt = o.amountCents ?? o.amount;
@@ -737,7 +737,7 @@ function outcomeWords(outcome: unknown, currency: string): string | null {
         : `The ${a} hold was released. Demo Store was never paid.`;
   if (o.kind === 'refunded')
     return `Refunded ${a}${o.via === 'dispute' ? ' through the PayPal dispute' : ' through PayPal'}.`;
-  if (o.kind === 'replacement' || o.kind === 'REPLACEMENT_WITHOUT_REFUND') return 'The buyer accepted the replacement. No refund is due.';
+  if (o.kind === 'replacement' || o.kind === 'REPLACEMENT_WITHOUT_REFUND') return `${buyer} accepted the replacement. No refund is due.`;
   return `Closed: ${o.kind.replace(/_/g, ' ').toLowerCase()}.`;
 }
 
@@ -869,7 +869,7 @@ export async function listMerchantCases(scopeUserId?: string): Promise<MerchantC
       payment: paymentStatus(o),
       refundPath: o.captureId ? 'refund' : o.authorizationId && o.status !== 'voided' ? 'void' : 'none',
       offers: (c.offers as CaseOffer[]) ?? [],
-      outcome: outcomeWords(c.outcome, o.currency),
+      outcome: outcomeWords(c.outcome, o.currency, buyer),
       suggestion: suggestResponse(v, s?.shippedVariant ?? null, amount, {
         reason: c.reason,
         refundPath: o.captureId ? 'refund' : o.authorizationId && o.status !== 'voided' ? 'void' : 'none',

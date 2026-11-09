@@ -13,7 +13,8 @@ export function FocusFromHash() {
       const id = decodeURIComponent(window.location.hash.slice(1));
       if (!id) return;
       const section = document.getElementById(id);
-      if (!section) return;
+      // Only the order's own sections; the skip link (#main) and anything else keep their usual behaviour.
+      if (!section || !section.matches('.case-folder, #helper')) return;
       const target =
         section.querySelector<HTMLElement>('[data-focus-target]:not([aria-disabled="true"])') ?? section.querySelector<HTMLElement>('h2, h3');
       if (!target) return;

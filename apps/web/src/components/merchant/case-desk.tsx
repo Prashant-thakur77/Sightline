@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useAnnouncer } from '@/components/a11y/announcer';
-import { utcWhen } from '@/lib/when';
+import { spokenWhen } from '@/lib/when';
 import type { CaseAction, MerchantCase, MerchantResult } from '@/server/merchant';
 import { StatusChip } from './status-chip';
 
@@ -387,8 +387,7 @@ function CaseCard({
                   <ul className="mx-history">
                     {c.offers.map((o) => (
                       <li key={o.id}>
-                        <span className="mono">{utcWhen(o.at)}</span>{' '}
-                        · {OFFER_WORDS[o.type] ?? o.type} offered
+                        {spokenWhen(o.at)} · {OFFER_WORDS[o.type] ?? o.type} offered
                         {o.via === 'paypal' ? ' through PayPal' : ''}. {o.note}
                       </li>
                     ))}
@@ -430,7 +429,7 @@ function CaseCard({
                   {(refundBlocked || waitingForBuyer) && (
                     <p id={`${h}-off`} className="mx-demo-note">
                       {waitingForBuyer
-                        ? `Your offer is waiting for ${c.buyer}'s answer, so another offer or no reply can't be chosen now.`
+                        ? `Until ${c.buyer} answers, the one reply left is to give the money back. The others come back if the offer is declined.`
                         : 'This order has no PayPal payment, so there is nothing to refund or give back: offer a replacement instead.'}
                     </p>
                   )}
@@ -438,6 +437,8 @@ function CaseCard({
                     {ACTIONS.map((a) => {
                       // An offer is waiting for the buyer: a second offer or "no reply" would contradict it.
                       const waiting = waitingForBuyer && a.action !== 'refund';
+                      // Replies that can't be used until the buyer answers aren't shown at all.
+                      if (waiting) return null;
                       const blocked = (a.action === 'refund' && refundBlocked) || (a.action === 'return' && refundBlocked) || waiting;
                       const unavailable = anyBusy || blocked;
                       return (

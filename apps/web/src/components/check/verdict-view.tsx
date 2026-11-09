@@ -5,8 +5,11 @@ import { CONFIDENCE_WORD, FINDING, MODULE_LABEL, verdictStatus, type Verdict, ty
 
 function Mark({ finding }: { finding: VerdictReason['finding'] }) {
   return (
-    <span className="verdict-mark" data-finding={finding}>
-      <span aria-hidden="true">{FINDING[finding].glyph}</span> {FINDING[finding].word}
+    <span className="verdict-result">
+      <span className="verdict-mark" data-finding={finding} aria-hidden="true">
+        {FINDING[finding].glyph}
+      </span>
+      {FINDING[finding].word}
     </span>
   );
 }

@@ -1143,6 +1143,10 @@ async function greet(ctx: Ctx): Promise<Reply> {
   const updates = lines.length ? ` ${lines.length === 1 ? 'One update' : `${lines.length} updates`}. ${lines.join(' ')}` : '';
   // Updates come first; the first-visit welcome would sound odd after them.
   const hello = updates ? `Hi ${ctx.firstName}.${updates}${earlier ? '' : " Say 'help' any time."}` : `Hi ${ctx.firstName}.${earlier ? '' : ` ${en.general.welcome()}`}`;
+  // A return visit with nothing new is said but never stored, whichever card it restates (a parcel
+  // already told about, options or a readback from before), so greetings never pile up in the
+  // conversation: a screen reader would read every one, and they would push real history out.
+  if (earlier && !updates) quietGreetings.add(ctx);
   const fresh = Date.now() - Date.parse(ctx.updatedAt) < RESUME_MS;
   const restored = fresh ? await restoredTurn(ctx.state) : null;
   const { query, offset, options, focus } = ctx.state;
@@ -1175,9 +1179,6 @@ async function greet(ctx: Ctx): Promise<Reply> {
     return { say: `${hello} ${restored.say}`, politeness: 'polite', card: restored.card, suggestions: restored.suggestions };
   }
   ctx.state = { phase: 'browsing' };
-  // A return visit with nothing new: said, but not stored, so greetings never pile up in the
-  // conversation (a screen reader would read every one, and they would push real history out).
-  if (earlier && !updates) quietGreetings.add(ctx);
   return { say: `${hello} What do you need today?`, politeness: 'polite', card: null, suggestions: suggestionsFor('browsing', false) };
 }
 
@@ -1200,8 +1201,10 @@ export async function resumeTurn(userId: string): Promise<TurnResponse | null> {
   if (!rows.length) return null;
   const state = { phase: 'browsing', ...(convo.state as Partial<ConvoState>) } as ConvoState;
   const restored = Date.now() - Date.parse(convo.updatedAt) < RESUME_MS ? await restoredTurn(state) : null;
+  // The same agent line twice in a row (a greeting stored by an older version on each visit) is shown once.
+  const ordered = rows.reverse().filter((r, i, all) => !(i > 0 && r.role !== 'user' && all[i - 1]!.role === r.role && all[i - 1]!.text === r.text));
   return {
-    messages: rows.reverse().map((r) => ({ id: r.id, role: r.role === 'user' ? 'user' : 'agent', text: r.text })),
+    messages: ordered.map((r) => ({ id: r.id, role: r.role === 'user' ? 'user' : 'agent', text: r.text })),
     say: '',
     politeness: 'polite',
     card: restored?.card ?? null,

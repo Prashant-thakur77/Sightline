@@ -366,13 +366,27 @@ a {
 
   .file-input {
     font: inherit;
-    padding: var(--space-3);
-    border: 2px dashed var(--line);
-    border-radius: var(--radius-m);
+    padding: var(--space-2) 0;
     min-height: var(--target);
     width: 100%;
     min-width: 0;
     max-width: 100%;
+  }
+  /* The browser's own "Choose file" button, drawn like the app's buttons so it reads as one. */
+  .file-input::file-selector-button {
+    font: inherit;
+    font-weight: 700;
+    min-height: var(--target);
+    padding: var(--space-2) var(--space-4);
+    margin-inline-end: var(--space-3);
+    border: 2.5px solid var(--line);
+    border-radius: var(--radius-m);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .file-input:hover::file-selector-button {
+    background: var(--paper-2);
   }
 
   .viewfinder {
@@ -1296,10 +1310,18 @@ a {
     max-height: 70vh;
     overflow-y: auto;
   }
+  /* The heading stays at the top of the scrolling box, so the box always says what it is. */
   .transcript-h {
     font-size: var(--step-1);
     margin: 0;
     overflow-wrap: break-word;
+    position: sticky;
+    /* Sticky offsets count from inside the box's padding: pull the heading up over it. */
+    top: calc(var(--space-4) * -1);
+    margin-top: calc(var(--space-4) * -1);
+    padding-block: calc(var(--space-2) + var(--space-4)) var(--space-2);
+    z-index: 1;
+    background: var(--paper);
   }
   /* position: relative keeps each message's hidden "You said:" inside the scrolling box; without it
      those hidden words sat below the box and made the page much longer than its content. */
@@ -1835,7 +1857,9 @@ a {
   .folder:nth-child(even) {
     --tint: #e9e3cf;
   }
-  .folder:last-child {
+  /* The front folder is yellow: the last one on the landing page, the current step on an order. */
+  .folder:not(.case-folder):last-child,
+  .case-folder[data-current] {
     --tint: var(--yellow);
   }
   @media (prefers-color-scheme: dark) {
@@ -1870,13 +1894,25 @@ a {
     position: relative;
     z-index: 1;
   }
-  .folder:last-child .folder-tab,
-  .folder:last-child .folder-body {
+  :is(.folder:not(.case-folder):last-child, .case-folder[data-current]) :is(.folder-tab, .folder-body) {
     color: var(--yellow-ink);
   }
-  :root[data-theme='contrast'] .folder:last-child .folder-tab,
-  :root[data-theme='contrast'] .folder:last-child .folder-body {
+  :root[data-theme='contrast'] :is(.folder:not(.case-folder):last-child, .case-folder[data-current]) :is(.folder-tab, .folder-body) {
     color: var(--ink);
+  }
+  /* On the yellow folder the main action is filled with ink, so it is the strongest thing there. */
+  :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary {
+    background: var(--yellow-ink);
+    color: var(--yellow);
+    border-color: var(--yellow-ink);
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--yellow-ink) 45%, var(--yellow));
+  }
+  :root:not([data-theme='contrast']) .case-folder[data-current] .btn-primary:hover {
+    background: #26262a;
+  }
+  /* Secondary buttons in a folder share one width, so a pair reads as a pair. */
+  .case-body .btn:not(.btn-primary) {
+    min-inline-size: min(100%, 16rem);
   }
   /* The side padding shrinks on a narrow screen (vw, not rem), so large text keeps the room. */
   /* A phone: the tabs step in less and pad less, so a tab's words fit whole at large text sizes. */
@@ -2678,8 +2714,8 @@ a {
 }
 
 @layer components {
-  /* The last folder (Money back) stays yellow in light and dark themes. */
-  :root:not([data-theme='contrast']) .folders > .folder:last-child {
+  /* The front folder stays yellow in light and dark themes. */
+  :root:not([data-theme='contrast']) .folders > :is(.folder:not(.case-folder):last-child, .case-folder[data-current]) {
     --tint: var(--yellow) !important;
   }
 }
@@ -2865,7 +2901,7 @@ a {
   .case-folder[data-tone='good'] .case-glyph {
     color: var(--match);
   }
-  .folders > .case-folder:last-child .case-glyph {
+  .folders > .case-folder[data-current] .case-glyph {
     color: inherit;
   }
   .reason-list {
@@ -3189,4 +3225,12 @@ a {
    is hidden while the result is on screen (after a reload only the page's copy shows). */
 #money-back:has(.mb-result) .mb-server-sent {
   display: none;
+}
+
+/* A check finding: the shape in its circle, then the word beside it (never inside the circle). */
+.verdict-result {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }

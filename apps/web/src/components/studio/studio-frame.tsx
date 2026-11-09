@@ -82,6 +82,9 @@ export interface StudioFrameProps {
   harness?: AgAiHarnessSetup;
 }
 
+/** Studio's own empty-widget text, in the same words as the ticket of figures. */
+const STUDIO_WORDS = { widgetOverlayNoData: 'None yet.' };
+
 export function StudioFrame({ id, title, data, report, licenseKey, agent, harness }: StudioFrameProps) {
   const inBrowser = useSyncExternalStore(noSubscription, () => true, () => false);
   const [boxRef, width] = useBoxWidth();
@@ -223,6 +226,7 @@ export function StudioFrame({ id, title, data, report, licenseKey, agent, harnes
               panels={panels}
               responsiveLayoutBreakpoints={BREAKPOINTS}
               layout={{ widgetBorderEnabled: true }}
+              localeText={STUDIO_WORDS}
               onApiReady={(e) => {
                 api.current = e.api;
               }}

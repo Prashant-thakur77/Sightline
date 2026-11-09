@@ -30,6 +30,9 @@ const WHEN = new Intl.DateTimeFormat('en-US', {
   timeZoneName: 'short',
 });
 
+/** A stored time in the grid's words, for the tables under the charts. */
+export const whenText = (iso: string): string => WHEN.format(new Date(iso));
+
 export const field = ({ id, name, format, description, hide, formatter, blank }: Spec): AgFieldDefinition => ({
   id,
   name,

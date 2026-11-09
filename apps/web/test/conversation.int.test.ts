@@ -390,4 +390,31 @@ describe.skipIf(!hasDb)('conversation turns (Postgres)', () => {
     expect(r.say).toContain("'Open the camera check'");
     expect(r.card?.kind === 'link' && r.card.label).toBe('Open the camera check');
   });
+
+  it('return visits never store another greeting, whatever they restate (options, a parcel, nothing new)', async () => {
+    const userId = await personas.ensurePersona('maya');
+    const start = () => conductor.handleTurn(userId, { action: 'start' });
+    await start();
+    await say(userId, 'navy crew-neck sweater');
+    const count = async () => {
+      const [c] = await rt.db().select({ id: t.conversations.id }).from(t.conversations).where(eq(t.conversations.userId, userId));
+      return (await rt.db().select({ id: t.messages.id }).from(t.messages).where(eq(t.messages.conversationId, c!.id))).length;
+    };
+    const before = await count();
+    for (let i = 0; i < 3; i++) {
+      const r = await start();
+      expect(r.say).toMatch(/^Hi Maya\./);
+    }
+    expect(await count()).toBe(before);
+  });
+
+  it('shows a repeated agent line once when the conversation is restored', async () => {
+    const userId = await personas.ensurePersona('maya');
+    await conductor.handleTurn(userId, { action: 'start' });
+    const [c] = await rt.db().select({ id: t.conversations.id }).from(t.conversations).where(eq(t.conversations.userId, userId));
+    const line = 'Hi Maya. Nothing new since last time.';
+    for (let i = 0; i < 3; i++) await rt.db().insert(t.messages).values({ id: `msg_dup${i}${Date.now()}`, conversationId: c!.id, role: 'agent', text: line });
+    const page = await conductor.resumeTurn(userId);
+    expect(page!.messages.filter((m) => m.text === line)).toHaveLength(1);
+  });
 });

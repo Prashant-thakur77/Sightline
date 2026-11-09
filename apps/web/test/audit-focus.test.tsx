@@ -212,6 +212,19 @@ describe('VerdictView', () => {
     expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'It matches.' }));
   });
 
+  it('keeps the result word beside the circle, which holds only the glyph', () => {
+    const v = {
+      kind: 'mismatch',
+      headline: 'This is not what you ordered.',
+      reasons: [{ module: 'colour', finding: 'disagree', sentence: 'It looks green.', confidence: 'sure', observed: 'green' }],
+      nextSteps: [],
+    } as unknown as Verdict;
+    const { container } = render(<VerdictView verdict={v} ordered={ordered} focusOnMount={false} />);
+    const mark = container.querySelector('.verdict-mark');
+    expect(mark?.textContent).toBe('✕');
+    expect(mark?.closest('.verdict-result')?.textContent).toBe('✕Different');
+  });
+
   it('focuses a fresh verdict on mount', async () => {
     render(
       <StrictMode>
@@ -279,6 +292,14 @@ describe('CaseDesk', () => {
     expect(screen.getByRole('heading', { name: /Closed/ })).toBeTruthy();
     expect(document.activeElement?.id).toBe('case-cas_1-result');
     expect(document.activeElement?.textContent).toContain(message);
+  });
+
+  it('while an offer waits for the buyer, offers only the money-back reply and says why once', () => {
+    wrap(<CaseDesk cases={[{ ...kase(true), stage: 'offer_received' } as MerchantCase]} />);
+    const group = screen.getByRole('group', { name: 'Your reply' });
+    const buttons = [...group.querySelectorAll('.mx-reply-actions button')].map((b) => b.textContent);
+    expect(buttons).toEqual(['Accept the return and release the hold']);
+    expect(group.textContent).toContain('Until Maya answers, the one reply left is to give the money back.');
   });
 
   it('closes the reply question on Escape and puts focus back on the button that opened it', async () => {

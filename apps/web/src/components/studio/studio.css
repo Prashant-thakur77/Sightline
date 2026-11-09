@@ -458,3 +458,9 @@
   overflow-x: auto;
   max-width: 100%;
 }
+
+/* The charts create an empty tool bar even with its tools turned off. Empty, it only adds a
+   nameless stop for screen readers, so it is taken out until it holds a button. */
+.ag-charts-shared-toolbar:empty {
+  display: none !important;
+}

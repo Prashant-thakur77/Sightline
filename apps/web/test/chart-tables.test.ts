@@ -98,6 +98,6 @@ describe('verifiedDeliveryChartTables grids', () => {
     const [, , checks, cases] = verifiedDeliveryChartTables(data);
     expect(checks!.rows.map((r) => r.cells[1])).toEqual(['BBB', 'AAA']);
     expect(checks!.rows[1]!.cells[5]).toBe('1.1 s');
-    expect(cases!.rows[0]!.cells).toEqual(['CCC', 'Waiting for the store', 'Wrong size', '—', '2026-11-09 11:00 UTC', 'Not yet']);
+    expect(cases!.rows[0]!.cells).toEqual(['CCC', 'Waiting for the store', 'Wrong size', '—', 'Nov 9, 11:00 AM UTC', 'Not yet']);
   });
 });

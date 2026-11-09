@@ -1,6 +1,6 @@
 import type { AgDataSourcesDefinition, AgPageState, AgReportState } from 'ag-studio';
 import { centsText, hoursText, msText } from './formats';
-import { at, count, field, flag, groupRows, kpi, largestFirst, manyToOne, money, outlined, rate, sum, title, type Spec } from './report-kit';
+import { at, count, field, flag, groupRows, kpi, largestFirst, manyToOne, money, outlined, rate, sum, title, whenText, type Spec } from './report-kit';
 import type { ChartTable, VerifiedDeliveryData } from './types';
 
 /*
@@ -182,9 +182,9 @@ export function verifiedDeliverySources(data: VerifiedDeliveryData): AgDataSourc
       {
         id: 'medianResolutionHours',
         name: 'Median time to resolution',
-        description: 'Median hours from case opened to resolved, over resolved cases.',
+        description: 'Median time from case opened to resolved, over resolved cases, in the same words as the ticket.',
         format: 'decimalFormat',
-        formatOptions: { format: '0.0" h"' },
+        createValueFormatter: () => hoursText as (v: unknown) => string,
         isMeasure: true,
         expression: { operator: 'median', inputs: [{ id: 'cases.hoursToResolution' }] },
       },
@@ -365,7 +365,7 @@ export function verifiedDeliveryChartTables(data: VerifiedDeliveryData): ChartTa
         .map((c) => ({
           key: c.id,
           cells: [
-            c.checkedAt ? `${c.checkedAt.slice(0, 16).replace('T', ' ')} UTC` : '—',
+            c.checkedAt ? whenText(c.checkedAt) : '—',
             c.orderRef,
             c.item,
             c.verdictLabel,
@@ -389,8 +389,8 @@ export function verifiedDeliveryChartTables(data: VerifiedDeliveryData): ChartTa
             c.stage,
             c.reason,
             c.outcome || '—',
-            c.openedAt ? `${c.openedAt.slice(0, 16).replace('T', ' ')} UTC` : '—',
-            c.resolvedAt ? `${c.resolvedAt.slice(0, 16).replace('T', ' ')} UTC` : 'Not yet',
+            c.openedAt ? whenText(c.openedAt) : '—',
+            c.resolvedAt ? whenText(c.resolvedAt) : 'Not yet',
           ],
         })),
       empty: 'No cases yet.',

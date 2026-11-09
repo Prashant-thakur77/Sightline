@@ -28,9 +28,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: `${found.snapshot.title}, order` };
 }
 
-function Section({ n, id, tab, state, children }: { n: number; id: string; tab: string; state: StatusWord; children: React.ReactNode }) {
+type Step = 'asked' | 'paid' | 'arrived' | 'checked' | 'money-back';
+
+function Section({ n, id, tab, state, current, children }: { n: number; id: Step; tab: string; state: StatusWord; current: Step; children: React.ReactNode }) {
+  const here = id === current;
   return (
-    <li id={id} className="folder case-folder" data-tone={state.tone} style={{ ['--k' as string]: n - 1 }}>
+    <li
+      id={id}
+      className="folder case-folder"
+      data-tone={state.tone}
+      data-current={here || undefined}
+      aria-current={here ? 'step' : undefined}
+      style={{ ['--k' as string]: n - 1 }}
+    >
       <h2 className="folder-tab">
         <span className="case-glyph" aria-hidden="true">
           {state.glyph}
@@ -167,6 +177,18 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const canMoneyBack = Boolean(verdict && verdict.kind !== 'match') && (!kase || kase.stage === 'evidence_built' || kase.stage === 'draft');
   const caseSent = Boolean(kase && kase.stage !== 'draft' && kase.stage !== 'evidence_built');
   const resolved = kase?.stage === 'resolved' ? resolvedOutcome(kase.outcome, o.status, o.currency, amount) : null;
+  // The front (yellow) folder is where the order is now, read from the furthest step it reached:
+  // a case or a wrong item, then the check, then payment still waiting, then the parcel on its way.
+  const current: Step =
+    kase || verdict?.kind === 'mismatch'
+      ? 'money-back'
+      : verdict || shipment?.deliveredAt
+        ? 'checked'
+        : !rb?.confirmedAt
+          ? 'asked'
+          : o.status === 'approval_pending' || o.status === 'confirmed' || o.status === 'failed'
+            ? 'paid'
+            : 'arrived';
 
   return (
     <div className="grid gap-8">
@@ -185,7 +207,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </header>
 
       <ol className="folders">
-        <Section n={1} id="asked" tab="Asked" state={asked}>
+        <Section n={1} id="asked" tab="Asked" state={asked} current={current}>
           <h3 className="folder-h">What you heard before paying</h3>
           <p>
             {s.title}
@@ -205,7 +227,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <Technical step="Asked" rows={[['Readback fingerprint', rb?.textHash]]} />
         </Section>
 
-        <Section n={2} id="paid" tab="Paid" state={paid}>
+        <Section n={2} id="paid" tab="Paid" state={paid} current={current}>
           <h3 className="folder-h">
             {paid.word}. {paid.detail}
           </h3>
@@ -228,7 +250,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           />
         </Section>
 
-        <Section n={3} id="arrived" tab="Arrived" state={arrived}>
+        <Section n={3} id="arrived" tab="Arrived" state={arrived} current={current}>
           <h3 className="folder-h">
             {shipment?.deliveredAt
               ? `Delivered ${spokenDate(shipment.deliveredAt)}.`
@@ -242,7 +264,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <Technical step="Arrived" rows={[['Tracking number', shipment?.trackingNumber]]} />
         </Section>
 
-        <Section n={4} id="checked" tab="Checked" state={checked}>
+        <Section n={4} id="checked" tab="Checked" state={checked} current={current}>
           <h3 className="folder-h">{verdict ? verdict.headline : 'Not checked yet.'}</h3>
           {verdict && (
             <ul className="reason-list">
@@ -276,7 +298,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 ? ` They said: “${(verification.helperAnswer as { note: string }).note.replace(/[.!?]+$/, '')}.”`
                 : ''}
             </p>
-          ) : verdict?.kind === 'unsure' && helper ? (
+          ) : verdict?.kind === 'unsure' && helper && kase?.stage !== 'resolved' ? (
             <AskHelper orderId={o.id} helperName={helper.name} waitingUntil={liveHelperUntil} />
           ) : null}
           <p>
@@ -286,7 +308,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </p>
         </Section>
 
-        <Section n={5} id="money-back" tab="Money back" state={moneyBack}>
+        <Section n={5} id="money-back" tab="Money back" state={moneyBack} current={current}>
           <h3 className="folder-h">
             {caseSent
               ? resolved
