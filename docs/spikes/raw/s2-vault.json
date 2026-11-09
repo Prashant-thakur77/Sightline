@@ -1,0 +1,192 @@
+{
+  "spike": "s2-vault",
+  "ranAt": "2026-11-09T08:06:40.647Z",
+  "apiBase": "https://api-m.sandbox.paypal.com",
+  "outputs": {
+    "authorizeOrderId": "4PV56387Y79892228",
+    "authorizeVault": {
+      "id": "4st05676ml039672c",
+      "status": "VAULTED",
+      "customerId": "ZWFKqJmMWl"
+    },
+    "captureOrderId": "8PJ12894AB5631205",
+    "captureId": "8AB91232R4060271D",
+    "captureVault": {
+      "id": "4st05676ml039672c",
+      "status": "VAULTED",
+      "customerId": "ZWFKqJmMWl"
+    },
+    "payerId": "NGFK8Q4GGG466",
+    "payeeMerchantId": "RHQ29N9V78U72",
+    "vaultId": "4st05676ml039672c",
+    "customerId": "ZWFKqJmMWl",
+    "reuseOrderId": "7T499506KN041153V",
+    "reuseStatus": "COMPLETED",
+    "reuseCaptureId": "95790299TU7217408",
+    "reuseNeededApproval": false
+  },
+  "steps": [
+    {
+      "name": "s2-authorize: create AUTHORIZE order with store_in_vault ON_SUCCESS",
+      "ok": true,
+      "at": "2026-11-09T08:05:46.985Z",
+      "data": {
+        "id": "4PV56387Y79892228",
+        "status": "PAYER_ACTION_REQUIRED",
+        "payeeMerchantId": "RHQ29N9V78U72",
+        "approvalHost": "www.sandbox.paypal.com"
+      }
+    },
+    {
+      "name": "s2-authorize: approve headlessly as sandbox buyer",
+      "ok": true,
+      "at": "2026-11-09T08:05:49.479Z",
+      "data": {
+        "returnedTo": "/spike/return",
+        "screenshots": "/tmp/claude-1000/-home-prashant-projects-Sightline/7633199f-8d06-4de6-b59d-314713283d0b/scratchpad/spikes"
+      }
+    },
+    {
+      "name": "s2-authorize: order status after approval",
+      "ok": true,
+      "at": "2026-11-09T08:06:04.233Z",
+      "data": {
+        "id": "4PV56387Y79892228",
+        "status": "APPROVED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "s2-authorize: authorize",
+      "ok": true,
+      "at": "2026-11-09T08:06:05.517Z",
+      "data": {
+        "id": "4PV56387Y79892228",
+        "status": "COMPLETED",
+        "authorizationId": "6S898083NB928810F",
+        "authorizationStatus": "CREATED",
+        "vault": {
+          "id": "4st05676ml039672c",
+          "status": "VAULTED",
+          "customerId": "ZWFKqJmMWl"
+        },
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "s2-authorize: order after authorize (vault attributes)",
+      "ok": true,
+      "at": "2026-11-09T08:06:08.012Z",
+      "data": {
+        "id": "4PV56387Y79892228",
+        "status": "COMPLETED",
+        "authorizationId": "6S898083NB928810F",
+        "authorizationStatus": "CREATED",
+        "vault": {
+          "id": "4st05676ml039672c",
+          "status": "VAULTED",
+          "customerId": "ZWFKqJmMWl"
+        },
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "s2-authorize: void the authorization (cleanup)",
+      "ok": true,
+      "at": "2026-11-09T08:06:09.257Z",
+      "data": {
+        "status": "VOIDED"
+      }
+    },
+    {
+      "name": "s2-capture: create CAPTURE order with store_in_vault ON_SUCCESS",
+      "ok": true,
+      "at": "2026-11-09T08:06:11.032Z",
+      "data": {
+        "id": "8PJ12894AB5631205",
+        "status": "PAYER_ACTION_REQUIRED",
+        "payeeMerchantId": "RHQ29N9V78U72",
+        "approvalHost": "www.sandbox.paypal.com"
+      }
+    },
+    {
+      "name": "s2-capture: approve headlessly as sandbox buyer",
+      "ok": true,
+      "at": "2026-11-09T08:06:12.169Z",
+      "data": {
+        "returnedTo": "/spike/return",
+        "screenshots": "/tmp/claude-1000/-home-prashant-projects-Sightline/7633199f-8d06-4de6-b59d-314713283d0b/scratchpad/spikes"
+      }
+    },
+    {
+      "name": "s2-capture: order status after approval",
+      "ok": true,
+      "at": "2026-11-09T08:06:26.325Z",
+      "data": {
+        "id": "8PJ12894AB5631205",
+        "status": "APPROVED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "s2-capture: capture",
+      "ok": true,
+      "at": "2026-11-09T08:06:31.970Z",
+      "data": {
+        "id": "8PJ12894AB5631205",
+        "status": "COMPLETED",
+        "captureId": "8AB91232R4060271D",
+        "captureStatus": "COMPLETED",
+        "vault": {
+          "id": "4st05676ml039672c",
+          "status": "VAULTED",
+          "customerId": "ZWFKqJmMWl"
+        },
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    },
+    {
+      "name": "read payment token",
+      "ok": true,
+      "at": "2026-11-09T08:06:35.098Z",
+      "data": {
+        "id": "4st05676ml039672c",
+        "customer": {
+          "id": "ZWFKqJmMWl"
+        },
+        "sources": [
+          "paypal"
+        ]
+      }
+    },
+    {
+      "name": "list payment tokens for customer",
+      "ok": true,
+      "at": "2026-11-09T08:06:36.325Z",
+      "data": {
+        "count": 1,
+        "ids": [
+          "4st05676ml039672c"
+        ]
+      }
+    },
+    {
+      "name": "reuse: create CAPTURE order with payment_source.paypal.vault_id (buyer not present)",
+      "ok": true,
+      "at": "2026-11-09T08:06:38.089Z",
+      "data": {
+        "id": "7T499506KN041153V",
+        "status": "COMPLETED",
+        "captureId": "95790299TU7217408",
+        "captureStatus": "COMPLETED",
+        "payerId": "NGFK8Q4GGG466",
+        "payeeMerchantId": "RHQ29N9V78U72"
+      }
+    }
+  ]
+}

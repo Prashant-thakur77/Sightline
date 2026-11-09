@@ -28,15 +28,29 @@ export interface StepEvent {
 /** The scripted run's own shopper; the judge page shows its latest order's timeline to visitors without one. */
 export const JUDGE_EMAIL = 'maya.run@demo.sightline.app';
 
+/** The run's shopper has the sandbox demo buyer's saved PayPal once DEMO_VAULT_ID is set, even if it was made before. */
+async function ensureDemoVault(userId: string): Promise<void> {
+  const vaultId = process.env.DEMO_VAULT_ID?.trim();
+  if (!vaultId) return;
+  const [has] = await db()
+    .select({ id: tables.vaultTokens.id })
+    .from(tables.vaultTokens)
+    .where(and(eq(tables.vaultTokens.userId, userId), eq(tables.vaultTokens.status, 'ACTIVE')))
+    .limit(1);
+  if (!has) await db().insert(tables.vaultTokens).values({ id: newId('vlt'), userId, vaultId, status: 'ACTIVE', label: 'your saved PayPal (sandbox demo buyer)' });
+}
+
 async function judgeUser(): Promise<string> {
   const [u] = await db().select({ id: tables.users.id }).from(tables.users).where(eq(tables.users.email, JUDGE_EMAIL)).limit(1);
-  if (u) return u.id;
+  if (u) {
+    await ensureDemoVault(u.id);
+    return u.id;
+  }
   const id = newId('usr');
   await db().insert(tables.users).values({ id, email: JUDGE_EMAIL, displayName: 'Maya', isDemo: true });
   await db().insert(tables.preferences).values({ userId: id, verbosity: 'standard', sizes: { tops: 'M' }, payAfterCheck: true, onboardedAt: new Date().toISOString() });
   await db().insert(tables.helpers).values({ id: newId('hlp'), userId: id, name: 'Asha', contact: 'asha@demo.sightline.app', verifiedAt: new Date().toISOString() });
-  if (process.env.DEMO_VAULT_ID)
-    await db().insert(tables.vaultTokens).values({ id: newId('vlt'), userId: id, vaultId: process.env.DEMO_VAULT_ID, status: 'ACTIVE', label: 'your saved PayPal (sandbox demo buyer)' });
+  await ensureDemoVault(id);
   return id;
 }
 
