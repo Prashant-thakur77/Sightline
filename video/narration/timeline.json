@@ -1,0 +1,329 @@
+{
+ "duration": 174.633,
+ "scenes": [
+  {
+   "id": "open",
+   "start": 0.0,
+   "duration": 5.567,
+   "voice": true
+  },
+  {
+   "id": "tagcut",
+   "start": 5.567,
+   "duration": 9.867,
+   "voice": true
+  },
+  {
+   "id": "pain",
+   "start": 15.433,
+   "duration": 13.9,
+   "voice": true
+  },
+  {
+   "id": "turn",
+   "start": 29.333,
+   "duration": 5.767,
+   "voice": true
+  },
+  {
+   "id": "ask",
+   "start": 35.1,
+   "duration": 5.9,
+   "voice": true
+  },
+  {
+   "id": "readback",
+   "start": 41.0,
+   "duration": 6.1,
+   "voice": true
+  },
+  {
+   "id": "refuse",
+   "start": 47.1,
+   "duration": 9.9,
+   "voice": true
+  },
+  {
+   "id": "confirm",
+   "start": 57.0,
+   "duration": 11.067,
+   "voice": true
+  },
+  {
+   "id": "check",
+   "start": 68.067,
+   "duration": 16.4,
+   "voice": true
+  },
+  {
+   "id": "moneyback",
+   "start": 84.467,
+   "duration": 6.5,
+   "voice": true
+  },
+  {
+   "id": "store",
+   "start": 90.967,
+   "duration": 6.267,
+   "voice": true
+  },
+  {
+   "id": "decline",
+   "start": 97.233,
+   "duration": 6.533,
+   "voice": true
+  },
+  {
+   "id": "released",
+   "start": 103.767,
+   "duration": 4.733,
+   "voice": true
+  },
+  {
+   "id": "hold3d",
+   "start": 108.5,
+   "duration": 4.633,
+   "voice": true
+  },
+  {
+   "id": "hoodreg",
+   "start": 113.133,
+   "duration": 1.6,
+   "voice": false
+  },
+  {
+   "id": "hood",
+   "start": 114.733,
+   "duration": 16.333,
+   "voice": true
+  },
+  {
+   "id": "proof",
+   "start": 131.067,
+   "duration": 13.733,
+   "voice": true
+  },
+  {
+   "id": "proofneg",
+   "start": 144.8,
+   "duration": 8.1,
+   "voice": true
+  },
+  {
+   "id": "recap",
+   "start": 152.9,
+   "duration": 9.0,
+   "voice": true
+  },
+  {
+   "id": "close",
+   "start": 161.9,
+   "duration": 6.733,
+   "voice": true
+  },
+  {
+   "id": "end",
+   "start": 168.633,
+   "duration": 6.0,
+   "voice": false
+  }
+ ],
+ "lines": [
+  {
+   "id": "o1",
+   "scene": "open",
+   "start": 0.3,
+   "end": 5.06,
+   "caption": "A parcel arrives for Maya. She paid for a navy sweater, size medium."
+  },
+  {
+   "id": "o2",
+   "scene": "tagcut",
+   "start": 5.867,
+   "end": 11.067,
+   "caption": "Is this it? She can't see the colour, and the size tag is a bump of fabric."
+  },
+  {
+   "id": "o3",
+   "scene": "tagcut",
+   "start": 11.74,
+   "end": 14.9,
+   "caption": "So her phone checks it, and tells her in words."
+  },
+  {
+   "id": "p1",
+   "scene": "pain",
+   "start": 15.733,
+   "end": 21.333,
+   "caption": "Blind shoppers can already buy online. What breaks is after the parcel arrives."
+  },
+  {
+   "id": "p2",
+   "scene": "pain",
+   "start": 22.054,
+   "end": 28.734,
+   "caption": "One in two disabled shoppers who needed a return had problems. One in seven couldn't use the store's return method."
+  },
+  {
+   "id": "t1",
+   "scene": "turn",
+   "start": 29.633,
+   "end": 34.593,
+   "caption": "This is Sightline. Shop by voice, and pay only for what you actually got."
+  },
+  {
+   "id": "s1",
+   "scene": "ask",
+   "start": 35.4,
+   "end": 40.36,
+   "caption": "Maya is a persona. This panel shows what her screen reader says."
+  },
+  {
+   "id": "s2",
+   "scene": "readback",
+   "start": 41.3,
+   "end": 46.54,
+   "caption": "Before money moves, a template, not the model, reads back exactly what she'll pay."
+  },
+  {
+   "id": "s3",
+   "scene": "refuse",
+   "start": 47.4,
+   "end": 52.16,
+   "caption": "She says, yeah, probably fine. That isn't a yes, so nothing is paid."
+  },
+  {
+   "id": "sr_refuse",
+   "scene": "refuse",
+   "start": 52.899,
+   "end": 56.394,
+   "caption": "Okay, I'll wait. Nothing is paid. Say 'confirm purchase' when you're ready."
+  },
+  {
+   "id": "s4",
+   "scene": "confirm",
+   "start": 57.3,
+   "end": 61.74,
+   "caption": "Confirm purchase. Claude Haiku checks her words again, on its own."
+  },
+  {
+   "id": "s5",
+   "scene": "confirm",
+   "start": 62.326,
+   "end": 67.406,
+   "caption": "PayPal authorizes $36.72 and holds it until the check."
+  },
+  {
+   "id": "c1",
+   "scene": "check",
+   "start": 68.367,
+   "end": 73.407,
+   "caption": "Claude Opus reads the size tag. A second reader must agree before it's sure."
+  },
+  {
+   "id": "sr_check",
+   "scene": "check",
+   "start": 74.04,
+   "end": 76.805,
+   "caption": "This probably isn't what you ordered, but I'm not completely sure."
+  },
+  {
+   "id": "c2",
+   "scene": "check",
+   "start": 77.362,
+   "end": 83.842,
+   "caption": "Size L, not M. Charcoal, not navy. It won't guess: it says how sure it is."
+  },
+  {
+   "id": "m1",
+   "scene": "moneyback",
+   "start": 84.767,
+   "end": 89.887,
+   "caption": "She says it's wrong. Her agent signs an evidence pack, and reads her a summary first."
+  },
+  {
+   "id": "m2",
+   "scene": "store",
+   "start": 91.267,
+   "end": 96.547,
+   "caption": "The store's own agent checks the signature, and offers a replacement inside the store's policy."
+  },
+  {
+   "id": "m3",
+   "scene": "decline",
+   "start": 97.533,
+   "end": 103.173,
+   "caption": "Maya wants her money back, so she declines. The revised offer: release the hold."
+  },
+  {
+   "id": "m4",
+   "scene": "released",
+   "start": 104.067,
+   "end": 107.987,
+   "caption": "PayPal voids the authorization, and the hold is released."
+  },
+  {
+   "id": "m5",
+   "scene": "hold3d",
+   "start": 108.8,
+   "end": 112.48,
+   "caption": "Nothing was captured. The money never left her account."
+  },
+  {
+   "id": "u1",
+   "scene": "hood",
+   "start": 115.033,
+   "end": 120.073,
+   "caption": "Underneath: a template readback, two keys, and an eight-guard payment gate."
+  },
+  {
+   "id": "u2",
+   "scene": "hood",
+   "start": 120.695,
+   "end": 123.655,
+   "caption": "Model text alone can never move money."
+  },
+  {
+   "id": "u3",
+   "scene": "hood",
+   "start": 124.401,
+   "end": 130.441,
+   "caption": "PayPal authorizes, captures or voids, and every step is signed and chained."
+  },
+  {
+   "id": "pr1",
+   "scene": "proof",
+   "start": 131.667,
+   "end": 138.187,
+   "caption": "4 false alarms on 210 matching items. Image matching with CLIP: 189."
+  },
+  {
+   "id": "pr2",
+   "scene": "proof",
+   "start": 138.779,
+   "end": 144.139,
+   "caption": "Zero payment breaches across 60 trick listings. A naive agent: 50."
+  },
+  {
+   "id": "pr3",
+   "scene": "proofneg",
+   "start": 145.1,
+   "end": 152.3,
+   "caption": "And it's weak on colour: it caught 2 of 53 colour mismatches. On most of the rest, it says not sure."
+  },
+  {
+   "id": "r1",
+   "scene": "recap",
+   "start": 153.2,
+   "end": 159.12,
+   "caption": "Pay after the check. Not sure, instead of a guess. Money back from the store's own agent."
+  },
+  {
+   "id": "cl1",
+   "scene": "close",
+   "start": 162.2,
+   "end": 168.0,
+   "caption": "Maya did the hard part herself. Sightline makes sure she only pays for what she got."
+  }
+ ]
+}

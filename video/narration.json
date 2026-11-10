@@ -1,0 +1,201 @@
+[
+ {
+  "scene": "open",
+  "id": "o1",
+  "caption": "A parcel arrives for Maya. She paid for a navy sweater, size medium.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ },
+ {
+  "scene": "tagcut",
+  "id": "o2",
+  "caption": "Is this it? She can't see the colour, and the size tag is a bump of fabric.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ },
+ {
+  "scene": "tagcut",
+  "id": "o3",
+  "caption": "So her phone checks it, and tells her in words.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ },
+ {
+  "scene": "pain",
+  "id": "p1",
+  "caption": "Blind shoppers can already buy online. What breaks is after the parcel arrives.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ },
+ {
+  "scene": "pain",
+  "id": "p2",
+  "caption": "One in two disabled shoppers who needed a return had problems. One in seven couldn't use the store's return method.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ },
+ {
+  "scene": "turn",
+  "id": "t1",
+  "caption": "This is Sightline. Shop by voice, and pay only for what you actually got.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "ask",
+  "id": "s1",
+  "caption": "Maya is a persona. This panel shows what her screen reader says.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "readback",
+  "id": "s2",
+  "caption": "Before money moves, a template, not the model, reads back exactly what she'll pay.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "refuse",
+  "id": "s3",
+  "caption": "She says, yeah, probably fine. That isn't a yes, so nothing is paid.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "refuse",
+  "id": "sr_refuse",
+  "caption": "Okay, I'll wait. Nothing is paid. Say 'confirm purchase' when you're ready.",
+  "file": "narration/sr/sr_refuse.wav"
+ },
+ {
+  "scene": "confirm",
+  "id": "s4",
+  "caption": "Confirm purchase. Claude Haiku checks her words again, on its own.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "confirm",
+  "id": "s5",
+  "caption": "PayPal authorizes $36.72 and holds it until the check.",
+  "spoken": "PayPal authorizes thirty-six dollars seventy-two, and holds it until the check.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "check",
+  "id": "c1",
+  "caption": "Claude Opus reads the size tag. A second reader must agree before it's sure.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "check",
+  "id": "sr_check",
+  "caption": "This probably isn't what you ordered, but I'm not completely sure.",
+  "file": "narration/sr/sr_check.wav"
+ },
+ {
+  "scene": "check",
+  "id": "c2",
+  "caption": "Size L, not M. Charcoal, not navy. It won't guess: it says how sure it is.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "moneyback",
+  "id": "m1",
+  "caption": "She says it's wrong. Her agent signs an evidence pack, and reads her a summary first.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "store",
+  "id": "m2",
+  "caption": "The store's own agent checks the signature, and offers a replacement inside the store's policy.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "decline",
+  "id": "m3",
+  "caption": "Maya wants her money back, so she declines. The revised offer: release the hold.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "released",
+  "id": "m4",
+  "caption": "PayPal voids the authorization, and the hold is released.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "hold3d",
+  "id": "m5",
+  "caption": "Nothing was captured. The money never left her account.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ },
+ {
+  "scene": "hood",
+  "id": "u1",
+  "caption": "Underneath: a template readback, two keys, and an eight-guard payment gate.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "hood",
+  "id": "u2",
+  "caption": "Model text alone can never move money.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "hood",
+  "id": "u3",
+  "caption": "PayPal authorizes, captures or voids, and every step is signed and chained.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "proof",
+  "id": "pr1",
+  "caption": "4 false alarms on 210 matching items. Image matching with CLIP: 189.",
+  "spoken": "Four false alarms on two hundred and ten matching items. Image matching with clip: one hundred and eighty-nine.",
+  "pauseBefore": 0.3,
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "proof",
+  "id": "pr2",
+  "caption": "Zero payment breaches across 60 trick listings. A naive agent: 50.",
+  "spoken": "Zero payment breaches across sixty trick listings. A naive agent: fifty.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "proofneg",
+  "id": "pr3",
+  "caption": "And it's weak on colour: it caught 2 of 53 colour mismatches. On most of the rest, it says not sure.",
+  "spoken": "And it's weak on colour. It caught two of fifty-three colour mismatches. On most of the rest, it says not sure.",
+  "exaggeration": 0.55,
+  "cfg": 0.38
+ },
+ {
+  "scene": "recap",
+  "id": "r1",
+  "caption": "Pay after the check. Not sure, instead of a guess. Money back from the store's own agent.",
+  "exaggeration": 0.75,
+  "cfg": 0.32
+ },
+ {
+  "scene": "close",
+  "id": "cl1",
+  "caption": "Maya did the hard part herself. Sightline makes sure she only pays for what she got.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ }
+]

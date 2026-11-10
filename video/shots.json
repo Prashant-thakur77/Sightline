@@ -1,0 +1,453 @@
+{
+ "base": "https://sightline.prashantthakur.dev",
+ "viewport": [
+  1920,
+  1080
+ ],
+ "dpr": 1.25,
+ "colorScheme": "light",
+ "out": "captures",
+ "persist": "maya-session.json",
+ "shots": [
+  {
+   "id": "C1",
+   "fresh": true,
+   "steps": [
+    {
+     "goto": "/judge"
+    },
+    {
+     "hold": 1500
+    },
+    {
+     "click": "role=button[name=\"Shop as Maya, Speech Viewer on\"]",
+     "after": 2500
+    },
+    {
+     "type": [
+      "input[placeholder^=\"For example\"]",
+      "navy crew-neck sweater, medium, under $40"
+     ],
+     "delay": 55
+    },
+    {
+     "click": "role=button[name=\"Send\"]",
+     "after": 300
+    },
+    {
+     "waitFor": "text=Option 1",
+     "timeout": 90000
+    },
+    {
+     "hold": 1200
+    },
+    {
+     "zoom": "aside.speech-viewer-panel"
+    },
+    {
+     "hold": 5000
+    },
+    {
+     "hover": "text=Option 1",
+     "after": 2500
+    }
+   ]
+  },
+  {
+   "id": "C2",
+   "steps": [
+    {
+     "goto": "/app"
+    },
+    {
+     "hold": 1200
+    },
+    {
+     "click": "role=button[name=/^Buy this/] >> nth=0",
+     "after": 300
+    },
+    {
+     "waitFor": "text=Readback: check before you pay",
+     "timeout": 60000
+    },
+    {
+     "hold": 1500
+    },
+    {
+     "zoom": "text=Readback: check before you pay"
+    },
+    {
+     "hold": 6500
+    }
+   ]
+  },
+  {
+   "id": "C3",
+   "steps": [
+    {
+     "goto": "/app"
+    },
+    {
+     "hold": 1000
+    },
+    {
+     "type": [
+      "input[placeholder^=\"For example\"]",
+      "yeah, probably fine"
+     ],
+     "delay": 60
+    },
+    {
+     "click": "role=button[name=\"Send\"]",
+     "after": 300
+    },
+    {
+     "waitFor": "text=Okay, I'll wait",
+     "timeout": 60000
+    },
+    {
+     "hold": 800
+    },
+    {
+     "zoom": "text=Okay, I'll wait"
+    },
+    {
+     "hold": 4000
+    }
+   ]
+  },
+  {
+   "id": "C4",
+   "steps": [
+    {
+     "goto": "/app"
+    },
+    {
+     "hold": 1000
+    },
+    {
+     "type": [
+      "input[placeholder^=\"For example\"]",
+      "confirm purchase"
+     ],
+     "delay": 60
+    },
+    {
+     "click": "role=button[name=\"Send\"]",
+     "after": 300
+    },
+    {
+     "waitFor": "text=On hold until you check it",
+     "timeout": 120000
+    },
+    {
+     "hold": 800
+    },
+    {
+     "zoom": "text=On hold until you check it"
+    },
+    {
+     "scrape": {
+      "held": "main >> text=/on hold for Demo Store/ >> nth=0"
+     }
+    },
+    {
+     "saveHref": {
+      "order": "a:has-text(\"See the order\")",
+      "receipt": "a:has-text(\"signed receipt\")"
+     }
+    },
+    {
+     "hold": 4500
+    }
+   ]
+  },
+  {
+   "id": "C5",
+   "steps": [
+    {
+     "goto": "/merchant"
+    },
+    {
+     "hold": 1500
+    },
+    {
+     "click": "role=button[name=\"Ship the wrong size (L)\"]",
+     "after": 2500
+    },
+    {
+     "click": "role=button[name=\"Mark as delivered\"]",
+     "after": 2500
+    }
+   ]
+  },
+  {
+   "id": "C6",
+   "steps": [
+    {
+     "goto": "/merchant/schedule"
+    },
+    {
+     "hold": 2000
+    },
+    {
+     "scroll": 520,
+     "scrollMs": 1400
+    },
+    {
+     "hover": "text=PayPal hold",
+     "after": 1500
+    },
+    {
+     "zoom": "text=Honour period 1"
+    },
+    {
+     "hold": 4000
+    },
+    {
+     "scrape": {
+      "schedule_summary": "main p >> nth=0"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C7",
+   "steps": [
+    {
+     "gotoSaved": "order"
+    },
+    {
+     "hold": 1500
+    },
+    {
+     "zoom": "text=On hold. PayPal holds the money"
+    },
+    {
+     "hold": 2500
+    },
+    {
+     "click": "a:has-text(\"Check the parcel with your camera\")",
+     "after": 2000
+    },
+    {
+     "click": "role=button[name=\"Use the demo parcel photos\"]",
+     "after": 3000
+    },
+    {
+     "click": "role=button[name=\"Check it now\"]",
+     "after": 500
+    },
+    {
+     "waitFor": "text=How sure",
+     "timeout": 120000
+    },
+    {
+     "hold": 1200
+    },
+    {
+     "scrape": {
+      "verdict": "main h2 >> nth=0",
+      "verdict_table": "main table >> nth=0"
+     }
+    },
+    {
+     "zoom": "main h2 >> nth=0"
+    },
+    {
+     "hold": 3000
+    },
+    {
+     "zoom": "main table >> nth=0"
+    },
+    {
+     "hold": 5000
+    }
+   ]
+  },
+  {
+   "id": "C8",
+   "steps": [
+    {
+     "gotoSaved": "order",
+     "hash": "#money-back"
+    },
+    {
+     "hold": 1500
+    },
+    {
+     "click": "role=button[name=\"Get my money back\"]",
+     "after": 500
+    },
+    {
+     "waitFor": "role=button[name=\"Send it to Demo Store\"]",
+     "timeout": 90000
+    },
+    {
+     "hold": 1000
+    },
+    {
+     "saveHref": {
+      "evidence": "a[href^=\"/evidence/\"]"
+     }
+    },
+    {
+     "zoom": "role=button[name=\"Send it to Demo Store\"]"
+    },
+    {
+     "hold": 5000
+    },
+    {
+     "click": "role=button[name=\"Send it to Demo Store\"]",
+     "after": 500
+    },
+    {
+     "waitFor": "text=Waiting for the store",
+     "timeout": 90000
+    },
+    {
+     "hold": 3000
+    }
+   ]
+  },
+  {
+   "id": "C9",
+   "steps": [
+    {
+     "goto": "/merchant/disputes"
+    },
+    {
+     "hold": 1500
+    },
+    {
+     "zoom": "text=What the check found"
+    },
+    {
+     "hold": 2500
+    },
+    {
+     "zoom": "text=What Demo Store has done"
+    },
+    {
+     "scrape": {
+      "store_offer": "text=/Sent: Offer/ >> nth=0"
+     }
+    },
+    {
+     "hold": 5000
+    }
+   ]
+  },
+  {
+   "id": "C10",
+   "steps": [
+    {
+     "goto": "/app?hear=offer"
+    },
+    {
+     "hold": 1500
+    },
+    {
+     "waitFor": "text=Why the store",
+     "timeout": 60000
+    },
+    {
+     "zoom": "text=Why the store"
+    },
+    {
+     "hold": 6000
+    },
+    {
+     "click": "role=button[name=\"Decline\"]",
+     "after": 500
+    },
+    {
+     "waitFor": "text=Offer declined",
+     "timeout": 60000
+    },
+    {
+     "hold": 3000
+    }
+   ]
+  },
+  {
+   "id": "C11",
+   "steps": [
+    {
+     "gotoSaved": "order"
+    },
+    {
+     "hold": 6000
+    },
+    {
+     "gotoSaved": "order"
+    },
+    {
+     "hold": 1800
+    },
+    {
+     "zoom": "text=/Hold released|PayPal cancelled the hold/"
+    },
+    {
+     "hold": 3000
+    },
+    {
+     "click": "role=button[name=/Show all/]",
+     "after": 1500
+    },
+    {
+     "zoom": "text=/voided, as PayPal answered/ >> nth=0"
+    },
+    {
+     "scrape": {
+      "voided": "text=/voided, as PayPal answered/ >> nth=0",
+      "released": "text=/Released your/ >> nth=0"
+     }
+    },
+    {
+     "hold": 5000
+    }
+   ]
+  },
+  {
+   "id": "C12",
+   "steps": [
+    {
+     "gotoSaved": "evidence"
+    },
+    {
+     "hold": 2500
+    },
+    {
+     "zoom": "text=Check it yourself"
+    },
+    {
+     "hold": 5000
+    }
+   ]
+  },
+  {
+   "id": "C13",
+   "fresh": true,
+   "steps": [
+    {
+     "goto": "/judge"
+    },
+    {
+     "hold": 1200
+    },
+    {
+     "click": "role=button[name=/Run the whole lifecycle/]",
+     "after": 1000
+    },
+    {
+     "waitFor": "text=PayPal cancelled the hold",
+     "timeout": 300000
+    },
+    {
+     "hold": 2500
+    }
+   ]
+  }
+ ]
+}

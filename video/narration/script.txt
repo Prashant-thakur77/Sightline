@@ -1,0 +1,28 @@
+A parcel arrives for Maya. She paid for a navy sweater, size medium.
+Is this it? She can't see the colour, and the size tag is a bump of fabric.
+So her phone checks it, and tells her in words.
+Blind shoppers can already buy online. What breaks is after the parcel arrives.
+One in two disabled shoppers who needed a return had problems. One in seven couldn't use the store's return method.
+This is Sightline. Shop by voice, and pay only for what you actually got.
+Maya is a persona. This panel shows what her screen reader says.
+Before money moves, a template, not the model, reads back exactly what she'll pay.
+She says, yeah, probably fine. That isn't a yes, so nothing is paid.
+Okay, I'll wait. Nothing is paid. Say 'confirm purchase' when you're ready.
+Confirm purchase. Claude Haiku checks her words again, on its own.
+PayPal authorizes $36.72 and holds it until the check.
+Claude Opus reads the size tag. A second reader must agree before it's sure.
+This probably isn't what you ordered, but I'm not completely sure.
+Size L, not M. Charcoal, not navy. It won't guess: it says how sure it is.
+She says it's wrong. Her agent signs an evidence pack, and reads her a summary first.
+The store's own agent checks the signature, and offers a replacement inside the store's policy.
+Maya wants her money back, so she declines. The revised offer: release the hold.
+PayPal voids the authorization, and the hold is released.
+Nothing was captured. The money never left her account.
+Underneath: a template readback, two keys, and an eight-guard payment gate.
+Model text alone can never move money.
+PayPal authorizes, captures or voids, and every step is signed and chained.
+4 false alarms on 210 matching items. Image matching with CLIP: 189.
+Zero payment breaches across 60 trick listings. A naive agent: 50.
+And it's weak on colour: it caught 2 of 53 colour mismatches. On most of the rest, it says not sure.
+Pay after the check. Not sure, instead of a guess. Money back from the store's own agent.
+Maya did the hard part herself. Sightline makes sure she only pays for what she got.

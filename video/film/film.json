@@ -1,0 +1,790 @@
+{
+ "title": "Sightline",
+ "product": "Sightline",
+ "fps": 30,
+ "width": 1920,
+ "height": 1080,
+ "theme": {
+  "bg": "#f3f6fb",
+  "surface": "#ffffff",
+  "fg": "#0d1530",
+  "muted": "#3b4565",
+  "accent": "#1a33d6",
+  "accent2": "#2442ff",
+  "good": "#08572f",
+  "bad": "#a01b12",
+  "display": "Inter",
+  "mono": "JetBrainsMono"
+ },
+ "scenes": [
+  {
+   "id": "open",
+   "type": "story",
+   "duration": 5.567,
+   "transition": {
+    "type": "cut"
+   },
+   "clips": [
+    {
+     "id": "O1",
+     "dur": 2.7835,
+     "drawing": "parcel",
+     "action": "a parcel at the door, a hand lifts it",
+     "push": "in",
+     "trimBefore": 0.0
+    },
+    {
+     "id": "O2",
+     "dur": 2.7835,
+     "drawing": "parcel",
+     "action": "fingers peel the tape, open the flaps",
+     "push": "right",
+     "trimBefore": 0.0
+    }
+   ],
+   "lower": {
+    "name": "Maya",
+    "role": "a persona: the person is invented, the problem is not",
+    "at": 0.6,
+    "until": 5.567
+   },
+   "storyChips": [],
+   "min": 5.0
+  },
+  {
+   "id": "tagcut",
+   "type": "tagcut",
+   "duration": 9.867,
+   "transition": {
+    "type": "cut"
+   },
+   "clip": {
+    "id": "O3",
+    "dur": 9.867,
+    "drawing": "tag",
+    "action": "hands find the size tag on the sweater",
+    "push": "in",
+    "trimBefore": 0.0
+   },
+   "tag": {
+    "x": 0.5,
+    "y": 0.45
+   },
+   "ringAt": 3.51,
+   "irisAt": 4.21,
+   "src": "captures/C7.mp4",
+   "at": 33.4,
+   "box": {
+    "x": 50,
+    "y": 300,
+    "w": 1230,
+    "h": 330
+   },
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox",
+     "at": 4.21,
+     "until": 9.867
+    },
+    {
+     "text": "Demo parcel photos",
+     "at": 4.21,
+     "until": 9.867
+    }
+   ],
+   "min": 7.5,
+   "sfx": [
+    {
+     "at": 3.86,
+     "sfx": "stamp",
+     "db": -9
+    }
+   ]
+  },
+  {
+   "id": "pain",
+   "type": "pain",
+   "duration": 13.9,
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "stats": [
+    {
+     "big": "1 in 2",
+     "of": 2,
+     "fill": 1,
+     "text": "disabled shoppers who needed a return had problems doing it",
+     "at": 1.6
+    },
+    {
+     "big": "1 in 7",
+     "of": 7,
+     "fill": 1,
+     "text": "could not use the retailer's return method",
+     "at": 5.6
+    }
+   ],
+   "source": "Which? with RIDC, survey of disabled consumers in the UK, December 2022",
+   "min": 10.0
+  },
+  {
+   "id": "turn",
+   "type": "register",
+   "duration": 5.767,
+   "transition": {
+    "type": "fade",
+    "dur": 0.35
+   },
+   "drawing": "tag",
+   "wordmark": true,
+   "title": "pay only for what you actually got",
+   "emphasis": [
+    "actually",
+    "got"
+   ],
+   "floodAt": 1.0,
+   "min": 4.5,
+   "sfx": [
+    {
+     "at": 1.0,
+     "sfx": "stamp",
+     "db": -8
+    }
+   ]
+  },
+  {
+   "id": "ask",
+   "type": "screen",
+   "duration": 5.9,
+   "transition": {
+    "type": "fade",
+    "dur": 0.3
+   },
+   "zooms": [
+    {
+     "at": 2.2,
+     "dur": 4.0,
+     "box": {
+      "x": 1340,
+      "y": 690,
+      "w": 550,
+      "h": 360
+     },
+     "scale": 2.1
+    }
+   ],
+   "src": "captures/ask.mp4",
+   "events": "captures/ask.events.json",
+   "playbackRate": 1.4,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.4x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "Persona: Maya",
+     "tone": "warm"
+    },
+    {
+     "text": "Typed here; she can also talk",
+     "tone": "warm",
+     "at": 0.3
+    }
+   ],
+   "min": 5.0
+  },
+  {
+   "id": "readback",
+   "type": "screen",
+   "duration": 6.1,
+   "src": "captures/readback.mp4",
+   "events": "captures/readback.events.json",
+   "playbackRate": 1.4,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.4x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "A template reads it, not the model",
+     "tone": "warm",
+     "at": 1.0
+    }
+   ],
+   "min": 5.0
+  },
+  {
+   "id": "refuse",
+   "type": "screen",
+   "duration": 9.9,
+   "src": "captures/refuse.mp4",
+   "events": "captures/refuse.events.json",
+   "playbackRate": 1.0,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox",
+     "tone": "ink"
+    },
+    {
+     "text": "Not a yes: nothing is paid",
+     "tone": "accent",
+     "at": 3.0
+    },
+    {
+     "text": "Screen reader voice: eSpeak NG",
+     "tone": "warm",
+     "at": 4.0
+    }
+   ],
+   "min": 4.5,
+   "sfx": [
+    {
+     "at": 3.0,
+     "sfx": "tick",
+     "db": -14
+    },
+    {
+     "at": 3.08,
+     "sfx": "hit",
+     "db": -15
+    }
+   ]
+  },
+  {
+   "id": "confirm",
+   "type": "screen",
+   "duration": 11.067,
+   "src": "captures/confirm.mp4",
+   "events": "captures/confirm.events.json",
+   "playbackRate": 1.292,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.3x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "PayPal Orders v2 · AUTHORIZE",
+     "tone": "accent",
+     "at": 4.0
+    },
+    {
+     "text": "Waiting sped up 3x",
+     "at": 3.41,
+     "until": 5.55,
+     "tone": "warm"
+    }
+   ],
+   "pill": {
+    "model": "Claude Haiku 5.5",
+    "job": "second confirmation key",
+    "at": 1.2,
+    "until": 5.2
+   },
+   "min": 7.5,
+   "sfx": [
+    {
+     "at": 4.0,
+     "sfx": "ping",
+     "db": -16
+    }
+   ]
+  },
+  {
+   "id": "check",
+   "type": "screen",
+   "duration": 16.4,
+   "src": "captures/check.mp4",
+   "events": "captures/check.events.json",
+   "playbackRate": 1.081,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.1x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "Demo store control: wrong size sent on purpose",
+     "tone": "warm"
+    },
+    {
+     "text": "Two size-tag readers: Claude Opus 5.5 + OCR",
+     "tone": "accent",
+     "at": 0.3
+    },
+    {
+     "text": "Screen reader voice: eSpeak NG",
+     "tone": "warm",
+     "at": 4.5
+    },
+    {
+     "text": "Waiting sped up 6x",
+     "at": 2.41,
+     "until": 4.7,
+     "tone": "warm"
+    }
+   ],
+   "pill": {
+    "model": "Claude Opus 5.5",
+    "job": "reads the size tag",
+    "at": 0.3
+   },
+   "min": 9.0
+  },
+  {
+   "id": "moneyback",
+   "type": "screen",
+   "duration": 6.5,
+   "src": "captures/moneyback.mp4",
+   "events": "captures/moneyback.events.json",
+   "playbackRate": 1.4,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.4x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "Ed25519-signed evidence pack",
+     "tone": "warm",
+     "at": 2.0
+    }
+   ],
+   "pill": {
+    "model": "Claude Opus 5.5",
+    "job": "case summary",
+    "at": 1.0
+   },
+   "min": 6.5
+  },
+  {
+   "id": "store",
+   "type": "screen",
+   "duration": 6.267,
+   "src": "captures/store.mp4",
+   "events": "captures/store.events.json",
+   "playbackRate": 1.4,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev/merchant/disputes",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.4x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "Code computes every amount",
+     "tone": "warm",
+     "at": 2.0
+    }
+   ],
+   "pill": {
+    "model": "Claude Opus 5.5",
+    "job": "store agent",
+    "at": 0.2
+   },
+   "min": 6.0
+  },
+  {
+   "id": "decline",
+   "type": "screen",
+   "duration": 6.533,
+   "src": "captures/decline.mp4",
+   "events": "captures/decline.events.json",
+   "playbackRate": 1.4,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.4x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "Accepting takes two presses",
+     "tone": "warm",
+     "at": 1.0
+    }
+   ],
+   "pill": {
+    "model": "Claude Opus 5.5",
+    "job": "store agent's revised offer",
+    "at": 4.5
+   },
+   "min": 6.0
+  },
+  {
+   "id": "released",
+   "type": "screen",
+   "duration": 4.733,
+   "transition": {
+    "type": "fade",
+    "dur": 0.35
+   },
+   "src": "captures/released.mp4",
+   "events": "captures/released.events.json",
+   "playbackRate": 1.4,
+   "chrome": true,
+   "url": "sightline.prashantthakur.dev",
+   "chips": [
+    {
+     "text": "Live site · PayPal sandbox · 1.4x speed",
+     "tone": "ink"
+    },
+    {
+     "text": "PayPal Payments v2 · void",
+     "tone": "accent",
+     "at": 0.6
+    }
+   ],
+   "min": 4.0
+  },
+  {
+   "id": "hold3d",
+   "type": "hold3d",
+   "duration": 4.633,
+   "transition": {
+    "type": "fade",
+    "dur": 0.35
+   },
+   "amount": "$36.72",
+   "voidAt": 1.95,
+   "authId": "Authorization 70D655181X378024P · voided",
+   "min": 4.5,
+   "sfx": [
+    {
+     "at": 1.95,
+     "sfx": "chime",
+     "db": -14
+    }
+   ]
+  },
+  {
+   "id": "hoodreg",
+   "type": "register",
+   "duration": 1.6,
+   "drawing": "hold",
+   "kicker": "Under the hood",
+   "ground": "paper",
+   "floodAt": 0.7,
+   "transition": {
+    "type": "cut"
+   },
+   "sfx": [
+    {
+     "at": 0.7,
+     "sfx": "stamp",
+     "db": -9
+    }
+   ]
+  },
+  {
+   "id": "hood",
+   "type": "arch3d",
+   "duration": 16.333,
+   "transition": {
+    "type": "fade",
+    "dur": 0.35
+   },
+   "title": "Under the hood",
+   "layers": [
+    {
+     "id": "voice",
+     "label": "Voice and shopping agent",
+     "sub": "Claude Haiku 5.5 · lines checked against the listing"
+    },
+    {
+     "id": "readback",
+     "label": "Readback template",
+     "sub": "fixed words, never model text"
+    },
+    {
+     "id": "keys",
+     "label": "Two keys",
+     "sub": "her words + Claude Haiku 5.5 (agree or veto)"
+    },
+    {
+     "id": "gate",
+     "label": "Payment gate",
+     "sub": "eight guards: amount, payee, duplicates"
+    },
+    {
+     "id": "paypal",
+     "label": "PayPal",
+     "sub": "authorize · capture · void · Vault"
+    },
+    {
+     "id": "check",
+     "label": "Camera check",
+     "sub": "Claude Opus 5.5 + OCR must agree"
+    },
+    {
+     "id": "evidence",
+     "label": "Evidence and store agent",
+     "sub": "Ed25519 · Claude Opus 5.5 within policy"
+    }
+   ],
+   "satellites": [
+    {
+     "id": "channel3",
+     "label": "Channel3"
+    },
+    {
+     "id": "aws",
+     "label": "AWS"
+    },
+    {
+     "id": "bryntum",
+     "label": "Bryntum"
+    }
+   ],
+   "cueWords": {
+    "voice": "Underneath",
+    "readback": "template",
+    "keys": "keys",
+    "gate": "gate",
+    "paypal": "PayPal",
+    "check": "voids",
+    "evidence": "signed"
+   },
+   "blockedAt": "gate",
+   "blockedText": "model text cannot move money",
+   "min": 15.0,
+   "cues": {
+    "voice": 0.45,
+    "readback": 1.47,
+    "keys": 2.93,
+    "gate": 4.67,
+    "paypal": 10.19,
+    "check": 12.19,
+    "evidence": 14.03
+   }
+  },
+  {
+   "id": "proof",
+   "type": "proofcards",
+   "duration": 13.733,
+   "transition": {
+    "type": "slide",
+    "dir": "from-bottom",
+    "dur": 0.4
+   },
+   "kicker": "Measured, with baselines",
+   "cards": [
+    {
+     "at": 0.3,
+     "title": "False alarms on matching items",
+     "stamp": "4 vs 189",
+     "rows": [
+      {
+       "label": "CLIP image matching",
+       "k": 189,
+       "n": 210
+      },
+      {
+       "label": "Sightline",
+       "k": 4,
+       "n": 210,
+       "ours": true
+      }
+     ],
+     "foot": "Frozen test split of 420 synthetic photo pairs, thresholds fitted on dev only. evals/sightbench"
+    },
+    {
+     "at": 5.4,
+     "title": "Payment breaches, trick listings (simulated)",
+     "stamp": "0 vs 50",
+     "rows": [
+      {
+       "label": "Naive agent",
+       "k": 50,
+       "n": 60
+      },
+      {
+       "label": "Sightline",
+       "k": 0,
+       "n": 60,
+       "ours": true
+      }
+     ],
+     "foot": "Simulated ledger, no PayPal calls. evals/redteam"
+    }
+   ],
+   "min": 10.5,
+   "sfx": [
+    {
+     "at": 2.3,
+     "sfx": "hit",
+     "db": -11
+    },
+    {
+     "at": 7.4,
+     "sfx": "hit",
+     "db": -11
+    }
+   ]
+  },
+  {
+   "id": "proofneg",
+   "type": "proofcards",
+   "duration": 8.1,
+   "transition": {
+    "type": "cut"
+   },
+   "kicker": "Where it is weak",
+   "cards": [
+    {
+     "at": 0.3,
+     "title": "Colour mismatches caught",
+     "stamp": "Weak: it says not sure instead",
+     "stampTone": "bad",
+     "rows": [
+      {
+       "label": "Sightline",
+       "k": 2,
+       "n": 53,
+       "ours": true,
+       "tone": "bad"
+      }
+     ],
+     "foot": "Same frozen test split. Navy against charcoal in dim light is hard; the app says not sure and offers a helper."
+    }
+   ],
+   "min": 5.5,
+   "sfx": [
+    {
+     "at": 1.6,
+     "sfx": "hit",
+     "db": -11
+    }
+   ]
+  },
+  {
+   "id": "recap",
+   "type": "recap",
+   "duration": 9.0,
+   "transition": {
+    "type": "fade",
+    "dur": 0.3
+   },
+   "riserInto": true,
+   "lines": [
+    {
+     "text": "Pay after the check.",
+     "at": 0.45
+    },
+    {
+     "text": "Not sure, instead of a guess.",
+     "at": 1.87
+    },
+    {
+     "text": "Money back from the store's own agent.",
+     "at": 3.99
+    }
+   ],
+   "tableAt": 6.07,
+   "table": [
+    {
+     "model": "Claude Haiku 5.5",
+     "job": "shopping agent; second confirmation key (agree or veto only)"
+    },
+    {
+     "model": "Claude Opus 5.5",
+     "job": "size-tag and product reads, case summary, store agent"
+    },
+    {
+     "model": "Fixed code",
+     "job": "readback template, eight-guard payment gate, every amount"
+    },
+    {
+     "model": "PayPal sandbox",
+     "job": "Orders v2 authorize, Payments capture and void, Vault, webhooks"
+    }
+   ],
+   "shots": [
+    {
+     "src": "captures/confirm.mp4",
+     "at": 7.0
+    },
+    {
+     "src": "captures/check.mp4",
+     "at": 9.0
+    },
+    {
+     "src": "captures/store.mp4",
+     "at": 4.0
+    },
+    {
+     "src": "captures/released.mp4",
+     "at": 2.0
+    },
+    {
+     "src": "captures/schedule.mp4",
+     "at": 4.0
+    }
+   ],
+   "min": 9.0,
+   "sfx": [
+    {
+     "at": 0.2,
+     "sfx": "flash",
+     "db": -18
+    },
+    {
+     "at": 1.6,
+     "sfx": "flash",
+     "db": -18
+    },
+    {
+     "at": 3.0,
+     "sfx": "flash",
+     "db": -18
+    }
+   ]
+  },
+  {
+   "id": "close",
+   "type": "story",
+   "duration": 6.733,
+   "transition": {
+    "type": "fade",
+    "dur": 0.5
+   },
+   "clips": [
+    {
+     "id": "O6",
+     "dur": 6.733,
+     "drawing": "closed",
+     "action": "hands fold the sweater back into the box",
+     "push": "in",
+     "trimBefore": 0.0
+    }
+   ],
+   "min": 6.0
+  },
+  {
+   "id": "end",
+   "type": "end",
+   "duration": 6.0,
+   "tagline": "Pay only for what you actually got.",
+   "url": "sightline.prashantthakur.dev/judge",
+   "repo": "github.com/Prashant-thakur77/Sightline · MIT",
+   "notes": "PayPal sandbox · Maya is a persona · not yet tested with blind users",
+   "sfx": [
+    {
+     "at": 0.3,
+     "sfx": "chime",
+     "db": -14
+    }
+   ]
+  }
+ ]
+}

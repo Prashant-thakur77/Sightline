@@ -1,0 +1,19 @@
+{
+ "duration": 170,
+ "bpm_hint": 88,
+ "beats": [
+  {"id": "open", "t": 0, "energy": 1, "note": "felt piano motif alone, the question"},
+  {"id": "tagcut", "t": 9, "energy": 2, "hit": "register stamp on the match cut"},
+  {"id": "pain", "t": 14, "energy": 1},
+  {"id": "turn", "t": 25, "energy": 3, "hit": "the name: marimba and bass enter"},
+  {"id": "ask", "t": 30, "energy": 3},
+  {"id": "confirm", "t": 46, "energy": 3, "hit": "low hit on the hold"},
+  {"id": "check", "t": 68, "energy": 2, "hit": "one thinned bar, then the verdict"},
+  {"id": "released", "t": 100, "energy": 3, "hit": "warm resolve on the void"},
+  {"id": "hood", "t": 112, "energy": 2},
+  {"id": "proof", "t": 130, "energy": 4, "hit": "stamp hits on each proof badge"},
+  {"id": "recap", "t": 148, "energy": 5, "hit": "riser into the recap, lift"},
+  {"id": "close", "t": 157, "energy": 2, "hit": "the motif answered"},
+  {"id": "end", "t": 164, "energy": 1, "hit": "resolve chord"}
+ ]
+}

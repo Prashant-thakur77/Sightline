@@ -1,0 +1,4 @@
+[
+ {"scene": "A", "id": "hook", "caption": "A parcel arrives for Maya. She paid for a navy sweater, size medium. Is this it?", "exaggeration": 0.6, "cfg": 0.35},
+ {"scene": "A", "id": "proof", "caption": "On two hundred and ten matching items, it raised four false alarms. Image matching raised one hundred and eighty nine.", "exaggeration": 0.65, "cfg": 0.4}
+]
