@@ -73,6 +73,9 @@ describe('featured results', () => {
     expect(sb.negative).toBe(sbFile.headlines.find((h) => h.id === 'mismatch-recall')!.negative === true || undefined);
     const abstained = sbFile.headlines.find((h) => h.id === 'abstention')!.value.split(' (')[0]!;
     expect(sb.context).toContain(abstained);
+    // The deployed rule's run keeps the earlier rule's catch on the card, from the same file.
+    const beforeRule = sbFile.headlines.find((h) => h.id === 'before-two-looks');
+    if (beforeRule) expect(sb.context).toContain(`caught ${beforeRule.value.split('·')[0]!.trim().replace('/', ' of ')}`);
 
     // The simulation is said on the card (its context line), not hidden in a note.
     expect(byId.get('breaches-sightline')!.context).toContain('Simulated, without calling PayPal.');

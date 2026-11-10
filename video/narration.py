@@ -112,8 +112,8 @@ line("hood", "u2", "Model text alone can never move money.", **PRODUCT)
 line("hood", "u3", "PayPal authorizes, captures or voids, and every step is signed and chained.", **PRODUCT)
 # 9. Proof (numbers from facts.json)
 line("proof", "pr1",
-     f"{fa['k']} false alarms on {fa['n']} matching items. Image matching with CLIP: {fa['baseline_k']}.",
-     f"{words(fa['k']).capitalize()} false alarms on {words(fa['n'])} matching items. Image matching with clip: {words(fa['baseline_k'])}.",
+     f"{fa['k']} false alarm{'' if fa['k'] == 1 else 's'} on {fa['n']} matching items. Image matching with CLIP: {fa['baseline_k']}.",
+     f"{words(fa['k']).capitalize()} false alarm{'' if fa['k'] == 1 else 's'} on {words(fa['n'])} matching items. Image matching with clip: {words(fa['baseline_k'])}.",
      pauseBefore=0.3, **PRODUCT)
 line("proof", "pr2",
      f"{br['k'] if br['k'] else 'Zero'} payment breaches across {br['n']} trick listings. A naive agent: {br['baseline_k']}.",

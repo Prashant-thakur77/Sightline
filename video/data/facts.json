@@ -1,58 +1,58 @@
 {
  "false_alarms": {
-  "k": 4,
+  "k": 1,
   "n": 210,
-  "text": "4 of 210",
+  "text": "1 of 210",
   "baseline_k": 189,
   "baseline_n": 210,
   "baseline_label": "CLIP",
   "label": "Matching items wrongly called a mismatch (false alarms), Sightline",
   "script": "evals/sightbench/run.ts",
   "suite": "sightbench",
-  "ranAt": "2026-11-09T13:24:31.985Z",
-  "gitSha": "73ce251",
-  "note": "Synthetic renders, not real photos. A false alarm tells a buyer to return an item that is right. 1 of 4 came from a \"sure\" colour disagreement (listed: rust, burgundy, navy, sky blue); see details.worstCases.sightlineFalseAlarms."
+  "ranAt": "2026-11-10T17:58:40.128Z",
+  "gitSha": "ac84cb2",
+  "note": "Synthetic renders, not real photos. A false alarm tells a buyer to return an item that is right. 1 of 1 came from a \"sure\" colour disagreement (listed: sky blue); see details.worstCases.sightlineFalseAlarms."
  },
  "mismatch_recall": {
-  "k": 121,
+  "k": 66,
   "n": 210,
-  "text": "121 of 210",
+  "text": "66 of 210",
   "baseline_k": 194,
   "baseline_n": 210,
   "baseline_label": "CLIP ViT-B/32, dev-fitted",
   "label": "Mismatches flagged on the frozen test split, Sightline",
   "script": "evals/sightbench/run.ts",
   "suite": "sightbench",
-  "ranAt": "2026-11-09T13:24:31.985Z",
-  "gitSha": "73ce251",
-  "note": "Synthetic renders, not real photos. Stratified over colour, size, model and damage mismatches. CLIP's dev-fitted threshold also flags 189 of 210 (90.0%) of matching pairs (dev balanced accuracy 0.5444), so its recall says little."
+  "ranAt": "2026-11-10T17:58:40.128Z",
+  "gitSha": "ac84cb2",
+  "note": "Synthetic renders, not real photos. Stratified over colour, size, model and damage mismatches. Verdict rule: two looks before \"sure\", quoted reads (quote-or-unsure-1). Before it (run 4, one sure reason, reads without citations): 121 of 210 flagged, 4 of 210 false alarms. CLIP's dev-fitted threshold also flags 189 of 210 (90.0%) of matching pairs (dev balanced accuracy 0.5444), so its recall says little."
  },
  "abstain": {
-  "k": 283,
+  "k": 335,
   "n": 420,
-  "text": "283 of 420",
+  "text": "335 of 420",
   "baseline_k": null,
   "baseline_n": null,
   "baseline_label": "CLIP baseline never abstains",
   "label": "Pairs where Sightline answered \"not sure\" (abstained)",
   "script": "evals/sightbench/run.ts",
   "suite": "sightbench",
-  "ranAt": "2026-11-09T13:24:31.985Z",
-  "gitSha": "73ce251",
-  "note": "Coverage 137 of 420 (32.6%). Accuracy when Sightline did answer: 132 of 137 (96.4%); CLIP accuracy: 215 of 420 (51.2%)."
+  "ranAt": "2026-11-10T17:58:40.128Z",
+  "gitSha": "ac84cb2",
+  "note": "Coverage 85 of 420 (20.2%). Accuracy when Sightline did answer: 82 of 85 (96.5%); CLIP accuracy: 215 of 420 (51.2%)."
  },
  "accuracy_answering": {
-  "k": 132,
-  "n": 137,
-  "text": "132 of 137",
+  "k": 82,
+  "n": 85,
+  "text": "82 of 85",
   "baseline_k": 215,
   "baseline_n": 420,
   "baseline_label": "CLIP (always answers)",
   "label": "Accuracy when Sightline gives an answer (match or mismatch)",
   "script": "evals/sightbench/run.ts",
   "suite": "sightbench",
-  "ranAt": "2026-11-09T13:24:31.985Z",
-  "gitSha": "73ce251",
+  "ranAt": "2026-11-10T17:58:40.128Z",
+  "gitSha": "ac84cb2",
   "note": ""
  },
  "breaches": {
@@ -154,14 +154,14 @@
   "note": "The same traversal as the row above, but the 12 pages where a cookie or sign-up dialog held focus and Escape did not close it count as blocked instead of being left out: a keyboard or screen-reader user meets that dialog first. Added on 9 November 2026 after the first analysis, from the same crawl; no store was crawled again."
  },
  "colour_caught": {
-  "k": 2,
+  "k": 0,
   "n": 53,
-  "text": "2 of 53",
+  "text": "0 of 53",
   "label": "Colour mismatches the camera check caught",
   "suite": "sightbench",
   "script": "evals/sightbench/run.ts",
-  "ranAt": "2026-11-09T13:24:31.985Z",
-  "gitSha": "73ce251",
+  "ranAt": "2026-11-10T17:58:40.128Z",
+  "gitSha": "ac84cb2",
   "note": "Synthetic renders, not real photos. It says 'not sure' on most of the rest."
  },
  "sightbench_pairs": {

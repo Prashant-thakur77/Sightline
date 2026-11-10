@@ -162,8 +162,8 @@
  {
   "scene": "proof",
   "id": "pr1",
-  "caption": "4 false alarms on 210 matching items. Image matching with CLIP: 189.",
-  "spoken": "Four false alarms on two hundred and ten matching items. Image matching with clip: one hundred and eighty-nine.",
+  "caption": "1 false alarm on 210 matching items. Image matching with CLIP: 189.",
+  "spoken": "One false alarm on two hundred and ten matching items. Image matching with clip: one hundred and eighty-nine.",
   "pauseBefore": 0.3,
   "exaggeration": 0.55,
   "cfg": 0.38
@@ -179,8 +179,8 @@
  {
   "scene": "proofneg",
   "id": "pr3",
-  "caption": "And it's weak on colour: it caught 2 of 53 colour mismatches. On most of the rest, it says not sure.",
-  "spoken": "And it's weak on colour. It caught two of fifty-three colour mismatches. On most of the rest, it says not sure.",
+  "caption": "And it's weak on colour: it caught 0 of 53 colour mismatches. On most of the rest, it says not sure.",
+  "spoken": "And it's weak on colour. It caught zero of fifty-three colour mismatches. On most of the rest, it says not sure.",
   "exaggeration": 0.55,
   "cfg": 0.38
  },

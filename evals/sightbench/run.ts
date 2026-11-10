@@ -50,6 +50,15 @@ const SPLIT = opt('--split') ?? 'test';
 const LIMIT = opt('--limit') ? Number(opt('--limit')) : undefined;
 const NO_WRITE = flag('--no-write') || SPLIT !== 'test' || LIMIT !== undefined;
 const REUSE = flag('--reuse');
+/**
+ * --responses-from <tag>: score saved responses written by services/vision `app.looks_bench
+ * --write-responses` (the deployed rule over cached model reads) instead of calling the service.
+ * Needs --reuse; every pair must have a saved response.
+ */
+const RESPONSES_FROM = opt('--responses-from');
+/** The verdict rule a run used. Runs before the two-looks rule have no `rule` field. */
+const OLD_RULE = 'one sure reason, reads without citations';
+const RULE = RESPONSES_FROM ? `two looks before "sure", quoted reads (${RESPONSES_FROM})` : OLD_RULE;
 const ENGINE = WITH_MODEL ? 'with-model' : 'no-model';
 
 type Decision = 'match' | 'mismatch' | 'unsure';
@@ -105,7 +114,8 @@ interface Row {
   ocrOnly: Decision;
   clip: Decision;
   clipScore: number;
-  latencyMs: number;
+  /** Null when the response was assembled from cached reads (no request was timed). */
+  latencyMs: number | null;
   serverMs: number | null;
   error?: string;
   headline?: string;
@@ -331,12 +341,15 @@ interface TestRun {
   falseAlarms: unknown[];
   /** Set when the run was re-scored later from its saved responses. */
   rescoredAt?: string;
+  /** The verdict rule (missing on runs before two looks: OLD_RULE). */
+  rule?: string;
 }
 
 const LETTER_DECISIONS = new Set(['match', 'mismatch', 'unsure']);
 
-/** How a run is named in headlines and limitations, from its threshold set. */
-const runLabel = (thresholds: string) => (thresholds === 'initial-unfitted' ? 'unfitted thresholds' : `thresholds fitted on dev (${thresholds})`);
+/** How a run is named in headlines and limitations, from its threshold set and verdict rule. */
+const runLabel = (thresholds: string, rule = OLD_RULE) =>
+  `${thresholds === 'initial-unfitted' ? 'unfitted thresholds' : `thresholds fitted on dev (${thresholds})`}${rule === OLD_RULE ? '' : `, ${rule}`}`;
 
 /** Summary of an earlier result file (its own rows), for details.testRuns. */
 function summariseEarlierRun(prev: any): TestRun | null {
@@ -453,9 +466,21 @@ async function main() {
 
   // 4. One request at a time (one heavy process at a time on the dev laptop). Responses are kept
   //    per threshold set, so a run with other thresholds never overwrites an earlier one.
-  const respDir = path.join(RAW, 'responses', ENGINE, THRESHOLDS.replace(/[^A-Za-z0-9._-]/g, '_'));
+  const respDir = path.join(
+    RAW,
+    'responses',
+    ENGINE,
+    `${THRESHOLDS}${RESPONSES_FROM ? `__${RESPONSES_FROM}` : ''}`.replace(/[^A-Za-z0-9._-]/g, '_'),
+  );
   mkdirSync(respDir, { recursive: true });
   const pairs = LIMIT ? m.pairs.slice(0, LIMIT) : m.pairs;
+  if (RESPONSES_FROM) {
+    const missing = pairs.filter((p) => !existsSync(path.join(respDir, `${p.id}.json`)));
+    if (!REUSE || missing.length) {
+      console.error(`sightbench: --responses-from needs --reuse and a saved response for every pair (${missing.length} missing in ${respDir}).`);
+      process.exit(1);
+    }
+  }
   const rows: Row[] = [];
   let errors = 0;
   let reused = 0;
@@ -463,7 +488,7 @@ async function main() {
     const cached = path.join(respDir, `${pair.id}.json`);
     let status = 0;
     let body: any = null;
-    let ms = 0;
+    let ms: number | null = 0;
     if (REUSE && existsSync(cached)) {
       ({ status, body, ms } = JSON.parse(readFileSync(cached, 'utf8')));
       reused++;
@@ -485,7 +510,7 @@ async function main() {
       delivered: { product: pair.delivered.product_id, colour: pair.delivered.colour, size: pair.delivered.size, damage: pair.delivered.damage?.kind ?? null },
       clip: c.decision,
       clipScore: c.score,
-      latencyMs: Number(ms.toFixed(1)),
+      latencyMs: typeof ms === 'number' ? Number(ms.toFixed(1)) : null,
     };
     if (status !== 200 || !body?.verdict) {
       errors++;
@@ -576,7 +601,7 @@ async function main() {
 
   // Latency.
   const ok = rows.filter((r) => !r.error);
-  const lat = ok.map((r) => r.latencyMs);
+  const lat = ok.map((r) => r.latencyMs).filter((x): x is number => typeof x === "number");
   const srv = ok.map((r) => r.serverMs).filter((x): x is number => typeof x === 'number');
   const latency = {
     what: 'Client wall time of POST /verify over localhost, one request at a time, CPU-only service on the dev laptop; includes multipart upload and JSON response.',
@@ -675,14 +700,16 @@ async function main() {
   const earlierSummary = summariseEarlierRun(earlier);
   const previousRuns: TestRun[] = (Array.isArray(earlier?.details?.testRuns) ? (earlier.details.testRuns as TestRun[]) : earlierSummary ? [earlierSummary] : []).map((r) => ({
     ...r,
-    label: runLabel(r.thresholds),
+    rule: r.rule ?? OLD_RULE,
+    label: runLabel(r.thresholds, r.rule ?? OLD_RULE),
   }));
   const thisRun: TestRun = {
     run: previousRuns.length + 1,
     ranAt: new Date().toISOString(),
     engine: ENGINE,
     thresholds: THRESHOLDS,
-    label: runLabel(THRESHOLDS),
+    rule: RULE,
+    label: runLabel(THRESHOLDS, RULE),
     mismatchRecall: o.mismatchRecall,
     falseAlarm: o.falseAlarm,
     abstention: o.abstention,
@@ -695,7 +722,14 @@ async function main() {
   // Re-scoring the saved responses of the latest run (--reuse, nothing sent to the service) is not
   // a new test run: it replaces that run's entry and keeps its number and date.
   const last = previousRuns.at(-1);
-  const rescored = reused === pairs.length && last !== undefined && last.thresholds === THRESHOLDS && last.engine === ENGINE;
+  const rescored =
+    reused === pairs.length && last !== undefined && last.thresholds === THRESHOLDS && last.engine === ENGINE && (last.rule ?? OLD_RULE) === RULE;
+  // The run just before this one under another verdict rule: shown as "before" next to this run.
+  const before = [...previousRuns].reverse().find((r) => (r.rule ?? OLD_RULE) !== RULE && r.engine === ENGINE);
+  // A run scored from cached reads has no timings: show the last timed run's, saying which.
+  type Lat = { n: number; p50Ms: number | null; p95Ms: number | null; serverTotalP50Ms: number | null; from?: string };
+  const earlierShown = (earlier?.details?.latencyShown ?? (earlier?.details?.latency?.n ? { ...earlier.details.latency, from: `run ${last?.run}, ${last?.ranAt?.slice(0, 10)}` } : null)) as Lat | null;
+  const latencyShown: Lat = latency.n > 0 || !earlierShown ? { ...latency, from: 'this run' } : earlierShown;
   const testRuns = rescored
     ? [...previousRuns.slice(0, -1), { ...thisRun, run: last.run, ranAt: last.ranAt, rescoredAt: thisRun.ranAt }]
     : [...previousRuns, thisRun];
@@ -719,7 +753,9 @@ async function main() {
       n: o.mismatchRecall.n,
       script: SCRIPT,
       negative: (o.mismatchRecall.value ?? 0) < 0.5,
-      note: `${SYNTH}. Stratified over colour, size, model and damage mismatches.${modelNote} CLIP's dev-fitted threshold also flags ${short(cl.overall.falseAlarm)} of matching pairs (dev balanced accuracy ${fitted.dev?.balanced_accuracy}), so its recall says little.${
+      note: `${SYNTH}. Stratified over colour, size, model and damage mismatches.${modelNote}${
+        before ? ` Verdict rule: ${RULE}. Before it (run ${before.run}, ${OLD_RULE}): ${ofN(before.mismatchRecall.k, before.mismatchRecall.n)} flagged, ${ofN(before.falseAlarm.k, before.falseAlarm.n)} false alarms.` : ''
+      } CLIP's dev-fitted threshold also flags ${short(cl.overall.falseAlarm)} of matching pairs (dev balanced accuracy ${fitted.dev?.balanced_accuracy}), so its recall says little.${
         showFirst && o.mismatchRecall.k < first.mismatchRecall.k
           ? ` The first test run (${first.label}) flagged ${ofN(first.mismatchRecall.k, first.mismatchRecall.n)}: the dev-fitted colour rules removed false alarms but also real colour catches (see "First test run").`
           : ''
@@ -788,6 +824,22 @@ async function main() {
           } satisfies Headline,
         ]
       : []),
+    ...(before
+      ? [
+          {
+            id: 'before-two-looks',
+            label: `Before two looks and quoted reads (run ${before.run}, ${before.ranAt.slice(0, 10)}): mismatches flagged / false alarms / not sure / accuracy when answering`,
+            value: `${slash(before.mismatchRecall)} · ${slash(before.falseAlarm)} · ${slash(before.abstention)} · ${slash(before.accuracyWhenDecided)}`,
+            baseline: `this run: ${slash(o.mismatchRecall)} · ${slash(o.falseAlarm)} · ${slash(o.abstention)}`,
+            n: before.abstention.n,
+            script: SCRIPT,
+            negative: o.mismatchRecall.k < before.mismatchRecall.k,
+            note: `Same frozen test split, same thresholds; only the verdict rule and the identity and damage reads changed. This run: ${RULE}; accuracy when answering ${slash(o.accuracyWhenDecided)}. Mismatches flagged per type, before -> this run: ${Object.keys(thisRun.recallByType)
+              .map((t) => `${t} ${before.recallByType[t]?.k ?? '?'} -> ${thisRun.recallByType[t]!.k} of ${thisRun.recallByType[t]!.n}`)
+              .join(', ')}. One simulated extra photo per "not sure" pair is scored in the sightbench-looks suite.`,
+          } satisfies Headline,
+        ]
+      : []),
     {
       id: 'navy-black-dim',
       label: 'Navy delivered for black (or black for navy) in dim light: mismatches caught by Sightline',
@@ -836,16 +888,20 @@ async function main() {
     {
       id: 'latency',
       label: 'POST /verify latency on the dev laptop, p50 / p95',
-      value: `${((latency.p50Ms ?? 0) / 1000).toFixed(2)} s / ${((latency.p95Ms ?? 0) / 1000).toFixed(2)} s`,
-      n: latency.n,
+      value: `${((latencyShown.p50Ms ?? 0) / 1000).toFixed(2)} s / ${((latencyShown.p95Ms ?? 0) / 1000).toFixed(2)} s`,
+      n: latencyShown.n,
       script: SCRIPT,
-      note: `Client wall time, one request at a time over localhost, CPU only${WITH_MODEL ? ', including model calls' : ', no model calls'}. Server-side total p50 ${latency.serverTotalP50Ms} ms.`,
+      note: `Client wall time, one request at a time over localhost, CPU only${WITH_MODEL ? ', including model calls' : ', no model calls'}. Server-side total p50 ${latencyShown.serverTotalP50Ms} ms.${
+        latency.n === 0 ? ` Not timed in this run (it scored responses assembled from cached model reads); measured in an earlier run (${latencyShown.from}).` : ''
+      }`,
     },
   ];
 
   const limitations = [
     `${SYNTH}: listing images are clean procedural renders and delivered photos are phone-like renders (perspective, rotation, uneven light, colour casts, blur, noise, JPEG). Real photos will differ; the real photo set (evals/sightbench/real/SHOTLIST.md) is not collected yet.`,
-    WITH_MODEL
+    RESPONSES_FROM
+      ? `This run used the deployed verdict rule (${RULE}). Its responses were written by services/vision app.looks_bench with the service's own pipeline code: identity and damage read by the vision model with prompt version ${RESPONSES_FROM} (cached per pair, read once), the size-tag model reads reused from run ${before?.run ?? '?'} (that prompt did not change), colour, OCR and quality recomputed. No request was timed.`
+      : WITH_MODEL
       ? 'This run used the vision-model reads (GET /health vlm.configured true).'
       : 'No vision-model reads in this run (no ANTHROPIC_API_KEY): the service ran colour, OCR, quality and fusion only. Identity and damage report unknown, so it can never answer match, and a size read once by OCR is at most fairly sure. Re-run with --with-model once the service has a key.',
     UNFITTED
@@ -892,6 +948,7 @@ async function main() {
       navyBlack,
       colourAbstain,
       latency,
+      latencyShown,
       errors,
       worstCases: {
         sightlineFalseAlarms: falseAlarms,

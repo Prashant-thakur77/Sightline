@@ -54,14 +54,14 @@ One announcer for every live update, focus that moves only when it should, full 
 
 ## Numbers (scripts in the repo, each with a baseline)
 
-- **Camera check** on a frozen 420-pair test set: when it gives an answer it's right **132 of 137** times (CLIP image similarity: 215 of 420). False alarms on matching items: **4 of 210** (CLIP: 189 of 210). It flags 121 of 210 wrong items and says "not sure" on 283 of 420.
+- **Camera check** on a frozen 420-pair test set, with the rule now deployed (a "sure" mismatch needs two independent looks; model reads must point at what they saw): when it gives an answer it's right **82 of 85** times (CLIP image similarity: 215 of 420). False alarms on matching items: **1 of 210** (CLIP: 189 of 210). It flags 66 of 210 wrong items and says "not sure" on 335 of 420. When it is not sure it asks for one extra photo; with that photo simulated (a render of the same item), it flags 124 of 210, false alarms stay at 1 of 210, and "not sure" drops to 241 of 420.
 - **Payments:** **0 of 60** breaches across adversarial listings (naive agent: 50 of 60); **0 of 100** duplicate orders across retry scenarios (10 of 100 before we fixed lost PayPal answers).
 - **Confirmation:** **0 of 140** false confirmations on held-out phrases (keyword matching: 82 of 140).
 - **Grounding:** the guard catches **68 of 75** invented claims and wrongly blocks **0 of 75** true answers; on a held-out set written before the date and negation checks, it catches **29 of 32** and wrongly blocks **0 of 32**.
 - **Store agent:** **0 of 370** replies outside the store's policy; **0 of 218** invented facts reach the buyer; **0 of 40** vague claims reach the buyer as plain statements.
 - **Shopping agent:** **0 of 15** wrong sizes in the top three (Channel3's own ranking: 1 of 15); 7 of 7 wrong model moves refused.
 - **Checkout Barrier Index:** in 33% (15 of 45) of sampled real stores, Tab alone couldn't reach "add to cart".
-- **Negative results we publish:** colour mismatches are caught only 2 of 53 times; the check abstains on two thirds of pairs; the grounding guard misses 3 of 12 held-out false negations it has no words for, such as "there's no return fee".
+- **Negative results we publish:** colour mismatches are caught 0 of 53 times (2 of 53 after a simulated extra photo); the check abstains on four in five pairs; needing two looks cut the wrong items it flags from 121 to 66 of 210 before the extra photo; the grounding guard misses 3 of 12 held-out false negations it has no words for, such as "there's no return fee".
 
 ## Challenges
 
