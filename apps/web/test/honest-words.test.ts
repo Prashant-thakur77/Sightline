@@ -77,14 +77,17 @@ describe('featured results', () => {
     const beforeRule = sbFile.headlines.find((h) => h.id === 'before-two-looks');
     if (beforeRule) expect(sb.context).toContain(`caught ${beforeRule.value.split('·')[0]!.trim().replace('/', ' of ')}`);
 
-    // The simulation is said on the card (its context line), not hidden in a note.
-    expect(byId.get('breaches-sightline')!.context).toContain('Simulated, without calling PayPal.');
+    // Where the card is counted from PayPal's sandbox records it says so; a simulated baseline says so too.
+    const breaches = byId.get('breaches-sightline-sandbox')!;
+    expect(breaches.context).toContain('Counted from PayPal’s own sandbox records.');
+    expect(breaches.baseline).toMatch(/simulated: 50 of 60$/);
 
-    const dups = (await file('duplicates')).headlines;
-    // Compared with the same scenarios before lost PayPal answers were handled, read from the file;
+    const dups = (await file('duplicates-sandbox')).headlines;
+    // Compared with the same lost-reply scenarios before the fix, read from the file;
     // the card never compares a result with an equal baseline.
-    const before = dups.find((h) => h.id === 'duplicate-scenarios-before-fix')!;
-    const card = byId.get('duplicate-scenarios')!;
+    const before = dups.find((h) => h.id === 'lost-response-before-fix-sandbox')!;
+    const card = byId.get('lost-response-sandbox')!;
+    expect(card.context).toContain('Counted from PayPal’s own sandbox records.');
     expect(card.baseline).toBe(`Before we handled lost PayPal answers: ${before.value}`);
     expect(card.baseline!.endsWith(`: ${card.value}`)).toBe(false);
   });

@@ -34,12 +34,13 @@ interface Pick {
 
 const PICKS: Pick[] = [
   {
-    suite: 'redteam',
-    id: 'breaches-sightline',
+    suite: 'redteam-sandbox',
+    id: 'breaches-sightline-sandbox',
     label: () => 'trick listings that got a wrong or unconfirmed payment through',
-    baselineLabel: 'A shopping agent without the payment check',
+    // The baseline agent was never sent to PayPal (its payees are made up), so the card says so.
+    baselineLabel: 'A shopping agent without the payment check, simulated',
     context: (h) =>
-      `Wrong means the amount, payee or quantity.${/simulation/i.test(firstClause(h.note)) ? ' Simulated, without calling PayPal.' : ''}`,
+      `Wrong means the amount, payee or quantity.${/^sandbox ledger/i.test(firstClause(h.note)) ? ' Counted from PayPal’s own sandbox records.' : ''}`,
   },
   {
     suite: 'confirmation',
@@ -50,14 +51,12 @@ const PICKS: Pick[] = [
     context: () => 'The first of the two confirmation checks, on phrases written after it was built.',
   },
   {
-    suite: 'duplicates',
-    id: 'duplicate-scenarios',
-    label: () => 'double taps, retries and lost replies that charged twice',
-    context: (h) => (/no PayPal call is made/i.test(h.note ?? '') ? 'Simulated, without calling PayPal.' : undefined),
-    // The declared baseline (random request ids) also scores 0, because the other guards still
-    // catch every duplicate; the comparison that shows what the protection changed is the same
-    // 100 scenarios run before lost PayPal answers were handled, from the same file.
-    baselineFromId: 'duplicate-scenarios-before-fix',
+    suite: 'duplicates-sandbox',
+    // The lost-reply scenarios: the same 20 run before and after the fix, both against the sandbox.
+    id: 'lost-response-sandbox',
+    label: () => 'lost PayPal replies that ended in a second order',
+    context: (_h, suite) => (suite.suite.endsWith('-sandbox') ? 'Counted from PayPal’s own sandbox records.' : undefined),
+    baselineFromId: 'lost-response-before-fix-sandbox',
     baselineLabel: 'Before we handled lost PayPal answers',
   },
   {
