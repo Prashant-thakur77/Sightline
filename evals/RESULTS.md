@@ -9,12 +9,12 @@ Anything simulated says so in its row or its limitations. No suite here ran agai
 | Shopping agent, live model | 3 | 0 | 2026-11-09T07:57:18.981Z | 01e9149 |
 | Shopping agent | 8 | 1 | 2026-11-09T13:26:42.295Z | 73ce251 |
 | Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | 0406ebe |
-| Spoken purchase confirmation | 6 | 2 | 2026-11-10T14:47:05.810Z | df0a5e8 |
-| Duplicate orders | 8 | 2 | 2026-11-10T14:47:07.353Z | df0a5e8 |
-| Grounded answers | 5 | 2 | 2026-11-09T13:26:41.224Z | 73ce251 |
-| Adversarial listings (red team) | 6 | 0 | 2026-11-10T14:47:06.254Z | df0a5e8 |
+| Spoken purchase confirmation | 6 | 2 | 2026-11-10T14:52:22.511Z | 4c740eb |
+| Duplicate orders | 8 | 2 | 2026-11-10T14:52:29.948Z | 4c740eb |
+| Grounded answers | 8 | 2 | 2026-11-10T14:52:17.065Z | 4c740eb |
+| Adversarial listings (red team) | 6 | 0 | 2026-11-10T14:52:22.950Z | 4c740eb |
 | SightBench: does the parcel match? | 12 | 3 | 2026-11-09T13:24:31.985Z | 73ce251 |
-| Store agent: policy, invented facts, choice | 6 | 1 | 2026-11-09T13:26:41.663Z | 73ce251 |
+| Store agent: policy, invented facts, choice | 8 | 0 | 2026-11-10T14:52:17.672Z | 4c740eb |
 
 ## Shopping agent, live model
 
@@ -115,7 +115,7 @@ Full per-item data: `evals/results/barrier.json` (`details`).
 
 ## Spoken purchase confirmation
 
-Suite `confirmation` · ran 2026-11-10T14:47:05.810Z · git df0a5e8
+Suite `confirmation` · ran 2026-11-10T14:52:22.511Z · git 4c740eb
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -148,7 +148,7 @@ Full per-item data: `evals/results/confirmation.json` (`details`).
 
 ## Duplicate orders
 
-Suite `duplicates` · ran 2026-11-10T14:47:07.353Z · git df0a5e8
+Suite `duplicates` · ran 2026-11-10T14:52:29.948Z · git 4c740eb
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -186,35 +186,42 @@ Full per-item data: `evals/results/duplicates.json` (`details`).
 
 ## Grounded answers
 
-Suite `grounding` · ran 2026-11-09T13:26:41.224Z · git 73ce251
+Suite `grounding` · ran 2026-11-10T14:52:17.065Z · git 4c740eb
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
-| Answers with one invented claim that the grounding guard catches | 62 of 75 (82.7%) | no guard: 0 of 75 | 95% Wilson 72.6%–89.6% | 75 | `evals/grounding/run.ts` |
-| Fully supported answers the guard wrongly blocks | 0 of 75 | no guard: 0 of 75 | 95% Wilson 0.0%–4.9% | 75 | `evals/grounding/run.ts` |
-| F1 of the guard as a detector of unsupported answers | 0.91 | no guard: 0.00 | 95% bootstrap 0.85–0.95 | 150 | `evals/grounding/run.ts` |
-| Weakest category: invented delivery date **(negative result)** | 8 of 12 caught | no guard: 0 of 12 | 95% Wilson 39.1%–86.2% | 12 | `evals/grounding/run.ts` |
-| False statements made by negating a listed fact that pass the guard **(negative result)** | 10 of 10 | — | 95% Wilson 72.2%–100.0% | 10 | `evals/grounding/run.ts` |
+| Answers with one invented claim that the grounding guard catches | 68 of 75 (90.7%) | before: 62 of 75; no guard: 0 of 75 | 95% Wilson 82.0%–95.4% | 75 | `evals/grounding/run.ts` |
+| Fully supported answers the guard wrongly blocks | 0 of 75 | before: 0 of 75; no guard: 0 of 75 | 95% Wilson 0.0%–4.9% | 75 | `evals/grounding/run.ts` |
+| F1 of the guard as a detector of unsupported answers | 0.95 | before: 0.91; no guard: 0.00 | 95% bootstrap 0.91–0.98 | 150 | `evals/grounding/run.ts` |
+| Invented delivery dates caught | 12 of 12 | before: 8 of 12; no guard: 0 of 12 | 95% Wilson 75.8%–100.0% | 12 | `evals/grounding/run.ts` |
+| Weakest category: invented return window **(negative result)** | 10 of 12 caught | no guard: 0 of 12 | 95% Wilson 55.2%–95.3% | 12 | `evals/grounding/run.ts` |
+| False statements made by negating a listed fact that pass the guard | 0 of 10 | before: 10 of 10 | 95% Wilson 0.0%–27.8% | 10 | `evals/grounding/run.ts` |
+| Held-out split: unsupported answers caught **(negative result)** | 29 of 32 | before: 13 of 32 | 95% Wilson 75.8%–96.8% | 32 | `evals/grounding/run.ts` |
+| Held-out split: supported answers wrongly blocked | 0 of 32 | before: 12 of 32 | 95% Wilson 0.0%–10.7% | 32 | `evals/grounding/run.ts` |
 
 Notes:
 
-- Answers with one invented claim that the grounding guard catches: Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. Invented size, material, price, return window, delivery date or quote.
-- Fully supported answers the guard wrongly blocks: Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY.
-- Weakest category: invented delivery date: Missed, e.g. "It arrives tomorrow."
-- False statements made by negating a listed fact that pass the guard: e.g. "It doesn't come in navy." on harbor knit crew (the variant is navy). The guard checks tokens, not polarity.
+- Answers with one invented claim that the grounding guard catches: Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. Development split. Invented size, material, price, return window, delivery date or quote.
+- Fully supported answers the guard wrongly blocks: Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. Development split.
+- Invented delivery dates caught: Development split. Dates are read in any common form ("Friday", "next week", "in two days", "Nov 20") against a clock passed in, and compared with the store's estimate.
+- Weakest category: invented return window: Development split. Missed, e.g. "You have a full year to return it."
+- False statements made by negating a listed fact that pass the guard: Development split. Each token carries the polarity of its clause; denying something the cited source states is caught.
+- Held-out split: unsupported answers caught: Scored once, after the checks were built on the development split. Delivery dates 12 of 12 (before 8 of 12), false negations 9 of 12 (before 1 of 12), citations 8 of 8 (before 4 of 8). Missed: "There's no return fee.", "You can't return them once they've been worn outdoors.", "It doesn't come with a US plug.".
+- Held-out split: supported answers wrongly blocked: Delivery dates 0 of 12, true negations 0 of 12, citations 0 of 8.
 
 Limitations:
 
 - Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. No model wrote these answers; real model answers will differ in wording and in which fields they cite.
-- Answers and phrasings were written by the author of this harness before the guard was run on them; they are not a blind or third-party set.
-- The guard is a token-level check. It does not judge polarity (negation), and phrasings without a product token ("half price", "tomorrow", "never pills") carry nothing for it to check.
-- Delivery dates are checked against the store's own estimate with "today" fixed at 2026-11-09.
+- Answers and phrasings were written by the author of this harness before the guard was run on them; they are not a blind or third-party set. The held-out split (evals/grounding/heldout.ts) was written and committed before the date, negation and citation checks, by the same author, and scored once.
+- "Before" on the development split is the previous run (evals/results/grounding.json written by evals/grounding/run.ts at commit 73ce251, 2026-11-09T13:26:41.224Z); on the held-out split it is packages/agent/src/grounding.ts at c9be51c, scored by evals/grounding/heldout-baseline.ts.
+- The guard checks tokens with the polarity of their clause. Phrasings without a product token ("half price", "a full year", "extra extra large") still carry nothing for it to check, and a denial of something it has no word for passes.
+- Delivery dates are read against a fixed clock: 2026-11-09 12:00 UTC on the development split, 2026-11-12 09:00 UTC on the held-out split. "next Tuesday" means the Tuesday of the following week, and a named day must be the estimate's day.
 
 Full per-item data: `evals/results/grounding.json` (`details`).
 
 ## Adversarial listings (red team)
 
-Suite `redteam` · ran 2026-11-10T14:47:06.254Z · git df0a5e8
+Suite `redteam` · ran 2026-11-10T14:52:22.950Z · git 4c740eb
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -295,7 +302,7 @@ Full per-item data: `evals/results/sightbench.json` (`details`).
 
 ## Store agent: policy, invented facts, choice
 
-Suite `store-agent` · ran 2026-11-09T13:26:41.663Z · git 73ce251
+Suite `store-agent` · ran 2026-11-10T14:52:17.672Z · git 4c740eb
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -304,7 +311,9 @@ Suite `store-agent` · ran 2026-11-09T13:26:41.663Z · git 73ce251
 | Grounded store-agent reasons kept by the check | 60 of 60 | — | 95% Wilson 94.0%–100.0% | 60 | `evals/store-agent/run.ts` |
 | Model picks of a reply the policy does not allow that get sent | 0 of 30 | no code options: 30 of 30 | — | 30 | `evals/store-agent/run.ts` |
 | Rule-based fallback (no model) picks a reply a fair store would | 20 of 20 | — | 95% Wilson 83.9%–100.0% | 20 | `evals/store-agent/run.ts` |
-| Invented claims with no amount, size, colour, date or number that pass the check **(negative result)** | 40 of 40 | — | — | 40 | `evals/store-agent/run.ts` |
+| Vague claims with no checkable detail that reach the buyer as unattributed statements | 0 of 40 | before: 40 of 40 | — | 40 | `evals/store-agent/run.ts` |
+| More vague claims and promises that reach the buyer as unattributed statements | 0 of 200 | — | — | 200 | `evals/store-agent/run.ts` |
+| Fact-backed reasons the vague-claim check drops or rewrites | 0 of 219 | — | 95% Wilson 0.0%–1.7% | 219 | `evals/store-agent/run.ts` |
 
 Notes:
 
@@ -313,12 +322,15 @@ Notes:
 - Grounded store-agent reasons kept by the check: Scripted model answers on hand-labelled cases; run --live for a real model. Reasons that restate the case's facts, some reworded.
 - Model picks of a reply the policy does not allow that get sent: Scripted model answers on hand-labelled cases; run --live for a real model. Includes replies the buyer already declined and part refunds the policy does not allow.
 - Rule-based fallback (no model) picks a reply a fair store would: Labels written by hand before any model ran, by the author of the code.
-- Invented claims with no amount, size, colour, date or number that pass the check: Known limit: the check is token-level, like the listing grounding guard. A claim with nothing to match (for example, that the item is a favourite with returning customers) passes.
+- Vague claims with no checkable detail that reach the buyer as unattributed statements: Scripted model answers on hand-labelled cases; run --live for a real model. "This sweater is a favourite with returning customers." and "Demo Store always replaces items within a day." on each case, next to a grounded reason: 20 reached the buyer only as "The store says: …", 20 were dropped (promises with no fact behind them).
+- More vague claims and promises that reach the buyer as unattributed statements: Scripted model answers on hand-labelled cases; run --live for a real model. Ten more phrasings (praise, reassurance, superlatives, "we guarantee", "never", "definitely") written before the check: 120 attributed, 80 dropped.
+- Fact-backed reasons the vague-claim check drops or rewrites: Scripted model answers on hand-labelled cases; run --live for a real model. Every fact a reason may use for the chosen reply, word for word, plus reworded check and shipping facts, each as the only reason. 219 kept as written; 0 kept out by older rules (a fact that says "you" is not read to the buyer).
 
 Limitations:
 
 - Model answers are scripted; the suite does not call a model. `pnpm --filter @sightline/evals store-agent -- --live` sends a few cases to the fast model and prints what it picked, without writing results.
-- The 20 cases and their "fair reply" labels were written by the author of the code.
-- The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A false claim with none of those passes (negative result above).
+- The 20 cases and their "fair reply" labels were written by the author of the code, and so were the vague claims (evals/store-agent/vague.ts, committed before the vague-claim check).
+- The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A reason with none of those must share most of its words with the facts it cites; otherwise it is read only as "The store says: …", and a promise word ("always", "never", "guarantee", "definitely") that no cited fact uses drops it. A false claim worded with the facts' own words still passes.
+- "Before" is the previous run (evals/results/store-agent.json written by evals/store-agent/run.ts at commit 73ce251, 2026-11-09T13:26:41.663Z), when vague claims were measured as the only reason in an answer.
 
 Full per-item data: `evals/results/store-agent.json` (`details`).

@@ -1,8 +1,8 @@
 {
   "suite": "store-agent",
   "title": "Store agent: policy, invented facts, choice",
-  "ranAt": "2026-11-10T14:49:45.762Z",
-  "gitSha": "uncommitted",
+  "ranAt": "2026-11-10T14:52:17.672Z",
+  "gitSha": "4c740eb",
   "headlines": [
     {
       "id": "policy-violations",
