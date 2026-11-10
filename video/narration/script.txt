@@ -1,8 +1,9 @@
 A parcel arrives for Maya. She paid for a navy sweater, size medium.
-Is this it? She can't see the colour, and the size tag is a bump of fabric.
-So her phone checks it, and tells her in words.
-Blind shoppers can already buy online. What breaks is after the parcel arrives.
-One in two disabled shoppers who needed a return had problems. One in seven couldn't use the store's return method.
+Is this it? She can't see the colour. The size tag is a bump under her fingers.
+Until now, knowing meant waiting for someone else to look.
+Today her phone checks it, and tells her. On her own.
+Buying online got easier. What comes after the parcel did not.
+One in two disabled shoppers who needed a return had problems doing it.
 This is Sightline. Shop by voice, and pay only for what you actually got.
 Maya is a persona. This panel shows what her screen reader says.
 Before money moves, a template, not the model, reads back exactly what she'll pay.
@@ -20,9 +21,9 @@ PayPal voids the authorization, and the hold is released.
 Nothing was captured. The money never left her account.
 Underneath: a template readback, two keys, and an eight-guard payment gate.
 Model text alone can never move money.
-PayPal authorizes, captures or voids, and every step is signed and chained.
+PayPal authorizes, captures or voids. Every step is signed.
 1 false alarm on 210 matching items. Image matching with CLIP: 189.
-Zero payment breaches across 60 trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: 50.
+Zero payment breaches in 60 trick listings, from PayPal's own sandbox records. A simulated naive agent: 50.
 And it's weak on colour: it caught 0 of 53 colour mismatches. On most of the rest, it says not sure.
 Pay after the check. Not sure, instead of a guess. Money back from the store's own agent.
-Maya did the hard part herself. Sightline makes sure she only pays for what she got.
+Maya checked her own parcel, and knew. Sightline is built for blind and low-vision shoppers.

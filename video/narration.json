@@ -9,28 +9,35 @@
  {
   "scene": "tagcut",
   "id": "o2",
-  "caption": "Is this it? She can't see the colour, and the size tag is a bump of fabric.",
+  "caption": "Is this it? She can't see the colour. The size tag is a bump under her fingers.",
+  "exaggeration": 0.5,
+  "cfg": 0.3
+ },
+ {
+  "scene": "tagcut",
+  "id": "o2b",
+  "caption": "Until now, knowing meant waiting for someone else to look.",
   "exaggeration": 0.5,
   "cfg": 0.3
  },
  {
   "scene": "tagcut",
   "id": "o3",
-  "caption": "So her phone checks it, and tells her in words.",
+  "caption": "Today her phone checks it, and tells her. On her own.",
   "exaggeration": 0.5,
   "cfg": 0.3
  },
  {
   "scene": "pain",
   "id": "p1",
-  "caption": "Blind shoppers can already buy online. What breaks is after the parcel arrives.",
+  "caption": "Buying online got easier. What comes after the parcel did not.",
   "exaggeration": 0.5,
   "cfg": 0.3
  },
  {
   "scene": "pain",
   "id": "p2",
-  "caption": "One in two disabled shoppers who needed a return had problems. One in seven couldn't use the store's return method.",
+  "caption": "One in two disabled shoppers who needed a return had problems doing it.",
   "exaggeration": 0.5,
   "cfg": 0.3
  },
@@ -155,7 +162,7 @@
  {
   "scene": "hood",
   "id": "u3",
-  "caption": "PayPal authorizes, captures or voids, and every step is signed and chained.",
+  "caption": "PayPal authorizes, captures or voids. Every step is signed.",
   "exaggeration": 0.55,
   "cfg": 0.38
  },
@@ -171,8 +178,8 @@
  {
   "scene": "proof",
   "id": "pr2",
-  "caption": "Zero payment breaches across 60 trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: 50.",
-  "spoken": "Zero payment breaches across sixty trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: fifty.",
+  "caption": "Zero payment breaches in 60 trick listings, from PayPal's own sandbox records. A simulated naive agent: 50.",
+  "spoken": "Zero payment breaches in sixty trick listings, from PayPal's own sandbox records. A simulated naive agent: fifty.",
   "exaggeration": 0.55,
   "cfg": 0.38
  },
@@ -194,7 +201,7 @@
  {
   "scene": "close",
   "id": "cl1",
-  "caption": "Maya did the hard part herself. Sightline makes sure she only pays for what she got.",
+  "caption": "Maya checked her own parcel, and knew. Sightline is built for blind and low-vision shoppers.",
   "exaggeration": 0.5,
   "cfg": 0.3
  }

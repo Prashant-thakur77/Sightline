@@ -1,15 +1,15 @@
 {
- "duration": 177.566,
+ "duration": 179.069,
  "vo": "narration/vo_full.wav",
  "music": [
   {
    "file": "audio/music.wav",
    "start": 0,
    "in": 0,
-   "gain_db": -5,
+   "gain_db": -8,
    "fade_in": 0.05,
    "fade_out": 2.5,
-   "end": 177.566
+   "end": 179.069
   }
  ],
  "sfx": [

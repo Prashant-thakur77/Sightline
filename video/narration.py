@@ -73,12 +73,13 @@ RECAP = {"exaggeration": 0.75, "cfg": 0.32}
 
 # 1. The moment (owner's footage)
 line("open", "o1", "A parcel arrives for Maya. She paid for a navy sweater, size medium.", **STORY)
-line("tagcut", "o2", "Is this it? She can't see the colour, and the size tag is a bump of fabric.", **STORY)
+line("tagcut", "o2", "Is this it? She can't see the colour. The size tag is a bump under her fingers.", **STORY)
+line("tagcut", "o2b", "Until now, knowing meant waiting for someone else to look.", **STORY)
 # 2. The size tag becomes the verdict (product on screen)
-line("tagcut", "o3", "So her phone checks it, and tells her in words.", **STORY)
+line("tagcut", "o3", "Today her phone checks it, and tells her. On her own.", **STORY)
 # 3. The pain, with the sourced scale
-line("pain", "p1", "Blind shoppers can already buy online. What breaks is after the parcel arrives.", **STORY)
-line("pain", "p2", "One in two disabled shoppers who needed a return had problems. One in seven couldn't use the store's return method.", **STORY)
+line("pain", "p1", "Buying online got easier. What comes after the parcel did not.", **STORY)
+line("pain", "p2", "One in two disabled shoppers who needed a return had problems doing it.", **STORY)
 # 4. The turn
 line("turn", "t1", f"This is {NAME}. Shop by voice, and pay only for what you actually got.", **PRODUCT)
 # 5. Shopping, on the live site
@@ -109,15 +110,15 @@ line("hold3d", "m5", "Nothing was captured. The money never left her account.", 
 # 8. Under the hood
 line("hood", "u1", "Underneath: a template readback, two keys, and an eight-guard payment gate.", **PRODUCT)
 line("hood", "u2", "Model text alone can never move money.", **PRODUCT)
-line("hood", "u3", "PayPal authorizes, captures or voids, and every step is signed and chained.", **PRODUCT)
+line("hood", "u3", "PayPal authorizes, captures or voids. Every step is signed.", **PRODUCT)
 # 9. Proof (numbers from facts.json)
 line("proof", "pr1",
      f"{fa['k']} false alarm{'' if fa['k'] == 1 else 's'} on {fa['n']} matching items. Image matching with CLIP: {fa['baseline_k']}.",
      f"{words(fa['k']).capitalize()} false alarm{'' if fa['k'] == 1 else 's'} on {words(fa['n'])} matching items. Image matching with clip: {words(fa['baseline_k'])}.",
      pauseBefore=0.3, **PRODUCT)
 line("proof", "pr2",
-     f"{br['k'] if br['k'] else 'Zero'} payment breaches across {br['n']} trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: {br['baseline_k']}.",
-     f"{words(br['k']).capitalize()} payment breaches across {words(br['n'])} trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: {words(br['baseline_k'])}.",
+     f"{br['k'] if br['k'] else 'Zero'} payment breaches in {br['n']} trick listings, from PayPal's own sandbox records. A simulated naive agent: {br['baseline_k']}.",
+     f"{words(br['k']).capitalize()} payment breaches in {words(br['n'])} trick listings, from PayPal's own sandbox records. A simulated naive agent: {words(br['baseline_k'])}.",
      **PRODUCT)
 line("proofneg", "pr3",
      f"And it's weak on colour: it caught {col['k']} of {col['n']} colour mismatches. On most of the rest, it says not sure.",
@@ -126,7 +127,7 @@ line("proofneg", "pr3",
 # 10. Recap
 line("recap", "r1", "Pay after the check. Not sure, instead of a guess. Money back from the store's own agent.", **RECAP)
 # 11. Close
-line("close", "cl1", f"Maya did the hard part herself. {NAME} makes sure she only pays for what she got.", **STORY)
+line("close", "cl1", f"Maya checked her own parcel, and knew. {NAME} is built for blind and low-vision shoppers.", **STORY)
 
 (HERE / "narration.json").write_text(json.dumps(L, indent=1, ensure_ascii=False))
 n = sum(len(re.findall(r"[A-Za-z0-9$.']+", x.get("spoken", x["caption"]))) for x in L)

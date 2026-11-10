@@ -7,7 +7,7 @@ One theme, ~88 bpm, D major / B minor:
   marimba     a muted pulse that enters with the product (the register snap into the name) and carries the demo
   pad         a warm string pad that swells under the recap and resolves on the end card
   bass        soft sine bass on the chord roots from the turn on
-Arc from the real scene starts (narration/timeline.json): piano alone under the story -> marimba and bass enter on the
+Arc from the real scene starts (narration/timeline.json): a soft pad with a sparse piano under the story -> marimba and bass enter on the
 name -> steady under the product -> one bar thinned to almost nothing before the verdict -> light under the 3D -> build
 through the proof -> lift for the recap -> the motif answered (resolved to D) over the close and end card.
 
@@ -157,12 +157,10 @@ def main() -> None:
             root, chord = (50, [57, 62, 66]) if b % 2 == 0 else (43, [55, 59, 62])
         # piano: the motif every other bar in the story; chord tones otherwise
         if e == 1 and t0 < turn:
+            # the story: a soft warm pad under the voice, and one quiet piano note every other bar
+            put("pad", pad(chord, BAR + 0.6, 0.32), t0)
             if b % 2 == 0:
-                for i, n in enumerate(MOTIF):
-                    put("piano", piano(n, 3.2, 0.42 + 0.05 * i), t0 + i * BEAT * 0.75)
-            else:
-                put("piano", piano(chord[0] + 12, 4.0, 0.35), t0)
-                put("piano", piano(root + 12, 4.0, 0.3), t0)
+                put("piano", piano(chord[1] + 12, 4.5, 0.2), t0 + BEAT)
         elif e >= 2:
             put("piano", piano(chord[1] + 12, 3.0, 0.32), t0)
             if e >= 3 and b % 2 == 0:

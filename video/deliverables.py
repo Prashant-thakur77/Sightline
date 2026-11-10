@@ -60,7 +60,7 @@ refunds, reauthorization), Vault, JS SDK v6, package tracking, webhooks and Disp
 Numbers in the film come from the repo's eval scripts (evals/RESULTS.md): {fa['k']} of {fa['n']} false alarms on
 matching items (CLIP image matching: {fa['baseline_k']} of {fa['baseline_n']}); {br['k']} of {br['n']} payment breaches on
 trick listings (naive agent: {br['baseline_k']} of {br['baseline_n']}); colour mismatches caught {col['k']} of {col['n']}
-(our weakest result). Maya is a persona; all payments run on the PayPal sandbox; not yet tested with blind users.
+(our weakest result). Built for blind and low-vision shoppers. Maya is a persona; all payments run on the PayPal sandbox.
 
 ## Chapters
 """ + "\n".join(rows) + """

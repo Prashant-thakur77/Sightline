@@ -58,7 +58,7 @@ python3 - <<'PY'
 import json
 d = json.load(open("film/film.json")); D = round(sum(s["duration"] for s in d["scenes"]), 3)
 json.dump({"duration": D, "vo": "narration/vo_full.wav",
-           "music": [{"file": "audio/music.wav", "start": 0, "in": 0, "gain_db": -5, "fade_in": 0.05, "fade_out": 2.5, "end": D}],
+           "music": [{"file": "audio/music.wav", "start": 0, "in": 0, "gain_db": -8, "fade_in": 0.05, "fade_out": 2.5, "end": D}],
            "sfx": [{"file": "audio/sfx_track.wav", "at": 0, "gain_db": -2}],
            "duck": {"threshold": 0.02, "ratio": 3, "attack": 20, "release": 600}, "target_lufs": -14}, open("mix.json", "w"), indent=1)
 PY

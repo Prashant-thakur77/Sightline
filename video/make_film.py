@@ -203,7 +203,7 @@ if not SKELETON:
 # 3. The pain, sourced
 add("pain", "pain", 11.0, transition={"type": "fade", "dur": 0.4},
     stats=[{"big": "1 in 2", "of": 2, "fill": 1, "text": "disabled shoppers who needed a return had problems doing it", "at": 1.6},
-           {"big": "1 in 7", "of": 7, "fill": 1, "text": "could not use the retailer's return method", "at": 5.6}],
+           {"big": "1 in 7", "of": 7, "fill": 1, "text": "could not use the retailer's suggested return method", "at": 5.6}],
     source="Which? with RIDC, survey of disabled consumers in the UK, December 2022")
 
 # 4. The turn: the register snap into the name
@@ -286,14 +286,14 @@ add("recap", "recap", 8.0, transition={"type": "fade", "dur": 0.3}, riserInto=Tr
 # 11. Close
 c = add("close", "story", 7.0, transition={"type": "fade", "dur": 0.5})
 c["clips"] = [clip("O6", c["duration"], "in")]
-add("end", "end", 5.0, tagline="Pay only for what you actually got.", url=f"{SITE}/judge",
+add("end", "end", 4.0, tagline="Pay only for what you actually got.", url=f"{SITE}/judge",
     repo="github.com/Prashant-thakur77/Sightline · MIT",
-    notes="PayPal sandbox · Maya is a persona · not yet tested with blind users")
+    notes="Built for blind and low-vision shoppers · PayPal sandbox · Maya is a persona")
 
 # minimum picture time per scene (vo_timeline.py keeps max(voice, min))
-MINS = {"open": 5.0, "tagcut": 7.5, "pain": 10.0, "turn": 4.5, "ask": 5.0, "readback": 5.0, "refuse": 4.5, "confirm": 7.5,
+MINS = {"open": 5.0, "tagcut": 7.5, "pain": 8.0, "turn": 4.5, "ask": 5.0, "readback": 5.0, "refuse": 4.5, "confirm": 7.5,
         "check": 9.0, "moneyback": 6.5, "store": 6.0, "decline": 6.0, "released": 4.0, "hold3d": 4.5,
-        "hood": 15.0, "proof": 10.5, "proofneg": 5.5, "recap": 9.0, "close": 6.0}
+        "hood": 14.0, "proof": 10.5, "proofneg": 5.5, "recap": 9.0, "close": 6.0}
 for sc in S:
     if sc["id"] in MINS:
         sc["min"] = MINS[sc["id"]]
