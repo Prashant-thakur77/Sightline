@@ -457,7 +457,7 @@
    },
    "amount": "$36.72",
    "voidAt": 1.95,
-   "authId": "Authorization 70D655181X378024P · voided",
+   "authId": "Authorization 59A545308N860163A · voided",
    "min": 4.5,
    "sfx": [
     {
@@ -571,7 +571,7 @@
   {
    "id": "proof",
    "type": "proofcards",
-   "duration": 13.733,
+   "duration": 16.433,
    "transition": {
     "type": "slide",
     "dir": "from-bottom",
@@ -582,7 +582,7 @@
     {
      "at": 0.3,
      "title": "False alarms on matching items",
-     "stamp": "4 vs 189",
+     "stamp": "1 vs 189",
      "rows": [
       {
        "label": "CLIP image matching",
@@ -591,7 +591,7 @@
       },
       {
        "label": "Sightline",
-       "k": 4,
+       "k": 1,
        "n": 210,
        "ours": true
       }
@@ -600,22 +600,22 @@
     },
     {
      "at": 5.4,
-     "title": "Payment breaches, trick listings (simulated)",
+     "title": "Payment breaches, trick listings",
      "stamp": "0 vs 50",
      "rows": [
       {
-       "label": "Naive agent",
+       "label": "Naive agent (simulated)",
        "k": 50,
        "n": 60
       },
       {
-       "label": "Sightline",
+       "label": "Sightline (PayPal sandbox)",
        "k": 0,
        "n": 60,
        "ours": true
       }
      ],
-     "foot": "Simulated ledger, no PayPal calls. evals/redteam"
+     "foot": "Ours counted from PayPal's own sandbox records; the naive agent simulated. evals/redteam"
     }
    ],
    "min": 10.5,
@@ -635,7 +635,7 @@
   {
    "id": "proofneg",
    "type": "proofcards",
-   "duration": 8.1,
+   "duration": 8.333,
    "transition": {
     "type": "cut"
    },
@@ -649,7 +649,7 @@
      "rows": [
       {
        "label": "Sightline",
-       "k": 2,
+       "k": 0,
        "n": 53,
        "ours": true,
        "tone": "bad"
@@ -679,18 +679,18 @@
    "lines": [
     {
      "text": "Pay after the check.",
-     "at": 0.45
+     "at": 0.42
     },
     {
      "text": "Not sure, instead of a guess.",
-     "at": 1.87
+     "at": 1.9
     },
     {
      "text": "Money back from the store's own agent.",
-     "at": 3.99
+     "at": 3.96
     }
    ],
-   "tableAt": 6.07,
+   "tableAt": 6.06,
    "table": [
     {
      "model": "Claude Haiku 5.5",

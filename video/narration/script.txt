@@ -21,8 +21,8 @@ Nothing was captured. The money never left her account.
 Underneath: a template readback, two keys, and an eight-guard payment gate.
 Model text alone can never move money.
 PayPal authorizes, captures or voids, and every step is signed and chained.
-4 false alarms on 210 matching items. Image matching with CLIP: 189.
-Zero payment breaches across 60 trick listings. A naive agent: 50.
-And it's weak on colour: it caught 2 of 53 colour mismatches. On most of the rest, it says not sure.
+1 false alarm on 210 matching items. Image matching with CLIP: 189.
+Zero payment breaches across 60 trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: 50.
+And it's weak on colour: it caught 0 of 53 colour mismatches. On most of the rest, it says not sure.
 Pay after the check. Not sure, instead of a guess. Money back from the store's own agent.
 Maya did the hard part herself. Sightline makes sure she only pays for what she got.

@@ -171,8 +171,8 @@
  {
   "scene": "proof",
   "id": "pr2",
-  "caption": "Zero payment breaches across 60 trick listings. A naive agent: 50.",
-  "spoken": "Zero payment breaches across sixty trick listings. A naive agent: fifty.",
+  "caption": "Zero payment breaches across 60 trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: 50.",
+  "spoken": "Zero payment breaches across sixty trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: fifty.",
   "exaggeration": 0.55,
   "cfg": 0.38
  },

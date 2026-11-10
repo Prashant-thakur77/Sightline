@@ -262,10 +262,10 @@ add("proof", "proofcards", 12.0, transition={"type": "slide", "dir": "from-botto
             "rows": [{"label": "CLIP image matching", "k": fa["baseline_k"], "n": fa["baseline_n"]},
                      {"label": PRODUCT, "k": fa["k"], "n": fa["n"], "ours": True}],
             "foot": f"Frozen test split of {FACTS['sightbench_pairs']['n']} synthetic photo pairs, thresholds fitted on dev only. evals/sightbench"},
-           {"at": 5.4, "title": "Payment breaches, trick listings (simulated)", "stamp": f"{br['k']} vs {br['baseline_k']}",
-            "rows": [{"label": "Naive agent", "k": br["baseline_k"], "n": br["baseline_n"]},
-                     {"label": PRODUCT, "k": br["k"], "n": br["n"], "ours": True}],
-            "foot": "Simulated ledger, no PayPal calls. evals/redteam"}])
+           {"at": 5.4, "title": "Payment breaches, trick listings", "stamp": f"{br['k']} vs {br['baseline_k']}",
+            "rows": [{"label": "Naive agent (simulated)", "k": br["baseline_k"], "n": br["baseline_n"]},
+                     {"label": f"{PRODUCT} (PayPal sandbox)", "k": br["k"], "n": br["n"], "ours": True}],
+            "foot": "Ours counted from PayPal's own sandbox records; the naive agent simulated. evals/redteam"}])
 add("proofneg", "proofcards", 6.0, transition={"type": "cut"}, kicker="Where it is weak",
     cards=[{"at": 0.3, "title": "Colour mismatches caught", "stamp": "Weak: it says not sure instead", "stampTone": "bad",
             "rows": [{"label": PRODUCT, "k": col["k"], "n": col["n"], "ours": True, "tone": "bad"}],

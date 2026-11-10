@@ -59,7 +59,7 @@ def main() -> None:
     f["mismatch_recall"] = pair("sightbench", "mismatch-recall")        # CLIP is higher: shown honestly
     f["abstain"] = pair("sightbench", "abstention")
     f["accuracy_answering"] = pair("sightbench", "accuracy-when-answering")
-    f["breaches"] = pair("redteam", "breaches-sightline")               # vs naive agent
+    f["breaches"] = pair("redteam-sandbox", "breaches-sightline-sandbox")  # counted from PayPal sandbox records; naive agent simulated
     f["false_confirms"] = pair("confirmation", "heldout-false-confirm")  # vs keyword match
     f["duplicates"] = pair("duplicates", "duplicate-scenarios")
     f["duplicates_before"] = pair("duplicates", "duplicate-scenarios-before-fix")

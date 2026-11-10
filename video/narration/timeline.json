@@ -1,5 +1,5 @@
 {
- "duration": 174.633,
+ "duration": 177.567,
  "scenes": [
   {
    "id": "open",
@@ -100,30 +100,30 @@
   {
    "id": "proof",
    "start": 131.067,
-   "duration": 13.733,
+   "duration": 16.433,
    "voice": true
   },
   {
    "id": "proofneg",
-   "start": 144.8,
-   "duration": 8.1,
+   "start": 147.5,
+   "duration": 8.333,
    "voice": true
   },
   {
    "id": "recap",
-   "start": 152.9,
+   "start": 155.833,
    "duration": 9.0,
    "voice": true
   },
   {
    "id": "close",
-   "start": 161.9,
+   "start": 164.833,
    "duration": 6.733,
    "voice": true
   },
   {
    "id": "end",
-   "start": 168.633,
+   "start": 171.567,
    "duration": 6.0,
    "voice": false
   }
@@ -295,34 +295,34 @@
    "scene": "proof",
    "start": 131.667,
    "end": 138.187,
-   "caption": "4 false alarms on 210 matching items. Image matching with CLIP: 189."
+   "caption": "1 false alarm on 210 matching items. Image matching with CLIP: 189."
   },
   {
    "id": "pr2",
    "scene": "proof",
    "start": 138.779,
-   "end": 144.139,
-   "caption": "Zero payment breaches across 60 trick listings. A naive agent: 50."
+   "end": 146.819,
+   "caption": "Zero payment breaches across 60 trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: 50."
   },
   {
    "id": "pr3",
    "scene": "proofneg",
-   "start": 145.1,
-   "end": 152.3,
-   "caption": "And it's weak on colour: it caught 2 of 53 colour mismatches. On most of the rest, it says not sure."
+   "start": 147.8,
+   "end": 155.24,
+   "caption": "And it's weak on colour: it caught 0 of 53 colour mismatches. On most of the rest, it says not sure."
   },
   {
    "id": "r1",
    "scene": "recap",
-   "start": 153.2,
-   "end": 159.12,
+   "start": 156.133,
+   "end": 162.053,
    "caption": "Pay after the check. Not sure, instead of a guess. Money back from the store's own agent."
   },
   {
    "id": "cl1",
    "scene": "close",
-   "start": 162.2,
-   "end": 168.0,
+   "start": 165.133,
+   "end": 170.933,
    "caption": "Maya did the hard part herself. Sightline makes sure she only pays for what she got."
   }
  ]

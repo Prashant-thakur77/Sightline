@@ -116,8 +116,8 @@ line("proof", "pr1",
      f"{words(fa['k']).capitalize()} false alarm{'' if fa['k'] == 1 else 's'} on {words(fa['n'])} matching items. Image matching with clip: {words(fa['baseline_k'])}.",
      pauseBefore=0.3, **PRODUCT)
 line("proof", "pr2",
-     f"{br['k'] if br['k'] else 'Zero'} payment breaches across {br['n']} trick listings. A naive agent: {br['baseline_k']}.",
-     f"{words(br['k']).capitalize()} payment breaches across {words(br['n'])} trick listings. A naive agent: {words(br['baseline_k'])}.",
+     f"{br['k'] if br['k'] else 'Zero'} payment breaches across {br['n']} trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: {br['baseline_k']}.",
+     f"{words(br['k']).capitalize()} payment breaches across {words(br['n'])} trick listings, counted from PayPal's own sandbox records. A naive agent, simulated: {words(br['baseline_k'])}.",
      **PRODUCT)
 line("proofneg", "pr3",
      f"And it's weak on colour: it caught {col['k']} of {col['n']} colour mismatches. On most of the rest, it says not sure.",
