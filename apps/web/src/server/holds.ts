@@ -9,7 +9,20 @@ import { paypal } from './paypal';
 import { dbReservations } from './gate-ports';
 import { audit } from './audit';
 import { notify } from './cases';
-import { isHeld } from './after-check';
+import {
+  AUTHORIZATION_DAYS,
+  AUTO_CAPTURE_DAYS,
+  CHECK_REMINDER_DAYS,
+  DAY_MS,
+  DEADLINE_NOTICE_HOURS,
+  HONOR_PERIOD_DAYS,
+  HOUR_MS,
+  MAX_CAPTURE_ATTEMPTS,
+  OPEN_STAGES,
+  REAUTHORIZED_ACTION,
+  REMINDER_ACTION,
+  isHeld,
+} from './hold-rules';
 
 /**
  * The life of a pay-after-check hold, fair to both sides.
@@ -28,17 +41,15 @@ import { isHeld } from './after-check';
  * reauthorization, its number), so running the sweep twice never moves money twice. PayPal's
  * answer (ids and status) goes into the audit chain.
  */
-export const CHECK_REMINDER_DAYS = 5;
-export const AUTO_CAPTURE_DAYS = 7;
-export const HONOR_PERIOD_DAYS = 3;
-/** PayPal honours reauthorizations only inside this many days of the original authorization. */
-export const AUTHORIZATION_DAYS = 29;
-export const MAX_CAPTURE_ATTEMPTS = 5;
-/** How long before a case deadline the buyer is told what happens at it. */
-export const DEADLINE_NOTICE_HOURS = 24;
-const DAY = 86_400_000;
-/** Case stages in which a wrong-item case on a held payment is still open and its deadline applies. */
-const OPEN_STAGES = new Set(['seller_contacted', 'offer_received', 'accepted', 'declined']);
+export {
+  CHECK_REMINDER_DAYS,
+  AUTO_CAPTURE_DAYS,
+  HONOR_PERIOD_DAYS,
+  AUTHORIZATION_DAYS,
+  MAX_CAPTURE_ATTEMPTS,
+  DEADLINE_NOTICE_HOURS,
+} from './hold-rules';
+const DAY = DAY_MS;
 
 type Payments = Pick<PayPalClient['payments'], 'captureAuthorization' | 'voidAuthorization' | 'reauthorize'>;
 type Order = typeof tables.orders.$inferSelect;
@@ -101,7 +112,7 @@ export function deadlineNotice(stage: string, title: string, amount: string, due
 async function maybeDeadlineNotice(o: Order, kase: Case, now: Date, report: SweepReport) {
   if (kase.kind !== 'void' || !OPEN_STAGES.has(kase.stage) || !kase.dueAt) return;
   const left = Date.parse(kase.dueAt) - now.getTime();
-  if (left <= 0 || left > DEADLINE_NOTICE_HOURS * 3_600_000) return;
+  if (left <= 0 || left > DEADLINE_NOTICE_HOURS * HOUR_MS) return;
   const told = (await auditRows(o.id, 'hold.deadline_notice')).some((r) => (r.payload as { dueAt?: string }).dueAt === kase.dueAt);
   if (told) return;
   await audit({ userId: o.userId, actor: 'system', action: 'hold.deadline_notice', subjectId: o.id, payload: { caseId: kase.id, dueAt: kase.dueAt, stage: kase.stage } });
@@ -115,7 +126,7 @@ async function maybeDeadlineNotice(o: Order, kase: Case, now: Date, report: Swee
  * request id, so a retry of the same one is idempotent and the next one is a new request.
  */
 async function maybeReauthorize(o: Order, pp: Payments, now: Date, report: SweepReport) {
-  const done = await auditRows(o.id, 'payment.reauthorized');
+  const done = await auditRows(o.id, REAUTHORIZED_ACTION);
   const original = Date.parse(o.createdAt);
   const latest = done.reduce((t, r) => Math.max(t, Date.parse(r.createdAt)), original);
   if (now.getTime() - latest <= HONOR_PERIOD_DAYS * DAY) return;
@@ -132,7 +143,7 @@ async function maybeReauthorize(o: Order, pp: Payments, now: Date, report: Sweep
   await audit({
     userId: o.userId,
     actor: 'paypal',
-    action: 'payment.reauthorized',
+    action: REAUTHORIZED_ACTION,
     subjectId: o.id,
     payload: { from: o.authorizationId, to: auth.id ?? null, n, paypalStatus: auth.status ?? null, expiresAt: auth.expiration_time ?? null },
   });
@@ -241,8 +252,8 @@ export async function sweepHolds(now: Date, pp: Payments = paypal().payments, op
             report.captured.push(o.id);
             continue;
           }
-          if (days >= CHECK_REMINDER_DAYS && (await auditCount(o.id, 'hold.reminder_sent')) === 0) {
-            await audit({ userId: o.userId, actor: 'system', action: 'hold.reminder_sent', subjectId: o.id, payload: { days: Math.floor(days) } });
+          if (days >= CHECK_REMINDER_DAYS && (await auditCount(o.id, REMINDER_ACTION)) === 0) {
+            await audit({ userId: o.userId, actor: 'system', action: REMINDER_ACTION, subjectId: o.id, payload: { days: Math.floor(days) } });
             await notify(
               o.userId,
               'reminder',

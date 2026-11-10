@@ -12,6 +12,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.6.0",
+    "@bryntum/scheduler-business": "8.0.0",
+    "@bryntum/scheduler-react-business": "8.0.0",
     "@gsap/react": "2.1.2",
     "@guidepup/virtual-screen-reader": "0.33.0",
     "@sightline/agent": "workspace:*",
@@ -23,6 +26,8 @@
     "@sightline/paypal": "workspace:*",
     "ag-grid-community": "36.3.0",
     "ag-grid-react": "36.3.0",
+    "ag-studio": "3.1.0",
+    "ag-studio-react": "3.1.0",
     "clsx": "2.1.1",
     "drizzle-orm": "0.45.4",
     "gsap": "3.15.1",
@@ -33,10 +38,7 @@
     "server-only": "0.0.1",
     "sharp": "0.35.5",
     "web-push": "4.0.0",
-    "zod": "4.6.7",
-    "@anthropic-ai/sdk": "1.6.0",
-    "ag-studio": "3.1.0",
-    "ag-studio-react": "3.1.0"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

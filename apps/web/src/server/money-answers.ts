@@ -3,18 +3,7 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { answerMoneyQuestion, type MoneyAnswer, type MoneyAsk, type MoneyOrder } from '@sightline/agent';
 import { db } from './runtime';
-import { AUTO_CAPTURE_DAYS } from './holds';
-
-/** Audit actions that mark when PayPal completed a payment, refunded it, or released a hold. */
-const PAID = ['payment.captured', 'payment.captured_after_check', 'payment.captured_after_replacement', 'payment.captured_no_check', 'webhook.payment.capture.completed'];
-const REFUNDED = ['case.refunded', 'webhook.payment.capture.refunded', 'webhook.payment.capture.reversed'];
-const RELEASED = ['payment.voided_after_check', 'payment.voided_no_reply', 'case.hold_released', 'webhook.payment.authorization.voided'];
-
-/** When an audit entry happened: the time hashed into the chain, else when the row was written. */
-function entryTime(e: { payload: unknown; createdAt: string }): string {
-  const at = (e.payload as { _at?: unknown } | null)?._at;
-  return typeof at === 'string' && !Number.isNaN(Date.parse(at)) ? at : e.createdAt;
-}
+import { AUTO_CAPTURE_DAYS, PAID_ACTIONS as PAID, REFUNDED_ACTIONS as REFUNDED, RELEASED_ACTIONS as RELEASED, entryTime } from './hold-rules';
 
 /**
  * The buyer's orders as the money answers read them: amounts in integer cents from the order
@@ -37,7 +26,7 @@ export async function moneyOrders(userId: string): Promise<MoneyOrder[]> {
       .where(inArray(tables.cases.orderId, ids))
       .orderBy(desc(tables.cases.createdAt)),
   ]);
-  const first = (orderId: string, actions: string[]) => entries.find((e) => e.subjectId === orderId && actions.includes(e.action));
+  const first = (orderId: string, actions: readonly string[]) => entries.find((e) => e.subjectId === orderId && actions.includes(e.action));
   return orders.map((o) => {
     const paid = first(o.id, PAID);
     const refund = first(o.id, REFUNDED);

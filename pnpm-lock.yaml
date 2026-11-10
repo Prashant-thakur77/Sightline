@@ -218,6 +218,12 @@ importers:
       '@anthropic-ai/sdk':
         specifier: 1.6.0
         version: 1.6.0(zod@4.6.7)
+      '@bryntum/scheduler-business':
+        specifier: 8.0.0
+        version: 8.0.0
+      '@bryntum/scheduler-react-business':
+        specifier: 8.0.0
+        version: 8.0.0
       '@gsap/react':
         specifier: 2.1.2
         version: 2.1.2(gsap@3.15.1)(react@19.3.1)
@@ -600,6 +606,34 @@ packages:
   '@babel/runtime@7.29.13':
     resolution: {integrity: sha512-v+oN26xP4YIlQsbQ/CbTH1WG5m/l/DjKKZNy/Kp3f/AFvbgt7Em/D0FeMM3O2hX0YzeN2M16W8lOpyhIkfCBcQ==}
     engines: {node: '>=6.9.0'}
+
+  '@bryntum/core-business@8.0.0':
+    resolution: {integrity: sha512-z1NlOYm5Ca9wRc4DVGpHnka+cS8ng/qXiFUiL9Dyz3I8lKkdlJ8x2vrBLvRXsDBUDOFXPWmpDKxA6qjZwL+VnA==}
+    engines: {node: '>=0.10.0'}
+
+  '@bryntum/core-react-business@8.0.0':
+    resolution: {integrity: sha512-tcZlw9EEkevKqmpEqsbgcLWnyuM/py9RFCmV+aWbIySJfzJlEmpwbcAd5g78PpKLHemnpQZopxWZRf7Ctsnvrg==}
+    engines: {node: '>=0.10.0'}
+
+  '@bryntum/engine-business@8.0.0':
+    resolution: {integrity: sha512-tUas/MNfMj15DRONer3LhUKsQymdmBd3OgjPLTVRxCsqb/4MfJGsS8lABWPB/3qynkJnwdJkITIK9q9mzeyRwA==}
+    engines: {node: '>=0.10.0'}
+
+  '@bryntum/grid-business@8.0.0':
+    resolution: {integrity: sha512-3jmn+bxFjmn6nBvXQ7F93+CdYIzSuUW3af5y0lhJj9X4DwDt+J7Ds+o/D6cxrxgGR7vPbX9eXj3J+Vmi0W+oVQ==}
+    engines: {node: '>=0.10.0'}
+
+  '@bryntum/grid-react-business@8.0.0':
+    resolution: {integrity: sha512-gF02LaS/OiWgHuJeKDbWg3vDdWG7LEJDll9B2sVmJkgtNpGA4anKkwLI452z2QArVBrGSExQ89dtaFiovWH1/A==}
+    engines: {node: '>=0.10.0'}
+
+  '@bryntum/scheduler-business@8.0.0':
+    resolution: {integrity: sha512-zDyRTqZYvyH8lcdJo16Y/x8gkXSsrOGiD1AjQA46hmXG1KqMGDhtHpwKb832TYb/VjyYz5uTSWj9HElvq79PaA==}
+    engines: {node: '>=0.10.0'}
+
+  '@bryntum/scheduler-react-business@8.0.0':
+    resolution: {integrity: sha512-sFGIUaUb/ZTTtIcccbe1nqDU6NCN3rZrbv9ei4tu3+9kXq5tg4YoAXnA86lDZn0DXuWF1KYdjkXMGWPwsBL1pQ==}
+    engines: {node: '>=0.10.0'}
 
   '@cacheable/memory@2.2.0':
     resolution: {integrity: sha512-CTLKqLItRCEixEAewD3/j9DB3/o96gpTPD4eJ1v+DGOlxZRZncRQkGYqqnAGCscYd6RNeXfGeiuCphsPtqyIfQ==}
@@ -3643,6 +3677,35 @@ snapshots:
   '@babel/helper-validator-identifier@7.29.7': {}
 
   '@babel/runtime@7.29.13': {}
+
+  '@bryntum/core-business@8.0.0': {}
+
+  '@bryntum/core-react-business@8.0.0':
+    dependencies:
+      '@bryntum/core-business': 8.0.0
+
+  '@bryntum/engine-business@8.0.0': {}
+
+  '@bryntum/grid-business@8.0.0':
+    dependencies:
+      '@bryntum/core-business': 8.0.0
+
+  '@bryntum/grid-react-business@8.0.0':
+    dependencies:
+      '@bryntum/core-react-business': 8.0.0
+      '@bryntum/grid-business': 8.0.0
+
+  '@bryntum/scheduler-business@8.0.0':
+    dependencies:
+      '@bryntum/core-business': 8.0.0
+      '@bryntum/engine-business': 8.0.0
+      '@bryntum/grid-business': 8.0.0
+
+  '@bryntum/scheduler-react-business@8.0.0':
+    dependencies:
+      '@bryntum/core-react-business': 8.0.0
+      '@bryntum/grid-react-business': 8.0.0
+      '@bryntum/scheduler-business': 8.0.0
 
   '@cacheable/memory@2.2.0':
     dependencies:

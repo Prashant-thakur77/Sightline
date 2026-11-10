@@ -155,6 +155,7 @@ export default async function Landing() {
               <li>Claude</li>
               <li>Channel3 product data</li>
               <li>AG Studio dashboards</li>
+              <li>Bryntum Scheduler</li>
               <li>AWS</li>
             </ul>
           </div>

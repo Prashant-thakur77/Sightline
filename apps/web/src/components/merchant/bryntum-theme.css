@@ -1,0 +1,204 @@
+/*
+ * Bryntum Scheduler in the ice-and-cobalt tokens. Bryntum reads --b-* custom properties declared on
+ * :root, so each one is set here from a Sightline token, also on :root (one class more specific than
+ * the Bryntum theme). The light, dark and high-contrast themes redefine the tokens on :root, and the
+ * scheduler follows them with nothing else to switch. Meaning never rests on colour: every bar and
+ * diamond carries its words, and the table after the schedule holds the same data.
+ */
+:root:not(.b-nothing):not(.sl-no-theme) {
+  --b-primary: var(--accent);
+  --b-mix: var(--surface);
+  --b-opposite: var(--ink);
+
+  --b-neutral-100: var(--surface);
+  --b-neutral-99: var(--surface);
+  --b-neutral-98: var(--paper);
+  --b-neutral-97: var(--paper);
+  --b-neutral-96: var(--paper);
+  --b-neutral-95: var(--paper);
+  --b-neutral-94: var(--paper-2);
+  --b-neutral-93: var(--paper-2);
+  --b-neutral-92: var(--paper-2);
+  --b-neutral-91: var(--paper-2);
+  --b-neutral-90: var(--paper-2);
+  --b-neutral-85: var(--paper-2);
+  --b-neutral-80: var(--hairline);
+  --b-neutral-75: var(--hairline);
+  --b-neutral-70: var(--line);
+  --b-neutral-65: var(--line);
+  --b-neutral-60: var(--line);
+  --b-neutral-55: var(--line);
+  --b-neutral-50: var(--muted);
+  --b-neutral-45: var(--muted);
+  --b-neutral-40: var(--muted);
+  --b-neutral-35: var(--muted);
+  --b-neutral-30: var(--muted);
+  --b-neutral-25: var(--ink);
+  --b-neutral-20: var(--ink);
+  --b-neutral-15: var(--ink);
+  --b-neutral-10: var(--ink);
+  --b-neutral-5: var(--ink);
+  --b-neutral-2: var(--ink);
+  --b-neutral-1: var(--ink);
+  --b-neutral-0: var(--ink);
+
+  --b-text-1: var(--ink);
+  --b-text-2: var(--muted);
+  --b-text-3: var(--muted);
+  --b-text-4: var(--muted);
+  --b-widget-color: var(--ink);
+  --b-widget-border-color: var(--line);
+  --b-border-1: var(--line);
+  --b-border-2: var(--line);
+  --b-border-3: var(--line);
+  --b-border-4: var(--line);
+  --b-border-5: var(--line);
+  --b-border-6: var(--hairline);
+  --b-border-7: var(--hairline);
+  --b-border-8: var(--hairline);
+  --b-border-9: var(--hairline);
+
+  --b-panel-background: var(--surface);
+  --b-popup-background: var(--surface);
+  --b-tooltip-plain-background: var(--surface);
+  --b-tooltip-rich-background: var(--surface);
+  --b-grid-background: var(--surface);
+  --b-grid-cell-background: var(--surface);
+  --b-grid-cell-color: var(--ink);
+  --b-grid-cell-hover-background: var(--paper);
+  --b-grid-cell-selected-background: var(--accent-soft);
+  --b-grid-cell-selected-color: var(--ink);
+  --b-grid-header-background: var(--paper);
+  --b-grid-header-color: var(--ink);
+  --b-grid-header-font-weight: 700;
+  --b-grid-header-border-color: var(--line);
+  --b-grid-cell-border-color: var(--hairline);
+  --b-grid-row-border-color: var(--hairline);
+
+  /* One focus ring everywhere: the night outline with the cobalt halo is drawn below; Bryntum's own is cobalt and thick. */
+  --b-widget-focus-outline-color: var(--focus-outer);
+  --b-widget-focus-outline-width: 3px;
+  --b-grid-cell-focused-outline-color: var(--focus-outer);
+  --b-grid-cell-focused-outline-width: 3px;
+
+  --b-current-time-color: var(--ink);
+}
+
+.mx-sched-box .b-widget {
+  font-family: var(--font-sans);
+}
+
+/* The bars. Hold: cobalt. Deadline: peach with a control edge. Done: night. */
+.mx-sched-box .b-sch-event-wrap.sl-tone-hold :is(.b-sch-event, .b-sch-event.b-style-filled) {
+  --b-sch-event-background: var(--accent);
+  --b-sch-event-hover-background: var(--accent-hover);
+  --b-sch-event-selected-background: var(--accent-hover);
+  --b-sch-event-color: var(--accent-ink);
+  --b-sch-event-border-color: var(--accent);
+}
+.mx-sched-box .b-sch-event-wrap.sl-tone-deadline :is(.b-sch-event, .b-sch-event.b-style-filled) {
+  --b-sch-event-background: var(--warm);
+  --b-sch-event-hover-background: var(--warm);
+  --b-sch-event-selected-background: var(--warm);
+  --b-sch-event-color: var(--ink);
+  --b-sch-event-border-color: var(--line);
+  --b-sch-event-border-width: 2px;
+  --b-sch-event-border-style: solid;
+}
+.mx-sched-box .b-sch-event-wrap.sl-tone-done :is(.b-sch-event, .b-sch-event.b-style-filled) {
+  --b-sch-event-background: var(--ink);
+  --b-sch-event-hover-background: var(--ink);
+  --b-sch-event-selected-background: var(--ink);
+  --b-sch-event-color: var(--paper);
+  --b-sch-event-border-color: var(--ink);
+}
+/* Still to come: an open shape with a dashed edge, so planned reads differently from running without colour. */
+.mx-sched-box
+  .b-sch-event-wrap.sl-tone-hold.sl-status-planned
+  :is(.b-sch-event, .b-sch-event.b-style-filled) {
+  --b-sch-event-background: var(--accent-soft);
+  --b-sch-event-hover-background: var(--accent-soft);
+  --b-sch-event-selected-background: var(--accent-soft);
+  --b-sch-event-color: var(--ink);
+  --b-sch-event-border-color: var(--accent);
+  --b-sch-event-border-width: 2px;
+  --b-sch-event-border-style: dashed;
+}
+.mx-sched-box .b-sch-event-wrap.sl-status-paused :is(.b-sch-event, .b-sch-event.b-style-filled) {
+  --b-sch-event-border-style: dashed;
+}
+.mx-sched-box .b-sch-event {
+  font-weight: 700;
+}
+.mx-sched-box .sl-ev-status {
+  font-weight: 400;
+}
+
+/* A moment is a diamond with its words beside it, on the row's own background. */
+.mx-sched-box .b-milestone-wrap .b-milestone label {
+  color: var(--ink);
+}
+.mx-sched-box .b-milestone-wrap .b-milestone::before,
+.mx-sched-box .b-milestone-wrap .b-milestone .b-sch-event-content::before {
+  box-shadow: 0 0 0 2px var(--line);
+}
+
+/* The line for now, labelled "Now" in words. */
+.mx-sched-box .b-sch-current-time.b-sch-current-time {
+  --b-time-range-line-color: var(--ink);
+  --b-time-range-line-width: 2px;
+  --b-time-range-line-label-background: var(--ink);
+  --b-time-range-line-label-color: var(--paper);
+  --b-time-range-header-background: var(--ink);
+  --b-time-range-line-header-background: var(--ink);
+  --b-time-range-color: var(--paper);
+}
+
+/* The order column: reference and item, then amount and state. */
+.mx-sched-box .sl-sched-order {
+  display: grid;
+  gap: 0.15em;
+  line-height: 1.25;
+}
+.mx-sched-box .sl-sched-order-name {
+  font-weight: 700;
+}
+.mx-sched-box .sl-sched-order-state {
+  color: var(--muted);
+}
+
+/* Focus: the app's ring on whatever Bryntum focuses, a cell or a bar. */
+.mx-sched-box .b-grid-cell:focus-visible,
+.mx-sched-box .b-sch-event-wrap:focus-visible,
+.mx-sched-box .b-sch-event-wrap.b-active {
+  outline: 3px solid var(--focus-inner);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 7px var(--focus-outer);
+}
+
+/* The trial badge Bryntum adds: our edge and text, no shadow. */
+.mx-sched-box .b-license-badge {
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+:root[data-theme='contrast'] .mx-sched-box .b-sch-event-wrap :is(.b-sch-event, .b-sch-event.b-style-filled) {
+  --b-sch-event-border-width: 2px;
+  --b-sch-event-border-color: var(--ink);
+  --b-sch-event-border-style: solid;
+}
+:root[data-theme='contrast']
+  .mx-sched-box
+  .b-sch-event-wrap.sl-tone-hold.sl-status-planned
+  :is(.b-sch-event, .b-sch-event.b-style-filled) {
+  --b-sch-event-border-style: dashed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-sched-box * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

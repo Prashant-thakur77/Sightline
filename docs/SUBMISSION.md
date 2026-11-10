@@ -26,6 +26,7 @@ So we built the whole money lifecycle to be something a blind person can do alon
 6. **Get your money back.** Say it's wrong. Your agent builds a signed evidence pack and sends it to the store. The store's own agent checks the signature, then proposes a fix within the store's rules: a replacement, the hold released, part of the price back to keep it, or the item back first. Code computes every amount; the model only picks and explains. You hear the offer and its reasons and answer with two presses. Decline, and it revises once. PayPal then voids the hold, captures part of it, or refunds.
 7. **Money questions.** "What's on hold?" "When does it expire?" "Did I get my refund?" Answered from your orders and PayPal's records, never estimated.
 8. **What your agent did.** Every order shows each step: who acted (you, your agent, the store's agent, PayPal, the safety check), the tool, whether a model or fixed rules decided, and PayPal's real ids and statuses.
+9. **The store sees every clock.** A Bryntum Scheduler timeline shows each held payment's honour periods and renewals up to day 29, the day-5 reminder, the day-7 auto-capture (paused while a case is open), and each case's reply-by and offer deadlines. Enter on a bar opens the case, and the same schedule follows as a table.
 
 ## How we built it
 
@@ -41,7 +42,7 @@ So we built the whole money lifecycle to be something a blind person can do alon
 - Claude Haiku 5.5: the second confirmation key, which can only agree or veto.
 - Model output never moves money: amounts, payees and confirmations come from frozen listing snapshots, the readback and an eight-guard payment gate that signs a receipt for every decision.
 
-**Also:** Channel3 for live product data, AG Studio dashboards for the store with a Claude assistant, an MCP server so other agents can use the readback and the delivery check, and AWS for hosting.
+**Also:** Channel3 for live product data, AG Studio dashboards for the store with a Claude assistant, Bryntum Scheduler for the store's holds and deadlines, an MCP server so other agents can use the readback and the delivery check, and AWS for hosting.
 
 ## Fair to stores
 

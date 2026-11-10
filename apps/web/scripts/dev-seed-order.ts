@@ -2,7 +2,9 @@
  * DEV/TEST ONLY: inserts a demo order for Maya in a chosen lifecycle state so the post-purchase
  * screens can be exercised without PayPal credentials. Refuses to run in production. Real orders
  * always come from the PayPal sandbox.
- *   pnpm --filter @sightline/db exec tsx ../../apps/web/scripts/dev-seed-order.ts [delivered|authorized] [wrong_size|correct]
+ *   pnpm --filter @sightline/db exec tsx ../../apps/web/scripts/dev-seed-order.ts [delivered|authorized] [wrong_size|correct] [userId] [held]
+ * With `held`, the order carries a placeholder authorization (SEED-AUTH-…) so hold views show it.
+ * Never run the maintenance sweep on such an order: PayPal does not know that id.
  */
 import path from 'node:path';
 process.loadEnvFile(path.resolve(import.meta.dirname, '../../../.env.local'));
@@ -14,7 +16,7 @@ import { computeTotals, createDemoStore, snapshotOf } from '@sightline/catalog';
 import { composeReadback } from '@sightline/agent';
 
 if (process.env.NODE_ENV === 'production') throw new Error('dev-seed-order refuses to run in production');
-const [status = 'delivered', shipped = 'wrong_size', forUser] = process.argv.slice(2);
+const [status = 'delivered', shipped = 'wrong_size', forUser, held] = process.argv.slice(2);
 const db = getDb(process.env.DATABASE_URL);
 const [maya] = forUser
   ? await db.select().from(tables.users).where(eq(tables.users.id, forUser)).limit(1)
@@ -46,6 +48,9 @@ await db.insert(tables.orders).values({
   currency: 'USD',
   merchantId: snap.seller.merchantId,
   title: snap.title,
+  ...(held === 'held'
+    ? { authorizationId: `SEED-AUTH-${orderId.slice(-10)}`, authorizationExpiresAt: new Date(Date.now() + 29 * 86_400_000).toISOString() }
+    : {}),
 });
 await db.insert(tables.shipments).values({ orderId, carrier: 'USPS', trackingNumber: `9400${Date.now()}`.slice(0, 22), status: 'delivered', shippedVariant: shipped, shippedAt: new Date().toISOString(), deliveredAt: new Date().toISOString() });
 console.log(JSON.stringify({ orderId, status, shipped }));

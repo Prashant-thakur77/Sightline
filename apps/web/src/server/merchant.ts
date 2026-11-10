@@ -38,6 +38,7 @@ import { audit } from './audit';
 import { notify } from './cases';
 import { loadStorePolicy } from './store-policy';
 import { AWAITING_STORE, loadStoreCase } from './store-case';
+import { DAY_MS, OFFER_DEADLINE_LIMIT_DAYS } from './hold-rules';
 
 /*
  * The Demo Store side of the sandbox: what the test merchant sees and does. Staff actions run
@@ -997,7 +998,7 @@ export async function withCaseLock<T>(caseId: string, fn: () => Promise<T>): Pro
 }
 
 /** PayPal honours an authorization (with reauthorizations) for 29 days; an offer's deadline stays a day inside that. */
-const AUTH_LIFE_MS = 28 * 86_400_000;
+const AUTH_LIFE_MS = OFFER_DEADLINE_LIMIT_DAYS * DAY_MS;
 function heldOfferDue(o: { createdAt: string }, now: string): string {
   const wanted = addBusinessDays(new Date(now), 10).getTime();
   return new Date(Math.min(wanted, Date.parse(o.createdAt) + AUTH_LIFE_MS)).toISOString();

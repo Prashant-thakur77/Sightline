@@ -8,11 +8,9 @@ import { paypal } from './paypal';
 import { dbReservations } from './gate-ports';
 import { audit } from './audit';
 import { attachPendingTracking } from './merchant';
+import { isHeld } from './hold-rules';
 
-/** PayPal holds the money: authorized at purchase, not captured yet. Independent of delivery status. */
-export function isHeld(o: { intent: string; authorizationId: string | null; captureId: string | null; status: string }): boolean {
-  return o.intent === 'AUTHORIZE' && Boolean(o.authorizationId) && !o.captureId && o.status !== 'voided';
-}
+export { isHeld };
 
 export type NextStep =
   | { kind: 'captured'; say: string }

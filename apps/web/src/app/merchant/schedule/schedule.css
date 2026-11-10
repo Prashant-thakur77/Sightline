@@ -1,0 +1,174 @@
+/* ---------- Holds and deadlines: the schedule, its key, and the same schedule as a table ---------- */
+.mx-sched,
+.mx-sched-data {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  min-width: 0;
+}
+.mx-sched-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.mx-sched-key {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  font-size: var(--step--1);
+}
+.mx-sched-key li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.mx-sched-swatch,
+.mx-sched-glyph {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.7em;
+  height: 1.7em;
+  border-radius: var(--radius-s);
+  font-weight: 800;
+  line-height: 1;
+}
+[data-tone='hold'] > .mx-sched-swatch,
+[data-tone='hold'] .mx-sched-glyph {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+[data-tone='deadline'] > .mx-sched-swatch,
+[data-tone='deadline'] .mx-sched-glyph {
+  background: var(--warm);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--line);
+}
+[data-tone='done'] > .mx-sched-swatch,
+[data-tone='done'] .mx-sched-glyph {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.mx-sched-skip {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  font-weight: 700;
+}
+
+/* Bryntum lays out to this box's width; anything wider scrolls inside it, never the page. */
+.mx-sched-box {
+  min-width: 0;
+  max-width: 100%;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mx-sched-loading {
+  margin: 0;
+  padding: var(--space-5);
+  color: var(--muted);
+}
+
+/* The table: what, when, kind and status, grouped by order. */
+.mx-sched-scroll {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.mx-sched-table {
+  width: 100%;
+  min-width: 34em;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-l);
+  overflow: clip;
+  font-size: var(--step--1);
+}
+.mx-sched-table caption {
+  text-align: left;
+  padding-inline: var(--space-2);
+  color: var(--muted);
+  padding-bottom: var(--space-3);
+}
+.mx-sched-table thead th {
+  background: var(--paper-2);
+  font-weight: 800;
+  text-align: left;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--hairline);
+}
+.mx-sched-table tbody th,
+.mx-sched-table td {
+  text-align: left;
+  font-weight: 400;
+  padding: 10px var(--space-3);
+  border-bottom: 2px solid var(--hairline);
+  vertical-align: top;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+.mx-sched-table tbody tr[data-tone] > th {
+  box-shadow: inset 6px 0 0 var(--accent);
+  padding-left: calc(var(--space-3) + 6px);
+}
+.mx-sched-table tbody tr[data-tone='deadline'] > th {
+  box-shadow: inset 6px 0 0 var(--line);
+}
+.mx-sched-table tbody tr[data-tone='done'] > th {
+  box-shadow: inset 6px 0 0 var(--ink);
+}
+.mx-sched-group > th {
+  background: var(--paper-2);
+}
+.mx-sched-group-in {
+  display: grid;
+  gap: var(--space-1);
+}
+.mx-sched-table tbody:last-child tr:last-child > * {
+  border-bottom: 0;
+}
+.mx-sched-group-h {
+  font-weight: 800;
+}
+.mx-sched-group-meta {
+  color: var(--muted);
+}
+.mx-sched-group-link {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  font-weight: 700;
+}
+.mx-sched-label {
+  display: block;
+  font-weight: 700;
+}
+.mx-sched-detail {
+  display: block;
+  color: var(--muted);
+}
+
+.mx-sched-empty-card {
+  display: grid;
+  gap: var(--space-2);
+  max-width: var(--measure);
+  padding: var(--space-5);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+}
+.mx-sched-empty-card p {
+  margin: 0;
+}
+.mx-sched-empty-h {
+  font-weight: 800;
+}
