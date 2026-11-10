@@ -3,12 +3,14 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { PRODUCT_NAME } from '@sightline/core';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
+import { SpeechViewer } from '@/components/a11y/speech-viewer';
+import { REPO_URL, VIDEO_URL } from '@/lib/links';
 import { loadSuites } from '@/server/stats';
 import { featuredHeadlines } from '@/server/headlines';
 import { db, INTEGRATIONS } from '@/server/runtime';
 import { currentUser } from '@/server/session';
 import { latestDemoTimeline } from '@/server/timeline';
-import { JUDGE_EMAIL } from '@/server/lifecycle';
+import { JUDGE_EMAIL_PATTERN } from '@/server/lifecycle';
 import { AgentTimelineView } from '@/components/orders/agent-timeline';
 import { JudgeStart } from './judge-start';
 import { LifecycleRun } from './lifecycle-run';
@@ -16,7 +18,7 @@ import { LifecycleRun } from './lifecycle-run';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'For judges' };
 
-const REPO = 'https://github.com/Prashant-thakur77/Sightline';
+const REPO = REPO_URL;
 
 export default async function Judge() {
   const suites = await loadSuites();
@@ -37,7 +39,7 @@ export default async function Judge() {
     : await db().select({ id: tables.receipts.id }).from(tables.receipts).where(eq(tables.receipts.kind, 'gate')).orderBy(desc(tables.receipts.createdAt)).limit(1);
   const receipt = anyReceipt;
   // The visitor's own latest demo order, or the scripted run's: never another visitor's.
-  const demo = await latestDemoTimeline((await currentUser())?.id ?? null, JUDGE_EMAIL).catch(() => null);
+  const demo = await latestDemoTimeline((await currentUser())?.id ?? null, JUDGE_EMAIL_PATTERN).catch(() => null);
   const live: [string, boolean, string][] = [
     ['PayPal sandbox (Orders v2, Vault, Payments, tracking, Disputes, webhooks)', INTEGRATIONS.paypal, 'Every payment, hold, capture, void and refund'],
     ['Claude (agent, confirmation check, vision, case writing)', INTEGRATIONS.anthropic, 'Shopping agent for open requests, second confirmation key, free questions, size-tag reading'],
@@ -53,7 +55,7 @@ export default async function Judge() {
     ],
   ];
   return (
-    <div className="judge">
+    <div className="judge" id="judge-root">
       <SiteHeader current="judge" />
       <main id="main" tabIndex={-1} className="judge-main">
         <section aria-labelledby="j-h" className="grid gap-4">
@@ -64,6 +66,15 @@ export default async function Judge() {
             {PRODUCT_NAME} lets a blind shopper buy by voice, hear exactly what they will pay, check the parcel with a phone camera, and get the money
             back through PayPal when it is wrong. Money waits for the check.
           </p>
+          <p>
+            The Speech Viewer is open on this page. It shows, as text, what a screen reader says as you move through the page, so you can follow
+            what a blind shopper hears. Close it any time; it stays closed.
+          </p>
+          {VIDEO_URL && (
+            <p>
+              <a href={VIDEO_URL}>Watch the 3-minute demo video on YouTube</a>
+            </p>
+          )}
         </section>
 
         <section aria-labelledby="path-h" className="grid gap-4">
@@ -285,6 +296,7 @@ export default async function Judge() {
         </section>
       </main>
       <SiteFooter />
+      <SpeechViewer rootId="judge-root" defaultOpen />
     </div>
   );
 }

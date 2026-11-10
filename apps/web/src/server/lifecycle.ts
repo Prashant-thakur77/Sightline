@@ -25,10 +25,14 @@ export interface StepEvent {
   link?: string;
 }
 
-/** The scripted run's own shopper; the judge page shows its latest order's timeline to visitors without one. */
-export const JUDGE_EMAIL = 'maya.run@demo.sightline.app';
+/**
+ * The scripted run's shoppers share this address pattern; the judge page shows the newest run's order
+ * to visitors without one. Each run gets its own shopper, so the payment gate's per-shopper limits
+ * (for example at most 5 orders an hour) apply to every run in full and never stop the next judge.
+ */
+export const JUDGE_EMAIL_PATTERN = 'maya.run%@demo.sightline.app';
 
-/** The run's shopper has the sandbox demo buyer's saved PayPal once DEMO_VAULT_ID is set, even if it was made before. */
+/** The run's shopper has the sandbox demo buyer's saved PayPal once DEMO_VAULT_ID is set. */
 async function ensureDemoVault(userId: string): Promise<void> {
   const vaultId = process.env.DEMO_VAULT_ID?.trim();
   if (!vaultId) return;
@@ -40,14 +44,10 @@ async function ensureDemoVault(userId: string): Promise<void> {
   if (!has) await db().insert(tables.vaultTokens).values({ id: newId('vlt'), userId, vaultId, status: 'ACTIVE', label: 'your saved PayPal (sandbox demo buyer)' });
 }
 
+/** A fresh shopper for this run: Maya's preferences, a verified helper and the saved sandbox PayPal. */
 async function judgeUser(): Promise<string> {
-  const [u] = await db().select({ id: tables.users.id }).from(tables.users).where(eq(tables.users.email, JUDGE_EMAIL)).limit(1);
-  if (u) {
-    await ensureDemoVault(u.id);
-    return u.id;
-  }
   const id = newId('usr');
-  await db().insert(tables.users).values({ id, email: JUDGE_EMAIL, displayName: 'Maya', isDemo: true });
+  await db().insert(tables.users).values({ id, email: `maya.run+${id.slice(-10)}@demo.sightline.app`, displayName: 'Maya', isDemo: true });
   await db().insert(tables.preferences).values({ userId: id, verbosity: 'standard', sizes: { tops: 'M' }, payAfterCheck: true, onboardedAt: new Date().toISOString() });
   await db().insert(tables.helpers).values({ id: newId('hlp'), userId: id, name: 'Asha', contact: 'asha@demo.sightline.app', verifiedAt: new Date().toISOString() });
   await ensureDemoVault(id);

@@ -1,0 +1,26 @@
+name: uptime
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the live site until judging ends (21 Dec 2026)
+        run: |
+          if [ "$(date -u +%Y%m%d)" -gt 20261221 ]; then echo "Judging is over; nothing to check."; exit 0; fi
+          base=https://sightline.prashantthakur.dev
+          for path in / /judge /start /merchant /api/health; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$base$path")
+            echo "$path $code"
+            [ "$code" = 200 ] || exit 1
+          done
+          curl -s --max-time 30 "$base/api/health" | grep -q '"ok":true' || { echo "health is not ok"; exit 1; }
+          curl -s --max-time 30 "$base/api/health" | grep -q '"paypal":true' || { echo "PayPal is not configured"; exit 1; }

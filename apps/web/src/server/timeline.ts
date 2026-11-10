@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq, gt, inArray, lt, lte, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, like, lt, lte, or, sql } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { formatMoney } from '@sightline/core';
 import { spokenWhen } from '@/lib/when';
@@ -446,14 +446,20 @@ export interface DemoTimeline {
  * The timeline for the judge page: the visitor's own latest demo order when they have one, else the
  * latest order of the scripted lifecycle run. Never another visitor's order.
  */
-export async function latestDemoTimeline(sessionUserId: string | null, runEmail: string): Promise<DemoTimeline | null> {
+export async function latestDemoTimeline(sessionUserId: string | null, runEmailPattern: string): Promise<DemoTimeline | null> {
   const pick = async (userId: string) =>
     (await db().select({ id: tables.orders.id, title: tables.orders.title, userId: tables.orders.userId }).from(tables.orders).where(eq(tables.orders.userId, userId)).orderBy(desc(tables.orders.createdAt)).limit(1))[0];
   let whose: DemoTimeline['whose'] = 'yours';
   let latest = sessionUserId ? await pick(sessionUserId) : undefined;
   if (!latest) {
-    const [run] = await db().select({ id: tables.users.id }).from(tables.users).where(eq(tables.users.email, runEmail)).limit(1);
-    latest = run ? await pick(run.id) : undefined;
+    // The newest order of any lifecycle-run shopper (their emails match the run's pattern).
+    [latest] = await db()
+      .select({ id: tables.orders.id, title: tables.orders.title, userId: tables.orders.userId })
+      .from(tables.orders)
+      .innerJoin(tables.users, eq(tables.users.id, tables.orders.userId))
+      .where(like(tables.users.email, runEmailPattern))
+      .orderBy(desc(tables.orders.createdAt))
+      .limit(1);
     whose = 'run';
   }
   if (!latest) return null;

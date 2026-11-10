@@ -98,4 +98,18 @@ describe.skipIf(!hasDb)('orderTimeline (Postgres)', () => {
     const stranger = await user();
     expect(await timeline.latestDemoTimeline(stranger.userId, 'nobody@test.local')).toBeNull();
   });
+
+  it('finds the newest order across every lifecycle-run shopper, since each run gets its own', async () => {
+    const tag = id('run').slice(-8);
+    const pattern = `run.${tag}%@test.local`;
+    const first = id('usr');
+    const second = id('usr');
+    await rt.db().insert(t.users).values({ id: first, email: `run.${tag}+a@test.local`, displayName: 'Maya', isDemo: true });
+    await rt.db().insert(t.users).values({ id: second, email: `run.${tag}+b@test.local`, displayName: 'Maya', isDemo: true });
+    await order(first, new Date(Date.now() - 60_000).toISOString());
+    const { orderId: newest } = await order(second, new Date().toISOString());
+    const visitor = await user();
+    expect(await timeline.latestDemoTimeline(visitor.userId, pattern)).toMatchObject({ orderId: newest, whose: 'run' });
+    expect(await timeline.latestDemoTimeline(null, pattern)).toMatchObject({ orderId: newest, whose: 'run' });
+  });
 });

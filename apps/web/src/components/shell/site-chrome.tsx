@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { PRODUCT_NAME } from '@sightline/core';
 import { Wordmark } from './mark';
 import { ThemeSwitch } from './theme-switch';
+import { REPO_URL, VIDEO_URL } from '@/lib/links';
 
 /** Header for public pages: same wordmark, nav and theme switch everywhere. */
 export function SiteHeader({ current }: { current?: 'home' | 'judge' | 'barrier' }) {
@@ -56,6 +57,20 @@ export function SiteFooter() {
         <Link className="link-target" href="/merchant">
           Demo Store console
         </Link>
+      </p>
+      <p>
+        {VIDEO_URL && (
+          <>
+            <a className="link-target" href={VIDEO_URL}>
+              Watch the demo video (YouTube)
+            </a>{' '}
+            ·{' '}
+          </>
+        )}
+        <a className="link-target" href={REPO_URL}>
+          Source code on GitHub
+        </a>{' '}
+        · MIT licence
       </p>
     </footer>
   );
