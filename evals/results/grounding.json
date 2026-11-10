@@ -1,76 +1,108 @@
 {
   "suite": "grounding",
   "title": "Grounded answers",
-  "ranAt": "2026-11-09T13:26:41.224Z",
-  "gitSha": "73ce251",
+  "ranAt": "2026-11-10T14:49:45.164Z",
+  "gitSha": "uncommitted",
   "headlines": [
     {
       "id": "catch-rate",
       "label": "Answers with one invented claim that the grounding guard catches",
-      "value": "62 of 75 (82.7%)",
-      "baseline": "no guard: 0 of 75",
-      "interval": "95% Wilson 72.6%–89.6%",
+      "value": "68 of 75 (90.7%)",
+      "baseline": "before: 62 of 75; no guard: 0 of 75",
+      "interval": "95% Wilson 82.0%–95.4%",
       "n": 75,
       "script": "evals/grounding/run.ts",
-      "note": "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. Invented size, material, price, return window, delivery date or quote."
+      "note": "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. Development split. Invented size, material, price, return window, delivery date or quote."
     },
     {
       "id": "false-block",
       "label": "Fully supported answers the guard wrongly blocks",
       "value": "0 of 75",
-      "baseline": "no guard: 0 of 75",
+      "baseline": "before: 0 of 75; no guard: 0 of 75",
       "interval": "95% Wilson 0.0%–4.9%",
       "n": 75,
       "script": "evals/grounding/run.ts",
-      "note": "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY."
+      "note": "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. Development split."
     },
     {
       "id": "f1",
       "label": "F1 of the guard as a detector of unsupported answers",
-      "value": "0.91",
-      "baseline": "no guard: 0.00",
-      "interval": "95% bootstrap 0.85–0.95",
+      "value": "0.95",
+      "baseline": "before: 0.91; no guard: 0.00",
+      "interval": "95% bootstrap 0.91–0.98",
       "n": 150,
       "script": "evals/grounding/run.ts"
     },
     {
+      "id": "delivery-date",
+      "label": "Invented delivery dates caught",
+      "value": "12 of 12",
+      "baseline": "before: 8 of 12; no guard: 0 of 12",
+      "interval": "95% Wilson 75.8%–100.0%",
+      "n": 12,
+      "script": "evals/grounding/run.ts",
+      "note": "Development split. Dates are read in any common form (\"Friday\", \"next week\", \"in two days\", \"Nov 20\") against a clock passed in, and compared with the store's estimate."
+    },
+    {
       "id": "worst-category",
-      "label": "Weakest category: invented delivery date",
-      "value": "8 of 12 caught",
+      "label": "Weakest category: invented return window",
+      "value": "10 of 12 caught",
       "baseline": "no guard: 0 of 12",
-      "interval": "95% Wilson 39.1%–86.2%",
+      "interval": "95% Wilson 55.2%–95.3%",
       "n": 12,
       "script": "evals/grounding/run.ts",
       "negative": true,
-      "note": "Missed, e.g. \"It arrives tomorrow.\""
+      "note": "Development split. Missed, e.g. \"You have a full year to return it.\""
     },
     {
       "id": "negation",
       "label": "False statements made by negating a listed fact that pass the guard",
-      "value": "10 of 10",
-      "interval": "95% Wilson 72.2%–100.0%",
+      "value": "0 of 10",
+      "baseline": "before: 10 of 10",
+      "interval": "95% Wilson 0.0%–27.8%",
       "n": 10,
       "script": "evals/grounding/run.ts",
+      "note": "Development split. Each token carries the polarity of its clause; denying something the cited source states is caught."
+    },
+    {
+      "id": "heldout-catch",
+      "label": "Held-out split: unsupported answers caught",
+      "value": "29 of 32",
+      "baseline": "before: 13 of 32",
+      "interval": "95% Wilson 75.8%–96.8%",
+      "n": 32,
+      "script": "evals/grounding/run.ts",
       "negative": true,
-      "note": "e.g. \"It doesn't come in navy.\" on harbor knit crew (the variant is navy). The guard checks tokens, not polarity."
+      "note": "Scored once, after the checks were built on the development split. Delivery dates 12 of 12 (before 8 of 12), false negations 9 of 12 (before 1 of 12), citations 8 of 8 (before 4 of 8). Missed: \"There's no return fee.\", \"You can't return them once they've been worn outdoors.\", \"It doesn't come with a US plug.\"."
+    },
+    {
+      "id": "heldout-false-block",
+      "label": "Held-out split: supported answers wrongly blocked",
+      "value": "0 of 32",
+      "baseline": "before: 12 of 32",
+      "interval": "95% Wilson 0.0%–10.7%",
+      "n": 32,
+      "script": "evals/grounding/run.ts",
+      "note": "Delivery dates 0 of 12, true negations 0 of 12, citations 0 of 8."
     }
   ],
   "limitations": [
     "Simulated: scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY. No model wrote these answers; real model answers will differ in wording and in which fields they cite.",
-    "Answers and phrasings were written by the author of this harness before the guard was run on them; they are not a blind or third-party set.",
-    "The guard is a token-level check. It does not judge polarity (negation), and phrasings without a product token (\"half price\", \"tomorrow\", \"never pills\") carry nothing for it to check.",
-    "Delivery dates are checked against the store's own estimate with \"today\" fixed at 2026-11-09."
+    "Answers and phrasings were written by the author of this harness before the guard was run on them; they are not a blind or third-party set. The held-out split (evals/grounding/heldout.ts) was written and committed before the date, negation and citation checks, by the same author, and scored once.",
+    "\"Before\" on the development split is the previous run (evals/results/grounding.json written by evals/grounding/run.ts at commit 73ce251, 2026-11-09T13:26:41.224Z); on the held-out split it is packages/agent/src/grounding.ts at c9be51c, scored by evals/grounding/heldout-baseline.ts.",
+    "The guard checks tokens with the polarity of their clause. Phrasings without a product token (\"half price\", \"a full year\", \"extra extra large\") still carry nothing for it to check, and a denial of something it has no word for passes.",
+    "Delivery dates are read against a fixed clock: 2026-11-09 12:00 UTC on the development split, 2026-11-12 09:00 UTC on the held-out split. \"next Tuesday\" means the Tuesday of the following week, and a named day must be the estimate's day."
   ],
   "details": {
     "label": "scripted answers; the model-in-the-loop run needs ANTHROPIC_API_KEY",
-    "guard": "checkGrounding in packages/agent/src/grounding.ts; a segment is unsupported when any product token in it is not backed by a valid claim",
+    "guard": "checkGrounding in packages/agent/src/grounding.ts; a segment is unsupported when any product token in it is not backed by a valid claim with the same polarity, or it reports what reviewers said without a verbatim quote",
     "totals": {
       "answers": 150,
       "unsupported": {
         "n": 75,
-        "caught": 62,
-        "caughtOnTheRightSegment": 62,
-        "interval": "95% Wilson 72.6%–89.6%"
+        "caught": 68,
+        "caughtOnTheRightSegment": 68,
+        "interval": "95% Wilson 82.0%–95.4%"
       },
       "supported": {
         "n": 75,
@@ -78,13 +110,49 @@
         "interval": "95% Wilson 0.0%–4.9%"
       },
       "f1": {
-        "value": 0.9051,
+        "value": 0.951,
         "bootstrap95": [
-          0.8472,
-          0.9504
+          0.9104,
+          0.9839
         ],
         "seed": 20261109,
         "resamples": 5000
+      }
+    },
+    "before": {
+      "from": "evals/results/grounding.json written by evals/grounding/run.ts at commit 73ce251, 2026-11-09T13:26:41.224Z",
+      "headlines": {
+        "catch-rate": "62 of 75 (82.7%)",
+        "false-block": "0 of 75",
+        "f1": "0.91",
+        "worst-category": "8 of 12 caught",
+        "negation": "10 of 10"
+      },
+      "byCategory": {
+        "size": {
+          "n": 13,
+          "caught": 11
+        },
+        "material": {
+          "n": 13,
+          "caught": 12
+        },
+        "price": {
+          "n": 13,
+          "caught": 11
+        },
+        "return_window": {
+          "n": 12,
+          "caught": 10
+        },
+        "delivery_date": {
+          "n": 12,
+          "caught": 8
+        },
+        "fake_quote": {
+          "n": 12,
+          "caught": 10
+        }
       }
     },
     "byCategory": [
@@ -158,48 +226,16 @@
       {
         "category": "delivery_date",
         "n": 12,
-        "caught": 8,
-        "interval": "95% Wilson 39.1%–86.2%",
-        "missed": [
-          {
-            "id": "delivery_date-2",
-            "product": "harbor-knit-vneck",
-            "invented": "It arrives tomorrow."
-          },
-          {
-            "id": "delivery_date-5",
-            "product": "stoneware-mug",
-            "invented": "You'll have it next week."
-          },
-          {
-            "id": "delivery_date-8",
-            "product": "canvas-tote",
-            "invented": "It arrives tomorrow."
-          },
-          {
-            "id": "delivery_date-11",
-            "product": "everyday-cable-crew",
-            "invented": "You'll have it next week."
-          }
-        ]
+        "caught": 12,
+        "interval": "95% Wilson 75.8%–100.0%",
+        "missed": []
       },
       {
         "category": "fake_quote",
         "n": 12,
-        "caught": 10,
-        "interval": "95% Wilson 55.2%–95.3%",
-        "missed": [
-          {
-            "id": "fake_quote-3",
-            "product": "braided-usb-c-cable",
-            "invented": "Reviewers say it never pills."
-          },
-          {
-            "id": "fake_quote-9",
-            "product": "harbor-knit-vneck",
-            "invented": "Reviewers say it never pills."
-          }
-        ]
+        "caught": 12,
+        "interval": "95% Wilson 75.8%–100.0%",
+        "missed": []
       }
     ],
     "misses": [
@@ -244,42 +280,6 @@
         "category": "return_window",
         "product": "braided-usb-c-cable",
         "invented": "You have a full year to return it."
-      },
-      {
-        "id": "delivery_date-2",
-        "category": "delivery_date",
-        "product": "harbor-knit-vneck",
-        "invented": "It arrives tomorrow."
-      },
-      {
-        "id": "delivery_date-5",
-        "category": "delivery_date",
-        "product": "stoneware-mug",
-        "invented": "You'll have it next week."
-      },
-      {
-        "id": "delivery_date-8",
-        "category": "delivery_date",
-        "product": "canvas-tote",
-        "invented": "It arrives tomorrow."
-      },
-      {
-        "id": "delivery_date-11",
-        "category": "delivery_date",
-        "product": "everyday-cable-crew",
-        "invented": "You'll have it next week."
-      },
-      {
-        "id": "fake_quote-3",
-        "category": "fake_quote",
-        "product": "braided-usb-c-cable",
-        "invented": "Reviewers say it never pills."
-      },
-      {
-        "id": "fake_quote-9",
-        "category": "fake_quote",
-        "product": "harbor-knit-vneck",
-        "invented": "Reviewers say it never pills."
       }
     ],
     "falseBlocks": [],
@@ -289,72 +289,766 @@
         "product": "harbor-knit-crew",
         "said": "It doesn't come in navy.",
         "truth": "The variant is navy.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-2",
         "product": "harbor-knit-crew",
         "said": "It isn't cotton.",
         "truth": "It is 70% cotton.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-3",
         "product": "tidewater-merino-crew",
         "said": "It's not merino wool.",
         "truth": "It is 100% merino wool.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-4",
         "product": "mill-cotton-tee",
         "said": "It doesn't come in size M.",
         "truth": "Size M is the selected size.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-5",
         "product": "trail-runner-2",
         "said": "Returns are not free.",
         "truth": "Returns are free within 60 days.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-6",
         "product": "stoneware-mug",
         "said": "It doesn't hold 12 ounces.",
         "truth": "It holds 12 oz.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-7",
         "product": "braided-usb-c-cable",
         "said": "It isn't 2 metres long.",
         "truth": "It is 2 m long.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-8",
         "product": "wall-charger-30w",
         "said": "It is not 30 watts.",
         "truth": "It is 30 W.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-9",
         "product": "canvas-tote",
         "said": "It doesn't come in navy.",
         "truth": "The variant is navy.",
-        "passed": true
+        "passed": false
       },
       {
         "id": "neg-10",
         "product": "harbor-knit-vneck",
         "said": "You can't return it within 30 days.",
         "truth": "Free returns within 30 days.",
-        "passed": true
+        "passed": false
       }
     ],
+    "heldout": {
+      "now": "2026-11-12T09:00:00.000Z",
+      "estimate": "2026-11-17T09:00:00.000Z",
+      "totals": {
+        "delivery_date": {
+          "unsupported": 12,
+          "caught": 12,
+          "supported": 12,
+          "blocked": 0
+        },
+        "negation": {
+          "unsupported": 12,
+          "caught": 9,
+          "supported": 12,
+          "blocked": 0
+        },
+        "citation": {
+          "unsupported": 8,
+          "caught": 8,
+          "supported": 8,
+          "blocked": 0
+        }
+      },
+      "before": {
+        "guard": "packages/agent/src/grounding.ts at c9be51c",
+        "now": "2026-11-12T09:00:00.000Z",
+        "totals": {
+          "delivery_date": {
+            "unsupported": 12,
+            "caught": 8,
+            "supported": 12,
+            "blocked": 3
+          },
+          "negation": {
+            "unsupported": 12,
+            "caught": 1,
+            "supported": 12,
+            "blocked": 8
+          },
+          "citation": {
+            "unsupported": 8,
+            "caught": 4,
+            "supported": 8,
+            "blocked": 1
+          }
+        }
+      },
+      "cases": [
+        {
+          "id": "d-s1",
+          "group": "delivery_date",
+          "product": "harbor-knit-crew",
+          "text": "It should arrive on Tuesday.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s2",
+          "group": "delivery_date",
+          "product": "mill-cotton-tee",
+          "text": "Expect it next Tuesday.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s3",
+          "group": "delivery_date",
+          "product": "stoneware-mug",
+          "text": "It arrives Nov 17.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s4",
+          "group": "delivery_date",
+          "product": "canvas-tote",
+          "text": "Delivery is due on the 17th.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s5",
+          "group": "delivery_date",
+          "product": "trail-runner-2",
+          "text": "It will be with you in 5 days.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s6",
+          "group": "delivery_date",
+          "product": "braided-usb-c-cable",
+          "text": "It gets there in three business days.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s7",
+          "group": "delivery_date",
+          "product": "wall-charger-30w",
+          "text": "It arrives early next week.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s8",
+          "group": "delivery_date",
+          "product": "tidewater-merino-crew",
+          "text": "You'll have it on Tuesday the seventeenth.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s9",
+          "group": "delivery_date",
+          "product": "harbor-knit-vneck",
+          "text": "It should be delivered by 17 Nov.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s10",
+          "group": "delivery_date",
+          "product": "everyday-cable-crew",
+          "text": "Delivery is expected November 17th.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s11",
+          "group": "delivery_date",
+          "product": "mill-cotton-tee",
+          "text": "It arrives next week.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-s12",
+          "group": "delivery_date",
+          "product": "harbor-knit-crew",
+          "text": "It lands Tuesday, November 17.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "d-u1",
+          "group": "delivery_date",
+          "product": "harbor-knit-crew",
+          "text": "It arrives tomorrow.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"tomorrow\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u2",
+          "group": "delivery_date",
+          "product": "mill-cotton-tee",
+          "text": "It should arrive by Friday.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"friday\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u3",
+          "group": "delivery_date",
+          "product": "stoneware-mug",
+          "text": "You'll get it this weekend.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"this weekend\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u4",
+          "group": "delivery_date",
+          "product": "canvas-tote",
+          "text": "It arrives by Monday.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"monday\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u5",
+          "group": "delivery_date",
+          "product": "trail-runner-2",
+          "text": "Expect it next Wednesday.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"next wednesday\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u6",
+          "group": "delivery_date",
+          "product": "braided-usb-c-cable",
+          "text": "It arrives Nov 20.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"nov 20\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u7",
+          "group": "delivery_date",
+          "product": "wall-charger-30w",
+          "text": "Delivery is due on the 19th.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"the 19th\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u8",
+          "group": "delivery_date",
+          "product": "tidewater-merino-crew",
+          "text": "It will be with you in two days.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"in two days\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u9",
+          "group": "delivery_date",
+          "product": "harbor-knit-vneck",
+          "text": "It ships today and arrives Saturday.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"today\" (date) is not backed by a claim",
+            "\"saturday\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u10",
+          "group": "delivery_date",
+          "product": "everyday-cable-crew",
+          "text": "It's due Wednesday the 18th.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"wednesday the 18th\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u11",
+          "group": "delivery_date",
+          "product": "mill-cotton-tee",
+          "text": "It will arrive the day after tomorrow.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"the day after tomorrow\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "d-u12",
+          "group": "delivery_date",
+          "product": "harbor-knit-crew",
+          "text": "It arrives within 3 days.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"within 3 days\" (date) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "n-u1",
+          "group": "negation",
+          "product": "mill-cotton-tee",
+          "text": "It isn't organic.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"organic\" (not feature) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-u2",
+          "group": "negation",
+          "product": "harbor-knit-crew",
+          "text": "It is not machine washable.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"machine washable\" (not feature) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-u3",
+          "group": "negation",
+          "product": "tidewater-merino-crew",
+          "text": "There's no return fee.",
+          "hasUnsupported": true,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-u4",
+          "group": "negation",
+          "product": "trail-runner-2",
+          "text": "You can't return them once they've been worn outdoors.",
+          "hasUnsupported": true,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-u5",
+          "group": "negation",
+          "product": "stoneware-mug",
+          "text": "It isn't dishwasher safe.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"dishwasher safe\" (not feature) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-u6",
+          "group": "negation",
+          "product": "canvas-tote",
+          "text": "It's not made of cotton.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"cotton\" (not material) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-u7",
+          "group": "negation",
+          "product": "braided-usb-c-cable",
+          "text": "It doesn't carry 60 watts.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"60\" (not number) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-u8",
+          "group": "negation",
+          "product": "harbor-knit-vneck",
+          "text": "Returns aren't free.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"free\" (not policy) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-u9",
+          "group": "negation",
+          "product": "wall-charger-30w",
+          "text": "It doesn't come with a US plug.",
+          "hasUnsupported": true,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-u10",
+          "group": "negation",
+          "product": "mill-cotton-tee",
+          "text": "There are no returns on this one.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"no returns\" (policy) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "n-u11",
+          "group": "negation",
+          "product": "harbor-knit-crew",
+          "text": "There's no recycled material in it.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"recycled\" (not feature) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-u12",
+          "group": "negation",
+          "product": "tidewater-merino-crew",
+          "text": "This one is not navy.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"navy\" (not colour) is denied, but the cited source states it"
+          ]
+        },
+        {
+          "id": "n-s1",
+          "group": "negation",
+          "product": "mill-cotton-tee",
+          "text": "It isn't wool.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s2",
+          "group": "negation",
+          "product": "stoneware-mug",
+          "text": "Returns aren't free; you pay the return shipping.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s3",
+          "group": "negation",
+          "product": "tidewater-merino-crew",
+          "text": "Returns are not free.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s4",
+          "group": "negation",
+          "product": "harbor-knit-crew",
+          "text": "It isn't merino.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s5",
+          "group": "negation",
+          "product": "tidewater-merino-crew",
+          "text": "It doesn't contain any cotton.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s6",
+          "group": "negation",
+          "product": "wall-charger-30w",
+          "text": "It isn't a 60 watt charger; it's 30 watts.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s7",
+          "group": "negation",
+          "product": "braided-usb-c-cable",
+          "text": "It's not 1 metre long, it's 2 metres.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s8",
+          "group": "negation",
+          "product": "stoneware-mug",
+          "text": "It doesn't hold 16 ounces; it holds 12.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s9",
+          "group": "negation",
+          "product": "harbor-knit-crew",
+          "text": "This one isn't black.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s10",
+          "group": "negation",
+          "product": "canvas-tote",
+          "text": "It isn't leather.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s11",
+          "group": "negation",
+          "product": "harbor-knit-crew",
+          "text": "A reviewer says it is \"not itchy at all\".",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "n-s12",
+          "group": "negation",
+          "product": "mill-cotton-tee",
+          "text": "It isn't a slim fit; it's boxy.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-u1",
+          "group": "citation",
+          "product": "harbor-knit-crew",
+          "text": "Reviewers say it keeps you very warm.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "reports what reviewers said without a verbatim quote"
+          ]
+        },
+        {
+          "id": "c-u2",
+          "group": "citation",
+          "product": "harbor-knit-crew",
+          "text": "One reviewer wrote \"fits perfectly.\"",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "quote not found in listing-reviews",
+            "\"\"fits perfectly.\"\" (quoted) is not backed by a claim",
+            "reports what reviewers said without a verbatim quote"
+          ]
+        },
+        {
+          "id": "c-u3",
+          "group": "citation",
+          "product": "harbor-knit-crew",
+          "text": "A reviewer said \"Lovely wool, very warm for how thin it is.\"",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "quote not found in listing-reviews",
+            "\"\"Lovely wool, very warm for how thin it is.\"\" (quoted) is not backed by a claim",
+            "\"wool\" (material) is not backed by a claim",
+            "reports what reviewers said without a verbatim quote"
+          ]
+        },
+        {
+          "id": "c-u4",
+          "group": "citation",
+          "product": "mill-cotton-tee",
+          "text": "A reviewer wrote that it \"runs small\".",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "quote not found in listing-reviews",
+            "\"\"runs small\"\" (quoted) is not backed by a claim",
+            "reports what reviewers said without a verbatim quote"
+          ]
+        },
+        {
+          "id": "c-u5",
+          "group": "citation",
+          "product": "tidewater-merino-crew",
+          "text": "It's machine washable.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"machine washable\" (feature) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "c-u6",
+          "group": "citation",
+          "product": "trail-runner-2",
+          "text": "They're waterproof.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"waterproof\" (feature) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "c-u7",
+          "group": "citation",
+          "product": "harbor-knit-crew",
+          "text": "Reviewers wrote \"Soft and true to size.\"",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "quote not found in listing-reviews",
+            "\"\"Soft and true to size.\"\" (quoted) is not backed by a claim",
+            "reports what reviewers said without a verbatim quote"
+          ]
+        },
+        {
+          "id": "c-u8",
+          "group": "citation",
+          "product": "canvas-tote",
+          "text": "The tote is water resistant.",
+          "hasUnsupported": true,
+          "flagged": true,
+          "reasons": [
+            "\"water resistant\" (feature) is not backed by a claim"
+          ]
+        },
+        {
+          "id": "c-s1",
+          "group": "citation",
+          "product": "harbor-knit-crew",
+          "text": "A reviewer wrote \"runs TRUE to size.  I am usually a medium\"",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-s2",
+          "group": "citation",
+          "product": "harbor-knit-crew",
+          "text": "It's machine washable.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-s3",
+          "group": "citation",
+          "product": "mill-cotton-tee",
+          "text": "One reviewer says \"Boxy and a little short.\"",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-s4",
+          "group": "citation",
+          "product": "harbor-knit-vneck",
+          "text": "The care label says machine wash cold.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-s5",
+          "group": "citation",
+          "product": "stoneware-mug",
+          "text": "It's dishwasher and microwave safe.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-s6",
+          "group": "citation",
+          "product": "tidewater-merino-crew",
+          "text": "It's hand wash or dry clean.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-s7",
+          "group": "citation",
+          "product": "harbor-knit-vneck",
+          "text": "It's made with recycled polyester.",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        },
+        {
+          "id": "c-s8",
+          "group": "citation",
+          "product": "tidewater-merino-crew",
+          "text": "A reviewer wrote \"Slim through the body, size up if you are between sizes.\"",
+          "hasUnsupported": false,
+          "flagged": false,
+          "reasons": []
+        }
+      ]
+    },
     "answers": [
       {
         "id": "supported-1",
@@ -2031,7 +2725,7 @@
         "invented": "Returns are free.",
         "spoken": "The listing doesn't say. It's made of Stoneware.",
         "reasons": [
-          "\"returns are free\" (policy) is not backed by a claim"
+          "\"returns are free\" (policy) is stated, but the cited source denies it"
         ]
       },
       {
@@ -2113,12 +2807,14 @@
         "product": "harbor-knit-vneck",
         "colour": "olive",
         "hasUnsupported": true,
-        "flagged": false,
-        "rightSegment": false,
+        "flagged": true,
+        "rightSegment": true,
         "text": "It arrives tomorrow. Expected delivery is Thursday.",
         "invented": "It arrives tomorrow.",
-        "spoken": "It arrives tomorrow. Expected delivery is Thursday.",
-        "reasons": []
+        "spoken": "The listing doesn't say. Expected delivery is Thursday.",
+        "reasons": [
+          "\"tomorrow\" (date) is not backed by a claim"
+        ]
       },
       {
         "id": "delivery_date-3",
@@ -2147,7 +2843,7 @@
         "invented": "It ships in two days.",
         "spoken": "The listing doesn't say. It's royal blue.",
         "reasons": [
-          "\"two\" (number) is not backed by a claim"
+          "\"in two days\" (date) is not backed by a claim"
         ]
       },
       {
@@ -2156,12 +2852,14 @@
         "product": "stoneware-mug",
         "colour": "cream",
         "hasUnsupported": true,
-        "flagged": false,
-        "rightSegment": false,
+        "flagged": true,
+        "rightSegment": true,
         "text": "The price is $16. You'll have it next week.",
         "invented": "You'll have it next week.",
-        "spoken": "The price is $16. You'll have it next week.",
-        "reasons": []
+        "spoken": "The price is $16. The listing doesn't say.",
+        "reasons": [
+          "\"next week\" (date) is not backed by a claim"
+        ]
       },
       {
         "id": "delivery_date-6",
@@ -2175,7 +2873,7 @@
         "invented": "It arrives Thursday 19 November.",
         "spoken": "The listing doesn't say. It has 4.2 stars from 1430 reviews.",
         "reasons": [
-          "\"19 november\" (date) is not backed by a claim"
+          "\"thursday 19 november\" (date) is not backed by a claim"
         ]
       },
       {
@@ -2199,12 +2897,14 @@
         "product": "canvas-tote",
         "colour": "navy",
         "hasUnsupported": true,
-        "flagged": false,
-        "rightSegment": false,
+        "flagged": true,
+        "rightSegment": true,
         "text": "It arrives tomorrow. Expected delivery is Thursday.",
         "invented": "It arrives tomorrow.",
-        "spoken": "It arrives tomorrow. Expected delivery is Thursday.",
-        "reasons": []
+        "spoken": "The listing doesn't say. Expected delivery is Thursday.",
+        "reasons": [
+          "\"tomorrow\" (date) is not backed by a claim"
+        ]
       },
       {
         "id": "delivery_date-9",
@@ -2233,7 +2933,7 @@
         "invented": "It ships in two days.",
         "spoken": "The listing doesn't say. Expected delivery is Thursday.",
         "reasons": [
-          "\"two\" (number) is not backed by a claim"
+          "\"in two days\" (date) is not backed by a claim"
         ]
       },
       {
@@ -2242,12 +2942,14 @@
         "product": "everyday-cable-crew",
         "colour": "navy",
         "hasUnsupported": true,
-        "flagged": false,
-        "rightSegment": false,
+        "flagged": true,
+        "rightSegment": true,
         "text": "Size M is in stock. You'll have it next week.",
         "invented": "You'll have it next week.",
-        "spoken": "Size M is in stock. You'll have it next week.",
-        "reasons": []
+        "spoken": "Size M is in stock. The listing doesn't say.",
+        "reasons": [
+          "\"next week\" (date) is not backed by a claim"
+        ]
       },
       {
         "id": "delivery_date-12",
@@ -2261,7 +2963,7 @@
         "invented": "It arrives Thursday 19 November.",
         "spoken": "The listing doesn't say. It's thirty-six dollars.",
         "reasons": [
-          "\"19 november\" (date) is not backed by a claim"
+          "\"thursday 19 november\" (date) is not backed by a claim"
         ]
       },
       {
@@ -2277,7 +2979,8 @@
         "spoken": "It should arrive by Thursday 12 November. The listing doesn't say.",
         "reasons": [
           "quote not found in listing-reviews",
-          "\"\"Best purchase I have made all year.\"\" (quoted) is not backed by a claim"
+          "\"\"Best purchase I have made all year.\"\" (quoted) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2293,7 +2996,8 @@
         "spoken": "The listing doesn't say. It holds 12 ounces.",
         "reasons": [
           "quote not found in listing-reviews",
-          "\"\"Runs a little large.\"\" (quoted) is not backed by a claim"
+          "\"\"Runs a little large.\"\" (quoted) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2302,12 +3006,14 @@
         "product": "braided-usb-c-cable",
         "colour": "black",
         "hasUnsupported": true,
-        "flagged": false,
-        "rightSegment": false,
+        "flagged": true,
+        "rightSegment": true,
         "text": "It's twelve dollars. Reviewers say it never pills.",
         "invented": "Reviewers say it never pills.",
-        "spoken": "It's twelve dollars. Reviewers say it never pills.",
-        "reasons": []
+        "spoken": "It's twelve dollars. The listing doesn't say.",
+        "reasons": [
+          "reports what reviewers said without a verbatim quote"
+        ]
       },
       {
         "id": "fake_quote-4",
@@ -2322,7 +3028,8 @@
         "spoken": "The listing doesn't say. You can return it within 30 days.",
         "reasons": [
           "quote not found in listing-reviews",
-          "\"\"kept its shape after fifty washes\"\" (quoted) is not backed by a claim"
+          "\"\"kept its shape after fifty washes\"\" (quoted) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2339,7 +3046,8 @@
         "reasons": [
           "quote not found in listing-reviews",
           "\"\"Five stars, would buy again.\"\" (quoted) is not backed by a claim",
-          "\"five\" (number) is not backed by a claim"
+          "\"five\" (number) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2356,8 +3064,9 @@
         "reasons": [
           "quote not found in listing-reviews",
           "\"\"Arrived in two days,\"\" (quoted) is not backed by a claim",
-          "\"two\" (number) is not backed by a claim",
-          "\"one\" (number) is not backed by a claim"
+          "\"in two days\" (date) is not backed by a claim",
+          "\"one\" (number) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2373,7 +3082,8 @@
         "spoken": "It's made of 100% merino wool. The listing doesn't say.",
         "reasons": [
           "quote not found in listing-reviews",
-          "\"\"Best purchase I have made all year.\"\" (quoted) is not backed by a claim"
+          "\"\"Best purchase I have made all year.\"\" (quoted) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2389,7 +3099,8 @@
         "spoken": "The listing doesn't say. It has 3.9 stars from 41 reviews.",
         "reasons": [
           "quote not found in listing-reviews",
-          "\"\"Runs a little large.\"\" (quoted) is not backed by a claim"
+          "\"\"Runs a little large.\"\" (quoted) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2398,12 +3109,14 @@
         "product": "harbor-knit-vneck",
         "colour": "navy",
         "hasUnsupported": true,
-        "flagged": false,
-        "rightSegment": false,
+        "flagged": true,
+        "rightSegment": true,
         "text": "Size M is in stock. Reviewers say it never pills.",
         "invented": "Reviewers say it never pills.",
-        "spoken": "Size M is in stock. Reviewers say it never pills.",
-        "reasons": []
+        "spoken": "Size M is in stock. The listing doesn't say.",
+        "reasons": [
+          "reports what reviewers said without a verbatim quote"
+        ]
       },
       {
         "id": "fake_quote-10",
@@ -2418,7 +3131,8 @@
         "spoken": "The listing doesn't say. One reviewer wrote \"Boxy and a little short, I sized up for length.\"",
         "reasons": [
           "quote not found in listing-reviews",
-          "\"\"kept its shape after fifty washes\"\" (quoted) is not backed by a claim"
+          "\"\"kept its shape after fifty washes\"\" (quoted) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2435,7 +3149,8 @@
         "reasons": [
           "quote not found in listing-reviews",
           "\"\"Five stars, would buy again.\"\" (quoted) is not backed by a claim",
-          "\"five\" (number) is not backed by a claim"
+          "\"five\" (number) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       },
       {
@@ -2452,8 +3167,9 @@
         "reasons": [
           "quote not found in listing-reviews",
           "\"\"Arrived in two days,\"\" (quoted) is not backed by a claim",
-          "\"two\" (number) is not backed by a claim",
-          "\"one\" (number) is not backed by a claim"
+          "\"in two days\" (date) is not backed by a claim",
+          "\"one\" (number) is not backed by a claim",
+          "reports what reviewers said without a verbatim quote"
         ]
       }
     ]

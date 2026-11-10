@@ -226,8 +226,8 @@ export function buildAnswers(): ScriptedAnswer[] {
 }
 
 /**
- * False statements that negate a fact the listing does contain. The guard checks tokens, not
- * polarity, so it is expected to let these through; they are reported as a known weakness.
+ * False statements that negate a fact the listing does contain. Written when the guard checked
+ * tokens without polarity and let all ten through; part of the development split.
  */
 export function negationProbe(): Array<{ id: string; slug: string; colour: string; segment: Segment; truth: string }> {
   const p = (id: string, slug: string, colour: string, text: string, ref: string, truth: string) => ({

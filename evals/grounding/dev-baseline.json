@@ -1,0 +1,36 @@
+{
+  "from": "evals/results/grounding.json written by evals/grounding/run.ts at commit 73ce251, 2026-11-09T13:26:41.224Z",
+  "headlines": {
+    "catch-rate": "62 of 75 (82.7%)",
+    "false-block": "0 of 75",
+    "f1": "0.91",
+    "worst-category": "8 of 12 caught",
+    "negation": "10 of 10"
+  },
+  "byCategory": {
+    "size": {
+      "n": 13,
+      "caught": 11
+    },
+    "material": {
+      "n": 13,
+      "caught": 12
+    },
+    "price": {
+      "n": 13,
+      "caught": 11
+    },
+    "return_window": {
+      "n": 12,
+      "caught": 10
+    },
+    "delivery_date": {
+      "n": 12,
+      "caught": 8
+    },
+    "fake_quote": {
+      "n": 12,
+      "caught": 10
+    }
+  }
+}

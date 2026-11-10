@@ -410,6 +410,7 @@ async function details(ctx: Ctx, index: number | undefined, topic: DetailsTopic,
           segments: answer.segments,
           snapshots: [snap],
           archives: { reviews: (snap.reviews ?? []).map((r) => r.quote).join('\n') },
+          now: new Date(),
         });
         if (report.text.trim()) spoken = report.text;
         await audit({

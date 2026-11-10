@@ -15,6 +15,7 @@
 import path from 'node:path';
 import {
   caseFactsFor,
+  attributeToStore,
   checkProposal,
   rulesProposal,
   storeOptions,
@@ -27,7 +28,12 @@ import {
 import { formatMoney } from '@sightline/core';
 import { REPO_ROOT, ofN, scriptPath, writeResult, type Headline } from '../lib/results';
 import { wilsonText } from '../lib/stats';
+import { readFileSync } from 'node:fs';
 import { FIXTURES, type StoreCaseFixture } from './cases';
+import { VAGUE_MORE, VAGUE_ORIGINAL, factBacked } from './vague';
+
+/** The previous run's numbers, kept as the "before" column. */
+const BEFORE = JSON.parse(readFileSync(new URL('./before.json', import.meta.url), 'utf8')) as { from: string; headlines: Record<string, string> };
 
 const SCRIPT = scriptPath(import.meta.url);
 const ALL_IDS: StoreOptionId[] = ['replacement', 'refund', 'return', 'partial_20', 'partial_50'];
@@ -110,16 +116,25 @@ const INVENTED: Invented[] = [
   { kind: 'no citation', text: 'The size is wrong.', facts: () => [] },
   { kind: 'made-up citation', text: 'The size is wrong.', facts: () => ['check-weight'] },
 ];
-/** Claims with nothing for a token check to catch: the check's known blind spot. */
-const BLIND_SPOT = ['This sweater is a favourite with returning customers.', 'Demo Store always replaces items within a day.'];
+interface VagueTally {
+  n: number;
+  /** Reached the buyer word for word, as if it were a finding. */
+  unattributed: number;
+  /** Reached the buyer only as "The store says: …". */
+  attributed: number;
+  dropped: number;
+}
+const tally = (): VagueTally => ({ n: 0, unattributed: 0, attributed: 0, dropped: 0 });
 
 function scripted() {
   let groundedN = 0;
   let groundedKept = 0;
   let inventedN = 0;
   let inventedThrough = 0;
-  let blindN = 0;
-  let blindThrough = 0;
+  const vagueOriginal = tally();
+  const vagueMore = tally();
+  const backed = { n: 0, kept: 0, rewritten: 0, droppedAsPromise: 0, droppedByOtherRules: 0 };
+  const backedHit: { case: string; text: string; outcome: string }[] = [];
   let pickN = 0;
   let pickSent = 0;
   const leaks: { case: string; kind: string; text: string }[] = [];
@@ -136,7 +151,7 @@ function scripted() {
     const g = checkProposal({ option_id: pick, reasons: grounded, staff_note: 'Fits the case.' }, factList, options, ctx);
     const shown = Math.min(grounded.length, 3);
     groundedN += shown;
-    groundedKept += g.ok ? Math.min(g.reasons.length, shown) : 0;
+    groundedKept += g.ok ? Math.min(g.reasons.filter((r) => grounded.some((x) => x.text === r)).length, shown) : 0;
     if (g.ok) for (const d of g.dropped) blocked.push({ case: fx.id, text: d.text, why: d.why });
     // Each invented reason next to a grounded one: the invented one must never be kept.
     // The fixed probes, plus two that depend on the case: what another reply would do with the money
@@ -151,7 +166,8 @@ function scripted() {
     for (const inv of probes) {
       const answer = { option_id: pick, reasons: [grounded[0] ?? { text: factList[0]!.text, facts: [factList[0]!.id] }, { text: inv.text, facts: inv.facts }], staff_note: 'x' };
       const c = checkProposal(answer, factList, options, ctx);
-      const through = c.ok && c.reasons.includes(inv.text);
+      // Spoken word for word or as the store's attributed words: either way it reached the buyer.
+      const through = c.ok && (c.reasons.includes(inv.text) || c.reasons.includes(attributeToStore(inv.text)));
       inventedN++;
       (byKind[inv.kind] ??= { n: 0, through: 0 }).n++;
       if (through) {
@@ -160,10 +176,37 @@ function scripted() {
         leaks.push({ case: fx.id, kind: inv.kind, text: inv.text });
       }
     }
-    for (const text of BLIND_SPOT) {
-      const c = checkProposal({ option_id: pick, reasons: [{ text, facts: ['order'] }], staff_note: 'x' }, factList, options, ctx);
-      blindN++;
-      if (c.ok && c.reasons.includes(text)) blindThrough++;
+    // Vague claims, cited to the order, next to a grounded reason so the answer itself stands.
+    const lead = grounded[0] ?? { text: factList[0]!.text, facts: [factList[0]!.id] };
+    for (const [set, t] of [
+      [VAGUE_ORIGINAL, vagueOriginal],
+      [VAGUE_MORE, vagueMore],
+    ] as const) {
+      for (const text of set) {
+        const c = checkProposal({ option_id: pick, reasons: [lead, { text, facts: ['order'] }], staff_note: 'x' }, factList, options, ctx);
+        t.n++;
+        if (c.ok && c.reasons.includes(text)) t.unattributed++;
+        else if (c.ok && c.reasons.includes(attributeToStore(text))) t.attributed++;
+        else t.dropped++;
+      }
+    }
+    // Fact-backed reasons, each on its own: the vague-claim check must leave every one alone.
+    for (const r of factBacked(factList, pick)) {
+      const c = checkProposal({ option_id: pick, reasons: [r], staff_note: 'x' }, factList, options, ctx);
+      backed.n++;
+      const why = c.dropped.find((d) => d.text === r.text)?.why;
+      if (c.ok && c.reasons.includes(r.text)) backed.kept++;
+      else if (c.ok && c.rewritten.some((x) => x.text === r.text)) {
+        backed.rewritten++;
+        backedHit.push({ case: fx.id, text: r.text, outcome: 'rewritten' });
+      } else if (why === 'makes a promise that no cited fact backs') {
+        backed.droppedAsPromise++;
+        backedHit.push({ case: fx.id, text: r.text, outcome: why });
+      } else {
+        // Rules that predate the vague-claim check: a fact that says "you", for example.
+        backed.droppedByOtherRules++;
+        if (!why && !c.ok) backedHit.push({ case: fx.id, text: r.text, outcome: 'set aside with no reason given' });
+      }
     }
     // Picks of a reply the policy does not allow on this case (or one already declined).
     for (const id of ALL_IDS.filter((x) => !options.some((o) => o.id === x))) {
@@ -172,7 +215,7 @@ function scripted() {
       if (c.ok) pickSent++;
     }
   }
-  return { groundedN, groundedKept, inventedN, inventedThrough, blindN, blindThrough, pickN, pickSent, leaks, blocked, byKind };
+  return { groundedN, groundedKept, inventedN, inventedThrough, vagueOriginal, vagueMore, backed, backedHit, pickN, pickSent, leaks, blocked, byKind };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -319,12 +362,32 @@ function main() {
     },
     {
       id: 'blind-spot',
-      label: 'Invented claims with no amount, size, colour, date or number that pass the check',
-      value: ofN(s.blindThrough, s.blindN),
-      n: s.blindN,
+      label: 'Vague claims with no checkable detail that reach the buyer as unattributed statements',
+      value: ofN(s.vagueOriginal.unattributed, s.vagueOriginal.n),
+      baseline: `before: ${BEFORE.headlines['blind-spot']}`,
+      n: s.vagueOriginal.n,
       script: SCRIPT,
-      negative: true,
-      note: 'Known limit: the check is token-level, like the listing grounding guard. A claim with nothing to match (for example, that the item is a favourite with returning customers) passes.',
+      negative: s.vagueOriginal.unattributed > 0 || undefined,
+      note: `${SIM}. "${VAGUE_ORIGINAL[0]}" and "${VAGUE_ORIGINAL[1]}" on each case, next to a grounded reason: ${s.vagueOriginal.attributed} reached the buyer only as "The store says: …", ${s.vagueOriginal.dropped} were dropped (promises with no fact behind them).`,
+    },
+    {
+      id: 'vague-more',
+      label: 'More vague claims and promises that reach the buyer as unattributed statements',
+      value: ofN(s.vagueMore.unattributed, s.vagueMore.n),
+      n: s.vagueMore.n,
+      script: SCRIPT,
+      negative: s.vagueMore.unattributed > 0 || undefined,
+      note: `${SIM}. Ten more phrasings (praise, reassurance, superlatives, "we guarantee", "never", "definitely") written before the check: ${s.vagueMore.attributed} attributed, ${s.vagueMore.dropped} dropped.`,
+    },
+    {
+      id: 'fact-backed-hit',
+      label: 'Fact-backed reasons the vague-claim check drops or rewrites',
+      value: ofN(s.backed.rewritten + s.backed.droppedAsPromise, s.backed.n),
+      interval: wilsonText(s.backed.rewritten + s.backed.droppedAsPromise, s.backed.n),
+      n: s.backed.n,
+      script: SCRIPT,
+      negative: s.backed.rewritten + s.backed.droppedAsPromise > 0 || undefined,
+      note: `${SIM}. Every fact a reason may use for the chosen reply, word for word, plus reworded check and shipping facts, each as the only reason. ${s.backed.kept} kept as written; ${s.backed.droppedByOtherRules} kept out by older rules (a fact that says "you" is not read to the buyer).`,
     },
   ];
 
@@ -333,14 +396,16 @@ function main() {
     headlines,
     limitations: [
       'Model answers are scripted; the suite does not call a model. `pnpm --filter @sightline/evals store-agent -- --live` sends a few cases to the fast model and prints what it picked, without writing results.',
-      'The 20 cases and their "fair reply" labels were written by the author of the code.',
-      'The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A false claim with none of those passes (negative result above).',
+      'The 20 cases and their "fair reply" labels were written by the author of the code, and so were the vague claims (evals/store-agent/vague.ts, committed before the vague-claim check).',
+      'The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A reason with none of those must share most of its words with the facts it cites; otherwise it is read only as "The store says: …", and a promise word ("always", "never", "guarantee", "definitely") that no cited fact uses drops it. A false claim worded with the facts\' own words still passes.',
+      `"Before" is the previous run (${BEFORE.from}), when vague claims were measured as the only reason in an answer.`,
     ],
-    details: { policyViolations: violations, byInventedKind: s.byKind, leaks: s.leaks, groundedDropped: s.blocked, rules },
+    details: { policyViolations: violations, byInventedKind: s.byKind, leaks: s.leaks, groundedDropped: s.blocked, vague: { original: s.vagueOriginal, more: s.vagueMore }, factBacked: s.backed, factBackedHit: s.backedHit, before: BEFORE, rules },
   });
   console.log(
-    `store-agent: ${violations.length} policy violations in ${checks} checks; ${s.inventedThrough}/${s.inventedN} invented facts through; ${s.groundedKept}/${s.groundedN} grounded kept; ${s.pickSent}/${s.pickN} out-of-policy picks sent; rules sensible ${rulesOk}/${rules.length}; blind spot ${s.blindThrough}/${s.blindN}.`,
+    `store-agent: ${violations.length} policy violations in ${checks} checks; ${s.inventedThrough}/${s.inventedN} invented facts through; ${s.groundedKept}/${s.groundedN} grounded kept; ${s.pickSent}/${s.pickN} out-of-policy picks sent; rules sensible ${rulesOk}/${rules.length}; vague unattributed ${s.vagueOriginal.unattributed}/${s.vagueOriginal.n} and ${s.vagueMore.unattributed}/${s.vagueMore.n}; fact-backed hit ${s.backed.rewritten + s.backed.droppedAsPromise}/${s.backed.n}.`,
   );
+  for (const h of s.backedHit) console.log(`  FACT-BACKED ${h.case}: ${h.text} :: ${h.outcome}`);
   if (violations.length || s.inventedThrough || s.pickSent) process.exit(1);
 }
 

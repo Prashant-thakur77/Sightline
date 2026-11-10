@@ -1,0 +1,11 @@
+{
+  "from": "evals/results/store-agent.json written by evals/store-agent/run.ts at commit 73ce251, 2026-11-09T13:26:41.663Z",
+  "headlines": {
+    "policy-violations": "0 of 370",
+    "invented-facts": "0 of 218",
+    "grounded-kept": "60 of 60",
+    "out-of-policy-picks": "0 of 30",
+    "rules-sensible": "20 of 20",
+    "blind-spot": "40 of 40"
+  }
+}

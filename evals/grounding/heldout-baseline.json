@@ -1,0 +1,24 @@
+{
+  "guard": "packages/agent/src/grounding.ts at c9be51c",
+  "now": "2026-11-12T09:00:00.000Z",
+  "totals": {
+    "delivery_date": {
+      "unsupported": 12,
+      "caught": 8,
+      "supported": 12,
+      "blocked": 3
+    },
+    "negation": {
+      "unsupported": 12,
+      "caught": 1,
+      "supported": 12,
+      "blocked": 8
+    },
+    "citation": {
+      "unsupported": 8,
+      "caught": 4,
+      "supported": 8,
+      "blocked": 1
+    }
+  }
+}

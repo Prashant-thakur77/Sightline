@@ -1,8 +1,8 @@
 {
   "suite": "store-agent",
   "title": "Store agent: policy, invented facts, choice",
-  "ranAt": "2026-11-09T13:26:41.663Z",
-  "gitSha": "73ce251",
+  "ranAt": "2026-11-10T14:49:45.762Z",
+  "gitSha": "uncommitted",
   "headlines": [
     {
       "id": "policy-violations",
@@ -52,18 +52,36 @@
     },
     {
       "id": "blind-spot",
-      "label": "Invented claims with no amount, size, colour, date or number that pass the check",
-      "value": "40 of 40",
+      "label": "Vague claims with no checkable detail that reach the buyer as unattributed statements",
+      "value": "0 of 40",
+      "baseline": "before: 40 of 40",
       "n": 40,
       "script": "evals/store-agent/run.ts",
-      "negative": true,
-      "note": "Known limit: the check is token-level, like the listing grounding guard. A claim with nothing to match (for example, that the item is a favourite with returning customers) passes."
+      "note": "Scripted model answers on hand-labelled cases; run --live for a real model. \"This sweater is a favourite with returning customers.\" and \"Demo Store always replaces items within a day.\" on each case, next to a grounded reason: 20 reached the buyer only as \"The store says: …\", 20 were dropped (promises with no fact behind them)."
+    },
+    {
+      "id": "vague-more",
+      "label": "More vague claims and promises that reach the buyer as unattributed statements",
+      "value": "0 of 200",
+      "n": 200,
+      "script": "evals/store-agent/run.ts",
+      "note": "Scripted model answers on hand-labelled cases; run --live for a real model. Ten more phrasings (praise, reassurance, superlatives, \"we guarantee\", \"never\", \"definitely\") written before the check: 120 attributed, 80 dropped."
+    },
+    {
+      "id": "fact-backed-hit",
+      "label": "Fact-backed reasons the vague-claim check drops or rewrites",
+      "value": "0 of 219",
+      "interval": "95% Wilson 0.0%–1.7%",
+      "n": 219,
+      "script": "evals/store-agent/run.ts",
+      "note": "Scripted model answers on hand-labelled cases; run --live for a real model. Every fact a reason may use for the chosen reply, word for word, plus reworded check and shipping facts, each as the only reason. 219 kept as written; 0 kept out by older rules (a fact that says \"you\" is not read to the buyer)."
     }
   ],
   "limitations": [
     "Model answers are scripted; the suite does not call a model. `pnpm --filter @sightline/evals store-agent -- --live` sends a few cases to the fast model and prints what it picked, without writing results.",
-    "The 20 cases and their \"fair reply\" labels were written by the author of the code.",
-    "The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A false claim with none of those passes (negative result above)."
+    "The 20 cases and their \"fair reply\" labels were written by the author of the code, and so were the vague claims (evals/store-agent/vague.ts, committed before the vague-claim check).",
+    "The invented-fact check is token-level: amounts, sizes, colours, dates, numbers, percentages and quotes. A reason with none of those must share most of its words with the facts it cites; otherwise it is read only as \"The store says: …\", and a promise word (\"always\", \"never\", \"guarantee\", \"definitely\") that no cited fact uses drops it. A false claim worded with the facts' own words still passes.",
+    "\"Before\" is the previous run (evals/results/store-agent.json written by evals/store-agent/run.ts at commit 73ce251, 2026-11-09T13:26:41.663Z), when vague claims were measured as the only reason in an answer."
   ],
   "details": {
     "policyViolations": [],
@@ -115,6 +133,39 @@
     },
     "leaks": [],
     "groundedDropped": [],
+    "vague": {
+      "original": {
+        "n": 40,
+        "unattributed": 0,
+        "attributed": 20,
+        "dropped": 20
+      },
+      "more": {
+        "n": 200,
+        "unattributed": 0,
+        "attributed": 120,
+        "dropped": 80
+      }
+    },
+    "factBacked": {
+      "n": 219,
+      "kept": 219,
+      "rewritten": 0,
+      "droppedAsPromise": 0,
+      "droppedByOtherRules": 0
+    },
+    "factBackedHit": [],
+    "before": {
+      "from": "evals/results/store-agent.json written by evals/store-agent/run.ts at commit 73ce251, 2026-11-09T13:26:41.663Z",
+      "headlines": {
+        "policy-violations": "0 of 370",
+        "invented-facts": "0 of 218",
+        "grounded-kept": "60 of 60",
+        "out-of-policy-picks": "0 of 30",
+        "rules-sensible": "20 of 20",
+        "blind-spot": "40 of 40"
+      }
+    },
     "rules": [
       {
         "id": "wrong-size-own-record-held",

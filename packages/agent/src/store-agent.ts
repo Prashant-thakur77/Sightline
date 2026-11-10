@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MODULE_LABEL, formatMoney, reasonForSeller, spokenDate, type Money, type Verdict, type VerdictReason } from '@sightline/core';
 import { extractTokens } from './grounding';
+import { words } from './text';
 
 /*
  * The store's own agent, the deterministic half. When a money-back case reaches the store, code
@@ -445,12 +446,48 @@ export function unfitForBuyer(text: string): string | null {
   return null;
 }
 
+const PROMISE = /\b(guarantee[sd]?|guaranteeing|promise[sd]?|definitely|certainly|surely|always|never|ever|forever|without fail|for sure|no matter what)\b/gi;
+const PLAIN_WORDS = new Set(
+  "a an the this that these those it its it's is are was were be been being has have had do does did will would can could should may might must of to in on at for with by from as and or but so if than then there here what which who whom very really quite just also too all any some each every most more much many lot lots one ones our we us they them their his her he she".split(
+    ' ',
+  ),
+);
+const stemOf = (w: string) => w.replace(/'s$/, '').replace(/(ing|ed|es|s)$/, '');
+
+/**
+ * Whether a reason says something its cited facts can be checked against.
+ *   'promise'  it promises ("always", "never", "we guarantee", "definitely") and no cited fact uses
+ *              that word
+ *   'vague'    it has no amount, size, colour, date or number, and fewer than half of its own words
+ *              (at least two) come from the cited facts: nothing in it can be checked
+ *   null       it restates its facts
+ * Only reasons that already passed unsupportedBy are judged here.
+ */
+export function vagueReason(text: string, factTexts: string[]): 'promise' | 'vague' | null {
+  const facts = factTexts.join(' ').toLowerCase();
+  for (const m of text.matchAll(PROMISE)) if (!new RegExp(`\\b${m[0].toLowerCase()}\\b`).test(facts)) return 'promise';
+  if (extractTokens(text).some((t) => TOKEN_KINDS.has(t.kind))) return null;
+  const known = new Set(words(facts).map(stemOf));
+  const content = words(text).filter((w) => w.length > 1 && !PLAIN_WORDS.has(w));
+  if (content.length === 0) return 'vague';
+  const found = content.filter((w) => known.has(stemOf(w))).length;
+  return found >= 2 && found / content.length >= 0.5 ? null : 'vague';
+}
+
+/** A vague reason, reworded so it is the store's own claim and not a finding: "The store says: …". */
+export function attributeToStore(text: string): string {
+  return `The store says: ${text}`;
+}
+
 export interface CheckedProposal {
   option: StoreOption;
+  /** Read to the buyer: reasons that restate the facts, then any vague reason in attributed form. */
   reasons: string[];
   staffNote: string;
   /** Reasons thrown out by the check, with why. */
   dropped: { text: string; why: string }[];
+  /** Vague reasons kept only as the store's attributed words. */
+  rewritten: { text: string; as: string }[];
 }
 
 export type ProposalCheck = ({ ok: true } & CheckedProposal) | { ok: false; why: string; dropped: { text: string; why: string }[] };
@@ -482,6 +519,7 @@ export function checkProposal(
   const byId = new Map(facts.map((x) => [x.id, x.text]));
   const dropped: { text: string; why: string }[] = [];
   const reasons: string[] = [];
+  const rewritten: { text: string; as: string }[] = [];
   for (const r of (raw.reasons ?? []).slice(0, 8)) {
     const text = String(r?.text ?? '').replace(/\s+/g, ' ').trim();
     const cited = (r?.facts ?? []).map((id) => byId.get(id));
@@ -490,13 +528,23 @@ export function checkProposal(
       continue;
     }
     const why = wrongReply({ text, facts: r.facts }) ?? unsupportedBy(text, cited as string[]) ?? unfitForBuyer(text);
-    if (why) dropped.push({ text, why });
-    else if (!reasons.includes(text)) reasons.push(text);
+    if (why) {
+      dropped.push({ text, why });
+      continue;
+    }
+    // Nothing in it contradicts the facts, but it may still promise or say nothing checkable.
+    const vague = vagueReason(text, cited as string[]);
+    if (vague === 'promise') dropped.push({ text, why: 'makes a promise that no cited fact backs' });
+    else if (vague === 'vague') {
+      if (!rewritten.some((x) => x.text === text)) rewritten.push({ text, as: attributeToStore(text) });
+    } else if (!reasons.includes(text)) reasons.push(text);
   }
+  // A vague reason never carries a proposal on its own: with no checkable reason, the rules decide.
   if (reasons.length === 0) return { ok: false, why: 'no reason held up against the facts', dropped };
   const note = String(raw.staff_note ?? '').replace(/\s+/g, ' ').trim();
-  const noteOk = note && !unsupportedBy(note, facts.map((x) => x.text));
-  return { ok: true, option, reasons: reasons.slice(0, 3), staffNote: noteOk ? note : `${option.title}: ${reasons[0]}`, dropped };
+  const noteOk = note && !unsupportedBy(note, facts.map((x) => x.text)) && vagueReason(note, facts.map((x) => x.text)) !== 'promise';
+  const spoken = [...reasons, ...rewritten.map((x) => x.as)].slice(0, 3);
+  return { ok: true, option, reasons: spoken, staffNote: noteOk ? note : `${option.title}: ${reasons[0]}`, dropped, rewritten };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -533,5 +581,6 @@ export function rulesProposal(f: CaseFacts, facts: CaseFact[], options: StoreOpt
     reasons: [...new Set(reasons)].slice(0, 2),
     staffNote: option.id === wanted ? s.why : `${option.title}: the suggested reply was declined or is not allowed, so the next one in line was chosen.`,
     dropped: [],
+    rewritten: [],
   };
 }
