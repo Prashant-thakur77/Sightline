@@ -86,6 +86,7 @@ const SANDBOX_HOW = 'sandbox ledger, counted from PayPal sandbox records';
 const HOW: Record<string, string> = {
   barrier: 'real store pages, read-only crawl',
   sightbench: 'offline benchmark, synthetic photos',
+  'sightbench-looks': 'offline benchmark, synthetic photos',
   'redteam-sandbox': SANDBOX_HOW,
   'duplicates-sandbox': SANDBOX_HOW,
 };
