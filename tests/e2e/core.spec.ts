@@ -10,6 +10,40 @@ test.describe('landing and start', () => {
     await expectNoAxeViolations(page);
   });
 
+  for (const path of ['/how', '/agents', '/paypal', '/proof']) {
+    test(`${path} has one h1, marks itself in the menu, links to the next page and has no axe violations`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+      if (path !== '/proof') await expect(page.getByRole('link', { name: /^Next:/ })).toBeVisible();
+      for (const theme of ['light', 'dark', 'contrast']) {
+        await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+        await expectNoAxeViolations(page);
+      }
+    });
+  }
+
+  test('on a narrow screen the menu opens from its button, Escape closes it and focus goes back', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    const menu = nav.getByRole('button', { name: 'Menu' });
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(nav.getByRole('link', { name: 'How it works', exact: true })).toBeHidden();
+    await menu.focus();
+    await menu.press('Enter');
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Tab');
+    await expect(nav.getByRole('link', { name: 'How it works', exact: true })).toBeFocused();
+    await expectNoAxeViolations(page);
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(menu).toBeFocused();
+    await menu.press('Enter');
+    await nav.getByRole('link', { name: 'PayPal', exact: true }).click();
+    await expect(page).toHaveURL(/\/paypal$/);
+    await expect(page.getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test("Raj's saved low-vision and voice settings apply straight away, without a reload", async ({ page }) => {
     await page.goto('/start');
     await page.getByRole('button', { name: 'Shop as Raj' }).click();

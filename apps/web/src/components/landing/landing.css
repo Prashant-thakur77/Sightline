@@ -635,4 +635,61 @@
     background: var(--ink);
     color: #000;
   }
+
+  /* ---------- Sub-page heads and the home page's explore cards ---------- */
+  .lx-pagehead {
+    padding-block: var(--space-8) var(--space-4);
+  }
+  .lx-pagehead .lx-wrap {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .lx-h1-page {
+    font-size: min(var(--step-5), 4.6rem);
+    max-width: 18ch;
+  }
+  .lx-pagehead + .lx-section {
+    padding-top: var(--space-6);
+  }
+  .lx-explore-grid {
+    list-style: none;
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  }
+  .lx-explore-card {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-2);
+  }
+  .lx-explore-card h3 {
+    margin: 0;
+    font-size: var(--step-1);
+  }
+  .lx-explore-card p {
+    margin: 0;
+    color: var(--muted);
+  }
+  /* The whole card is the link's target; the heading link stays the one tab stop. */
+  .lx-explore-card a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .lx-explore-card:hover {
+    border-color: var(--accent);
+  }
+  .lx-explore-card:focus-within {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
 }
