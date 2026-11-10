@@ -1,8 +1,8 @@
 {
   "suite": "sightbench-looks",
   "title": "SightBench: two looks before \"sure\", quoted reads, one extra photo",
-  "ranAt": "2026-11-10T16:22:06.502Z",
-  "gitSha": "uncommitted",
+  "ranAt": "2026-11-10T17:58:40.374Z",
+  "gitSha": "ac84cb2",
   "headlines": [
     {
       "id": "two-looks-recall",
@@ -37,57 +37,57 @@
     {
       "id": "quoted-false-alarm-twin",
       "label": "Quoted reads (with two looks): matching items given any disagreeing reason",
-      "value": "14 of 66 (21.2%)",
-      "baseline": "same pairs, current reads: 29 of 66",
-      "interval": "95% Wilson 13.1%–32.5%",
-      "n": 66,
+      "value": "55 of 210 (26.2%)",
+      "baseline": "same pairs, current reads: 100 of 210",
+      "interval": "95% Wilson 20.7%–32.5%",
+      "n": 210,
       "script": "evals/sightbench/looks.ts",
       "negative": false,
-      "note": "Synthetic renders, not real photos. Stratified test subset of 130 pairs (66 matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made; 10 sampled pairs were not run (budget). Disagreeing modules on matching pairs, current reads -> quoted reads: damage 25 -> 9, identity 1 -> 0, colour 7 -> 7, size 0 -> 0. Reads that counted as \"not sure\" for want of a citation: identity 0, damage 40 (on matching pairs 0 and 20)."
+      "note": "Synthetic renders, not real photos. All 420 test pairs (210 matching). Disagreeing modules on matching pairs, current reads -> quoted reads: damage 87 -> 37, identity 3 -> 1, colour 21 -> 21, size 0 -> 0. Reads that counted as \"not sure\" for want of a citation: identity 0, damage 108 (on matching pairs 0 and 50)."
     },
     {
       "id": "quoted-recall-false-alarms",
       "label": "Quoted reads (with two looks): mismatches flagged / false alarms",
-      "value": "18/64 · 0/66",
-      "baseline": "same pairs, current reads: 22/64 · 1/66",
-      "n": 130,
+      "value": "66/210 · 1/210",
+      "baseline": "same pairs, current reads: 81/210 · 2/210",
+      "n": 420,
       "script": "evals/sightbench/looks.ts",
       "negative": true,
-      "note": "Synthetic renders, not real photos. Stratified test subset of 130 pairs (66 matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made; 10 sampled pairs were not run (budget). Both columns use the two-looks rule; the current rule on the same pairs: 33/64 · 1/66. Per type (quoted): colour 0 of 15, size 11 of 15, model 5 of 18, damage 2 of 16."
+      "note": "Synthetic renders, not real photos. All 420 test pairs (210 matching). Both columns use the two-looks rule; the current rule on the same pairs: 121/210 · 4/210. Per type (quoted): colour 0 of 53, size 44 of 53, model 10 of 52, damage 12 of 52."
     },
     {
       "id": "retake-recall-false-alarms",
       "label": "After one SIMULATED retake: mismatches flagged / false alarms",
-      "value": "33/64 · 0/66",
-      "baseline": "before it, same pairs: 18/64 · 0/66",
-      "interval": "95% Wilson 39.6%–63.4%",
-      "n": 130,
+      "value": "124/210 · 1/210",
+      "baseline": "before it, same pairs: 66/210 · 1/210",
+      "interval": "95% Wilson 52.3%–65.5%",
+      "n": 420,
       "script": "evals/sightbench/looks.ts",
-      "note": "SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took. Synthetic renders, not real photos. Stratified test subset of 130 pairs (66 matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made; 10 sampled pairs were not run (budget). Quoted reads and two looks, then one extra photo for every \"not sure\" pair that asked for one. Current numbers on the same pairs: 33/64 · 1/66. Per type after the retake: colour 1 of 15, size 11 of 15, model 13 of 18, damage 8 of 16."
+      "note": "SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took. Synthetic renders, not real photos. All 420 test pairs (210 matching). Quoted reads and two looks, then one extra photo for every \"not sure\" pair that asked for one. Current numbers on the same pairs: 121/210 · 4/210. Per type after the retake: colour 2 of 53, size 46 of 53, model 41 of 52, damage 35 of 52."
     },
     {
       "id": "retake-abstain-accuracy",
       "label": "After one SIMULATED retake: \"not sure\" / accuracy when it answers",
-      "value": "80/130 · 49/50",
-      "baseline": "before it, same pairs: 106/130 · 23/24",
-      "n": 130,
+      "value": "241/420 · 174/179",
+      "baseline": "before it, same pairs: 335/420 · 82/85",
+      "n": 420,
       "script": "evals/sightbench/looks.ts",
-      "note": "SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took. Synthetic renders, not real photos. Extra photos asked for: light 98, tag 3, paper 5. Answers that changed: match: unsure -> match 11; mismatch: unsure -> mismatch 15. Current numbers on the same pairs: 91/130 · 37/39."
+      "note": "SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took. Synthetic renders, not real photos. Extra photos asked for: light 307, paper 15, tag 9, none 4. Answers that changed: mismatch: unsure -> mismatch 58; match: unsure -> match 34; mismatch: unsure -> match 2. Current numbers on the same pairs: 283/420 · 132/137."
     },
     {
       "id": "colour-caught",
       "label": "Colour mismatches caught: current / two looks / quoted / after one SIMULATED retake",
-      "value": "2/53 · 0/53 · 0/15 · 1/15",
+      "value": "2/53 · 0/53 · 0/53 · 2/53",
       "n": 53,
       "script": "evals/sightbench/looks.ts",
       "negative": true,
-      "note": "Synthetic renders, not real photos. The first two are on the whole test split, the last two on the 130-pair subset. SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took for the last. A sure colour mismatch needs the colour seen as wrong on two photos (or a second module agreeing); a first photo the colour check gave up on (dim light, tinted light, wood) plus one better photo is still one look. Colour also asks for a photo in better light rather than white paper when the light was dim or tinted (decided on dev, see README)."
+      "note": "Synthetic renders, not real photos. The first two are on the whole test split, the last two on the same split. SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took for the last. A sure colour mismatch needs the colour seen as wrong on two photos (or a second module agreeing); a first photo the colour check gave up on (dim light, tinted light, wood) plus one better photo is still one look. Colour also asks for a photo in better light rather than white paper when the light was dim or tinted (decided on dev, see README)."
     },
     {
       "id": "api-spend",
       "label": "Anthropic API spend on new reads for these results (dev and test)",
-      "value": "11.46 USD, 550 calls",
-      "baseline": "cap: 11.5 USD",
+      "value": "32.52 USD, 1557 calls",
+      "baseline": "cap: 36 USD",
       "script": "evals/sightbench/looks.ts",
       "note": "claude-opus-5-5, effort low, prompt version quote-or-unsure-1, from the API's token counts at list price (claude-opus-5-5 4/20 USD per million input/output tokens). Size-tag reads were reused from the saved run where the tag photo was the same."
     }
@@ -96,30 +96,29 @@
     "Synthetic renders, not real photos. Real photos will differ; the real photo set (evals/sightbench/real/SHOTLIST.md) is not collected yet.",
     "Retakes are SIMULATED. SightBench has one photo of each delivered item, so each extra photo is rendered by evals/sightbench/py/sightbench/retake.py from the pair's own seed (the same item and damage, checked byte for byte against the pair's photo): \"light\" is a new day-light photo, \"paper\" a new photo under the pair's own light with an A4 sheet of white paper beside the item, \"tag\" the pair's own tag under its own light, closer and flatter. No number here says how real buyers' retakes would go.",
     "The two-looks rows use all 420 test pairs and the module outputs saved by the last with-model test run; re-fusing them with the old rule reproduced every saved verdict (420 of 420).",
-    "Quoted reads and retakes need new model calls, capped at about 12 USD, so they cover a stratified subset of 130 test pairs, not all 420. Intervals on the subset are wide. Cells: match / day 22, match / dim 21, match / lamp 23, mismatch colour / day 5, mismatch colour / dim 4, mismatch colour / lamp 6, mismatch damage / day 6, mismatch damage / dim 4, mismatch damage / lamp 6, mismatch model / day 6, mismatch model / dim 6, mismatch model / lamp 6, mismatch size / day 6, mismatch size / dim 4, mismatch size / lamp 5.",
+    "Quoted reads and retakes cover all 420 test pairs. The first 130 were read in an earlier run capped at about 12 USD; the rest were added later with the same prompt version and read cache, so no pair was read twice.",
     "Nothing was fitted on test. The citation rules (which words name a region, which descriptions are hedges) and the retake choice were written and checked on the dev split only; the two-looks rule has no threshold.",
-    "The test split has now been scored with the two-looks rule once, with quoted reads once and with a simulated retake once, in one run (details.run).",
-    "The test run stopped early: budget: spent 11.46 of 11.50 USD at pair sb0580."
+    "The deployed rule (two looks and quoted reads) on the whole split is also the latest run of the main sightbench suite, scored by sightbench/run.ts from the same first-look responses. This suite adds the simulated retake and the comparisons. Nothing was tuned on test between the runs."
   ],
   "details": {
     "label": "Synthetic renders, not real photos. Retakes are simulated.",
     "run": {
       "rowsFile": "data/raw/sightbench/looks/rows-test.json",
-      "generatedAt": "2026-11-10T16:21:41+00:00",
+      "generatedAt": "2026-11-10T17:46:45+00:00",
       "thresholds": "fitted-dev-2026-11-09",
       "promptVersion": "quote-or-unsure-1",
       "model": "claude-opus-5-5",
       "effort": "low",
-      "stopped": "budget: spent 11.46 of 11.50 USD at pair sb0580"
+      "stopped": null
     },
     "freeze": {
       "sha256": "e7561f6ddae5b447e10fc6bb4e5eb29ec08dcb1082e58fcde0cc3c691bd78e73"
     },
     "spend": {
-      "thisRunUsd": 9.7036,
-      "ledgerUsd": 11.459208,
-      "ledgerCalls": 550,
-      "capUsd": 11.5,
+      "thisRunUsd": 0,
+      "ledgerUsd": 32.519816,
+      "ledgerCalls": 1557,
+      "capUsd": 36,
       "prices": {
         "claude-opus-5-5": [
           4,
@@ -348,7 +347,7 @@
       }
     },
     "subset": {
-      "n": 130,
+      "n": 420,
       "ids": [
         "sb0485",
         "sb0510",
@@ -420,6 +419,146 @@
         "sb0341",
         "sb0260",
         "sb0465",
+        "sb0457",
+        "sb0223",
+        "sb0356",
+        "sb0391",
+        "sb0272",
+        "sb0392",
+        "sb0425",
+        "sb0412",
+        "sb0405",
+        "sb0449",
+        "sb0244",
+        "sb0486",
+        "sb0254",
+        "sb0448",
+        "sb0410",
+        "sb0311",
+        "sb0547",
+        "sb0469",
+        "sb0436",
+        "sb0234",
+        "sb0454",
+        "sb0430",
+        "sb0216",
+        "sb0432",
+        "sb0222",
+        "sb0312",
+        "sb0330",
+        "sb0450",
+        "sb0451",
+        "sb0423",
+        "sb0554",
+        "sb0273",
+        "sb0199",
+        "sb0571",
+        "sb0201",
+        "sb0540",
+        "sb0256",
+        "sb0413",
+        "sb0243",
+        "sb0269",
+        "sb0326",
+        "sb0192",
+        "sb0388",
+        "sb0303",
+        "sb0232",
+        "sb0409",
+        "sb0376",
+        "sb0398",
+        "sb0257",
+        "sb0196",
+        "sb0333",
+        "sb0231",
+        "sb0527",
+        "sb0188",
+        "sb0500",
+        "sb0514",
+        "sb0492",
+        "sb0294",
+        "sb0541",
+        "sb0354",
+        "sb0366",
+        "sb0300",
+        "sb0418",
+        "sb0478",
+        "sb0393",
+        "sb0488",
+        "sb0598",
+        "sb0389",
+        "sb0321",
+        "sb0444",
+        "sb0532",
+        "sb0362",
+        "sb0293",
+        "sb0516",
+        "sb0560",
+        "sb0519",
+        "sb0524",
+        "sb0302",
+        "sb0379",
+        "sb0487",
+        "sb0245",
+        "sb0274",
+        "sb0318",
+        "sb0562",
+        "sb0301",
+        "sb0474",
+        "sb0212",
+        "sb0328",
+        "sb0396",
+        "sb0211",
+        "sb0276",
+        "sb0193",
+        "sb0443",
+        "sb0489",
+        "sb0214",
+        "sb0266",
+        "sb0307",
+        "sb0225",
+        "sb0323",
+        "sb0224",
+        "sb0575",
+        "sb0407",
+        "sb0282",
+        "sb0599",
+        "sb0441",
+        "sb0242",
+        "sb0226",
+        "sb0417",
+        "sb0584",
+        "sb0240",
+        "sb0377",
+        "sb0185",
+        "sb0286",
+        "sb0481",
+        "sb0219",
+        "sb0424",
+        "sb0187",
+        "sb0320",
+        "sb0218",
+        "sb0548",
+        "sb0468",
+        "sb0361",
+        "sb0471",
+        "sb0596",
+        "sb0592",
+        "sb0277",
+        "sb0442",
+        "sb0585",
+        "sb0345",
+        "sb0401",
+        "sb0233",
+        "sb0467",
+        "sb0229",
+        "sb0387",
+        "sb0284",
+        "sb0239",
+        "sb0283",
+        "sb0446",
+        "sb0528",
+        "sb0202",
         "sb0197",
         "sb0367",
         "sb0520",
@@ -489,476 +628,620 @@
         "sb0531",
         "sb0270",
         "sb0358",
-        "sb0334"
+        "sb0334",
+        "sb0316",
+        "sb0569",
+        "sb0363",
+        "sb0314",
+        "sb0279",
+        "sb0517",
+        "sb0194",
+        "sb0346",
+        "sb0191",
+        "sb0246",
+        "sb0271",
+        "sb0416",
+        "sb0268",
+        "sb0515",
+        "sb0337",
+        "sb0439",
+        "sb0456",
+        "sb0572",
+        "sb0493",
+        "sb0263",
+        "sb0373",
+        "sb0195",
+        "sb0261",
+        "sb0348",
+        "sb0573",
+        "sb0291",
+        "sb0241",
+        "sb0428",
+        "sb0305",
+        "sb0309",
+        "sb0236",
+        "sb0506",
+        "sb0186",
+        "sb0267",
+        "sb0544",
+        "sb0350",
+        "sb0479",
+        "sb0342",
+        "sb0190",
+        "sb0568",
+        "sb0380",
+        "sb0458",
+        "sb0420",
+        "sb0215",
+        "sb0184",
+        "sb0251",
+        "sb0600",
+        "sb0462",
+        "sb0421",
+        "sb0558",
+        "sb0509",
+        "sb0200",
+        "sb0404",
+        "sb0381",
+        "sb0368",
+        "sb0360",
+        "sb0385",
+        "sb0563",
+        "sb0419",
+        "sb0369",
+        "sb0507",
+        "sb0344",
+        "sb0205",
+        "sb0461",
+        "sb0198",
+        "sb0555",
+        "sb0473",
+        "sb0235",
+        "sb0258",
+        "sb0255",
+        "sb0429",
+        "sb0353",
+        "sb0538",
+        "sb0332",
+        "sb0567",
+        "sb0308",
+        "sb0399",
+        "sb0365",
+        "sb0593",
+        "sb0395",
+        "sb0491",
+        "sb0357",
+        "sb0543",
+        "sb0327",
+        "sb0183",
+        "sb0315",
+        "sb0445",
+        "sb0371",
+        "sb0264",
+        "sb0208",
+        "sb0594",
+        "sb0383",
+        "sb0561",
+        "sb0533",
+        "sb0513",
+        "sb0589",
+        "sb0581",
+        "sb0397",
+        "sb0209",
+        "sb0281",
+        "sb0459",
+        "sb0375",
+        "sb0295",
+        "sb0313",
+        "sb0275",
+        "sb0390",
+        "sb0460",
+        "sb0287",
+        "sb0470",
+        "sb0290",
+        "sb0324",
+        "sb0505",
+        "sb0403",
+        "sb0359",
+        "sb0426",
+        "sb0355",
+        "sb0343",
+        "sb0549",
+        "sb0207",
+        "sb0578",
+        "sb0384",
+        "sb0280",
+        "sb0482",
+        "sb0496",
+        "sb0322",
+        "sb0484",
+        "sb0339",
+        "sb0508",
+        "sb0504",
+        "sb0551",
+        "sb0372",
+        "sb0249",
+        "sb0349",
+        "sb0434",
+        "sb0422",
+        "sb0408",
+        "sb0536",
+        "sb0553",
+        "sb0250",
+        "sb0265"
       ],
-      "notRun": 10,
+      "notRun": 0,
       "cells": {
-        "mismatch colour / lamp": 6,
-        "match / dim": 21,
-        "mismatch colour / day": 5,
-        "match / day": 22,
-        "match / lamp": 23,
-        "mismatch damage / dim": 4,
-        "mismatch model / dim": 6,
-        "mismatch model / day": 6,
-        "mismatch damage / day": 6,
-        "mismatch damage / lamp": 6,
-        "mismatch size / day": 6,
-        "mismatch size / lamp": 5,
-        "mismatch model / lamp": 6,
-        "mismatch colour / dim": 4,
-        "mismatch size / dim": 4
+        "mismatch colour / lamp": 17,
+        "match / dim": 70,
+        "mismatch size / dim": 17,
+        "mismatch model / day": 18,
+        "match / day": 70,
+        "mismatch colour / day": 18,
+        "match / lamp": 70,
+        "mismatch damage / dim": 18,
+        "mismatch model / dim": 17,
+        "mismatch colour / dim": 18,
+        "mismatch model / lamp": 17,
+        "mismatch damage / day": 17,
+        "mismatch damage / lamp": 17,
+        "mismatch size / day": 18,
+        "mismatch size / lamp": 18
       },
       "scores": {
         "current": {
-          "n": 130,
+          "n": 420,
           "mismatchRecall": {
-            "k": 33,
-            "n": 64,
-            "value": 0.515625,
+            "k": 121,
+            "n": 210,
+            "value": 0.5761904761904761,
             "wilson": [
-              0.39581601478580125,
-              0.6336644833456737
+              0.5085752403591578,
+              0.6410683328584751
             ]
           },
           "falseAlarm": {
-            "k": 1,
-            "n": 66,
-            "value": 0.015151515151515152,
+            "k": 4,
+            "n": 210,
+            "value": 0.01904761904761905,
             "wilson": [
-              0.0026796405439821064,
-              0.08095920262066399
+              0.007431562139483587,
+              0.04794338192420791
             ]
           },
           "abstention": {
-            "k": 91,
-            "n": 130,
-            "value": 0.7,
+            "k": 283,
+            "n": 420,
+            "value": 0.6738095238095239,
             "wilson": [
-              0.6164118937305151,
-              0.7721074817917123
+              0.6275739856610273,
+              0.7168944398824145
             ]
           },
           "accuracyWhenDecided": {
-            "k": 37,
-            "n": 39,
-            "value": 0.9487179487179487,
+            "k": 132,
+            "n": 137,
+            "value": 0.9635036496350365,
             "wilson": [
-              0.8311435995238639,
-              0.9858220445847259
+              0.9174111125832916,
+              0.9843120097374185
             ]
           },
           "matchConfirmed": {
-            "k": 4,
-            "n": 66,
-            "value": 0.06060606060606061,
+            "k": 11,
+            "n": 210,
+            "value": 0.05238095238095238,
             "wilson": [
-              0.023818614832318334,
-              0.14572908678564217
+              0.02949720012633639,
+              0.09134680722006956
             ]
           },
           "wrongMatch": {
             "k": 1,
-            "n": 64,
-            "value": 0.015625,
+            "n": 210,
+            "value": 0.004761904761904762,
             "wilson": [
-              0.002763541923337505,
-              0.08334101600094265
+              0.0008410882735945795,
+              0.026475685811790724
             ]
           },
           "perType": {
             "colour": {
-              "k": 1,
-              "n": 15,
-              "value": 0.06666666666666667,
+              "k": 2,
+              "n": 53,
+              "value": 0.03773584905660377,
               "wilson": [
-                0.011866895493268553,
-                0.2981652987378003
+                0.010410287275826852,
+                0.12754287197418354
               ]
             },
             "size": {
-              "k": 11,
-              "n": 15,
-              "value": 0.7333333333333333,
+              "k": 44,
+              "n": 53,
+              "value": 0.8301886792452831,
               "wilson": [
-                0.4804956594401943,
-                0.8910254667430761
+                0.7077471971890396,
+                0.9080005462038102
               ]
             },
             "model": {
-              "k": 14,
-              "n": 18,
-              "value": 0.7777777777777778,
+              "k": 43,
+              "n": 52,
+              "value": 0.8269230769230769,
               "wilson": [
-                0.5478541568378739,
-                0.9099907189139831
+                0.702691358755192,
+                0.9061752560868979
               ]
             },
             "damage": {
-              "k": 7,
-              "n": 16,
-              "value": 0.4375,
+              "k": 32,
+              "n": 52,
+              "value": 0.6153846153846154,
               "wilson": [
-                0.23098652405492354,
-                0.6682144360118811
+                0.4795987371581939,
+                0.7352953621978379
               ]
             }
           },
           "falseAlarmTwin": {
-            "k": 29,
-            "n": 66,
-            "value": 0.4393939393939394,
+            "k": 100,
+            "n": 210,
+            "value": 0.47619047619047616,
             "wilson": [
-              0.3262812091954944,
-              0.5591736462000862
+              0.4096778307048371,
+              0.5435585526646526
             ]
           },
           "falseAlarmTwinByModule": {
-            "damage": 25,
-            "colour": 7,
-            "identity": 1
+            "damage": 87,
+            "colour": 21,
+            "identity": 3
           }
         },
         "twoLooks": {
-          "n": 130,
+          "n": 420,
           "mismatchRecall": {
-            "k": 22,
-            "n": 64,
-            "value": 0.34375,
+            "k": 81,
+            "n": 210,
+            "value": 0.38571428571428573,
             "wilson": [
-              0.23923142078443355,
-              0.46596359790081815
+              0.3224940856009437,
+              0.4530405545726067
             ]
           },
           "falseAlarm": {
-            "k": 1,
-            "n": 66,
-            "value": 0.015151515151515152,
+            "k": 2,
+            "n": 210,
+            "value": 0.009523809523809525,
             "wilson": [
-              0.0026796405439821064,
-              0.08095920262066399
+              0.002615669387409439,
+              0.03405382802407793
             ]
           },
           "abstention": {
-            "k": 102,
-            "n": 130,
-            "value": 0.7846153846153846,
+            "k": 325,
+            "n": 420,
+            "value": 0.7738095238095238,
             "wilson": [
-              0.706324263759216,
-              0.846568693714723
+              0.7314215247275058,
+              0.8112342141422997
             ]
           },
           "accuracyWhenDecided": {
-            "k": 26,
-            "n": 28,
-            "value": 0.9285714285714286,
+            "k": 92,
+            "n": 95,
+            "value": 0.968421052631579,
             "wilson": [
-              0.7735463743160095,
-              0.9801879358846942
+              0.9112290135269181,
+              0.9892028605255756
             ]
           },
           "matchConfirmed": {
-            "k": 4,
-            "n": 66,
-            "value": 0.06060606060606061,
+            "k": 11,
+            "n": 210,
+            "value": 0.05238095238095238,
             "wilson": [
-              0.023818614832318334,
-              0.14572908678564217
+              0.02949720012633639,
+              0.09134680722006956
             ]
           },
           "wrongMatch": {
             "k": 1,
-            "n": 64,
-            "value": 0.015625,
+            "n": 210,
+            "value": 0.004761904761904762,
             "wilson": [
-              0.002763541923337505,
-              0.08334101600094265
+              0.0008410882735945795,
+              0.026475685811790724
             ]
           },
           "perType": {
             "colour": {
               "k": 0,
-              "n": 15,
+              "n": 53,
               "value": 0,
               "wilson": [
                 0,
-                0.20388330103584862
+                0.06758198857654187
               ]
             },
             "size": {
-              "k": 11,
-              "n": 15,
-              "value": 0.7333333333333333,
+              "k": 44,
+              "n": 53,
+              "value": 0.8301886792452831,
               "wilson": [
-                0.4804956594401943,
-                0.8910254667430761
+                0.7077471971890396,
+                0.9080005462038102
               ]
             },
             "model": {
-              "k": 8,
-              "n": 18,
-              "value": 0.4444444444444444,
+              "k": 23,
+              "n": 52,
+              "value": 0.4423076923076923,
               "wilson": [
-                0.24559518127005633,
-                0.6628358435795723
+                0.3159505681940129,
+                0.5766023821279712
               ]
             },
             "damage": {
-              "k": 3,
-              "n": 16,
-              "value": 0.1875,
+              "k": 14,
+              "n": 52,
+              "value": 0.2692307692307692,
               "wilson": [
-                0.06591599071428142,
-                0.4300888096197414
+                0.16768960295166518,
+                0.4025221983362713
               ]
             }
           },
           "falseAlarmTwin": {
-            "k": 29,
-            "n": 66,
-            "value": 0.4393939393939394,
+            "k": 100,
+            "n": 210,
+            "value": 0.47619047619047616,
             "wilson": [
-              0.3262812091954944,
-              0.5591736462000862
+              0.4096778307048371,
+              0.5435585526646526
             ]
           },
           "falseAlarmTwinByModule": {
-            "damage": 25,
-            "colour": 7,
-            "identity": 1
+            "damage": 87,
+            "colour": 21,
+            "identity": 3
           }
         },
         "quoted": {
-          "n": 130,
+          "n": 420,
           "mismatchRecall": {
-            "k": 18,
-            "n": 64,
-            "value": 0.28125,
+            "k": 66,
+            "n": 210,
+            "value": 0.3142857142857143,
             "wilson": [
-              0.18593372333727837,
-              0.40133930282207403
+              0.2553116524198874,
+              0.3799321378621321
             ]
           },
           "falseAlarm": {
-            "k": 0,
-            "n": 66,
-            "value": 0,
-            "wilson": [
-              0,
-              0.05500255701354129
-            ]
-          },
-          "abstention": {
-            "k": 106,
-            "n": 130,
-            "value": 0.8153846153846154,
-            "wilson": [
-              0.7399815612194086,
-              0.8726836078733345
-            ]
-          },
-          "accuracyWhenDecided": {
-            "k": 23,
-            "n": 24,
-            "value": 0.9583333333333334,
-            "wilson": [
-              0.7975819352134406,
-              0.9926065438344942
-            ]
-          },
-          "matchConfirmed": {
-            "k": 5,
-            "n": 66,
-            "value": 0.07575757575757576,
-            "wilson": [
-              0.032792037562960244,
-              0.1653919502061051
-            ]
-          },
-          "wrongMatch": {
             "k": 1,
-            "n": 64,
-            "value": 0.015625,
+            "n": 210,
+            "value": 0.004761904761904762,
             "wilson": [
-              0.002763541923337505,
-              0.08334101600094265
-            ]
-          },
-          "perType": {
-            "colour": {
-              "k": 0,
-              "n": 15,
-              "value": 0,
-              "wilson": [
-                0,
-                0.20388330103584862
-              ]
-            },
-            "size": {
-              "k": 11,
-              "n": 15,
-              "value": 0.7333333333333333,
-              "wilson": [
-                0.4804956594401943,
-                0.8910254667430761
-              ]
-            },
-            "model": {
-              "k": 5,
-              "n": 18,
-              "value": 0.2777777777777778,
-              "wilson": [
-                0.12499753379553996,
-                0.5087265656029745
-              ]
-            },
-            "damage": {
-              "k": 2,
-              "n": 16,
-              "value": 0.125,
-              "wilson": [
-                0.03497748774324047,
-                0.36022827265758695
-              ]
-            }
-          },
-          "falseAlarmTwin": {
-            "k": 14,
-            "n": 66,
-            "value": 0.21212121212121213,
-            "wilson": [
-              0.13077985107923804,
-              0.3251307120497705
-            ]
-          },
-          "falseAlarmTwinByModule": {
-            "damage": 9,
-            "colour": 7
-          }
-        },
-        "quotedRetake": {
-          "n": 130,
-          "mismatchRecall": {
-            "k": 33,
-            "n": 64,
-            "value": 0.515625,
-            "wilson": [
-              0.39581601478580125,
-              0.6336644833456737
-            ]
-          },
-          "falseAlarm": {
-            "k": 0,
-            "n": 66,
-            "value": 0,
-            "wilson": [
-              0,
-              0.05500255701354129
+              0.0008410882735945795,
+              0.026475685811790724
             ]
           },
           "abstention": {
-            "k": 80,
-            "n": 130,
-            "value": 0.6153846153846154,
+            "k": 335,
+            "n": 420,
+            "value": 0.7976190476190477,
             "wilson": [
-              0.5295851013131989,
-              0.6945606922573171
+              0.7565768197375313,
+              0.8332663746861704
             ]
           },
           "accuracyWhenDecided": {
-            "k": 49,
-            "n": 50,
-            "value": 0.98,
+            "k": 82,
+            "n": 85,
+            "value": 0.9647058823529412,
             "wilson": [
-              0.8950455641036219,
-              0.9964607407283539
+              0.9012995216039354,
+              0.987924958145358
             ]
           },
           "matchConfirmed": {
             "k": 16,
-            "n": 66,
-            "value": 0.24242424242424243,
+            "n": 210,
+            "value": 0.0761904761904762,
             "wilson": [
-              0.15509184941772042,
-              0.35809128601349777
+              0.04743938771625338,
+              0.12016823626066289
             ]
           },
           "wrongMatch": {
-            "k": 1,
-            "n": 64,
-            "value": 0.015625,
+            "k": 2,
+            "n": 210,
+            "value": 0.009523809523809525,
             "wilson": [
-              0.002763541923337505,
-              0.08334101600094265
+              0.002615669387409439,
+              0.03405382802407793
             ]
           },
           "perType": {
             "colour": {
-              "k": 1,
-              "n": 15,
-              "value": 0.06666666666666667,
+              "k": 0,
+              "n": 53,
+              "value": 0,
               "wilson": [
-                0.011866895493268553,
-                0.2981652987378003
+                0,
+                0.06758198857654187
               ]
             },
             "size": {
-              "k": 11,
-              "n": 15,
-              "value": 0.7333333333333333,
+              "k": 44,
+              "n": 53,
+              "value": 0.8301886792452831,
               "wilson": [
-                0.4804956594401943,
-                0.8910254667430761
+                0.7077471971890396,
+                0.9080005462038102
               ]
             },
             "model": {
-              "k": 13,
-              "n": 18,
-              "value": 0.7222222222222222,
+              "k": 10,
+              "n": 52,
+              "value": 0.19230769230769232,
               "wilson": [
-                0.4912734343970255,
-                0.87500246620446
+                0.10796046024733509,
+                0.3189886081365802
               ]
             },
             "damage": {
-              "k": 8,
-              "n": 16,
-              "value": 0.5,
+              "k": 12,
+              "n": 52,
+              "value": 0.23076923076923078,
               "wilson": [
-                0.27999563610326017,
-                0.7200043638967398
+                0.1372426092549275,
+                0.36133782558099836
               ]
             }
           },
           "falseAlarmTwin": {
-            "k": 18,
-            "n": 66,
-            "value": 0.2727272727272727,
+            "k": 55,
+            "n": 210,
+            "value": 0.2619047619047619,
             "wilson": [
-              0.18003344995588672,
-              0.3904222577775411
+              0.20709776905994626,
+              0.32526606463495056
             ]
           },
           "falseAlarmTwinByModule": {
-            "damage": 10,
-            "colour": 9
+            "damage": 37,
+            "colour": 21,
+            "identity": 1
+          }
+        },
+        "quotedRetake": {
+          "n": 420,
+          "mismatchRecall": {
+            "k": 124,
+            "n": 210,
+            "value": 0.5904761904761905,
+            "wilson": [
+              0.5229221093551802,
+              0.6547796338407591
+            ]
+          },
+          "falseAlarm": {
+            "k": 1,
+            "n": 210,
+            "value": 0.004761904761904762,
+            "wilson": [
+              0.0008410882735945795,
+              0.026475685811790724
+            ]
+          },
+          "abstention": {
+            "k": 241,
+            "n": 420,
+            "value": 0.5738095238095238,
+            "wilson": [
+              0.526056273461602,
+              0.620224838755476
+            ]
+          },
+          "accuracyWhenDecided": {
+            "k": 174,
+            "n": 179,
+            "value": 0.9720670391061452,
+            "wilson": [
+              0.9362870793666515,
+              0.9880109495925905
+            ]
+          },
+          "matchConfirmed": {
+            "k": 50,
+            "n": 210,
+            "value": 0.23809523809523808,
+            "wilson": [
+              0.1855207883191717,
+              0.30007942874521476
+            ]
+          },
+          "wrongMatch": {
+            "k": 4,
+            "n": 210,
+            "value": 0.01904761904761905,
+            "wilson": [
+              0.007431562139483587,
+              0.04794338192420791
+            ]
+          },
+          "perType": {
+            "colour": {
+              "k": 2,
+              "n": 53,
+              "value": 0.03773584905660377,
+              "wilson": [
+                0.010410287275826852,
+                0.12754287197418354
+              ]
+            },
+            "size": {
+              "k": 46,
+              "n": 53,
+              "value": 0.8679245283018868,
+              "wilson": [
+                0.7515974469109508,
+                0.9345214671553674
+              ]
+            },
+            "model": {
+              "k": 41,
+              "n": 52,
+              "value": 0.7884615384615384,
+              "wilson": [
+                0.6596789537149542,
+                0.8775562946751251
+              ]
+            },
+            "damage": {
+              "k": 35,
+              "n": 52,
+              "value": 0.6730769230769231,
+              "wilson": [
+                0.5375618936197395,
+                0.7847792554143083
+              ]
+            }
+          },
+          "falseAlarmTwin": {
+            "k": 76,
+            "n": 210,
+            "value": 0.3619047619047619,
+            "wilson": [
+              0.29992942543192347,
+              0.42884159811111666
+            ]
+          },
+          "falseAlarmTwinByModule": {
+            "damage": 45,
+            "colour": 35,
+            "identity": 1
           }
         }
       },
       "retakesAsked": {
-        "light": 98,
-        "tag": 3,
-        "paper": 5
+        "light": 307,
+        "paper": 15,
+        "tag": 9,
+        "none": 4
       },
       "answerChanges": {
-        "match: unsure -> match": 11,
-        "mismatch: unsure -> mismatch": 15
+        "mismatch: unsure -> mismatch": 58,
+        "match: unsure -> match": 34,
+        "mismatch: unsure -> match": 2
       },
       "uncited": {
         "identity": 0,
-        "damage": 40,
+        "damage": 108,
         "identityOnMatch": 0,
-        "damageOnMatch": 20
+        "damageOnMatch": 50
       }
     },
     "dev": {
@@ -1214,7 +1497,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0184",
@@ -1223,7 +1509,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0185",
@@ -1232,7 +1521,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0186",
@@ -1241,7 +1533,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0187",
@@ -1250,7 +1545,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0188",
@@ -1259,7 +1557,10 @@
         "lighting": "day",
         "current": "match",
         "twoLooks": "match",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0189",
@@ -1280,7 +1581,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0191",
@@ -1289,7 +1593,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0192",
@@ -1298,7 +1605,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "tag",
+        "afterRetake": "match"
       },
       {
         "id": "sb0193",
@@ -1307,7 +1617,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0194",
@@ -1316,7 +1629,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0195",
@@ -1325,7 +1641,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0196",
@@ -1334,7 +1653,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0197",
@@ -1355,7 +1677,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0199",
@@ -1364,7 +1689,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0200",
@@ -1373,7 +1701,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0201",
@@ -1382,7 +1713,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0202",
@@ -1391,7 +1725,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0203",
@@ -1424,7 +1761,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0206",
@@ -1445,7 +1785,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0208",
@@ -1454,7 +1797,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0209",
@@ -1463,7 +1809,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0210",
@@ -1484,7 +1833,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0212",
@@ -1493,7 +1845,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0213",
@@ -1514,7 +1869,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": null,
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0215",
@@ -1523,7 +1881,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0216",
@@ -1532,7 +1893,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0217",
@@ -1553,7 +1917,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0219",
@@ -1562,7 +1929,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0220",
@@ -1595,7 +1965,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0223",
@@ -1604,7 +1977,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0224",
@@ -1613,7 +1989,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0225",
@@ -1622,7 +2001,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0226",
@@ -1631,7 +2013,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0227",
@@ -1664,7 +2049,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0230",
@@ -1685,7 +2073,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0232",
@@ -1694,7 +2085,10 @@
         "lighting": "day",
         "current": "match",
         "twoLooks": "match",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0233",
@@ -1703,7 +2097,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0234",
@@ -1712,7 +2109,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0235",
@@ -1721,7 +2121,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0236",
@@ -1730,7 +2133,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0237",
@@ -1763,7 +2169,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0240",
@@ -1772,7 +2181,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0241",
@@ -1781,7 +2193,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0242",
@@ -1790,7 +2205,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0243",
@@ -1799,7 +2217,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0244",
@@ -1808,7 +2229,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0245",
@@ -1817,7 +2241,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0246",
@@ -1826,7 +2253,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0247",
@@ -1859,7 +2289,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0250",
@@ -1868,7 +2301,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0251",
@@ -1877,7 +2313,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0252",
@@ -1910,7 +2349,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0255",
@@ -1919,7 +2361,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0256",
@@ -1928,7 +2373,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0257",
@@ -1937,7 +2385,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0258",
@@ -1946,7 +2397,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0259",
@@ -1979,7 +2433,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0262",
@@ -2000,7 +2457,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0264",
@@ -2009,7 +2469,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0265",
@@ -2018,7 +2481,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0266",
@@ -2027,7 +2493,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0267",
@@ -2036,7 +2505,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0268",
@@ -2045,7 +2517,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0269",
@@ -2054,7 +2529,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0270",
@@ -2075,7 +2553,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0272",
@@ -2084,7 +2565,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0273",
@@ -2093,7 +2577,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0274",
@@ -2102,7 +2589,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0275",
@@ -2111,7 +2601,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0276",
@@ -2120,7 +2613,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0277",
@@ -2129,7 +2625,10 @@
         "lighting": "day",
         "current": "match",
         "twoLooks": "match",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0278",
@@ -2150,7 +2649,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0280",
@@ -2159,7 +2661,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0281",
@@ -2168,7 +2673,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0282",
@@ -2177,7 +2685,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0283",
@@ -2186,7 +2697,10 @@
         "lighting": "lamp",
         "current": "match",
         "twoLooks": "match",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0284",
@@ -2195,7 +2709,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0285",
@@ -2206,7 +2723,7 @@
         "twoLooks": "unsure",
         "twoLooksRetake": "light",
         "quoted": "unsure",
-        "retakeAsked": "light",
+        "retakeAsked": "paper",
         "afterRetake": "unsure"
       },
       {
@@ -2216,7 +2733,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0287",
@@ -2225,7 +2745,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0288",
@@ -2258,7 +2781,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0291",
@@ -2267,7 +2793,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0292",
@@ -2288,7 +2817,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0294",
@@ -2297,7 +2829,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0295",
@@ -2306,7 +2841,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0296",
@@ -2363,7 +2901,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0301",
@@ -2372,7 +2913,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0302",
@@ -2381,7 +2925,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0303",
@@ -2390,7 +2937,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0304",
@@ -2411,7 +2961,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0306",
@@ -2432,7 +2985,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0308",
@@ -2441,7 +2997,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0309",
@@ -2450,7 +3009,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0310",
@@ -2471,7 +3033,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0312",
@@ -2480,7 +3045,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0313",
@@ -2489,7 +3057,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0314",
@@ -2498,7 +3069,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0315",
@@ -2507,7 +3081,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0316",
@@ -2516,7 +3093,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0317",
@@ -2537,7 +3117,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0319",
@@ -2558,7 +3141,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0321",
@@ -2567,7 +3153,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0322",
@@ -2576,7 +3165,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0323",
@@ -2585,7 +3177,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0324",
@@ -2594,7 +3189,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0325",
@@ -2615,7 +3213,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": null,
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0327",
@@ -2624,7 +3225,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0328",
@@ -2633,7 +3237,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0329",
@@ -2654,7 +3261,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0331",
@@ -2675,7 +3285,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0333",
@@ -2684,7 +3297,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0334",
@@ -2729,7 +3345,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0338",
@@ -2750,7 +3369,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0340",
@@ -2783,7 +3405,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0343",
@@ -2792,7 +3417,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0344",
@@ -2801,7 +3429,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0345",
@@ -2810,7 +3441,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0346",
@@ -2819,7 +3453,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0347",
@@ -2840,7 +3477,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0349",
@@ -2849,7 +3489,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0350",
@@ -2858,7 +3501,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0351",
@@ -2891,7 +3537,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0354",
@@ -2900,7 +3549,10 @@
         "lighting": "day",
         "current": "match",
         "twoLooks": "match",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0355",
@@ -2909,7 +3561,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0356",
@@ -2918,7 +3573,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0357",
@@ -2927,7 +3585,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0358",
@@ -2948,7 +3609,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0360",
@@ -2957,7 +3621,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0361",
@@ -2966,7 +3633,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0362",
@@ -2975,7 +3645,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0363",
@@ -2984,7 +3657,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0364",
@@ -3005,7 +3681,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0366",
@@ -3014,7 +3693,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0367",
@@ -3035,7 +3717,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0369",
@@ -3044,7 +3729,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "tag"
+        "twoLooksRetake": "tag",
+        "quoted": "unsure",
+        "retakeAsked": "tag",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0370",
@@ -3065,7 +3753,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0372",
@@ -3074,7 +3765,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0373",
@@ -3083,7 +3777,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0374",
@@ -3104,7 +3801,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0376",
@@ -3113,7 +3813,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0377",
@@ -3122,7 +3825,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "tag",
+        "afterRetake": "match"
       },
       {
         "id": "sb0378",
@@ -3143,7 +3849,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0380",
@@ -3152,7 +3861,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0381",
@@ -3161,7 +3873,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0382",
@@ -3182,7 +3897,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0384",
@@ -3191,7 +3909,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0385",
@@ -3200,7 +3921,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0386",
@@ -3221,7 +3945,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0388",
@@ -3230,7 +3957,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0389",
@@ -3239,7 +3969,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0390",
@@ -3248,7 +3981,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0391",
@@ -3257,7 +3993,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0392",
@@ -3266,7 +4005,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0393",
@@ -3275,7 +4017,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0394",
@@ -3296,7 +4041,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0396",
@@ -3305,7 +4053,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0397",
@@ -3314,7 +4065,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0398",
@@ -3323,7 +4077,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0399",
@@ -3332,7 +4089,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0400",
@@ -3353,7 +4113,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0402",
@@ -3374,7 +4137,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0404",
@@ -3383,7 +4149,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0405",
@@ -3392,7 +4161,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0406",
@@ -3413,7 +4185,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0408",
@@ -3422,7 +4197,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0409",
@@ -3431,7 +4209,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0410",
@@ -3440,7 +4221,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0411",
@@ -3461,7 +4245,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0413",
@@ -3470,7 +4257,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0414",
@@ -3503,7 +4293,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0417",
@@ -3512,7 +4305,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0418",
@@ -3521,7 +4317,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0419",
@@ -3530,7 +4329,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0420",
@@ -3539,7 +4341,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0421",
@@ -3548,7 +4353,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0422",
@@ -3557,7 +4365,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0423",
@@ -3566,7 +4377,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0424",
@@ -3575,7 +4389,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0425",
@@ -3584,7 +4401,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0426",
@@ -3593,7 +4413,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0427",
@@ -3614,7 +4437,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0429",
@@ -3623,7 +4449,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0430",
@@ -3632,7 +4461,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0431",
@@ -3653,7 +4485,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": null,
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0433",
@@ -3674,7 +4509,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0435",
@@ -3695,7 +4533,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0437",
@@ -3728,7 +4569,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0440",
@@ -3749,7 +4593,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0442",
@@ -3758,7 +4605,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0443",
@@ -3767,7 +4617,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0444",
@@ -3776,7 +4629,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0445",
@@ -3785,7 +4641,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0446",
@@ -3794,7 +4653,10 @@
         "lighting": "day",
         "current": "match",
         "twoLooks": "match",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0447",
@@ -3815,7 +4677,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0449",
@@ -3824,7 +4689,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0450",
@@ -3833,7 +4701,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0451",
@@ -3842,7 +4713,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0452",
@@ -3875,7 +4749,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0455",
@@ -3896,7 +4773,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0457",
@@ -3905,7 +4785,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0458",
@@ -3914,7 +4797,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0459",
@@ -3923,7 +4809,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0460",
@@ -3932,7 +4821,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0461",
@@ -3941,7 +4833,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0462",
@@ -3950,7 +4845,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "tag",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0463",
@@ -4007,7 +4905,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0468",
@@ -4016,7 +4917,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0469",
@@ -4025,7 +4929,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0470",
@@ -4034,7 +4941,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0471",
@@ -4043,7 +4953,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0472",
@@ -4064,7 +4977,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0474",
@@ -4073,7 +4989,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0475",
@@ -4118,7 +5037,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0479",
@@ -4127,7 +5049,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0480",
@@ -4148,7 +5073,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": null,
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0482",
@@ -4157,7 +5085,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0483",
@@ -4178,7 +5109,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0485",
@@ -4199,7 +5133,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0487",
@@ -4208,7 +5145,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0488",
@@ -4217,7 +5157,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "paper"
+        "twoLooksRetake": "paper",
+        "quoted": "unsure",
+        "retakeAsked": "paper",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0489",
@@ -4226,7 +5169,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0490",
@@ -4247,7 +5193,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0492",
@@ -4256,7 +5205,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0493",
@@ -4265,7 +5217,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0494",
@@ -4298,7 +5253,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0497",
@@ -4343,7 +5301,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0501",
@@ -4388,7 +5349,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0505",
@@ -4397,7 +5361,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0506",
@@ -4406,7 +5373,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0507",
@@ -4415,7 +5385,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0508",
@@ -4424,7 +5397,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0509",
@@ -4433,7 +5409,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0510",
@@ -4478,7 +5457,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0514",
@@ -4487,7 +5469,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0515",
@@ -4496,7 +5481,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0516",
@@ -4505,7 +5493,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0517",
@@ -4514,7 +5505,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0518",
@@ -4535,7 +5529,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0520",
@@ -4592,7 +5589,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0525",
@@ -4625,7 +5625,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0528",
@@ -4634,7 +5637,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0529",
@@ -4679,7 +5685,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0533",
@@ -4688,7 +5697,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0534",
@@ -4721,7 +5733,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0537",
@@ -4742,7 +5757,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0539",
@@ -4763,7 +5781,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0541",
@@ -4772,7 +5793,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0542",
@@ -4793,7 +5817,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0544",
@@ -4802,7 +5829,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0545",
@@ -4835,7 +5865,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0548",
@@ -4844,7 +5877,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0549",
@@ -4853,7 +5889,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0550",
@@ -4874,7 +5913,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0552",
@@ -4895,7 +5937,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0554",
@@ -4904,7 +5949,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0555",
@@ -4913,7 +5961,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0556",
@@ -4946,7 +5997,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "tag"
+        "twoLooksRetake": "tag",
+        "quoted": "unsure",
+        "retakeAsked": "tag",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0559",
@@ -4967,7 +6021,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0561",
@@ -4976,7 +6033,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0562",
@@ -4985,7 +6045,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0563",
@@ -4994,7 +6057,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0564",
@@ -5039,7 +6105,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0568",
@@ -5048,7 +6117,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0569",
@@ -5057,7 +6129,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0570",
@@ -5078,7 +6153,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0572",
@@ -5087,7 +6165,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0573",
@@ -5096,7 +6177,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0574",
@@ -5117,7 +6201,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0576",
@@ -5150,7 +6237,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0579",
@@ -5171,7 +6261,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0581",
@@ -5180,7 +6273,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0582",
@@ -5189,7 +6285,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0583",
@@ -5198,7 +6297,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0584",
@@ -5207,7 +6309,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0585",
@@ -5216,7 +6321,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0586",
@@ -5225,7 +6333,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0587",
@@ -5234,7 +6345,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0588",
@@ -5243,7 +6357,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0589",
@@ -5252,7 +6369,10 @@
         "lighting": "day",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0590",
@@ -5261,7 +6381,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "tag",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0591",
@@ -5270,7 +6393,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0592",
@@ -5279,7 +6405,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "match"
       },
       {
         "id": "sb0593",
@@ -5288,7 +6417,10 @@
         "lighting": "dim",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "mismatch",
+        "retakeAsked": null,
+        "afterRetake": "mismatch"
       },
       {
         "id": "sb0594",
@@ -5297,7 +6429,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0595",
@@ -5306,7 +6441,10 @@
         "lighting": "day",
         "current": "match",
         "twoLooks": "match",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "match",
+        "retakeAsked": null,
+        "afterRetake": "match"
       },
       {
         "id": "sb0596",
@@ -5315,7 +6453,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0597",
@@ -5324,7 +6465,10 @@
         "lighting": "day",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0598",
@@ -5333,7 +6477,10 @@
         "lighting": "dim",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0599",
@@ -5342,7 +6489,10 @@
         "lighting": "lamp",
         "current": "unsure",
         "twoLooks": "unsure",
-        "twoLooksRetake": "light"
+        "twoLooksRetake": "light",
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "unsure"
       },
       {
         "id": "sb0600",
@@ -5351,7 +6501,10 @@
         "lighting": "lamp",
         "current": "mismatch",
         "twoLooks": "mismatch",
-        "twoLooksRetake": null
+        "twoLooksRetake": null,
+        "quoted": "unsure",
+        "retakeAsked": "light",
+        "afterRetake": "mismatch"
       }
     ]
   }
