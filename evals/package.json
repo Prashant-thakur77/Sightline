@@ -16,7 +16,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "echo ok",
     "agent": "tsx agent/run.ts",
-    "agent:live": "tsx agent/run.ts --live"
+    "agent:live": "tsx agent/run.ts --live",
+    "redteam:sandbox": "tsx redteam/sandbox.ts",
+    "duplicates:sandbox": "tsx duplicates/sandbox.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.6.0",
@@ -25,6 +27,7 @@
     "@sightline/core": "workspace:*",
     "@sightline/evidence": "workspace:*",
     "@sightline/gate": "workspace:*",
+    "@sightline/paypal": "workspace:*",
     "zod": "4.6.7"
   },
   "devDependencies": {

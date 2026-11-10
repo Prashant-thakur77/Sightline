@@ -363,6 +363,9 @@ importers:
       '@sightline/gate':
         specifier: workspace:*
         version: link:../packages/gate
+      '@sightline/paypal':
+        specifier: workspace:*
+        version: link:../packages/paypal
       zod:
         specifier: 4.6.7
         version: 4.6.7

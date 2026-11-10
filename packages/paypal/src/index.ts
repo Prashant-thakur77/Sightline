@@ -52,6 +52,14 @@ export {
   type ExperienceContextInput,
   type AddressInput,
 } from './orders';
+export {
+  orderInputFromCart,
+  isAmbiguous,
+  createVaultOrder,
+  completeOrder,
+  type CartOrderOptions,
+  type ShipToInput,
+} from './checkout';
 export type { CaptureAuthorizationInput, RefundInput } from './payments';
 export type { ListPaymentTokensInput } from './vault';
 export {

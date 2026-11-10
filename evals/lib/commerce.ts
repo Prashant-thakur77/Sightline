@@ -49,9 +49,14 @@ export function makeCart(userId: string, lines: CartLine[], id: string, createdA
   return { id, userId, lines, totals, hash: hashCart({ userId, lines, totals }), createdAt: createdAt.toISOString() };
 }
 
-/** Readback composed by the real template composer, as the app does in startReadback. */
-export function makeReadback(cart: Cart, id: string, createdAt: Date): ConfirmedReadback {
+/**
+ * Readback composed by the real template composer, as the app does in startReadback.
+ * payAfterCheck: the readback tells the buyer PayPal holds the money until the item checks out,
+ * which makes the payment an authorization (payForReadback reads this field).
+ */
+export function makeReadback(cart: Cart, id: string, createdAt: Date, opts: { payAfterCheck?: boolean } = {}): ConfirmedReadback {
   const composed = composeReadback({
+    ...(opts.payAfterCheck ? { payAfterCheck: true } : {}),
     cart,
     paymentSource: { kind: 'vault', label: 'your saved PayPal' },
     deliveryEstimate: deliveryEstimate(createdAt),

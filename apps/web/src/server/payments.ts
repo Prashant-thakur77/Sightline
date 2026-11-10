@@ -4,7 +4,18 @@ import { tables } from '@sightline/db';
 import { formatMoney, newId, type Cart, type Money } from '@sightline/core';
 import { runGate, type ConfirmedReadback, type GateDecision } from '@sightline/gate';
 import { paypalRequestId, hashReadbackBinding } from '@sightline/evidence';
-import { authorizationFromOrder, captureFromOrder, vaultFromOrder, isInstrumentDeclined, PayPalApiError, PayPalNetworkError, type PayPalClient } from '@sightline/paypal';
+import {
+  authorizationFromOrder,
+  captureFromOrder,
+  completeOrder,
+  createVaultOrder,
+  isAmbiguous,
+  isInstrumentDeclined,
+  orderInputFromCart,
+  vaultFromOrder,
+  PayPalApiError,
+  type PayPalClient,
+} from '@sightline/paypal';
 import { db, ENV, appUrl } from './runtime';
 import { gatePorts, dbReservations } from './gate-ports';
 import { signingSecret } from './keys';
@@ -33,10 +44,8 @@ export type PayOutcome =
   /** PayPal may or may not have taken the payment (timeout, network, 5xx). The hold stays. */
   | { kind: 'unknown'; say: string; orderId: string };
 
-/** Errors after which PayPal may still have created the order. Never tell the buyer "nothing was charged" then. */
-export function isAmbiguous(e: unknown): boolean {
-  return e instanceof PayPalNetworkError || (e instanceof PayPalApiError && e.status >= 500);
-}
+/** Errors after which PayPal may still have created the order (shared with the sandbox-ledger evals). */
+export { isAmbiguous };
 
 export const PENDING_SAY =
   "PayPal is still reviewing this payment. I won't charge you again for it, and I'll tell you as soon as PayPal decides.";
@@ -92,27 +101,7 @@ async function vaultIdFor(userId: string): Promise<string | null> {
 }
 
 function orderBody(cart: Cart, readbackBinding: string, orderId: string, intent: 'CAPTURE' | 'AUTHORIZE', shipTo?: ShipTo) {
-  const line = cart.lines[0]!;
-  return {
-    // Physical goods carry a delivery address, which keeps seller protection and tracking meaningful.
-    ...(shipTo && { shipTo }),
-    intent,
-    items: cart.lines.map((l) => ({
-      name: l.snapshot.title.slice(0, 127),
-      quantity: l.quantity,
-      unitAmount: l.snapshot.price,
-      sku: `${l.snapshot.productId}|${l.snapshot.variantId}`.slice(0, 127),
-      description: [l.snapshot.attributes.colour, l.snapshot.attributes.size && `size ${l.snapshot.attributes.size}`].filter(Boolean).join(', ').slice(0, 127) || undefined,
-      imageUrl: l.snapshot.images[0]?.url.startsWith('http') ? l.snapshot.images[0]?.url : undefined,
-    })),
-    shipping: cart.totals.shipping,
-    taxTotal: cart.totals.tax,
-    expectedTotal: cart.totals.total,
-    customId: readbackBinding,
-    invoiceId: orderId,
-    description: `${line.snapshot.title} via accessible readback`.slice(0, 127),
-    payeeMerchantId: ENV.PAYPAL_MERCHANT_ID,
-  };
+  return orderInputFromCart(cart, { readbackBinding, orderId, intent, payeeMerchantId: ENV.PAYPAL_MERCHANT_ID, shipTo });
 }
 
 /**
@@ -223,11 +212,7 @@ export async function payForReadback(input: { userId: string; readbackId: string
   try {
     const body = orderBody(cart, binding, orderId, intent, await shipToFor(input.userId));
     if (vaultId) {
-      const created = await pp.orders.create({
-        ...body,
-        requestId: decision.requestId,
-        paymentSource: { type: 'vault', vaultId, storedCredential: { payment_initiator: 'CUSTOMER', usage: 'SUBSEQUENT' } },
-      });
+      const created = await createVaultOrder(pp.orders, body, { requestId: decision.requestId, vaultId });
       return await settleCreatedOrder({ userId: input.userId, orderId, intent, created, amount: cart.totals.total, receiptId, reservationId: decision.reservation?.id });
     }
     const created = await pp.orders.create({
@@ -277,14 +262,8 @@ async function settleCreatedOrder(a: {
   reservationId?: string;
 }): Promise<PayOutcome> {
   const pp = paypal();
-  let order = a.created;
   // Vault orders usually complete on create; otherwise authorize or capture now.
-  if (order.status !== 'COMPLETED') {
-    order =
-      a.intent === 'AUTHORIZE'
-        ? await pp.orders.authorize(order.id, { requestId: paypalRequestId('authorize', order.id) })
-        : await pp.orders.capture(order.id, { requestId: paypalRequestId('capture', order.id) });
-  }
+  const order = await completeOrder(pp.orders, a.created, a.intent, (kind, id) => paypalRequestId(kind, id));
   const now = new Date().toISOString();
   // PayPal can answer an authorize or capture with a payment that is still pending review, or
   // denied. Only a created authorization or a completed capture counts as paid.
@@ -433,10 +412,9 @@ export async function reconcileUnknownOrders(userId: string): Promise<string[]> 
     const [vault] = await db().select().from(tables.vaultTokens).where(and(eq(tables.vaultTokens.userId, userId), eq(tables.vaultTokens.status, 'ACTIVE'))).limit(1);
     if (o.paymentSource !== 'vault' || !vault) continue;
     try {
-      const created = await pp.orders.create({
-        ...orderBody(cart, binding, o.id, o.intent as 'CAPTURE' | 'AUTHORIZE', await shipToFor(userId)),
+      const created = await createVaultOrder(pp.orders, orderBody(cart, binding, o.id, o.intent as 'CAPTURE' | 'AUTHORIZE', await shipToFor(userId)), {
         requestId: o.paypalRequestId,
-        paymentSource: { type: 'vault', vaultId: vault.vaultId, storedCredential: { payment_initiator: 'CUSTOMER', usage: 'SUBSEQUENT' } },
+        vaultId: vault.vaultId,
       });
       const [rsv] = await db().select().from(tables.reservations).where(eq(tables.reservations.key, o.paypalRequestId)).limit(1);
       const out = await settleCreatedOrder({
