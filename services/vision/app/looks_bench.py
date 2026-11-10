@@ -58,31 +58,50 @@ class BudgetExhausted(BaseException):  # noqa: N818
 
 
 class Ledger:
-    """Money spent on new model reads, kept on disk across runs."""
+    """Money spent on new model reads, kept on disk across runs.
+
+    Several bench processes may share one ledger (``--shard``): every read and write of the file
+    happens under an exclusive file lock, after re-reading it, so no process loses another's spend.
+    """
 
     def __init__(self, path: Path, cap_usd: float) -> None:
         self.path = path
         self.cap = cap_usd
         self.lock = threading.Lock()
-        self.data = (
-            json.loads(path.read_text()) if path.exists() else {"usd": 0.0, "calls": 0, "input_tokens": 0, "output_tokens": 0, "runs": []}
-        )
+        self.data = self._read()
+
+    def _read(self) -> dict[str, Any]:
+        if self.path.exists():
+            return json.loads(self.path.read_text())
+        return {"usd": 0.0, "calls": 0, "input_tokens": 0, "output_tokens": 0, "runs": []}
+
+    def _locked(self, fn: Callable[[dict[str, Any]], None] | None = None) -> None:
+        import fcntl
+
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with self.lock, open(self.path.with_suffix(".lock"), "w") as lock_file:
+            fcntl.flock(lock_file, fcntl.LOCK_EX)
+            self.data = self._read()
+            if fn is not None:
+                fn(self.data)
+                self.path.write_text(json.dumps(self.data, indent=2) + "\n")
 
     def check(self) -> None:
+        self._locked()
         if self.data["usd"] + NEXT_CALL_USD > self.cap:
             raise BudgetExhausted(f"spent {self.data['usd']:.2f} of {self.cap:.2f} USD")
 
     def add(self, usd: float, input_tokens: int, output_tokens: int) -> None:
-        with self.lock:
-            self.data["usd"] = round(self.data["usd"] + usd, 6)
-            self.data["calls"] += 1
-            self.data["input_tokens"] += input_tokens
-            self.data["output_tokens"] += output_tokens
-            self.save()
+        def apply(d: dict[str, Any]) -> None:
+            d["usd"] = round(d["usd"] + usd, 6)
+            d["calls"] += 1
+            d["input_tokens"] += input_tokens
+            d["output_tokens"] += output_tokens
 
-    def save(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(self.data, indent=2) + "\n")
+        self._locked(apply)
+
+    def add_run(self, run: dict[str, Any]) -> None:
+        self._locked(lambda d: d["runs"].append(run))
 
 
 class CachingVlm:
@@ -218,7 +237,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--offline", action="store_true", help="Never call the model; only cached reads.")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--env-file", type=Path, help="Read VISION_MODEL, VISION_EFFORT and ANTHROPIC_API_KEY from this dotenv file.")
+    ap.add_argument(
+        "--shard", default="0/1", help="i/k: make new reads only for every k-th sampled pair from i (parallel runs share the ledger)."
+    )
+    ap.add_argument(
+        "--write-responses",
+        type=Path,
+        help="Write each sampled pair's first look (two looks, quoted reads) as a saved /verify response here, for sightbench/run.ts --reuse.",
+    )
     args = ap.parse_args(argv)
+    shard_i, shard_k = (int(x) for x in args.shard.split("/"))
     if args.env_file:
         load_model_env(args.env_file)
 
@@ -230,6 +258,9 @@ def main(argv: list[str] | None = None) -> int:
     inner = get_vlm_client()
     model = getattr(inner, "model", "none")
     effort = getattr(inner, "effort", None)
+    if args.sample and model == "none":
+        # The read cache is keyed by model and effort: without them every read would look uncached.
+        ap.error("--sample needs the model settings (--env-file or VISION_MODEL), also with --offline")
     ocr = get_ocr_engine()
     ledger = Ledger(args.ledger, args.budget_usd)
     reads_dir = args.cache / f"{vlm_mod.PROMPT_VERSION}__{model}__{effort}"
@@ -239,6 +270,7 @@ def main(argv: list[str] | None = None) -> int:
         retakes = {r["id"]: {k: (args.retakes.parent / v["path"]).resolve() for k, v in r["files"].items()} for r in rm["pairs"]}
     sample = stratified_sample(pairs, args.sample) if args.sample else []
     sample_set = set(sample)
+    mine = {pid for j, pid in enumerate(sample) if j % shard_k == shard_i}
     spent_before = ledger.data["usd"]
     started = time.time()
     rows: list[dict[str, Any]] = []
@@ -264,7 +296,9 @@ def main(argv: list[str] | None = None) -> int:
             row["current"] = _summary(old_body["verdict"])
             row["replayOld"] = fusion.fuse(old_modules, listing, {**fth, "mismatch_min_signals": 1})["kind"]
             row["twoLooks"] = _summary(fusion.fuse(old_modules, listing, fth))
-        if pair["id"] in sample_set and stopped is None:
+        if pair["id"] in sample_set and pair["id"] not in mine:
+            row["notRun"] = "other shard"
+        elif pair["id"] in sample_set and stopped is None:
             try:
                 prefix = f"{pair['id']}__look1"
                 cvlm = CachingVlm(inner, reads_dir, prefix, ledger, model, args.offline)
@@ -280,6 +314,11 @@ def main(argv: list[str] | None = None) -> int:
                 first = run_verify(inputs, vlm=cvlm, ocr=ocr, th=th)
                 v1 = first["verdict"]
                 row["quoted"] = _summary(v1)
+                if args.write_responses:
+                    # Same shape as a saved POST /verify response. No latency: the reads came from the cache.
+                    args.write_responses.mkdir(parents=True, exist_ok=True)
+                    saved_body = {"status": 200, "ms": None, "body": first, "source": "app.looks_bench (cached model reads)"}
+                    (args.write_responses / f"{pair['id']}.json").write_text(json.dumps(saved_body))
                 ident, dmg = first["modules"].get("identity") or {}, first["modules"].get("damage") or {}
                 row["quotedReads"] = {
                     "identity": {"finding": ident.get("finding"), "confidence": ident.get("confidence"), "reason": ident.get("reason")},
@@ -316,8 +355,7 @@ def main(argv: list[str] | None = None) -> int:
         "usd": round(ledger.data["usd"] - spent_before, 4),
         "stopped": stopped,
     }
-    ledger.data["runs"].append(run)
-    ledger.save()
+    ledger.add_run({**run, "shard": args.shard})
     out = {
         "split": args.split,
         "manifest": str(args.manifest),

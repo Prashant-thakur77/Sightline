@@ -79,9 +79,12 @@ const PICKS: Pick[] = [
         .join(', ');
       const abstained = s.headlines.find((x) => x.id === 'abstention')?.value;
       const clipFalseAlarms = baselineValue(s.headlines.find((x) => x.id === 'false-alarms')?.baseline);
+      // Present once the deployed rule (two looks before "sure") has its own run: the earlier rule's catch, from the same file.
+      const before = s.headlines.find((x) => x.id === 'before-two-looks')?.value.split('·')[0]?.trim().replace('/', ' of ');
       return [
         abstained && `${how ? `${how}: ` : ''}it answered “not sure” for ${counted(abstained, 'pairs')}.`,
         clipFalseAlarms && `The baseline also flags ${counted(clipFalseAlarms, 'correct items')} as wrong.`,
+        before && `Before it needed two looks to be sure, it caught ${before}.`,
       ]
         .filter(Boolean)
         .map((t) => (t as string).charAt(0).toUpperCase() + (t as string).slice(1))

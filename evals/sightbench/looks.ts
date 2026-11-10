@@ -7,7 +7,8 @@
  *                  test run: all 420 pairs, no new model call.
  *   QUOTED READS   identity and damage reads must name a visible region and what is there, checked
  *                  in code; a read without one counts as "not sure". New model reads, so only a
- *                  stratified subset of the test split (budget), with two looks.
+ *                  the whole test split when the budget allowed (else the stratified subset it
+ *                  reached), with two looks.
  *   ONE RETAKE     when the check is "not sure" it asks for ONE extra photo chosen from why (size tag
  *                  close-up, better light, white paper next to the item) and checks again with both.
  *                  SightBench has one photo per item, so the extra photos are SIMULATED renders of the
@@ -27,6 +28,8 @@ const SCRIPT = scriptPath(import.meta.url);
 const HERE = path.join(EVALS_DIR, 'sightbench');
 const LOOKS = path.join(EVALS_DIR, 'data', 'raw', 'sightbench', 'looks');
 const SYNTH = 'Synthetic renders, not real photos';
+/** Pairs read in the first, budget-capped run (2026-11-10) before the rest of the split was added. */
+const PRIOR_SUBSET = 130;
 const SIM = 'SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took';
 
 const argv = process.argv.slice(2);
@@ -169,7 +172,10 @@ function main() {
 
   const tl = full.twoLooks;
   const cu = full.current;
-  const subNote = `Stratified test subset of ${n} pairs (${nMatch} matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made${notRun ? `; ${notRun} sampled pairs were not run (budget)` : ''}.`;
+  const full420 = n === rows.length;
+  const subNote = full420
+    ? `All ${n} test pairs (${nMatch} matching).`
+    : `Stratified test subset of ${n} pairs (${nMatch} matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made${notRun ? `; ${notRun} sampled pairs were not run (budget)` : ''}.`;
   const headlines: Headline[] = [
     {
       id: 'two-looks-recall',
@@ -248,7 +254,7 @@ function main() {
       n: cu.perType.colour!.n,
       script: SCRIPT,
       negative: true,
-      note: `${SYNTH}. The first two are on the whole test split, the last two on the ${n}-pair subset. ${SIM} for the last. A sure colour mismatch needs the colour seen as wrong on two photos (or a second module agreeing); a first photo the colour check gave up on (dim light, tinted light, wood) plus one better photo is still one look. Colour also asks for a photo in better light rather than white paper when the light was dim or tinted (decided on dev, see README).`,
+      note: `${SYNTH}. The first two are on the whole test split, the last two on ${full420 ? 'the same split' : `the ${n}-pair subset`}. ${SIM} for the last. A sure colour mismatch needs the colour seen as wrong on two photos (or a second module agreeing); a first photo the colour check gave up on (dim light, tinted light, wood) plus one better photo is still one look. Colour also asks for a photo in better light rather than white paper when the light was dim or tinted (decided on dev, see README).`,
     },
     {
       id: 'api-spend',
@@ -264,9 +270,11 @@ function main() {
     `${SYNTH}. Real photos will differ; the real photo set (evals/sightbench/real/SHOTLIST.md) is not collected yet.`,
     `Retakes are SIMULATED. SightBench has one photo of each delivered item, so each extra photo is rendered by evals/sightbench/py/sightbench/retake.py from the pair's own seed (the same item and damage, checked byte for byte against the pair's photo): "light" is a new day-light photo, "paper" a new photo under the pair's own light with an A4 sheet of white paper beside the item, "tag" the pair's own tag under its own light, closer and flatter. No number here says how real buyers' retakes would go.`,
     `The two-looks rows use all ${rows.length} test pairs and the module outputs saved by the last with-model test run; re-fusing them with the old rule reproduced every saved verdict (${replayed.length} of ${replayed.length}).`,
-    `Quoted reads and retakes need new model calls, capped at about 12 USD, so they cover a stratified subset of ${n} test pairs, not all 420. Intervals on the subset are wide. Cells: ${Object.entries(cells).sort().map(([k, v]) => `${k} ${v}`).join(', ')}.`,
+    full420
+      ? `Quoted reads and retakes cover all ${n} test pairs. The first ${PRIOR_SUBSET} were read in an earlier run capped at about 12 USD; the rest were added later with the same prompt version and read cache, so no pair was read twice.`
+      : `Quoted reads and retakes need new model calls, so they cover a stratified subset of ${n} test pairs, not all 420. Intervals on the subset are wide. Cells: ${Object.entries(cells).sort().map(([k, v]) => `${k} ${v}`).join(', ')}.`,
     'Nothing was fitted on test. The citation rules (which words name a region, which descriptions are hedges) and the retake choice were written and checked on the dev split only; the two-looks rule has no threshold.',
-    'The test split has now been scored with the two-looks rule once, with quoted reads once and with a simulated retake once, in one run (details.run).',
+    'The deployed rule (two looks and quoted reads) on the whole split is also the latest run of the main sightbench suite, scored by sightbench/run.ts from the same first-look responses. This suite adds the simulated retake and the comparisons. Nothing was tuned on test between the runs.',
     ...(t.stopped ? [`The test run stopped early: ${t.stopped}.`] : []),
   ];
 
