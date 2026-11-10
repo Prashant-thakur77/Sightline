@@ -10,6 +10,8 @@ import { featuredHeadlines } from '@/server/headlines';
 import { db, INTEGRATIONS } from '@/server/runtime';
 import { currentUser } from '@/server/session';
 import { latestDemoTimeline } from '@/server/timeline';
+import { recentWebhooks } from '@/server/webhook-log';
+import { spokenWhen } from '@/lib/when';
 import { JUDGE_EMAIL_PATTERN } from '@/server/lifecycle';
 import { AgentTimelineView } from '@/components/orders/agent-timeline';
 import { JudgeStart } from './judge-start';
@@ -39,6 +41,7 @@ export default async function Judge() {
     : await db().select({ id: tables.receipts.id }).from(tables.receipts).where(eq(tables.receipts.kind, 'gate')).orderBy(desc(tables.receipts.createdAt)).limit(1);
   const receipt = anyReceipt;
   // The visitor's own latest demo order, or the scripted run's: never another visitor's.
+  const hooks = await recentWebhooks(10).catch(() => []);
   const demo = await latestDemoTimeline((await currentUser())?.id ?? null, JUDGE_EMAIL_PATTERN).catch(() => null);
   const live: [string, boolean, string][] = [
     ['PayPal sandbox (Orders v2, Vault, Payments, tracking, Disputes, webhooks)', INTEGRATIONS.paypal, 'Every payment, hold, capture, void and refund'],
@@ -268,6 +271,43 @@ export default async function Judge() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section aria-labelledby="hooks-h" className="grid gap-3">
+          <h2 id="hooks-h" className="lp-h2">
+            What PayPal told this server
+          </h2>
+          <p>
+            PayPal sends a signed message (a webhook) when money moves. This server checks each signature with PayPal before it acts on it. These are
+            the latest ones, newest first, from the PayPal sandbox. Only the type and time are shown, never the message itself.
+          </p>
+          {hooks.length === 0 ? (
+            <p>No PayPal messages yet on this server. Run the whole lifecycle above and they arrive within a minute.</p>
+          ) : (
+            <div className="table-scroll" role="region" aria-label="Webhook log, scrolls sideways" tabIndex={0}>
+              <table className="hooks-table">
+                <caption className="sr-only">Latest PayPal webhooks: what happened, PayPal’s event name, signature check and time.</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">What PayPal said</th>
+                    <th scope="col">Event</th>
+                    <th scope="col">Signature</th>
+                    <th scope="col">Received</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hooks.map((h, i) => (
+                    <tr key={`${h.at}-${i}`}>
+                      <th scope="row">{h.words}</th>
+                      <td className="mono">{h.type}</td>
+                      <td>{h.signatureOk ? 'Verified with PayPal' : 'Not verified; ignored'}</td>
+                      <td>{spokenWhen(h.at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         <section aria-labelledby="claims-h" className="grid gap-3">
