@@ -136,3 +136,7 @@ cd deploy/aws && docker compose build && docker compose run --rm migrate && dock
 - Orders are placed with a sandbox Demo Store at the listed price, not with the real retailer.
 - Colour in dim light is unreliable; we publish that error rate and the app says "not sure" instead of guessing.
 - Maya and Raj are demo personas, not customers.
+
+## Licence
+
+MIT © 2026 Prashant Thakur

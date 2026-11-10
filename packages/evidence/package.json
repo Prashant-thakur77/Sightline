@@ -1,10 +1,23 @@
 {
   "name": "@sightline/evidence",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "typecheck": "tsc --noEmit", "test": "vitest run", "lint": "echo ok" },
-  "dependencies": { "@sightline/core": "workspace:*" },
-  "devDependencies": { "@types/node": "22.20.5", "typescript": "6.0.3", "vitest": "5.1.0" }
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "echo ok"
+  },
+  "dependencies": {
+    "@sightline/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
 }

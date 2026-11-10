@@ -3,6 +3,7 @@ name = "sightline-vision"
 version = "0.1.0"
 description = "Checks a delivered item against the listing it was bought from."
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "anthropic==2.3.0",
