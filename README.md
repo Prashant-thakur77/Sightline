@@ -172,6 +172,12 @@ One AWS EC2 host runs Postgres, the vision service, the web app (Next.js standal
 cd deploy/aws && docker compose build && docker compose run --rm migrate && docker compose up -d
 ```
 
+## What's next
+
+- Sessions with blind and low-vision testers.
+- A browser companion that reads any store's product page aloud (colour, size, price and return window, and "the listing doesn't say" when something is missing) and hands the purchase to Sightline at stores that offer pay after check.
+- A better colour check, Hindi voice and readback, and a phone line.
+
 ## What we do not claim
 
 - It has not yet been tested with blind users. That is the next step.

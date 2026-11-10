@@ -77,6 +77,8 @@ Accessibility and payment safety pull the same way: a readback a blind person ca
 
 Sessions with blind and low-vision testers (consent form, task script and SUS questionnaire are in the repo), a better colour check, Hindi voice and readback, a phone line, and a store program for pay after check.
 
+A browser companion that reads any store's product page aloud (colour, size, price and return window, and "the listing doesn't say" when something is missing) and hands the purchase to Sightline at stores that offer pay after check.
+
 ## What we do not claim
 
 Not yet tested with blind users. Orders go to a sandbox Demo Store at the listed price. Colour checks are weak. Maya and Raj are personas.
