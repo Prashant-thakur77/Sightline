@@ -8,6 +8,7 @@ import { useAnnouncer } from '@/components/a11y/announcer';
 import { cue } from '@/lib/feedback';
 import { CameraCheck, type CapturedShot, type ShotKind } from './camera-check';
 import { VerdictView, type PhotoSource } from './verdict-view';
+import { canAskForRetake, retakeIntro, retakeShot } from './retake';
 
 interface Next {
   kind: 'captured' | 'match' | 'money-back' | 'unsure' | 'capture-failed';
@@ -51,24 +52,47 @@ export function CheckFlow({
     setCameBack(true);
     setResult(null);
   };
+  // Taking the ONE extra photo the check asked for; the first answer stays until a new one arrives.
+  const [retaking, setRetaking] = useState(false);
+  const [backFromRetake, setBackFromRetake] = useState(false);
+  const startRetake = () => {
+    setError(null);
+    setRetaking(true);
+  };
+  const keepFirstAnswer = () => {
+    setRetaking(false);
+    setError(null);
+    setBackFromRetake(true);
+    announce('Kept your first answer.', { source: 'check' });
+  };
 
-  const submit = async (shots: CapturedShot[]) => {
+  const submit = async (shots: CapturedShot[], extra = false) => {
     setBusy(true);
     setError(null);
-    announce('Checking. This takes a few seconds.', { source: 'check' });
+    announce(extra ? 'Checking again with both photos. This takes a few seconds.' : 'Checking. This takes a few seconds.', { source: 'check' });
     cue('thinking');
     const form = new FormData();
     for (const s of shots) {
-      form.append(s.kind, s.blob, `${s.kind}.jpg`);
+      const field = extra ? 'retake' : s.kind;
+      form.append(field, s.blob, `${field}.jpg`);
       // Recorded with the photo, so demo photos are never shown as the buyer's own.
-      form.append(`${s.kind}-source`, s.source);
+      form.append(`${field}-source`, s.source);
     }
     try {
-      const res = await fetch(`/api/orders/${orderId}/check`, { method: 'POST', body: form });
+      const res = await fetch(`/api/orders/${orderId}/check${extra ? '/retake' : ''}`, { method: 'POST', body: form });
       const data = (await res.json().catch(() => ({}))) as { verdict?: Verdict; next?: Next; itemPhoto?: string; error?: string };
       if (!res.ok || !data.verdict) throw new Error(data.error ?? 'Something went wrong on my side. Your photos are still here. Try again.');
       const sent = shots.find((s) => s.kind === 'item') ?? shots[0];
-      setResult({ verdict: data.verdict, next: data.next, itemPhoto: data.itemPhoto, itemPhotoSource: sent?.source, fresh: true });
+      setResult((prev) => ({
+        verdict: data.verdict!,
+        next: data.next,
+        // After the extra photo, the picture shown stays the first photo of the whole item.
+        itemPhoto: data.itemPhoto ?? (extra ? prev?.itemPhoto : undefined),
+        itemPhotoSource: extra ? prev?.itemPhotoSource : sent?.source,
+        fresh: true,
+      }));
+      setRetaking(false);
+      setBackFromRetake(false);
       cue(data.verdict.kind === 'match' ? 'done' : 'attention');
       // Focus moves to the headline, which the screen reader reads; the live region adds only what
       // the headline doesn't say, after it. The app's own voice, if on, says all of it.
@@ -89,8 +113,30 @@ export function CheckFlow({
     }
   };
 
+  if (result && retaking && canAskForRetake(result.verdict)) {
+    const r = result.verdict.retake;
+    return (
+      <div className="grid gap-6">
+        {error && <p className="card-refusal">{error}</p>}
+        <CameraCheck
+          itemName={itemName}
+          shots={[retakeShot(r)]}
+          introTitle="One more photo"
+          intro={retakeIntro(r)}
+          onSubmit={(shots) => void submit(shots, true)}
+          busy={busy}
+          focusOnMount
+          onRetake={() => setError(null)}
+          onCancel={keepFirstAnswer}
+          cancelLabel="Keep my first answer"
+        />
+      </div>
+    );
+  }
+
   if (result) {
     const v = result.verdict;
+    const extraPhoto = canAskForRetake(v);
     const helper = result.next?.helperName ?? helperName;
     // The helper's answer is about the check that was on the page, not a new one.
     const answered = result.fresh ? null : helperAnswer;
@@ -103,7 +149,7 @@ export function CheckFlow({
     ) : null;
     return (
       <VerdictView
-        focusOnMount={Boolean(result.fresh)}
+        focusOnMount={Boolean(result.fresh) || backFromRetake}
         verdict={v}
         ordered={ordered}
         arrivedPhotoUrl={result.itemPhoto}
@@ -129,18 +175,23 @@ export function CheckFlow({
           ) : v.kind === 'unsure' ? (
             <>
               {caseLink}
+              {extraPhoto && !caseLink && (
+                <button type="button" className="btn btn-primary btn-xl" onClick={startRetake}>
+                  Take one more photo
+                </button>
+              )}
               {helper && !answered && !caseLink && (
-                <Link className="btn btn-primary btn-xl" href={`/app/orders/${orderId}#checked`}>
+                <Link className={extraPhoto ? 'btn btn-xl' : 'btn btn-primary btn-xl'} href={`/app/orders/${orderId}#checked`}>
                   Ask {helper} to look
                 </Link>
               )}
               {!caseLink && (
-                <Link className={helper && !answered ? 'btn btn-xl' : 'btn btn-primary btn-xl'} href={`/app/orders/${orderId}#money-back`}>
+                <Link className={(helper && !answered) || extraPhoto ? 'btn btn-xl' : 'btn btn-primary btn-xl'} href={`/app/orders/${orderId}#money-back`}>
                   Get my money back
                 </Link>
               )}
               <button type="button" className="btn btn-xl" onClick={again}>
-                Try again in better light
+                {extraPhoto ? 'Start over with new photos' : 'Try again in better light'}
               </button>
             </>
           ) : (

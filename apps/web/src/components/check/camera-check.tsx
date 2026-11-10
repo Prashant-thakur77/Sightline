@@ -56,6 +56,11 @@ export function CameraCheck({
   busy,
   focusOnMount = false,
   onRetake,
+  shots: shotList = SHOTS,
+  introTitle = 'Check your parcel',
+  intro,
+  onCancel,
+  cancelLabel,
 }: {
   itemName: string;
   onSubmit: (shots: CapturedShot[]) => void;
@@ -66,6 +71,14 @@ export function CameraCheck({
   focusOnMount?: boolean;
   /** The photos are being taken again: anything said about the last attempt no longer applies. */
   onRetake?: () => void;
+  /** The photos to take, in order (default: the whole item, the size tag, any damage). */
+  shots?: Shot[];
+  /** Heading and words before the camera starts. */
+  introTitle?: string;
+  intro?: string;
+  /** Leave without taking a photo (offered before the camera starts). */
+  onCancel?: () => void;
+  cancelLabel?: string;
 }) {
   const { announce, stop } = useAnnouncer();
   const [phase, setPhase] = useState<Phase>('intro');
@@ -89,7 +102,7 @@ export function CameraCheck({
   /** Front camera: left and right are swapped in the spoken directions. */
   const mirrored = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const shot = SHOTS[index];
+  const shot = shotList[index];
   /** A touch screen (a phone or tablet), where the photo field can open the device's own camera app. */
   const [touch, setTouch] = useState(false);
   useEffect(() => {
@@ -134,17 +147,17 @@ export function CameraCheck({
     (s: CapturedShot) => {
       setShots((prev) => [...prev.filter((p) => p.kind !== s.kind), s]);
       const next = index + 1;
-      if (next >= SHOTS.length) {
+      if (next >= shotList.length) {
         stopCamera();
         setPhase('review');
-        announce('All photos taken. Review what will be sent, then check it.', { source: 'camera' });
+        announce(`${shotList.length === 1 ? 'Photo taken' : 'All photos taken'}. Review what will be sent, then check it.`, { source: 'camera' });
       } else {
         quiet();
         setIndex(next);
-        announce(`Got it. Next: ${SHOTS[next]!.title}. ${SHOTS[next]!.prompt}`, { source: 'camera' });
+        announce(`Got it. Next: ${shotList[next]!.title}. ${shotList[next]!.prompt}`, { source: 'camera' });
       }
     },
-    [announce, index, quiet, stopCamera],
+    [announce, index, quiet, shotList, stopCamera],
   );
 
   const captureFrame = useCallback(async () => {
@@ -168,10 +181,10 @@ export function CameraCheck({
   }, [addShot, shot]);
 
   // The frame loop runs for the whole camera session, so it reads the current step through a ref.
-  const live = useRef({ index, announce, capture: captureFrame });
+  const live = useRef({ index, announce, capture: captureFrame, list: shotList });
   useEffect(() => {
-    live.current = { index, announce, capture: captureFrame };
-  }, [index, announce, captureFrame]);
+    live.current = { index, announce, capture: captureFrame, list: shotList };
+  }, [index, announce, captureFrame, shotList]);
 
   const loop = useCallback(() => {
     const video = videoRef.current;
@@ -192,8 +205,8 @@ export function CameraCheck({
       }
       const c = canvas.getContext('2d', { willReadFrequently: true })!;
       c.drawImage(video, 0, 0, w, h);
-      const { index: step, announce: say, capture } = live.current;
-      const mode = modeForShot(SHOTS[step]!.kind);
+      const { index: step, announce: say, capture, list } = live.current;
+      const mode = modeForShot(list[step]!.kind);
       const a = analyzeFrame(c.getImageData(0, 0, w, h).data, w, h, mode);
       setGuidance(a.code);
       setEdges(a.code === 'CUT' || a.code === 'EDGE_ONLY' ? a.edges.join(' ') : '');
@@ -236,7 +249,7 @@ export function CameraCheck({
         rafRef.current = requestAnimationFrame(loop);
       });
       announce(
-        `Camera on. ${SHOTS[index]!.title}. ${SHOTS[index]!.prompt} I'll tell you which way to move, and take the photo when it looks right.`,
+        `Camera on. ${shotList[index]!.title}. ${shotList[index]!.prompt} I'll tell you which way to move, and take the photo when it looks right.`,
         { source: 'camera' },
       );
     } catch {
@@ -246,22 +259,22 @@ export function CameraCheck({
         source: 'camera',
       });
     }
-  }, [announce, index, loop, quiet]);
+  }, [announce, index, loop, quiet, shotList]);
 
   // The whole item (the first photo) is what the check compares, so only the later photos can be skipped.
   const skip = useCallback(() => {
     if (!shot || index === 0) return;
     const next = index + 1;
     announce(`Skipped ${shot.title.toLowerCase()}.`, { source: 'camera' });
-    if (next >= SHOTS.length) {
+    if (next >= shotList.length) {
       stopCamera();
       setPhase('review');
     } else {
       quiet();
       setIndex(next);
-      announce(`Next: ${SHOTS[next]!.title}. ${SHOTS[next]!.prompt}`, { source: 'camera' });
+      announce(`Next: ${shotList[next]!.title}. ${shotList[next]!.prompt}`, { source: 'camera' });
     }
-  }, [announce, index, quiet, shot, stopCamera]);
+  }, [announce, index, quiet, shot, shotList, stopCamera]);
 
   /** Why the last added photo was refused, shown under the photo field and tied to it. */
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -327,11 +340,11 @@ export function CameraCheck({
             <li key={s.kind} className="grid gap-2">
               <img
                 src={s.url}
-                alt={`Your photo: ${SHOTS.find((x) => x.kind === s.kind)?.title.toLowerCase()}${s.source === 'demo' ? ' (demo photo)' : ''}`}
+                alt={`Your photo: ${shotList.find((x) => x.kind === s.kind)?.title.toLowerCase()}${s.source === 'demo' ? ' (demo photo)' : ''}`}
                 className="w-full aspect-square object-cover rounded-[var(--radius-m)] border-2 border-[var(--line)]"
               />
               <span className="font-bold">
-                {SHOTS.find((x) => x.kind === s.kind)?.title}
+                {shotList.find((x) => x.kind === s.kind)?.title}
                 {s.source === 'demo' ? ' · demo photo' : ''}
               </span>
             </li>
@@ -356,7 +369,7 @@ export function CameraCheck({
             }}
             aria-disabled={busy || undefined}
           >
-            Retake photos
+            {shotList.length === 1 ? 'Take it again' : 'Retake photos'}
           </button>
         </div>
       </section>
@@ -368,14 +381,15 @@ export function CameraCheck({
   return (
     <section aria-labelledby="cam-h" className="grid gap-5">
       <h2 id="cam-h" ref={headingRef} tabIndex={-1} className="text-[length:var(--step-2)]">
-        {phase === 'intro' && !started ? 'Check your parcel' : `Photo ${index + 1} of ${SHOTS.length}: ${shot?.title}`}
+        {phase === 'intro' && !started ? introTitle : shotList.length === 1 ? shot?.title : `Photo ${index + 1} of ${shotList.length}: ${shot?.title}`}
       </h2>
       {phase === 'intro' && (
         <div className="grid gap-4 max-w-[var(--measure)]">
           <p>
             {started
               ? shot?.prompt
-              : 'I’ll guide you with my voice while you point the camera, then take each photo for you. Three photos: the whole item, the size tag, and any damage. The size tag and damage photos can be skipped.'}
+              : (intro ??
+                'I’ll guide you with my voice while you point the camera, then take each photo for you. Three photos: the whole item, the size tag, and any damage. The size tag and damage photos can be skipped.')}
           </p>
           <div className="btn-row">
             <button type="button" className="btn btn-primary btn-xl" onClick={start}>
@@ -384,6 +398,11 @@ export function CameraCheck({
             {demoShots && (
               <button type="button" className="btn btn-xl" onClick={useDemo}>
                 Use the demo parcel photos
+              </button>
+            )}
+            {onCancel && (
+              <button type="button" className="btn btn-xl" onClick={onCancel}>
+                {cancelLabel ?? 'Go back'}
               </button>
             )}
           </div>
@@ -457,7 +476,7 @@ export function CameraCheck({
             {shots.map((s) => (
               <li key={s.kind}>
                 <img src={s.url} alt="" />
-                <span>{SHOTS.find((x) => x.kind === s.kind)?.title}</span>
+                <span>{shotList.find((x) => x.kind === s.kind)?.title}</span>
               </li>
             ))}
           </ul>

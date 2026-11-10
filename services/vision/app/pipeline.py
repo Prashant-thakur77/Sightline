@@ -16,7 +16,7 @@ from typing import Any
 
 import numpy as np
 
-from . import colour, damage, fusion, identity, label, mask, quality
+from . import colour, damage, fusion, identity, label, looks, mask, quality
 from .config import Limits, thresholds
 from .imageio import SanitizedImage, decode, encode_jpeg
 from .label import OcrEngine, get_ocr_engine
@@ -110,18 +110,8 @@ def run_verify(
     if "colour" not in disabled:
 
         def run_colour() -> dict[str, Any]:
-            item_small = quality.downscale(items[best], COLOUR_MAX_SIDE)
-            listing_small = [quality.downscale(rgb, COLOUR_MAX_SIDE) for rgb in listing_rgbs]
-            with timer("mask"):
-                item_mask = mask.item_mask(item_small, th["mask"])
-                listing_masks = [mask.item_mask(rgb, th["mask"]) for rgb in listing_small]
-            modules["mask"] = {"item": item_mask.to_dict(), "listing": [m.to_dict() for m in listing_masks]}
-            with timer("colour"):
-                delivered = colour.analyse_image(item_small, item_mask.mask, th["colour"])
-                listed = [colour.analyse_image(rgb, m.mask, th["colour"]) for rgb, m in zip(listing_small, listing_masks, strict=True)]
-                return colour.compare(
-                    delivered, listed, listing.get("colour"), th["colour"], mask_reliable=item_mask.reliable, photo_ok=q_results[best].ok
-                )
+            out, modules["mask"] = _colour_for(items[best], listing_rgbs, listing, th, q_results[best].ok, timer)
+            return out
 
         modules["colour"] = _guard("colour", run_colour)
 
@@ -166,4 +156,102 @@ def run_verify(
             th["fusion"],
         )
     timer.ms["total"] = round((time.perf_counter() - start) * 1000.0, 2)
+    return {"verdict": verdict, "modules": modules, "timings_ms": timer.ms}
+
+
+def _colour_for(
+    item_rgb: np.ndarray, listing_rgbs: list[np.ndarray], listing: dict[str, Any], th: dict[str, Any], photo_ok: bool, timer: Timer
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Colour of one item photo against the listing images. Returns (colour output, mask output)."""
+    item_small = quality.downscale(item_rgb, COLOUR_MAX_SIDE)
+    listing_small = [quality.downscale(rgb, COLOUR_MAX_SIDE) for rgb in listing_rgbs]
+    with timer("mask"):
+        item_mask = mask.item_mask(item_small, th["mask"])
+        listing_masks = [mask.item_mask(rgb, th["mask"]) for rgb in listing_small]
+    with timer("colour"):
+        delivered = colour.analyse_image(item_small, item_mask.mask, th["colour"])
+        listed = [colour.analyse_image(rgb, m.mask, th["colour"]) for rgb, m in zip(listing_small, listing_masks, strict=True)]
+        out = colour.compare(delivered, listed, listing.get("colour"), th["colour"], mask_reliable=item_mask.reliable, photo_ok=photo_ok)
+    return out, {"item": item_mask.to_dict(), "listing": [m.to_dict() for m in listing_masks]}
+
+
+def second_look_modules(
+    kind: str,
+    retake_rgb: np.ndarray,
+    listing_rgbs: list[np.ndarray],
+    listing: dict[str, Any],
+    vlm: VlmClient,
+    ocr: OcrEngine,
+    th: dict[str, Any],
+    timer: Timer | None = None,
+) -> dict[str, Any]:
+    """The modules that the retake photo re-runs (``looks.RETAKE_MODULES``), on that photo alone."""
+    timer = timer or Timer()
+    out: dict[str, Any] = {}
+    if kind == "tag":
+        with timer("size"):
+            out["size"] = _guard("size", lambda: label.check_size(retake_rgb, listing.get("size"), vlm, ocr, th["label"]))
+        return out
+    with timer("quality"):
+        q = quality.assess(retake_rgb, th["quality"])
+    out["quality"] = q.to_dict()
+    colour_out: dict[str, Any] = {}
+
+    def run_colour() -> dict[str, Any]:
+        c, m = _colour_for(retake_rgb, listing_rgbs, listing, th, q.ok, timer)
+        out["mask"] = m
+        return c
+
+    colour_out = _guard("colour", run_colour)
+    out["colour"] = colour_out
+    if kind == "light":
+        item_parts = [_vlm_part(retake_rgb)]
+        listing_parts = [_vlm_part(rgb) for rgb in listing_rgbs[: Limits.max_listing_images]]
+        jobs = {
+            "identity": lambda: identity.check_identity(vlm, item_parts, listing_parts, listing),
+            "damage": lambda: damage.check_damage(vlm, item_parts, dedicated_photo=False),
+        }
+        if vlm.available:
+            with timer("model"), ThreadPoolExecutor(max_workers=2) as pool:
+                futures = {k: pool.submit(_guard, k, fn) for k, fn in jobs.items()}
+                for k, fut in futures.items():
+                    out[k] = fut.result()
+        else:
+            for k, fn in jobs.items():
+                out[k] = _guard(k, fn)
+    return out
+
+
+def run_second_look(
+    previous_modules: dict[str, Any],
+    kind: str,
+    retake: SanitizedImage,
+    listing_images: list[SanitizedImage],
+    listing: dict[str, Any],
+    vlm: VlmClient | None = None,
+    ocr: OcrEngine | None = None,
+    th: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Re-check with the first check's module outputs and ONE extra photo. Returns ``{verdict, modules, timings_ms}``."""
+    th = th or thresholds()
+    vlm = vlm or get_vlm_client()
+    ocr = ocr or get_ocr_engine()
+    if kind not in looks.RETAKE_KINDS:
+        raise ValueError(f"unknown retake kind {kind!r}")
+    timer = Timer()
+    start = time.perf_counter()
+    with timer("decode"):
+        rgb = decode(retake.data, LABEL_MAX_SIDE if kind == "tag" else Limits.verify_max_side)
+        listing_rgbs = [decode(p.data, Limits.verify_max_side) for p in listing_images]
+    second = second_look_modules(kind, rgb, listing_rgbs, listing, vlm, ocr, th, timer)
+    combined = looks.combine_looks(previous_modules, second, kind)
+    with timer("fusion"):
+        verdict = fusion.fuse(combined, listing, th["fusion"])
+    timer.ms["total"] = round((time.perf_counter() - start) * 1000.0, 2)
+    modules = {
+        **{k: v for k, v in combined.items() if k != "looks"},
+        "looks": 2,
+        "second_look": {"kind": kind, "photo": retake.meta(), "modules": second},
+        "engines": {"vlm": vlm.name, "ocr": ocr.name, "thresholds": th.get("version")},
+    }
     return {"verdict": verdict, "modules": modules, "timings_ms": timer.ms}

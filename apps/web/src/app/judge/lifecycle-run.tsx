@@ -84,7 +84,7 @@ export function LifecycleRun({ ready, missing }: { ready: boolean; missing: stri
     <div className="grid gap-4">
       {ready ? (
         <button type="button" className="btn btn-primary btn-xl" onClick={run} aria-disabled={busy || undefined}>
-          {busy ? 'Running…' : 'Run the whole lifecycle (about two minutes)'}
+          {busy ? 'Running…' : 'Run the whole lifecycle (under a minute)'}
         </button>
       ) : (
         <p className="card-refusal">This server is missing {missing.join(' and ')}, so the run is switched off rather than faked.</p>

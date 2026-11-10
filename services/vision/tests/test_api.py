@@ -112,10 +112,12 @@ def test_verify_wrong_size_and_colour_is_a_mismatch(client, fake_engines, photos
 
 
 def test_verify_damage_photo_goes_to_the_model(client, fake_engines, photos):
+    # A tear seen on one look is "not sure" with one more photo asked for (two looks before "sure").
     fake_engines.damage = damage_answer(tears=("clearly", "left sleeve"))
     r = client.post("/verify", files=_files(photos, damage=True), data={"listing": json.dumps(LISTING)})
     v = r.json()["verdict"]
-    assert v["kind"] == "mismatch"
+    assert v["kind"] == "unsure"
+    assert v["retake"]["kind"] == "light"
     assert ("damage", 2) in fake_engines.calls  # damage close-up + item photo
 
 
@@ -218,4 +220,4 @@ def test_fetch_listing_image_rechecks_redirects(monkeypatch, location):
 
 def test_openapi_documents_the_endpoints(client):
     spec = client.get("/openapi.json").json()
-    assert {"/health", "/quality", "/verify"} <= set(spec["paths"])
+    assert {"/health", "/quality", "/verify", "/recheck"} <= set(spec["paths"])

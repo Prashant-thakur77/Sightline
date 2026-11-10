@@ -16,6 +16,7 @@ import base64
 import json
 import logging
 import os
+import threading
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Protocol
@@ -98,16 +99,30 @@ IDENTITY_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "name": {"type": "string", "enum": list(IDENTITY_ATTRIBUTES)},
                     "listing": {"type": "string"},
-                    "item": {"type": "string"},
+                    "item_region": {
+                        "type": "string",
+                        "description": "Where on the delivered item this is visible, e.g. 'neckline at the top centre'. Empty if not visible.",
+                    },
+                    "item": {"type": "string", "description": "What is visible there on the delivered item, in a few words."},
                     "match": _YES_NO,
                 },
-                "required": ["name", "listing", "item", "match"],
+                "required": ["name", "listing", "item_region", "item", "match"],
                 "additionalProperties": False,
             },
         },
+        "item_type_evidence": {
+            "type": "object",
+            "description": "The visible part of the delivered item that shows what type of product it is.",
+            "properties": {
+                "region": {"type": "string", "description": "Where on the delivered item, e.g. 'hood at the top'. Empty if unclear."},
+                "sees": {"type": "string", "description": "What is visible there, e.g. 'a drawstring hood'."},
+            },
+            "required": ["region", "sees"],
+            "additionalProperties": False,
+        },
         "notes": {"type": "string"},
     },
-    "required": ["same_product", "product_type_listing", "product_type_item", "attributes", "notes"],
+    "required": ["same_product", "product_type_listing", "product_type_item", "attributes", "item_type_evidence", "notes"],
     "additionalProperties": False,
 }
 
@@ -117,9 +132,13 @@ _DAMAGE_FINDING = {
     "type": "object",
     "properties": {
         "seen": {"type": "string", "enum": ["clearly", "possibly", "no", "cannot_tell"]},
-        "where": {"type": "string", "description": "Short location, e.g. 'left sleeve cuff'. Empty if none."},
+        "where": {"type": "string", "description": "Short location on the item, e.g. 'left sleeve cuff'. Empty if none."},
+        "sees": {
+            "type": "string",
+            "description": "What is visible at that spot, e.g. 'a brown stain about the size of a coin'. Empty if none.",
+        },
     },
-    "required": ["seen", "where"],
+    "required": ["seen", "where", "sees"],
     "additionalProperties": False,
 }
 
@@ -149,15 +168,25 @@ IDENTITY_PROMPT = (
     "{listing_json}. Is the delivered item the same product and design as the listing? Ignore colour "
     "and size; they are checked separately. Compare each attribute you can see in both "
     "(neckline, sleeves, pattern, logo placement, closure, pockets, shape, material look) and describe "
-    "it in a few words for each side."
+    "it in a few words for each side. For the delivered item, name where the attribute is visible in "
+    "'item_region' (for example 'neckline at the top centre') and what is visible there in 'item'. "
+    "If you cannot point to it in the delivered photo, leave 'item_region' empty and set 'match' to "
+    "'unclear'. In 'item_type_evidence', name the visible part that shows what type of product the "
+    "delivered item is."
 )
 
 DAMAGE_PROMPT = (
     "These photos show an item that was just delivered. Look for tears or holes, stains, broken "
     "parts and missing pieces. For each, say 'clearly' only if the damage is plainly visible, "
     "'possibly' if it might be damage or might be the photo, 'no' if that area looks fine, and "
-    "'cannot_tell' if the photo does not show enough."
+    "'cannot_tell' if the photo does not show enough. For 'clearly' or 'possibly', give the spot on "
+    "the item in 'where' (for example 'left sleeve cuff') and what is visible there in 'sees' (for "
+    "example 'a brown stain about the size of a coin'). If you cannot point to a spot, use "
+    "'cannot_tell'."
 )
+
+# Bump when a prompt or schema above changes, so cached reads made with older wording are never reused.
+PROMPT_VERSION = "quote-or-unsure-1"
 
 
 class NullVlmClient:
@@ -199,6 +228,9 @@ class AnthropicVlmClient:
         self.fallbacks = fallbacks
         self._anthropic = anthropic
         self._client = anthropic.Anthropic(api_key=api_key, timeout=timeout_s, max_retries=2)
+        # Token totals for this client, so a benchmark can count what its reads cost.
+        self.usage = {"calls": 0, "input_tokens": 0, "output_tokens": 0}
+        self._usage_lock = threading.Lock()
 
     @staticmethod
     def _image_block(part: ImagePart) -> dict[str, Any]:
@@ -234,6 +266,10 @@ class AnthropicVlmClient:
             raise VlmUnavailable("connection failed") from exc
         usage = getattr(response, "usage", None)
         if usage is not None:
+            with self._usage_lock:
+                self.usage["calls"] += 1
+                self.usage["input_tokens"] += int(getattr(usage, "input_tokens", 0) or 0)
+                self.usage["output_tokens"] += int(getattr(usage, "output_tokens", 0) or 0)
             # Token counts only (never image or prompt content), so the cost of a check can be measured.
             log.info(
                 "vlm usage model=%s input=%s output=%s",

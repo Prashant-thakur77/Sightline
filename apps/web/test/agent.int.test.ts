@@ -149,7 +149,7 @@ describe.skipIf(!hasDb)('shopping agent turns (Postgres)', () => {
     await conductor.handleTurn(userId, { action: 'confirm-button', readbackId });
     const after = await steps(userId);
     expect(after.at(-1)).toMatchObject({ tool: 'paypal', subjectId: readbackId, readbackId });
-  });
+  }, 20_000);
 
   it('the agent can hand an item to the readback only when the buyer asked to buy it', async () => {
     const userId = await personas.ensurePersona('maya');

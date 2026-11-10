@@ -151,6 +151,9 @@ def _colour_reason(c: dict[str, Any], listing: dict[str, Any]) -> Reason:
             r.steps.append(STEP_HELPER_COLOUR)
         elif abstain == "nothing_to_compare":
             r.sentence = "The listing doesn't give a colour, so I didn't check it."
+        elif abstain == "looks_disagree":
+            r.sentence = "The two photos don't agree about the colour, so I can't judge it."
+            r.steps.append(STEP_HELPER_COLOUR)
         else:
             r.sentence = "I couldn't check the colour."
             r.steps.append(STEP_HELPER_COLOUR)
@@ -201,6 +204,9 @@ def _size_reason(s: dict[str, Any], listing: dict[str, Any]) -> Reason:
                 else "I couldn't understand the size on the listing."
             )
             r.steps.append(STEP_HELPER_SIZE)
+        elif why == "looks_disagree":
+            r.sentence = "The two photos of the size tag don't agree, so I can't tell the size."
+            r.steps.append(STEP_HELPER_SIZE)
         elif why == "different_size_systems":
             r.sentence = f"The size tag reads {obs} and you ordered {exp}. I can't compare those sizes."
             r.steps.append(STEP_HELPER_SIZE)
@@ -239,6 +245,8 @@ def _identity_reason(i: dict[str, Any], listing: dict[str, Any], noun: str) -> R
             r.sentence = f"I couldn't check that it's the same {noun}."
         elif why == "nothing_to_compare":
             r.sentence = "The listing has no photo or name to compare with."
+        elif why == "looks_disagree":
+            r.sentence = f"The two photos don't agree about whether it's the same {noun}."
         else:
             r.sentence = f"I can't tell from these photos if it's the same {noun}."
         if applicable:
@@ -264,7 +272,10 @@ def _damage_reason(d: dict[str, Any]) -> Reason:
         r.observed = "no damage"
         r.sentence = "I didn't see any damage."
     else:
-        r.sentence = "I couldn't see enough to check for damage." if why == "not_visible" else "I couldn't check for damage."
+        r.sentence = {
+            "not_visible": "I couldn't see enough to check for damage.",
+            "looks_disagree": "The two photos don't agree about damage.",
+        }.get(why or "", "I couldn't check for damage.")
     return r
 
 
@@ -288,9 +299,123 @@ def _quality_reason(q: dict[str, Any]) -> Reason | None:
 # --------------------------------------------------------------------------------------------
 
 
-def fuse(modules: dict[str, Any], listing: dict[str, Any], th: dict[str, Any]) -> dict[str, Any]:
-    """Combine module outputs into a verdict. ``th`` is ``thresholds()['fusion']``."""
-    noun = product_noun(listing, modules.get("identity"))
+# Two looks before "sure": a "sure" mismatch needs two independent signals that agree. A signal is
+# one module reading one view and disagreeing at "fairly sure" or better. The size module's "sure"
+# already rests on two reads (the vision model and OCR) of the tag, so it carries two signals; a
+# module that saw the difference on two photos (after a retake) carries one per photo. Two modules
+# that disagree (colour and identity, say) are two signals too.
+MISMATCH_MIN_SIGNALS = 2
+
+STEP_SECOND_LOOK = "One more photo would settle it."
+
+# The one extra shot the app can ask for when the check is not sure. ``prompt`` is spoken as is.
+RETAKES: dict[str, dict[str, str]] = {
+    "tag": {
+        "title": "A close photo of the size tag",
+        "prompt": "Hold the size tag flat, about a hand's width from the phone, in good light.",
+    },
+    "light": {
+        "title": "The whole item in better light",
+        "prompt": "Take the whole item again, near a window or under a bright light.",
+    },
+    "paper": {
+        "title": "The whole item next to white paper",
+        "prompt": "Put a sheet of plain white paper flat next to the item, so both are in the photo.",
+    },
+}
+
+# What each extra shot re-checks: a tag close-up re-reads the size; a new photo of the whole item in
+# better light re-runs colour, identity and damage; a photo next to white paper re-runs colour.
+RETAKE_MODULES: dict[str, tuple[str, ...]] = {"tag": ("size",), "light": ("colour", "identity", "damage"), "paper": ("colour",)}
+
+
+def signals_of(module: str, m: dict[str, Any] | None) -> int:
+    """Independent disagreeing signals behind a module's finding (0 when it does not disagree)."""
+    if not m or m.get("finding") != "disagree" or CONF_RANK.get(m.get("confidence", "not_sure"), 0) < CONF_RANK["fairly_sure"]:
+        return 0
+    if "signals" in m:
+        return int(m["signals"])
+    if module == "size" and m.get("confidence") == "sure":
+        return 2  # a sure size needs the model read and the OCR read to agree
+    return 1
+
+
+def _retake_for(module: str, m: dict[str, Any]) -> str | None:
+    """Which extra shot would help this module, or None if no photo would."""
+    if module == "size":
+        why = m.get("reason")
+        if why in ("listing_has_no_size", "listing_size_unrecognised", "different_size_systems", "looks_disagree"):
+            return None
+        return "tag"
+    if module == "colour":
+        abstain = m.get("abstain_reason")
+        if abstain in ("nothing_to_compare", "photo_and_name_disagree", "looks_disagree"):
+            return None
+        light = m.get("light_reasons") or []
+        # Dim or tinted light: a photo in better light. On the SightBench dev split (simulated
+        # retakes, colour only) a day-light photo settled colour far more often than white paper
+        # under the same tinted light, where the paper itself looks tinted and is rarely taken as
+        # a reference. White paper is asked for only when the light was already fine.
+        if abstain in ("low_light", "heavy_cast") or any(x in light for x in ("dim", "colour_cast", "heavy_cast")):
+            return "light"
+        return "paper"
+    if module in ("identity", "damage"):
+        if m.get("reason") in ("model_unavailable", "nothing_to_compare", "no_item_photo", "error", "looks_disagree", "no_photo"):
+            return None
+        return "light"
+    return None
+
+
+def choose_retake(
+    mods: dict[str, Any], kind: str, demoted: list[str], blocking: list[str], quality: dict[str, Any] | None
+) -> dict[str, str] | None:
+    """The ONE extra shot most likely to settle a "not sure" check, chosen from why it was not sure.
+
+    A difference seen once comes first (it needs a second look), then any other difference.
+    Otherwise the shot that re-checks the most of what kept it from being a match (the modules that
+    photo re-runs, see ``RETAKE_MODULES``, plus a poor photo for a new photo of the item), ties going
+    to the module listed first in ``MODULE_ORDER``. None after a retake (one extra shot only) or when
+    no photo would help (the listing has no colour, say).
+    """
+    if kind != "unsure" or int(mods.get("looks") or 1) >= 2:
+        return None
+    differences = [(m, "second_look") for m in MODULE_ORDER if m in demoted]
+    differences += [(m, "difference") for m in MODULE_ORDER if m not in demoted and (mods.get(m) or {}).get("finding") == "disagree"]
+    for module, why in differences:
+        shot = _retake_for(module, mods.get(module) or {})
+        if shot:
+            return {"kind": shot, "module": module, "why": why, **RETAKES[shot]}
+    poor_photo = bool(quality and quality.get("code") in ("TOO_DARK", "BLURRY", "GLARE"))
+    options: list[tuple[int, int, str, str]] = []
+    for i, module in enumerate(m for m in MODULE_ORDER if m in blocking):
+        shot = _retake_for(module, mods.get(module) or {})
+        if shot:
+            covers = sum(1 for b in blocking if b in RETAKE_MODULES[shot]) + (1 if poor_photo and shot != "tag" else 0)
+            options.append((-covers, i, shot, module))
+    if options:
+        _, _, shot, module = min(options)
+        return {"kind": shot, "module": module, "why": "blocks_match", **RETAKES[shot]}
+    if poor_photo:
+        return {"kind": "light", "module": "quality", "why": "photo", **RETAKES["light"]}
+    damage = mods.get("damage") or {}
+    if damage.get("reason") == "not_visible":
+        return {"kind": "light", "module": "damage", "why": "not_visible", **RETAKES["light"]}
+    return None
+
+
+def _second_look(r: Reason) -> Reason:
+    """A "sure" difference seen by one signal only: said as fairly sure, with a second look asked for."""
+    r.confidence = "fairly_sure"
+    sentence = r.sentence
+    if sentence.endswith(" I'm sure about that."):
+        sentence = sentence[: -len(" I'm sure about that.")].rstrip(".")
+    r.sentence = sentence + ", but I'm only fairly sure from one photo."
+    if STEP_SECOND_LOOK not in r.steps:
+        r.steps.insert(0, STEP_SECOND_LOOK)
+    return r
+
+
+def _reasons(modules: dict[str, Any], listing: dict[str, Any], noun: str) -> list[Reason]:
     reasons: list[Reason] = []
     if modules.get("size") is not None:
         reasons.append(_size_reason(modules["size"], listing))
@@ -300,28 +425,52 @@ def fuse(modules: dict[str, Any], listing: dict[str, Any], th: dict[str, Any]) -
         reasons.append(_identity_reason(modules["identity"], listing, noun))
     if modules.get("damage") is not None:
         reasons.append(_damage_reason(modules["damage"]))
+    return reasons
+
+
+def fuse(modules: dict[str, Any], listing: dict[str, Any], th: dict[str, Any]) -> dict[str, Any]:
+    """Combine module outputs into a verdict. ``th`` is ``thresholds()['fusion']``.
+
+    ``modules`` may carry ``looks`` (2 after a retake), and a module may carry ``signals`` (set when
+    two photos were combined). ``th["mismatch_min_signals"]`` overrides the two-looks rule (1 gives
+    the rule from before it, for re-scoring old runs).
+    """
+    noun = product_noun(listing, modules.get("identity"))
+    reasons = _reasons(modules, listing, noun)
     quality_reason = _quality_reason(modules["quality"]) if modules.get("quality") else None
     if quality_reason is not None:
         reasons.append(quality_reason)
 
     by_module = {r.module: r for r in reasons}
     mismatch_min = CONF_RANK[th.get("mismatch_min_confidence", "sure")]
+    min_signals = int(th.get("mismatch_min_signals", MISMATCH_MIN_SIGNALS))
     sure_disagree = [r for r in reasons if r.finding == "disagree" and CONF_RANK[r.confidence] >= mismatch_min]
+    signals = sum(signals_of(m, modules.get(m)) for m in ("size", "colour", "identity", "damage"))
+    demoted: list[str] = []
+    if sure_disagree and signals < min_signals:
+        # One module, one view: not enough for "sure". Say what was seen, ask for a second look.
+        demoted = [r.module for r in sure_disagree]
+        for r in sure_disagree:
+            _second_look(r)
+        sure_disagree = []
     any_disagree = any(r.finding == "disagree" for r in reasons)
 
+    required = [m for m in th.get("match_required_modules", []) if m in by_module and by_module[m].applicable]
+    min_conf = th.get("match_min_confidence", {})
+    blocking = [
+        m
+        for m in required
+        if not (by_module[m].finding == "agree" and CONF_RANK[by_module[m].confidence] >= CONF_RANK[min_conf.get(m, "sure")])
+    ]
     if sure_disagree:
         kind = "mismatch"
     elif any_disagree:
         kind = "unsure"
     else:
-        required = [m for m in th.get("match_required_modules", []) if m in by_module and by_module[m].applicable]
-        min_conf = th.get("match_min_confidence", {})
-        all_ok = bool(required) and all(
-            by_module[m].finding == "agree" and CONF_RANK[by_module[m].confidence] >= CONF_RANK[min_conf.get(m, "sure")] for m in required
-        )
-        kind = "match" if (all_ok and quality_reason is None) else "unsure"
+        kind = "match" if (required and not blocking and quality_reason is None) else "unsure"
 
     reasons.sort(key=lambda r: (FINDING_ORDER[r.finding], -CONF_RANK[r.confidence], MODULE_ORDER.index(r.module)))
+    retake = choose_retake(modules, kind, demoted, blocking, modules.get("quality"))
 
     if kind == "match":
         parts: list[str] = []
@@ -340,9 +489,13 @@ def fuse(modules: dict[str, Any], listing: dict[str, Any], th: dict[str, Any]) -
     else:
         headline = "I'm not sure this matches."
         next_steps = []
+        if retake:
+            # The one shot asked for comes first; the generic photo tips it replaces are dropped.
+            next_steps.append(f"One more photo would help: {retake['title'][0].lower()}{retake['title'][1:]}. {retake['prompt']}")
+        replaced = {STEP_SECOND_LOOK, STEP_TAG, STEP_LIGHT, STEP_WHITE_LIGHT} if retake else {STEP_SECOND_LOOK}
         for r in reasons:
             for step in r.steps:
-                if step not in next_steps:
+                if step not in next_steps and step not in replaced:
                     next_steps.append(step)
         if not any(s.startswith(("Ask a helper", "Or ask a helper")) for s in next_steps):
             next_steps.append(STEP_HELPER)
@@ -354,4 +507,7 @@ def fuse(modules: dict[str, Any], listing: dict[str, Any], th: dict[str, Any]) -
         "reasons": [r.to_dict() for r in reasons],
         "headline": headline,
         "next_steps": next_steps,
+        "retake": retake,
+        "looks": int(modules.get("looks") or 1),
+        "signals": signals,
     }

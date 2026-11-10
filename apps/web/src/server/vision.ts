@@ -1,7 +1,7 @@
 import 'server-only';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Verdict, ProductSnapshot } from '@sightline/core';
+import type { Verdict, VerdictRetake, ProductSnapshot } from '@sightline/core';
 import { ENV } from './runtime';
 
 export interface VisionResult {
@@ -23,17 +23,33 @@ type WireReason = {
   sentence: string;
 };
 
-function fromWire(v: { kind: Verdict['kind']; reasons: WireReason[]; headline: string; next_steps?: string[]; nextSteps?: string[] }): Verdict {
+type WireRetake = { kind: 'tag' | 'light' | 'paper'; title: string; prompt: string } | null | undefined;
+const RETAKE_KINDS = new Set(['tag', 'light', 'paper']);
+
+export function fromWire(v: {
+  kind: Verdict['kind'];
+  reasons: WireReason[];
+  headline: string;
+  next_steps?: string[];
+  nextSteps?: string[];
+  retake?: WireRetake;
+  looks?: number;
+}): Verdict {
   // "Not sure" with real differences found should say so plainly, not sound like nothing was found.
   const differences = v.reasons.filter((r) => r.finding === 'disagree').length;
   const headline =
     v.kind === 'unsure' && differences > 0
       ? `This probably isn't what you ordered, but I'm not completely sure. ${differences === 1 ? 'One thing looks' : 'Two things look'} different.`
       : v.headline;
+  // Only a known kind of extra photo is offered, and only while the check is "not sure".
+  const retake =
+    v.kind === 'unsure' && v.retake && RETAKE_KINDS.has(v.retake.kind) ? { kind: v.retake.kind, title: v.retake.title, prompt: v.retake.prompt } : null;
   return {
     kind: v.kind,
     headline,
     nextSteps: v.next_steps ?? v.nextSteps ?? [],
+    retake,
+    looks: v.looks ?? 1,
     reasons: v.reasons.map((r) => ({
       module: r.module,
       finding: r.finding,
@@ -89,6 +105,36 @@ async function listingImage(url: string): Promise<{ bytes: Buffer; name: string 
   }
 }
 
+async function appendListing(form: FormData, snapshot: ProductSnapshot): Promise<void> {
+  for (const img of snapshot.images.slice(0, 3)) {
+    const li = await listingImage(img.url);
+    if (li) form.append('listing_images', new Blob([new Uint8Array(li.bytes)]), li.name);
+  }
+  form.append(
+    'listing',
+    JSON.stringify({
+      title: snapshot.title,
+      colour: snapshot.attributes.colour ?? null,
+      size: snapshot.attributes.size ?? null,
+      attributes: snapshot.attributes,
+    }),
+  );
+}
+
+async function post(pathName: '/verify' | '/recheck', form: FormData): Promise<VisionResult> {
+  if (!ENV.VISION_SERVICE_URL) throw new VisionUnavailableError('VISION_SERVICE_URL is not set');
+  let res: Response;
+  try {
+    res = await fetch(`${ENV.VISION_SERVICE_URL.replace(/\/$/, '')}${pathName}`, { method: 'POST', body: form, signal: AbortSignal.timeout(45000) });
+  } catch (e) {
+    throw new VisionUnavailableError(`vision service unreachable: ${(e as Error).message}`);
+  }
+  if (res.status >= 400 && res.status < 500) throw new VisionRefusedError(`vision service refused the photos (${res.status})`);
+  if (!res.ok) throw new VisionUnavailableError(`vision service returned ${res.status}`);
+  const json = (await res.json()) as { verdict: Parameters<typeof fromWire>[0]; modules: Record<string, unknown>; timings_ms: Record<string, number> };
+  return { verdict: fromWire(json.verdict), modules: json.modules, timings_ms: json.timings_ms };
+}
+
 export async function verifyDelivery(input: {
   snapshot: ProductSnapshot;
   photos: { kind: 'item' | 'label' | 'damage'; bytes: Buffer }[];
@@ -99,27 +145,25 @@ export async function verifyDelivery(input: {
     const field = p.kind === 'item' ? 'item' : p.kind === 'label' ? 'label' : 'damage';
     form.append(field, new Blob([new Uint8Array(p.bytes)], { type: 'image/jpeg' }), `${p.kind}.jpg`);
   }
-  for (const img of input.snapshot.images.slice(0, 3)) {
-    const li = await listingImage(img.url);
-    if (li) form.append('listing_images', new Blob([new Uint8Array(li.bytes)]), li.name);
-  }
-  form.append(
-    'listing',
-    JSON.stringify({
-      title: input.snapshot.title,
-      colour: input.snapshot.attributes.colour ?? null,
-      size: input.snapshot.attributes.size ?? null,
-      attributes: input.snapshot.attributes,
-    }),
-  );
-  let res: Response;
-  try {
-    res = await fetch(`${ENV.VISION_SERVICE_URL.replace(/\/$/, '')}/verify`, { method: 'POST', body: form, signal: AbortSignal.timeout(45000) });
-  } catch (e) {
-    throw new VisionUnavailableError(`vision service unreachable: ${(e as Error).message}`);
-  }
-  if (res.status >= 400 && res.status < 500) throw new VisionRefusedError(`vision service refused the photos (${res.status})`);
-  if (!res.ok) throw new VisionUnavailableError(`vision service returned ${res.status}`);
-  const json = (await res.json()) as { verdict: Parameters<typeof fromWire>[0]; modules: Record<string, unknown>; timings_ms: Record<string, number> };
-  return { verdict: fromWire(json.verdict), modules: json.modules, timings_ms: json.timings_ms };
+  await appendListing(form, input.snapshot);
+  return post('/verify', form);
+}
+
+/**
+ * Check again with the first check's module outputs (as stored on this server, never as sent by the
+ * browser) and the ONE extra photo it asked for. The kind of photo also comes from the stored verdict.
+ */
+export async function recheckDelivery(input: {
+  snapshot: ProductSnapshot;
+  previousModules: Record<string, unknown>;
+  kind: VerdictRetake['kind'];
+  photo: Buffer;
+}): Promise<VisionResult> {
+  if (!ENV.VISION_SERVICE_URL) throw new VisionUnavailableError('VISION_SERVICE_URL is not set');
+  const form = new FormData();
+  form.append('retake', new Blob([new Uint8Array(input.photo)], { type: 'image/jpeg' }), `retake-${input.kind}.jpg`);
+  form.append('retake_kind', input.kind);
+  form.append('previous', JSON.stringify(input.previousModules));
+  await appendListing(form, input.snapshot);
+  return post('/recheck', form);
 }

@@ -55,7 +55,7 @@ async function judgeUser(): Promise<string> {
 }
 
 /**
- * The whole lifecycle in about two minutes, against the real sandbox: shop, read back, confirm with
+ * The whole lifecycle in under a minute, against the real sandbox: shop, read back, confirm with
  * two keys, PayPal hold, wrong item shipped, camera check, money back, then the store's agent
  * answering the case and Maya's agent answering the store's offer.
  */

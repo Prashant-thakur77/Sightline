@@ -31,6 +31,7 @@ const ARRIVED_ALT: Record<PhotoSource | 'unknown', string> = {
 export function withoutConfidence(sentence: string): string {
   return sentence
     .replace(/,? but (the light is \w+|there['’]s glare on it) so I['’]m less sure\./i, (_m, why: string) => `. ${why.charAt(0).toUpperCase()}${why.slice(1)}.`)
+    .replace(/,? but I['’]m only fairly sure from one photo\./i, '. Seen in one photo so far.')
     .replace(/,? but I['’]m (only fairly|not) sure\./i, '.')
     .replace(/\.? I['’]m (fairly )?sure( about that)?\./i, '.')
     .trim();

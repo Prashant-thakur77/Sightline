@@ -195,6 +195,63 @@ slate, 11.7). Matching brightness to a near-black listing also squashes the deli
 chroma, which is how black for sky blue came out under 10. These were found after the run and were
 not fitted on test; the next fit needs more colour swaps in dev, and real photos.
 
+## Two looks, quoted reads, one extra photo
+
+Three changes to the check, scored by `looks.ts` into `evals/results/sightbench-looks.json`, next to
+the numbers above (never instead of them):
+
+- **Two looks before "sure"** (service `fusion.py`): a "sure" mismatch needs two independent
+  signals that agree (two modules, or one module on two photos; a sure size already rests on the
+  model read and OCR). Scored on all 420 test pairs from the module outputs the last with-model test
+  run saved, with no new model call. Re-fusing those outputs with the old rule must reproduce every
+  saved verdict, or `looks.ts` refuses to write.
+- **Quote-or-unsure reads** (service `citation.py`): identity and damage reads must name a visible
+  region and what is in it, checked in code. This changes the prompts and the output schema
+  (`vlm.PROMPT_VERSION`), so it needs new model reads, capped at about 12 USD: a stratified test
+  subset (half matching, mismatches spread over type and light, fixed hash order), not all 420.
+- **One extra photo** (service `fusion.choose_retake`, `POST /recheck`): a "not sure" check asks for
+  one shot chosen from why it was not sure (size tag close-up; the whole item in better light;
+  white paper next to the item) and checks again with both photos. SightBench has one photo per
+  item, so the extra photos are **simulated**: `py/sightbench/retake.py` renders them from the
+  pair's own seed, so the item and its damage are the same (it re-renders the first pairs' item and
+  tag photos and stops unless the bytes are identical). `light` is a new day-light photo on a new
+  surface; `paper` a new photo under the pair's own light with an A4 sheet of white paper beside
+  the item; `tag` the pair's own tag under its own light, closer (80-92% of the width) and flatter
+  (at most 8 degrees, not bent). Every number from these says "simulated retake".
+
+```sh
+cd evals/sightbench/py && uv run python -m sightbench.retake --split dev && uv run python -m sightbench.retake --split test
+cd ../../../services/vision
+# dev: develop the citation rules and the retake choice (new reads; size-tag reads too, no saved run)
+uv run python -m app.looks_bench --env-file ../../.env.local --split dev \
+  --manifest ../../evals/sightbench/manifests/dev.json --retakes ../../evals/sightbench/manifests/retake-dev.json \
+  --sample 20 --cache ../../evals/data/raw/sightbench/looks/reads --ledger ../../evals/data/raw/sightbench/looks/spend.json \
+  --budget-usd 11.5 --out ../../evals/data/raw/sightbench/looks/rows-dev.json
+# test, once: two looks on all 420 pairs; quoted reads and a simulated retake on the subset
+uv run python -m app.looks_bench --env-file ../../.env.local --split test \
+  --manifest ../../evals/sightbench/manifests/test.json --retakes ../../evals/sightbench/manifests/retake-test.json \
+  --first-cache ../../evals/data/raw/sightbench/responses/with-model/fitted-dev-2026-11-09 \
+  --sample <n> --cache ../../evals/data/raw/sightbench/looks/reads --ledger ../../evals/data/raw/sightbench/looks/spend.json \
+  --budget-usd 11.5 --out ../../evals/data/raw/sightbench/looks/rows-test.json
+cd ../../evals && pnpm exec tsx sightbench/looks.ts && pnpm evals:report
+```
+
+What dev decided (20 dev pairs with new reads, plus colour-only checks of all 180 dev retakes, no
+model): the citation rules accept a region like "overall silhouette" for the product type and do
+not accept damage described with a harmless explanation ("a stain or just shadow"); and colour asks
+for a photo in better light, not white paper, when the light was dim or tinted. Under the pair's
+own tinted light the rendered paper was taken as a white reference in only 2 of 180 dev retakes,
+and the paper photos gave 7 wrong "sure" colour disagreements on right-colour items and caught 1 of
+23 swaps, against 0 and 7 of 23 for the day-light photos. White paper is asked for only when the
+light was already fine. When several checks keep a pair from a match, the shot that re-checks the
+most of them is asked for.
+
+Model reads are cached per pair, photo and read under `looks/reads/<prompt version>__<model>__<effort>/`,
+so changing a prompt (and `PROMPT_VERSION`) never reuses an old read, and re-running never pays
+twice. `--env-file` takes only `VISION_MODEL`, `VISION_EFFORT` and `ANTHROPIC_API_KEY` from the file.
+The ledger counts the API's token usage at list price and the bench stops before a call that could
+pass `--budget-usd`; pairs it did not reach are reported as not run.
+
 ## Adding real photos
 
 Follow `real/SHOTLIST.md`: photos go to `evals/data/raw/real/` (git-ignored, location data
@@ -218,3 +275,6 @@ removed), one row per item in `real/items.csv`. Then:
 - `check-splits.mjs` split and freeze guard
 - `run.ts` the runner; writes `evals/results/sightbench.json` (test only), keeping every test run
   in `details.testRuns`
+- `py/sightbench/retake.py` and `manifests/retake-{dev,test}.json` the simulated extra photos
+- `looks.ts` scores two looks, quoted reads and one simulated extra photo from the rows of
+  `services/vision` `app/looks_bench.py`; writes `evals/results/sightbench-looks.json`

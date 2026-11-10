@@ -3,7 +3,9 @@
 The unboxing check. It compares a delivered item with the listing it was bought from: colour, size
 tag, whether it is the same product, and visible damage. It answers `match`, `mismatch` or `unsure`
 with reasons in plain words. It never says `match` unless every check that applies agrees, and a
-`mismatch` needs at least one reason it is sure of. Anything else is `unsure`, with next steps.
+`mismatch` needs a reason it is sure of, backed by two independent looks (two looks before
+"sure"). Anything else is `unsure`, with next steps and, when one would help, ONE extra photo to
+take (`POST /recheck` then checks again with both photos).
 
 Python 3.12, FastAPI, managed with uv. CPU only.
 
@@ -104,6 +106,19 @@ Errors are `{"detail": {"code", "message"}}` with a message that is safe to read
 `413 too_large | too_many_pixels`, `415 unsupported_type`, `422 bad_listing | no_item_photo |
 too_many_photos | too_many_listing_images | bad_url | unreadable | empty`.
 
+An `unsure` verdict also has `retake` (or `null`): `{kind: "tag" | "light" | "paper", module, why,
+title, prompt}`, the one extra photo to ask for; `looks` (1, or 2 after it) and `signals` (independent
+signals that the item differs).
+
+### `POST /recheck`
+
+The first check plus the ONE extra photo it asked for. Multipart form: `retake` (the photo),
+`retake_kind` (`tag`, `light` or `paper`), `previous` (JSON: the first check's `modules`, as stored
+by the caller), `listing` and `listing_images` as for `/verify`. Only the modules the photo can
+inform run again; the answer has the same shape as `/verify`, with `looks: 2`, `retake: null` and the
+second photo's own module outputs under `modules.second_look`. Errors as above, plus
+`422 bad_previous | already_rechecked`.
+
 ## How the verdict is reached
 
 1. **Quality gate** (`quality.py`) on each item photo. A poor photo can still produce a mismatch,
@@ -144,9 +159,32 @@ too_many_photos | too_many_listing_images | bad_url | unreadable | empty`.
    tears, stains, broken parts, missing pieces. A `sure` identity disagreement needs a named
    attribute difference or a different product type. Clearly visible damage is `sure`; possible
    damage asks for a close-up.
-6. **Fusion** (`fusion.py`). `mismatch` needs a `sure` disagreement. `match` needs colour, size and
-   identity (each where the listing gives something to compare) to agree at the minimum confidence
-   in `thresholds.json`, no disagreement anywhere, and a usable photo. Otherwise `unsure`.
+   **Quote-or-unsure** (`citation.py`, checked in code, not by trusting the model): each identity
+   attribute names where on the delivered item it is visible (`item_region`) and what is there
+   (`item`); the product type cites the part that shows it (`item_type_evidence`); each damage
+   finding names the spot (`where`) and what is visible there (`sees`). A citation counts only when
+   the region contains a place word (sleeve, collar, hem, handle, sole, left, top...) and the
+   description is not a hedge ("not visible", "too dark to see"); damage described together with a
+   harmless explanation ("a stain, or just shadow") does not count. An identity read without a
+   cited difference (or, for a match, without a cited attribute) is `unknown` (`no_citation`);
+   uncited damage counts as `cannot_tell`. `vlm.PROMPT_VERSION` names the prompt and schema version.
+6. **Fusion** (`fusion.py`). `mismatch` needs a `sure` disagreement **and two independent signals
+   that agree** (two looks before "sure"). A signal is one module disagreeing about one photo at
+   `fairly_sure` or better: a `sure` size already rests on two reads (model and OCR) of the tag;
+   two modules that disagree (colour and identity, say) are two signals; one module that saw the
+   difference on two photos is two. A `sure` disagreement with one signal is said as "only fairly
+   sure from one photo" and the verdict is `unsure`. `match` needs colour, size and identity (each
+   where the listing gives something to compare) to agree at the minimum confidence in
+   `thresholds.json`, no disagreement anywhere, and a usable photo. Otherwise `unsure`.
+7. **One extra photo** (`fusion.choose_retake`, `looks.py`). An `unsure` verdict carries `retake`:
+   the one shot most likely to settle it, chosen from why it was not sure. A difference seen once
+   comes first; otherwise the shot that re-checks the most of what kept it from a match. `tag` (a
+   close photo of the size tag) re-reads the size; `light` (the whole item near a window or under a
+   bright light) re-runs colour, identity and damage; `paper` (white paper next to the item)
+   re-runs colour, for tinted light. `POST /recheck` combines each re-run module with its first
+   look: two disagreeing looks are two signals; a disagreeing and an agreeing look are `unknown`
+   ("the two photos don't agree"); otherwise the clearer look counts. No further photo is asked
+   for after that.
 
 Without a model key, identity and damage report `unknown`, so the service answers `unsure` or
 `mismatch`, never `match`.
@@ -222,6 +260,10 @@ and per lighting condition, with Wilson 95% intervals, plus p50/p95 latency, git
 version. `--no-vlm` runs without the model, `--disable colour,size` switches modules off for
 ablations, `--thresholds` tries an override file. The manifest format is documented at the top of
 `app/bench.py`.
+
+`python -m app.looks_bench` scores two looks, quote-or-unsure reads and one simulated extra photo on
+SightBench (see `evals/sightbench/README.md`, "Two looks, quoted reads, one extra photo"). It caches
+every new model read by prompt version and keeps a spend ledger with a hard cap.
 
 ## Not done yet
 

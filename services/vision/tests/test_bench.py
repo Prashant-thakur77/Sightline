@@ -77,11 +77,12 @@ def test_cli_runs_a_manifest(tmp_path, capsys):
     assert report["engines"] == {"vlm": "none"}
     rows = {r["id"]: r for r in report["pairs"]}
     assert rows["a"]["predicted"] == "unsure"  # no vision model: identity cannot be checked
-    assert rows["b"]["predicted"] == "mismatch"  # black for navy in good light
+    # Black for navy in good light: one look by one module, so "not sure" with a retake asked for.
+    assert rows["b"]["predicted"] == "unsure"
     assert rows["c"]["error"].startswith("FileNotFoundError")
     o = report["metrics"]["overall"]
     assert o["n"] == 3
-    assert o["mismatch_recall"]["value"] == 0.5
+    assert o["mismatch_recall"]["value"] == 0.0
     assert o["false_alarm_rate"]["value"] == 0.0
     assert report["metrics"]["errors"] == 1
     assert "mismatch recall" in capsys.readouterr().out

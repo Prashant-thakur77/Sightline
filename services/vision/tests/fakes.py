@@ -54,28 +54,51 @@ def label_answer(size: str, box: list[float] | None = None) -> dict[str, Any]:
     return {"size": size, "brand": "Harbor", "material": "100% cotton", "raw_text": f"HARBOR\n{size}\n100% COTTON", "boxes": boxes}
 
 
-def identity_answer(same: str, mismatch: tuple[str, str, str] | None = None, product_type_item: str = "sweater") -> dict[str, Any]:
+REGIONS = {"neckline": "neckline at the top centre", "pattern": "front of the body", "logo_placement": "chest, left side"}
+
+
+def identity_answer(
+    same: str,
+    mismatch: tuple[str, str, str] | None = None,
+    product_type_item: str = "sweater",
+    cited: bool = True,
+    legacy: bool = False,
+) -> dict[str, Any]:
+    """A model answer in the current schema (``cited=False`` leaves every region empty).
+
+    ``legacy`` gives the answer shape from before citations were asked for.
+    """
     attrs = [
-        {"name": "neckline", "listing": "crew neck", "item": "crew neck", "match": "yes"},
-        {"name": "pattern", "listing": "plain knit", "item": "plain knit", "match": "yes"},
-        {"name": "logo_placement", "listing": "none", "item": "none", "match": "yes"},
+        {"name": "neckline", "listing": "crew neck", "item": "round crew neckline", "match": "yes"},
+        {"name": "pattern", "listing": "plain knit", "item": "plain knit body", "match": "yes"},
+        {"name": "logo_placement", "listing": "none", "item": "no logo on the chest", "match": "yes"},
     ]
     if mismatch:
         name, listing_value, item_value = mismatch
         attrs = [a for a in attrs if a["name"] != name] + [{"name": name, "listing": listing_value, "item": item_value, "match": "no"}]
-    return {
+    answer: dict[str, Any] = {
         "same_product": same,
         "product_type_listing": "sweater",
         "product_type_item": product_type_item,
         "attributes": attrs,
         "notes": "",
     }
+    if not legacy:
+        for a in attrs:
+            a["item_region"] = REGIONS.get(a["name"], "front of the body") if cited else ""
+        answer["item_type_evidence"] = (
+            {"region": "whole body and sleeves", "sees": f"a knitted {product_type_item}"} if cited else {"region": "", "sees": ""}
+        )
+    return answer
 
 
-def damage_answer(**seen: tuple[str, str]) -> dict[str, Any]:
-    out: dict[str, Any] = {k: {"seen": "no", "where": ""} for k in ("tears", "stains", "broken_parts", "missing_pieces")}
-    for kind, (level, where) in seen.items():
-        out[kind] = {"seen": level, "where": where}
+def damage_answer(**seen: tuple[str, ...]) -> dict[str, Any]:
+    """``kind=(seen, where)`` or ``kind=(seen, where, sees)``; ``sees`` defaults to a concrete description."""
+    out: dict[str, Any] = {k: {"seen": "no", "where": "", "sees": ""} for k in ("tears", "stains", "broken_parts", "missing_pieces")}
+    for kind, value in seen.items():
+        level, where = value[0], value[1]
+        sees = value[2] if len(value) > 2 else (f"a dark mark at the {where}" if where else "")
+        out[kind] = {"seen": level, "where": where, "sees": sees}
     out["notes"] = ""
     return out
 

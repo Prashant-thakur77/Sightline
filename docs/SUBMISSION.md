@@ -8,11 +8,11 @@ Shopping on your own when you can't see the screen: hear exactly what you pay, l
 
 ## Live demo
 
-https://sightline.prashantthakur.dev (PayPal sandbox; no sign-up). Judges start at `/judge`: one press runs the whole lifecycle against the PayPal sandbox in about two minutes.
+https://sightline.prashantthakur.dev (PayPal sandbox; no sign-up). Judges start at `/judge`: one press runs the whole lifecycle against the PayPal sandbox in under a minute.
 
 ## Inspiration
 
-Blind people can already shop online with a screen reader, slowly. What still breaks is after checkout. A parcel arrives, and the only way to know whether it's the navy medium you paid for, and not a charcoal large, is to ask someone. Getting money back is worse: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven couldn't use the retailer's return method at all (Which? with RIDC). In a CHI 2026 study of 12 blind and low-vision people shopping with an AI agent (Shin et al.), participants couldn't verify what the agent told them and didn't trust it with payment.
+Blind people can already shop online with a screen reader, slowly. What still breaks is after checkout. A parcel arrives, and the only way to know whether it's the navy medium you paid for, and not a charcoal large, is to ask someone. Getting money back is worse: 49% of disabled shoppers who needed to return something had problems doing it, and one in seven disabled consumers couldn't use the retailer's suggested return method (Which? with RIDC). In a CHI 2026 study of 12 blind and low-vision people shopping with an AI agent (Shin et al.), participants couldn't verify what the agent told them and didn't trust it with payment.
 
 So we built the whole money lifecycle to be something a blind person can do alone, with PayPal underneath it, and with an agent that can be checked at every step.
 
@@ -38,8 +38,8 @@ So we built the whole money lifecycle to be something a blind person can do alon
 - Package tracking added to the PayPal order; webhooks verified by signature; Disputes read on the store's case desk.
 
 **AI**
-- Claude Opus 5.5: the tool-using shopping agent (11 tools, capped and with a deterministic fallback), size-tag, product and damage reads in photos, the case summary, and the store's agent.
-- Claude Haiku 5.5: the second confirmation key, which can only agree or veto.
+- Claude Haiku 5.5: the tool-using shopping agent (11 tools, capped and with a deterministic fallback) and the second confirmation key, which can only agree or veto.
+- Claude Opus 5.5: size-tag, product and damage reads in photos, answers to free questions about a listing, the case summary, and the store's agent.
 - Model output never moves money: amounts, payees and confirmations come from frozen listing snapshots, the readback and an eight-guard payment gate that signs a receipt for every decision.
 
 **Also:** Channel3 for live product data, AG Studio dashboards for the store with a Claude assistant, Bryntum Scheduler for the store's holds and deadlines, an MCP server so other agents can use the readback and the delivery check, and AWS for hosting.

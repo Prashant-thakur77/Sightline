@@ -1,0 +1,2976 @@
+{
+  "name": "sightbench-retake-dev",
+  "split": "dev",
+  "synthetic": true,
+  "simulated_retake": true,
+  "seed": 20261109,
+  "generator": "evals/sightbench/py/sightbench/retake.py",
+  "note": "The check asks for one of three extra shots when it is not sure (services/vision fusion.RETAKES).\nSightBench has one photo of each delivered item, so the retakes are SIMULATED: rendered with the\nsame generator as the pair, deterministically, from seed_for(SEED, \"retake\", kind, pair id).\n\n- The item is drawn again from the pair's own seed, so it is the same item with the same damage\n  (same spot, same size) as in the pair's photo. ``--check N`` re-renders the first N pairs' original\n  photos this way and fails unless the bytes are identical.\n- ``light`` (\"near a window or under a bright light\"): a new photo of the item in day light\n  (sample_light(\"day\")), on a new surface, at a new angle and distance.\n- ``paper`` (\"a sheet of plain white paper next to the item\"): a new photo under the pair's OWN\n  light (same colour temperature, exposure and camera), on a new surface, with an A4-shaped sheet of\n  white paper partly under the item, and the item a little smaller in the frame so the paper shows.\n- ``tag`` (\"a close photo of the size tag, flat\"): the size tag again under the pair's OWN light,\n  filling more of the frame (80-92% of the width instead of 42-86%), turned at most 8 degrees\n  (instead of 35) and not bent. Mugs have no tag and get no tag retake.\n\nThe light is never made better than the pair's own except in the ``light`` retake, which is what\nthat shot asks for. Images go to evals/data/raw/sightbench/retakes/ (git-ignored); the manifest\nmanifests/retake-<split>.json lists every image with its sha256. Everything is synthetic.",
+  "paths": "Relative to this manifest file. Images live in evals/data/raw/sightbench/retakes/ (git-ignored); regenerate them with the generator.",
+  "pairs": [
+    {
+      "id": "sb0001",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0001_light.jpg",
+          "sha256": "8ac19b559411c94b5b68784c2a3061fa979c5e43ef3dfeee555969e80efc4c53"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0001_paper.jpg",
+          "sha256": "82fa95c5981c49c4f1344aa2aed230598f13a61bce2f6f7263db792c94151cac"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0001_tag.jpg",
+          "sha256": "0329000ba18d4ba679a7abd48f7b60f455d1ec7bfc0db396fc5a4d37092d4d6c"
+        }
+      }
+    },
+    {
+      "id": "sb0002",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0002_light.jpg",
+          "sha256": "6499d46a0cb257ba8b9994899f45a1c5c0950edd93cbbb0bec25eacfb668fc32"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0002_paper.jpg",
+          "sha256": "52cde5aa3973e445f26254e3374539f4e619febc7843a3a6746b2a081182f01f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0002_tag.jpg",
+          "sha256": "2038a749eff5fad15ed0a499915a5557b80d0cd6d8433519a43405bbdad2a828"
+        }
+      }
+    },
+    {
+      "id": "sb0003",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0003_light.jpg",
+          "sha256": "439bf261e2eed8303a06ae5d39809aa74e7b3d4f3c1310d544397f9a2f384780"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0003_paper.jpg",
+          "sha256": "426182b342d40d7a049c9c01d1a1e199cbecd2601d85a4bd734dd7f93c91d4f6"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0003_tag.jpg",
+          "sha256": "ccb41ae9b70516700657ddc855a13a0a3a908ccfea1785e16c8033ec7ab95774"
+        }
+      }
+    },
+    {
+      "id": "sb0004",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0004_light.jpg",
+          "sha256": "814d53e335de1d66f708ffdd5d857102dca73610fa66b38dff5f61e413b82d21"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0004_paper.jpg",
+          "sha256": "418d7e01da78ee9cd34696a68fdee45fb4a4cf1580af26d5da9c3aca5125f8b1"
+        }
+      }
+    },
+    {
+      "id": "sb0005",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0005_light.jpg",
+          "sha256": "521d9809b0804110bdccc66b87d4520b989049c845b91219d78c928f359f75c4"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0005_paper.jpg",
+          "sha256": "f4b2777eb64fc1ebb304b2dca76771b705b3eea0c53d602b6f2fa33f559f3dab"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0005_tag.jpg",
+          "sha256": "b3cc312eb01aa773be4ad1ae3901deb16b9269503721b0594a56862f7181bd28"
+        }
+      }
+    },
+    {
+      "id": "sb0006",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0006_light.jpg",
+          "sha256": "074baa795493ab9882ffec4195192687e2739faa97432289bec3644e14187430"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0006_paper.jpg",
+          "sha256": "a0a50604a1d6fd574b35e755ba2900a90e0294fd3b8514c2b287d82c80499f11"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0006_tag.jpg",
+          "sha256": "167220ac1d6bd5ce30987c04492deb803f5fb524a1467b739db82f4210310734"
+        }
+      }
+    },
+    {
+      "id": "sb0007",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0007_light.jpg",
+          "sha256": "057e66f4785cb830356058619f493cb3bc7a01def64e2f9bb1c13193e64412f5"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0007_paper.jpg",
+          "sha256": "f53482860ebf55555b7e718915c7db28d39a45a0f129e81b7015d2fe204698fe"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0007_tag.jpg",
+          "sha256": "1139f5c27bd760a55cc9d0434835f5e24362a671402cf6a5e9af4bff505e1d0b"
+        }
+      }
+    },
+    {
+      "id": "sb0008",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0008_light.jpg",
+          "sha256": "cf4fdfc4af0d0183951b3b71d6876bb526344ab1063abc8ea1c971e3c34242e7"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0008_paper.jpg",
+          "sha256": "f215baecb96aec76270d527535cea9fd14d5da0bd9c08d97f3e9e6aea9972354"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0008_tag.jpg",
+          "sha256": "a49179bba6077f06334d609d1e75b392283e7456d550c24455c5cb1d38646dd1"
+        }
+      }
+    },
+    {
+      "id": "sb0009",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0009_light.jpg",
+          "sha256": "660c11bc6cc43fe9cd5abd60c6de3966b376aa53f751d9b04a1d729353db0677"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0009_paper.jpg",
+          "sha256": "5b98c0ab0178ea7e784d6d3f636ed46b1bacfbc141e6812d5677b572914c7448"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0009_tag.jpg",
+          "sha256": "c26bf7c1ebe9033898f857afd11b954a3737985932044719d09c11bbdd6b2efa"
+        }
+      }
+    },
+    {
+      "id": "sb0010",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0010_light.jpg",
+          "sha256": "c7317e45cc11e433cc2af4ec95d2defd0b890ad57279892451058172ff057f39"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0010_paper.jpg",
+          "sha256": "5666c356ac9e3a8d1cd82f6c30d62935bf04287488b1af7ed7a15cd14e337460"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0010_tag.jpg",
+          "sha256": "e6d15736b08bf7c91cd1e710ca50293836eee3de82bcb1cd39fae5f61b6ae0cc"
+        }
+      }
+    },
+    {
+      "id": "sb0011",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0011_light.jpg",
+          "sha256": "7298cefd5a77d7be21634c1f3daa55f7b2a5d345427348df3526bf7966ef5401"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0011_paper.jpg",
+          "sha256": "b538b56d5c6c741464608857abb314d2668dcc551dc7cf88bf4af4ed047171fe"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0011_tag.jpg",
+          "sha256": "34310b8df5ccf2f0512fa428c2db4796e47a3f3ec1e632ed8e630c23d228a3b9"
+        }
+      }
+    },
+    {
+      "id": "sb0012",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0012_light.jpg",
+          "sha256": "f805ea8aca9f40719c946e668b9b45a0a3a3805d0ed5a28e65541f34ea8a7981"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0012_paper.jpg",
+          "sha256": "8426d228b18c5ac45033ae6045a885863abdfc508e20f24fec627488268749ce"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0012_tag.jpg",
+          "sha256": "e132830cd4da9e55cbd00cbfa37211ae9d03c77e48bb01a76454a4968b6e5286"
+        }
+      }
+    },
+    {
+      "id": "sb0013",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0013_light.jpg",
+          "sha256": "6946c4ef670dfea794887b3939bc3a2ed81cb44c470044951d072b4889efb431"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0013_paper.jpg",
+          "sha256": "2a277ffb2ffb8bcea22df5bf9eeceaebf4d91fe67684c357c6f066f152cd59f7"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0013_tag.jpg",
+          "sha256": "8c171437d8af5228e2fac61a0ef830ad9e1f249992ad362d161729a7f0b765fb"
+        }
+      }
+    },
+    {
+      "id": "sb0014",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0014_light.jpg",
+          "sha256": "40295e496dde648319738f8b0864dc03237f751133f2b8db9ffcb51b6fed6609"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0014_paper.jpg",
+          "sha256": "21e069226c39b5aea8438ab06584f72c8e6ec3feef8ba10e12aa30e83da645dd"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0014_tag.jpg",
+          "sha256": "6b7c385060632837f8e5adbbe00c09d6375996e16b5f6eba2c04f5cbccdeb929"
+        }
+      }
+    },
+    {
+      "id": "sb0015",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0015_light.jpg",
+          "sha256": "082c6212802344c2a6da44d5dd6ef1fac8a4822306bb3063d69d86dc0abb1b99"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0015_paper.jpg",
+          "sha256": "198cdf97ca68093c5cda9263d779041632d329c75bb3195a3f88467d965a30d1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0015_tag.jpg",
+          "sha256": "c56c6b4a93bf069673f4218b0d4f1f6e2db5d36862122c12b30cf8c9baef4472"
+        }
+      }
+    },
+    {
+      "id": "sb0016",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0016_light.jpg",
+          "sha256": "99563121fa0384279ade1b04f1846ace114e5e20e512677ee4101dac2bb303a3"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0016_paper.jpg",
+          "sha256": "08b15837af7ad7bba3cfd1c125f0dcb2021e257483866f2b3f6b4919d8862cff"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0016_tag.jpg",
+          "sha256": "7b9163806f4506e782c2d66c3b16d6c357c464610ea6c19a743b625c1bfbc559"
+        }
+      }
+    },
+    {
+      "id": "sb0017",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0017_light.jpg",
+          "sha256": "724e9de035a89dd44048d42a79907058c67282443779761fec274f7fbabb7412"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0017_paper.jpg",
+          "sha256": "c087310542400832eb56fd7e38f8203055c0b8e7980f9602eb8dc0ede69ad0d0"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0017_tag.jpg",
+          "sha256": "20614c3cf83bfff0cfbbb08e19353349b921df805081964d661fda01bbd57a7d"
+        }
+      }
+    },
+    {
+      "id": "sb0018",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0018_light.jpg",
+          "sha256": "61a13e301702a36a2826463f4adc19b9371784758e71e857ed70d36ded2af4cd"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0018_paper.jpg",
+          "sha256": "0f0061660cdd1ddb5c9dbb83669ffd6651ef91d60eb300ce9304ba61ca3e9269"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0018_tag.jpg",
+          "sha256": "9df87db18fdc0a8133c91a7eccddf695ac9487070addaa776221c84d3bc0272b"
+        }
+      }
+    },
+    {
+      "id": "sb0019",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0019_light.jpg",
+          "sha256": "e09db5e6b6f360f029594662231fa191a7505728f15ae6aaccc3ee3a58ebd6c8"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0019_paper.jpg",
+          "sha256": "7d4750abc93c844997799e69bb21c2dd5a3575629039b64b1b11c2ed241d1e20"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0019_tag.jpg",
+          "sha256": "af521c9d8c05f37d42835660b2906552c593ca0f76f12b9463c4464bea0b8302"
+        }
+      }
+    },
+    {
+      "id": "sb0020",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0020_light.jpg",
+          "sha256": "f569ce31a9276d861b038c7a327f57a39c870dd78e8a8c74687cf6876e3a96e4"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0020_paper.jpg",
+          "sha256": "e8a6b1832b1584bba5cd43291a75b2d58ce8251d18c9514bf3f06e5f58c42eb6"
+        }
+      }
+    },
+    {
+      "id": "sb0021",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0021_light.jpg",
+          "sha256": "fa2f9533c6580bd466252357d8c0ff6587d259c5db9d737e54d656ef06cf9b7e"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0021_paper.jpg",
+          "sha256": "2aeb0ad2528e4dbef8d78536fc32eaa7c2be80015c12ce3533267f15ff836a1a"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0021_tag.jpg",
+          "sha256": "4bc2c22990dd77a558721f075c6c828f1f94d656a3c3af356408181f52cc9b08"
+        }
+      }
+    },
+    {
+      "id": "sb0022",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0022_light.jpg",
+          "sha256": "f635522dea1b11aac042b2a0527b50ade74a7245c505256f2acdcb32e5eeb303"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0022_paper.jpg",
+          "sha256": "d4a584ea49829514fbedabdf6d78c914b3366ee09d960714e8986ad75cdd67a1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0022_tag.jpg",
+          "sha256": "a8d538412a148bb3bc62f8293f6f0d7db6da86198c4009875d34ab5f9d4706c1"
+        }
+      }
+    },
+    {
+      "id": "sb0023",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0023_light.jpg",
+          "sha256": "15f04c30787f90603afa5c2754b967a1935a3b129fd081f632da7986aee7df2a"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0023_paper.jpg",
+          "sha256": "2bed947aba8feb3db1ce5111840b54bb5947672ce6b612006f61b750fc3bdbab"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0023_tag.jpg",
+          "sha256": "89240cc09e924917b573d7eeb98355dcf02fceafc507a12ff099e2aec623b6d6"
+        }
+      }
+    },
+    {
+      "id": "sb0024",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0024_light.jpg",
+          "sha256": "baaafb5a29575248e44436331156f47e323dd1bc9977e507507c486b18d164bd"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0024_paper.jpg",
+          "sha256": "eacbc2cdeb77029e55a5700bd6484f7e45609aa78c21d6574be3a73a3824a2d4"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0024_tag.jpg",
+          "sha256": "b61489cf1a8ce5c7b699dffdd61ea43eff43e691dc6efeda4561a83d04e674fd"
+        }
+      }
+    },
+    {
+      "id": "sb0025",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0025_light.jpg",
+          "sha256": "741d1c927c2c7d2b425ad0a96266c2309cd464fd7003679996a3c91c561ccfa1"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0025_paper.jpg",
+          "sha256": "bfc8eeb8b7c63d5402457389f10f843b4b4a1e249cb377d325823248e47eb504"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0025_tag.jpg",
+          "sha256": "b377b91f52f332c6f3c9b3f3c6c750f1bdc6d47d3ba0c02280c27f939184c6e6"
+        }
+      }
+    },
+    {
+      "id": "sb0026",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0026_light.jpg",
+          "sha256": "97b284b164f776f9f1a7347ae081f85be202a815fde19c4cb19d1bcad71f6529"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0026_paper.jpg",
+          "sha256": "12d85997bb9f0388e453c50ef122e608943fde7d2e5a440bb703a1cc796cafac"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0026_tag.jpg",
+          "sha256": "6ee1d819e035537d5739ea36e7eba63d3486b665752eb72960568c8d5aa699fb"
+        }
+      }
+    },
+    {
+      "id": "sb0027",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0027_light.jpg",
+          "sha256": "05f95d1e55012b7711dec2d9ccd1d6510a4ea7d0431f570dbfa71c733fb5af1d"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0027_paper.jpg",
+          "sha256": "992d518228810d0c1ecae5c9bda573116272779286e0ff1316fa8bb8436100a9"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0027_tag.jpg",
+          "sha256": "f6c575fcffb32b07ef1f858b01bcac7c2c0774c1c488b89b86fc236dace16d4e"
+        }
+      }
+    },
+    {
+      "id": "sb0028",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0028_light.jpg",
+          "sha256": "07141238cdd01e77e6d50e61ef9bc5a2cc0f1146bfb7e41bc48d1262e3bea03c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0028_paper.jpg",
+          "sha256": "8a82b74d61a61bb20564c79de49db7b8938fe70e17924b81594d758d19ee8fb1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0028_tag.jpg",
+          "sha256": "8482bba3e34ce54a06019add20853c718c448e6325822d566e6d4aa7a9855f35"
+        }
+      }
+    },
+    {
+      "id": "sb0029",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0029_light.jpg",
+          "sha256": "08f65f208fb5c1da3948911105f6efc93e0ab53ae6aa54619508d9bcb0d32639"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0029_paper.jpg",
+          "sha256": "ca52d2434dbf3f486da81168163afe727dfe52ad0dde69efc7e0229ddf6d0786"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0029_tag.jpg",
+          "sha256": "1d43429b5a66c9c9065b329cb53d93efd737c318b83864dd4ae57ce32b6127eb"
+        }
+      }
+    },
+    {
+      "id": "sb0030",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0030_light.jpg",
+          "sha256": "9168e048af3d2fdd298b7457fa1df8a9338249e6f58e14a7fec0e933fe328085"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0030_paper.jpg",
+          "sha256": "82ca70ac8b91413af82f7a55d46754bb1a68378da42e39a27887c9d705f1c7b3"
+        }
+      }
+    },
+    {
+      "id": "sb0031",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0031_light.jpg",
+          "sha256": "986b31726c68bbf69133190ea1deaad771df098520d822f620b2db54caaaf3dd"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0031_paper.jpg",
+          "sha256": "3c54f70679b0e3783b5e6a97d6481dd32e7870bf22110acc1090aaca8ca7a164"
+        }
+      }
+    },
+    {
+      "id": "sb0032",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0032_light.jpg",
+          "sha256": "d13201088c4444adc212514f0310d8d7a833fd07d6f4ab5c49a7726d385d8173"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0032_paper.jpg",
+          "sha256": "a6045db7c1d9ba62a05619fd3b75556036e1b0e66ba15e867de1883549e4f6d4"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0032_tag.jpg",
+          "sha256": "8a3972f9d35ebfb812436bc0d31f32dc27551ed71bea139ab052eedce73339c2"
+        }
+      }
+    },
+    {
+      "id": "sb0033",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0033_light.jpg",
+          "sha256": "d0f461bd250e40f045c4f9806f405a4cf25c13fec4e9918b4d36ba0e41ea2355"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0033_paper.jpg",
+          "sha256": "07215296b4d6c64a041058a14f17e8d8548d59f8aadaccc4c7e171eae3c3f117"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0033_tag.jpg",
+          "sha256": "b527d969d617d57f2b7c83d365435dc83ef98d33484cd719b89ff984e971c5d5"
+        }
+      }
+    },
+    {
+      "id": "sb0034",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0034_light.jpg",
+          "sha256": "b4e0e9e13ea93130639733cf34e59c33471509f859b66cd4f470f250a1327db9"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0034_paper.jpg",
+          "sha256": "6f20701a1df8eae808ae1ea8111c51792adc55e4388d2bf298c23c32105307d0"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0034_tag.jpg",
+          "sha256": "7966f2e7113b39ce13eb8b781a29c534ed3d0a3e76565496ac85a75474f7bf58"
+        }
+      }
+    },
+    {
+      "id": "sb0035",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0035_light.jpg",
+          "sha256": "63f241fb8d684dc0ab7b5049dc21e1aa40668db9b681eb806a243e0b2a355a5b"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0035_paper.jpg",
+          "sha256": "4c01ec59cf642decba42b234bc6fa2d55fff36d4340cb75f6a2a752a0a445b6f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0035_tag.jpg",
+          "sha256": "0d52e8027395f74d6ba21eef7854caafedaa7c396c5a4dde80c2b28bb55ec492"
+        }
+      }
+    },
+    {
+      "id": "sb0036",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0036_light.jpg",
+          "sha256": "f4a7df39d6de7627a00851d45200805a0f55ef7888b2a37f8c9c3e674f228ebc"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0036_paper.jpg",
+          "sha256": "912167a67bf79d5335133f5a1a07a2d236490e8d9e36c7a42e174424dcccbbfe"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0036_tag.jpg",
+          "sha256": "ef3def2430f83000e64efc6cb0a067cc0007f09fad9e4661a695124a1191d76b"
+        }
+      }
+    },
+    {
+      "id": "sb0037",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0037_light.jpg",
+          "sha256": "7832693ab583563e43ab34649a2092ed8fd8d40c618b1c7d1399f568de8225ec"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0037_paper.jpg",
+          "sha256": "d3a0a18421457d584d374aecefb658d0e05962a2128ba2a99fcf70142c6c4194"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0037_tag.jpg",
+          "sha256": "173cb7414979c71238ade893262c06926f2cc7635df13b0470f28a4d75b0a366"
+        }
+      }
+    },
+    {
+      "id": "sb0038",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0038_light.jpg",
+          "sha256": "750e7edeb2d92d4ff42646b4dfeb7c25ead9618169dd34cef2b9db34f4ee19c4"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0038_paper.jpg",
+          "sha256": "80202f74120ace893e3ad66af16232d43b67ebff0e418d31c015cec7258dd607"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0038_tag.jpg",
+          "sha256": "83ddbf894bea4291ce68c7027384b7d65021fcbdedf7007d392976dbf17756b6"
+        }
+      }
+    },
+    {
+      "id": "sb0039",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0039_light.jpg",
+          "sha256": "b6d60e877dea98218b11cba336a61525e68cf5501e06216ae23e93611ada1f74"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0039_paper.jpg",
+          "sha256": "2779295ff1934fbd75744058ad5b84e1d5b37c6bf4a5e322d120be189070f3f6"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0039_tag.jpg",
+          "sha256": "93af52f89d836eff06373a3aa48225b4b30731b913c848a50f3b6c075d03f20e"
+        }
+      }
+    },
+    {
+      "id": "sb0040",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0040_light.jpg",
+          "sha256": "4c304518d913411bf1814d93fe582776673de957df4951ea80450704e17dd0f6"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0040_paper.jpg",
+          "sha256": "5bc33f2e891c63ca7ef62ceaf9a5035616884d9a3c4656080e9fdd8dad39c1e6"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0040_tag.jpg",
+          "sha256": "399a2de1d7e81892f19bdb5ada9df4cf682cb8262bc5729b6d41615b460fc3dd"
+        }
+      }
+    },
+    {
+      "id": "sb0041",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0041_light.jpg",
+          "sha256": "d8700c2cc89ab144affeaaa14a7a7e7d642ffec395e4759184021002de45ae2c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0041_paper.jpg",
+          "sha256": "1d67562dabf9dd0e3208d43a970b7c0ebaca3749aee68f864c6b0ba2130a8c31"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0041_tag.jpg",
+          "sha256": "693c3c734ae03f0b6b8d1c25a945f3c4779d7363c34e8ac5ec554b4693d746ba"
+        }
+      }
+    },
+    {
+      "id": "sb0042",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0042_light.jpg",
+          "sha256": "d1c52bebc1f61fab599d287bdea8e4c7433249b32725db444db399eb48b3a66d"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0042_paper.jpg",
+          "sha256": "e3f575119a8cb03c80f92c2a4687a26f23fde4d3d65284fc7092b32b11728426"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0042_tag.jpg",
+          "sha256": "d696f62b17ce0f9df1e85c82089747ee56d84cee86706961f8ee02eeffd5fa6d"
+        }
+      }
+    },
+    {
+      "id": "sb0043",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0043_light.jpg",
+          "sha256": "66e20e2bc420b39e94aabb503094026c00823092426c54eb3f31fd2a663bcf77"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0043_paper.jpg",
+          "sha256": "404fb3301a16886ea012de8e74dec7d20e83aaecaf0586e0ad7efa1b0ac7ccfe"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0043_tag.jpg",
+          "sha256": "f311b186905f25fd8465846fb96e25723ea890da577f885f0a80d82272cf4cc6"
+        }
+      }
+    },
+    {
+      "id": "sb0044",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0044_light.jpg",
+          "sha256": "bef2c746043edc5d77f97d50fad599ae03a4617437713ebb85475bb6449916bf"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0044_paper.jpg",
+          "sha256": "0adf8112970982e8cb45385342b0c88ee8389c1e7f0ee1669c0095ca0de8b0c4"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0044_tag.jpg",
+          "sha256": "6fad63bb4f12fe286155d24996cf4001b3cb695b76765b97986e7176ab247222"
+        }
+      }
+    },
+    {
+      "id": "sb0045",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0045_light.jpg",
+          "sha256": "ffe9e7837c819808caee1151a6421b23cab184569e64aaabe61de3292a3a9b32"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0045_paper.jpg",
+          "sha256": "eaf606c4caf85d574046e3313de8c5847828718223e3e58c86c75b8dc9648412"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0045_tag.jpg",
+          "sha256": "fc34615b4ec07ef51feaff1f01db78c69a3898b0a6058a489179274cce688403"
+        }
+      }
+    },
+    {
+      "id": "sb0046",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0046_light.jpg",
+          "sha256": "800896e278039e2b129c68e89558f4001c6aaf8ac31ae2f772c96e5c561297bc"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0046_paper.jpg",
+          "sha256": "64cc0aaf871452a15629e8ef4b67fdf5d3e0e19f8ff3db6f6855905134766190"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0046_tag.jpg",
+          "sha256": "b71167acfa5ae824faee096bfb2d30cbcf9ebfc1a0e21e4a4b930e9a68083a57"
+        }
+      }
+    },
+    {
+      "id": "sb0047",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0047_light.jpg",
+          "sha256": "5526481a1513a90d190b80b89b85ecb3b67a468e803571b0d3d603ac6fc726aa"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0047_paper.jpg",
+          "sha256": "3cb8de10060260da0c7d3ea9b55c7872779f95e8906804e320722db0cc937232"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0047_tag.jpg",
+          "sha256": "4717f43d466bcefbb4ba3f1dd1fb2657e98449440554b6b4e5ca7227036a658e"
+        }
+      }
+    },
+    {
+      "id": "sb0048",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0048_light.jpg",
+          "sha256": "58c4eea27defe487b066b2c435b2f8db70ca97ea158bdb75758d9b1149001e84"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0048_paper.jpg",
+          "sha256": "221ae80eb07aebee9fb819fc7e2560d1eb896c1110e451f41fcf2679cb748f63"
+        }
+      }
+    },
+    {
+      "id": "sb0049",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0049_light.jpg",
+          "sha256": "6e40d2cdc300b3c5221c122b7c6e858252fd6eda437131cd6caa2c5b77bbb61c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0049_paper.jpg",
+          "sha256": "df982fa890783af436ebbc5b70cac78b0be810143e33c6a3bf5c5a18ebf0d032"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0049_tag.jpg",
+          "sha256": "b3627c49ccaf8a2440df5c0595ae0be812b2baeb2e89d5e1b335333278b3c74e"
+        }
+      }
+    },
+    {
+      "id": "sb0050",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0050_light.jpg",
+          "sha256": "9d962afa83cce3701e4f5cc675202a0d2d8b8a0ba3d7b597481f8477eddd5369"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0050_paper.jpg",
+          "sha256": "8ba3bedab698c345f1723f14a89db988bcd5a6ac623b0a3f7d644cf77d9898a3"
+        }
+      }
+    },
+    {
+      "id": "sb0051",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0051_light.jpg",
+          "sha256": "eee1e0127dec598ceb2251c9d2bee6cbb982ee579ff5e18e2f14fa2fd50f68e4"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0051_paper.jpg",
+          "sha256": "579570916757245794f52951c6f4a90d73534ca9c7a600b766e87f6b061c118e"
+        }
+      }
+    },
+    {
+      "id": "sb0052",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0052_light.jpg",
+          "sha256": "246e5366a6d7cc05920d2a0153639313c0003bcac89df6806f2e8de5a3264a90"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0052_paper.jpg",
+          "sha256": "b44f78ba02e7353c822829671a7cdb9b86b4ed1643466e2226bbd3301de75eb3"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0052_tag.jpg",
+          "sha256": "065b350303fc8ae5637dd336b70dcfaae333c77ff47538a3d67fb93d414e3362"
+        }
+      }
+    },
+    {
+      "id": "sb0053",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0053_light.jpg",
+          "sha256": "2e9f133ceca8107f4ffa254bb530ce8e521c7cb7d89932c22c2c52b89401ca67"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0053_paper.jpg",
+          "sha256": "ffecc356d3991aad317c9793373e9841980e1e465e96eb48848bd20ded13760c"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0053_tag.jpg",
+          "sha256": "2c0365c328448293a2e90d2f4ecd20692fa1a5cb026ca20e6abf6d3b5f7155df"
+        }
+      }
+    },
+    {
+      "id": "sb0054",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0054_light.jpg",
+          "sha256": "098f1597c2d1b81c55c834e30f7fda0185bcf56a1ed08a60b44c23393588f633"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0054_paper.jpg",
+          "sha256": "5a41c5ab87b22dec93b84f2940cd36c9c2ae06317f3395ce1172c49b8f982e09"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0054_tag.jpg",
+          "sha256": "99c735b402982a4329f9b9f9c7ca1b5c6f7ccf14872de1a2640c56b8fdbe5cca"
+        }
+      }
+    },
+    {
+      "id": "sb0055",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0055_light.jpg",
+          "sha256": "af5f2869fc624437ed272b5b97a4b56594fecd9be19fc8215ed2539c23cfc16e"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0055_paper.jpg",
+          "sha256": "404661848dcc4183ae10bcf2f42ddf60eedd1e1de7d418b8fc30afb971898507"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0055_tag.jpg",
+          "sha256": "e11eac41d20e0b9ae8bc8176ce9826dfe9e875718b7a4ee8ef50126908548121"
+        }
+      }
+    },
+    {
+      "id": "sb0056",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0056_light.jpg",
+          "sha256": "fbb691b99509be40e759585545072050a5d5fb769e0e00c0d0230cef04333996"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0056_paper.jpg",
+          "sha256": "517dc926b0ddc779a21c78d835a91dfb6222f5286280301fdaab7509718e8073"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0056_tag.jpg",
+          "sha256": "8018d04c5e041f8f0f06b39b5591ad83b5201cdff05f0d59184f3ad6b844899c"
+        }
+      }
+    },
+    {
+      "id": "sb0057",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0057_light.jpg",
+          "sha256": "143e0de27ccb7f1a0e5b8fc8c3531c2b87bfa52d17c07076eb937483ed7e08d5"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0057_paper.jpg",
+          "sha256": "761222c8f8091fe2c74e512e428d080e0de908abd7391e4ec7ea1079a773acdb"
+        }
+      }
+    },
+    {
+      "id": "sb0058",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0058_light.jpg",
+          "sha256": "207c821091e8592d016b797f8e015892abf507f522dcba39e9013233fa33c99c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0058_paper.jpg",
+          "sha256": "ed235403d5ccb237dc8755239689102180e89c84b6c27556287fd87a0f9f043e"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0058_tag.jpg",
+          "sha256": "7edabfb678371cedacc463ab345cb2bd21cc6e2aad15c5a45f607e183ead67f1"
+        }
+      }
+    },
+    {
+      "id": "sb0059",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0059_light.jpg",
+          "sha256": "9e4885dfc6ce09bdd0968d12ff1edc709542f3c85c4f678d4dddf391233d4284"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0059_paper.jpg",
+          "sha256": "52e0532256b0b3834dd74aa77192feb4ac8aad9dc7d1667d77c6031f94192d2e"
+        }
+      }
+    },
+    {
+      "id": "sb0060",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0060_light.jpg",
+          "sha256": "4ea8216db780550d6be9bb7477b51e8983ade91d2f7e24f6d70d32fca7d5d6c8"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0060_paper.jpg",
+          "sha256": "1208396828b2b79e7ab2cabd492610977ae1523492f1c3261bd529026e9ae786"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0060_tag.jpg",
+          "sha256": "ee6c88ece560d4cd3a14c32fb7dc3cbbb52f863bb4955430f75ed6b288639418"
+        }
+      }
+    },
+    {
+      "id": "sb0061",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0061_light.jpg",
+          "sha256": "db0ed7b32d0644809b6f2fb31d4b6d18581c4550c1059d353caeda1c6c4d497f"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0061_paper.jpg",
+          "sha256": "645549fb2a226cf514f7ecca6ce9612d466573fb2b84c71d16b4ba0f279390dd"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0061_tag.jpg",
+          "sha256": "51a690a13c9c9c14a5535be764e317cc756c92ae6ea4c01ae8fbd0684725746e"
+        }
+      }
+    },
+    {
+      "id": "sb0062",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0062_light.jpg",
+          "sha256": "8d15fba9149c4cd2ca925b46c820b7ff5ded7d6d6f9f37b56289584b90363bbe"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0062_paper.jpg",
+          "sha256": "64b956be6b006369ff73f4b5cc2173ab673ff801da240fd231faf58e8e2efae3"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0062_tag.jpg",
+          "sha256": "af77a6e51dd6371df84b9f4e2388491ccfdc29a661c322b64f21eae924637ade"
+        }
+      }
+    },
+    {
+      "id": "sb0063",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0063_light.jpg",
+          "sha256": "0b99a52b755870b7ee0b20c31e16a7f6f02f73d83559d2b11208b451224ac93c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0063_paper.jpg",
+          "sha256": "f40d59eb0e128bacbdda6f2293d90f0e5e849928e2628a1c2093e48deaaabb4d"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0063_tag.jpg",
+          "sha256": "a72539fd2cf715efb1a630249f3dc69b3e23c44d52dbfc07a7d213355214c0c8"
+        }
+      }
+    },
+    {
+      "id": "sb0064",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0064_light.jpg",
+          "sha256": "45de217c9ce66f0d7fc16dd9b52d5a4419b0197d5d48c3ab70a49169d481ccab"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0064_paper.jpg",
+          "sha256": "53131fc5058c271dd46cb058fc3182bf3f7906313ab1515b4392a4f5987a100f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0064_tag.jpg",
+          "sha256": "6a2f3dd1c2b4707ab58973311142c3c1d04596b95468b88485f505e21a842bbc"
+        }
+      }
+    },
+    {
+      "id": "sb0065",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0065_light.jpg",
+          "sha256": "c37e25b836a3e91d6254df3f03a49b4b3946200d6fb126bd815fc1751f30c588"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0065_paper.jpg",
+          "sha256": "36747e326d2d803b77f4a89ccc1a25fe1d8502026e845d5fde3038b55e68805a"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0065_tag.jpg",
+          "sha256": "8bd1df96229d6df6dc8ef600dec3fea6ef4df3b3e1aba7d1133ff4095cd90037"
+        }
+      }
+    },
+    {
+      "id": "sb0066",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0066_light.jpg",
+          "sha256": "db38aef0b6ff0850100775679eb6f74dd823489e1758e6d1d3514518b36e1afb"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0066_paper.jpg",
+          "sha256": "4333b182d098ef94e6c5a318f5e12b84930246f95cc25eb32bfc534fa862cd70"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0066_tag.jpg",
+          "sha256": "7252d3b3e48a05d783a27d52c3ef3b61bff148567094c04c90320fb5efedb902"
+        }
+      }
+    },
+    {
+      "id": "sb0067",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0067_light.jpg",
+          "sha256": "5c0efff0d8e753f85f759b1ffa3d0ab0b3e0643a349283957083997df48240be"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0067_paper.jpg",
+          "sha256": "060c24cf874430ba17b1222d154bfa7da93e7ab21d830ce9247e338886232533"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0067_tag.jpg",
+          "sha256": "51e54e13b7182085700ce1964e76049bcc60e9ba6de88e7f735bde35099e56be"
+        }
+      }
+    },
+    {
+      "id": "sb0068",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0068_light.jpg",
+          "sha256": "41a92de2afea72e027f92071530ad237129bfdb4602fa40ed3fa2cdfb90e47cc"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0068_paper.jpg",
+          "sha256": "1b3641f0cd509cd5790c11491ad2bffbe5ace468c73cf89a4ce08d5fc4e63926"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0068_tag.jpg",
+          "sha256": "cb19ca80d87e332985475f07356374e29b1f91bc11c40a4e0faa5a02319ab406"
+        }
+      }
+    },
+    {
+      "id": "sb0069",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0069_light.jpg",
+          "sha256": "5d718b16130342111fda8ee0737ceba195cf9a1a15b5010c74a293fd75f3dc06"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0069_paper.jpg",
+          "sha256": "163fcab5c382d3312395e2fa5a600bd2d2edb4256ecd8e4caaa1942d2f64ac43"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0069_tag.jpg",
+          "sha256": "20264e8a6f85f663c54c9e2f5d2d54602aa027e979cad2d2f4364863ec02cef7"
+        }
+      }
+    },
+    {
+      "id": "sb0070",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0070_light.jpg",
+          "sha256": "7ea5174464c2cee7f1e9450eff6447660ede533a1b431e732c3364821290d1d3"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0070_paper.jpg",
+          "sha256": "bc94c0263d64f94e038ca0ee7b5c312379582a3f9f37d7f8aee9203b6b867201"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0070_tag.jpg",
+          "sha256": "db416491ae7915d3b1e7ec4a31da70a372083695cddf073b732d055d4377b43e"
+        }
+      }
+    },
+    {
+      "id": "sb0071",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0071_light.jpg",
+          "sha256": "4b1727d5bc4b840238b3c0ef27ec7e3c676d9edfc6bbb59919559fc529356669"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0071_paper.jpg",
+          "sha256": "af239a99e5437b83eb59c256e67e72c41f7a2dc05828421be2fef302a3b19a9c"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0071_tag.jpg",
+          "sha256": "f0a1146395981ff54ebae7bd0139556d0a2bd11dbb87e23735470b02968631cf"
+        }
+      }
+    },
+    {
+      "id": "sb0072",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0072_light.jpg",
+          "sha256": "35deba67e319b5792e21543a86df4f12da495c009afe3c766439e56ec9c164a9"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0072_paper.jpg",
+          "sha256": "7f28b21f2aa74ccbebc4c46c032540ca6204721efce6de429a3a1d1ad1bd294d"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0072_tag.jpg",
+          "sha256": "18ccd45e62b677d8209ca1bed367522b00dfbeeb4bda30a8665b4c7e10eb5f34"
+        }
+      }
+    },
+    {
+      "id": "sb0073",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0073_light.jpg",
+          "sha256": "550f15cd158792c6b7472118f19f7b19c46d04130889f15de8a55faede63f057"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0073_paper.jpg",
+          "sha256": "b8e4868542c639df2a48a900047005c1fdf6b96de7e99b52a223ad291e6e9fef"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0073_tag.jpg",
+          "sha256": "21760a164464ee5a3f2b4429c93803b8ec692dd7e463ca6f8c77d8f955964911"
+        }
+      }
+    },
+    {
+      "id": "sb0074",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0074_light.jpg",
+          "sha256": "c11fde4ae7d6aaeeef12918f0e285c408d81559fc72610c05a512ae6de6c66df"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0074_paper.jpg",
+          "sha256": "e7267b9710aed4c71a8566f0c01061c2e571b4b46bbc72b1da9ede3757b708e1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0074_tag.jpg",
+          "sha256": "397f4f86c06bca5974002a16748331f8381470a6205ad9705f8d34c9127cda69"
+        }
+      }
+    },
+    {
+      "id": "sb0075",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0075_light.jpg",
+          "sha256": "2ba741095a32b8a785cdd0643f99e78c36544311ff397e0f4bb8ff1d0972066c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0075_paper.jpg",
+          "sha256": "e395bf65afda19fcb706cf38c23a80bed17561987e36d83217017bb0e47de2cd"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0075_tag.jpg",
+          "sha256": "fefee994e7132725695d7d914065924ac546b5c082459095df54b5b8d6b143ca"
+        }
+      }
+    },
+    {
+      "id": "sb0076",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0076_light.jpg",
+          "sha256": "40aaa55d69bb738fb4fb85658a6b879364a3967270650f26a31a8332603ac1ca"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0076_paper.jpg",
+          "sha256": "5274743f0e93fe117a888332e076a92f2dd049ea7ec3fc1ce588d6413ff6e35e"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0076_tag.jpg",
+          "sha256": "77f633be9751d987241a209838a1dbb32223051c689cdd8d5372ca6eeab90bf3"
+        }
+      }
+    },
+    {
+      "id": "sb0077",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0077_light.jpg",
+          "sha256": "77cfc1b218c9da0fda978ff01dae5237e034fb58562df0125174e80ec61351b4"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0077_paper.jpg",
+          "sha256": "7c242c324a3bf27f080c7dbae6614673caf77110b28628b0fe94fd704219a698"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0077_tag.jpg",
+          "sha256": "5b7ed5d6b1f18682419dc7bf631fbd75c01d985b1889f8e200cee6f389e7837b"
+        }
+      }
+    },
+    {
+      "id": "sb0078",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0078_light.jpg",
+          "sha256": "ef2911e197868dac75ecbb63595ab783a750734d32c74a7937fa087f7e57ec3e"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0078_paper.jpg",
+          "sha256": "422da861dd0e556a69ff1620946e3d7238a8a6a457c48b8495993dc961345941"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0078_tag.jpg",
+          "sha256": "f80f634b911b83e969032eb1baa8bea28a74e06c8018bb5ac0b3b71699895dd7"
+        }
+      }
+    },
+    {
+      "id": "sb0079",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0079_light.jpg",
+          "sha256": "fff25fe2562fde464b5960a688647a1ac24f4ebb26d468e0ae507c9c84544347"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0079_paper.jpg",
+          "sha256": "ef5d3d0bbce2e76cbb07a2393e6fcdf264f5481bf4842c8669a2d97b8ced7075"
+        }
+      }
+    },
+    {
+      "id": "sb0080",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0080_light.jpg",
+          "sha256": "471e41fd782784a3acf73e481f12e63f1522a60fa313ef5f0cab032cb8f7d2ec"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0080_paper.jpg",
+          "sha256": "33e3c6e7c02b6a5d28a3cace60671a24be58c0e21b95cdbe037c4ab714d7628f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0080_tag.jpg",
+          "sha256": "e5af162c8af82b77cb8f685f39a44b01ae3da8eb0c0e7f8c2c03979d021e7b8a"
+        }
+      }
+    },
+    {
+      "id": "sb0081",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0081_light.jpg",
+          "sha256": "b8f9072150fb92ba08aa0da602140a6c74f5165561d36b4d19bebf7d2481971c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0081_paper.jpg",
+          "sha256": "ba17dc184f333c2bbba6fd2878aacc2dd44cad90533a2045dde904429d94eec7"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0081_tag.jpg",
+          "sha256": "9c7c91cbb34e7f04b4fb94b2f28994edf4f5221ac9d51b04f20d32cdd8ee1def"
+        }
+      }
+    },
+    {
+      "id": "sb0082",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0082_light.jpg",
+          "sha256": "8d306789fbde31b7c1788cebc877b72aed352ff83d7d238be297e1f423c8e4ea"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0082_paper.jpg",
+          "sha256": "7a3ab1d7749585f7a2e02c078a64a8eebe07ea064c71cc56e663366c2a301ba9"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0082_tag.jpg",
+          "sha256": "9ef33a443b5cdfa271c62d354dcad4632079ca8d64ed6f4b6b4475e5eef0587c"
+        }
+      }
+    },
+    {
+      "id": "sb0083",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0083_light.jpg",
+          "sha256": "56e901d06676183656805741b6da98d80765c3dd35d1745a040b15e7b3a19345"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0083_paper.jpg",
+          "sha256": "103e8d94c48be88ffad93b42a62e2eab98e5c0fa9556eed1ddbbfb7ba0c58c3c"
+        }
+      }
+    },
+    {
+      "id": "sb0084",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0084_light.jpg",
+          "sha256": "926507eabb73a001e6a19386979c1d98cf55f9d7566af40c5722241eb50bb367"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0084_paper.jpg",
+          "sha256": "be13b67abe6eb5d4e816036828d3173320533b8966ab12a0a03b5f65aadff3d3"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0084_tag.jpg",
+          "sha256": "4c3198966b932178feb543b8f77ff71c01abbed1218624f850d97b86abf2657f"
+        }
+      }
+    },
+    {
+      "id": "sb0085",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0085_light.jpg",
+          "sha256": "90ff1d84d987eb8f6f071db1a9f610794db8cbe5805087c0f704e5232c07eaa6"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0085_paper.jpg",
+          "sha256": "93832e8422eb8b89df4be1f59a5dc99c4e577eff5f8447b9b43f3b928e8ecc92"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0085_tag.jpg",
+          "sha256": "482879599c246e94e9ed366e5ff73a710d13ccedbb3c1263e169e88b305e3d5c"
+        }
+      }
+    },
+    {
+      "id": "sb0086",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0086_light.jpg",
+          "sha256": "66d6f8e781f005e52c481210e41ce3b344cbaf2fb8dda677be8437eea406f9d1"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0086_paper.jpg",
+          "sha256": "bd160651dc0056344027363dbf8260382c256a060c30241ecf5aeec26661d0a9"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0086_tag.jpg",
+          "sha256": "42dc0c2b91bf90b897ccaef7bc7b085315beb4f91df6b76caedb5c60f662c1f7"
+        }
+      }
+    },
+    {
+      "id": "sb0087",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0087_light.jpg",
+          "sha256": "eb58888ff96c28b1be575b442a42350f7d36f99be68699229437e111ce0702f9"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0087_paper.jpg",
+          "sha256": "b1944ec5c3d48720dd08b2a222f662dcece77ccdea1d81be63375f899bf79588"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0087_tag.jpg",
+          "sha256": "0d08e0f3494c0f0397aa62d9069dbb44eb80bfd6135ecf5ab4135f03ed25fe40"
+        }
+      }
+    },
+    {
+      "id": "sb0088",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0088_light.jpg",
+          "sha256": "adda282753b6f6d8a71d61e6ff81c606a48675d734c9174c696a749c47f6a33d"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0088_paper.jpg",
+          "sha256": "6d67a378ebbc0ffaefa5c0ce75188ce3f2b7e42b40be1f76303a3d383f266407"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0088_tag.jpg",
+          "sha256": "ffb590bac0fedd3b9ad052ba1036e2d1b360c6667bcf5b7fd3b86665e35cb84c"
+        }
+      }
+    },
+    {
+      "id": "sb0089",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0089_light.jpg",
+          "sha256": "84a62e11efa055cc96b8ab456a0b5cd69ae47a016fa3f9bf68ac1aa2693c93f2"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0089_paper.jpg",
+          "sha256": "ef58c2f97e819af56c37c7b29fa0f13546fb4ea71cafe9b7ef634f0db721cfd3"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0089_tag.jpg",
+          "sha256": "c16feee7f15d6e6027e3a2826b9ed371d4f9101f71f96705f8f6455222634cac"
+        }
+      }
+    },
+    {
+      "id": "sb0090",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0090_light.jpg",
+          "sha256": "cdc819fca9402924bb87e2ae44c84011c6de7e13285bd8ef5c95ed8888927c78"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0090_paper.jpg",
+          "sha256": "b2deea4f61217b6b38fa3fbba036d9db2cf00c09d02dac83521b868d151e270d"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0090_tag.jpg",
+          "sha256": "4b4b0c5f4d522c851dda7d52afa59a89a9d0992a23fd174a0de986f4aef14ead"
+        }
+      }
+    },
+    {
+      "id": "sb0091",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0091_light.jpg",
+          "sha256": "bb072bbd1de307999a38222e8752e4056b110655d06171124dda537ba2d89b64"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0091_paper.jpg",
+          "sha256": "4ed0b5a505a7d33a9da79589efbbf22be8a84f80a0f0db61acd5d5b45dc0959a"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0091_tag.jpg",
+          "sha256": "51d471cea3c12e90412b14c307d42c2c9658f201802bb524706328d85184095b"
+        }
+      }
+    },
+    {
+      "id": "sb0092",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0092_light.jpg",
+          "sha256": "314c3c7e0d68c4df233849d90fe0535a414d655ba21ccc98613f1c6a1be00afc"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0092_paper.jpg",
+          "sha256": "136bfe1ccb5e8d3d49b4ccfe7680a5b97a5902fda2b1cf22c082474bb7c81c25"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0092_tag.jpg",
+          "sha256": "367cb4a56c2153991c5d0640a2742835a363ed2ce19b7ddd5e93dbf3ce500564"
+        }
+      }
+    },
+    {
+      "id": "sb0093",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0093_light.jpg",
+          "sha256": "e8460d74347e248d5abbc6ee6b137b7ba80a93c4b2783a8201b97913518a0c13"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0093_paper.jpg",
+          "sha256": "734a7543389032bf1b276cdece1be2fecc2a499eebfd907ae0b553680ebdd8c7"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0093_tag.jpg",
+          "sha256": "ed2d2bb73c81293bef1fb5363ff893db626bb3063292f4553d6636b2729e4d6f"
+        }
+      }
+    },
+    {
+      "id": "sb0094",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0094_light.jpg",
+          "sha256": "f3dd7ff40e4f43a32cec804260f2d073439373288948097b21458419cdd1e099"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0094_paper.jpg",
+          "sha256": "fdf85ee6b5ce54db48bc40a0836727a958376d3af03909afc702ce4973d00028"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0094_tag.jpg",
+          "sha256": "ca76d94d90d1ee4b0cb6ee8832b4f723fb46f847c6b858ba5ed57a37b364c6f7"
+        }
+      }
+    },
+    {
+      "id": "sb0095",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0095_light.jpg",
+          "sha256": "d09f444370999d17d9d325ed0fedfef936a8afb40299fe9f239012ad502f30df"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0095_paper.jpg",
+          "sha256": "83f990f08240203d5080243d63aa544d7ab94fd101ed961955361a40528c6dd1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0095_tag.jpg",
+          "sha256": "398d13e11dee8d0b331f7634c7dc54177f1428e0ddc3f2ea534dd99b34c4baae"
+        }
+      }
+    },
+    {
+      "id": "sb0096",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0096_light.jpg",
+          "sha256": "c56159ebd64b146eaf6e84e9da6b3cbfc1a2f5e53adcdbf539f12e679aa6b854"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0096_paper.jpg",
+          "sha256": "d7e18a7c78914acc340fc668947e3fdaa100818f0e9719677e78455e9f753d16"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0096_tag.jpg",
+          "sha256": "940ed799ad2cc867a209c7b19aa1fe65a386b6c08d6f55b1a6ff1934956257bc"
+        }
+      }
+    },
+    {
+      "id": "sb0097",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0097_light.jpg",
+          "sha256": "eb7f22844827fc513603c2865a1594f011b062cf7aded266dd090f3062b28822"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0097_paper.jpg",
+          "sha256": "3b945655e8453bc34ef497e2f9fe6eeb83379b4a6cbd5a99e1eeacb0d8fb90b8"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0097_tag.jpg",
+          "sha256": "0000d8ef25fcca38c0ec11b2a08a72e33e8b7303549f3a9867f76b4dd9d04ffa"
+        }
+      }
+    },
+    {
+      "id": "sb0098",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0098_light.jpg",
+          "sha256": "c7018522e1c5891fdb9a07e52c3b9aa509ac1d20278141d76eaf9e551bf9a4a8"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0098_paper.jpg",
+          "sha256": "8da630da7856ba38a2a20132bf5f06256f87e7e911bf3b05d43c6875e585bfdc"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0098_tag.jpg",
+          "sha256": "9d7ce54eae62235a807bf8504cd0fb3494ea05f05bfc96eefbdf3e965c042f1b"
+        }
+      }
+    },
+    {
+      "id": "sb0099",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0099_light.jpg",
+          "sha256": "291cfed5718afe7655133850a12f7245c50ae9a479794cb8db109fc8121b4af5"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0099_paper.jpg",
+          "sha256": "b42dc8d1eff3e55429e0a8bb58667a1f59ecf511117e074a18677a2febc7d308"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0099_tag.jpg",
+          "sha256": "f617fd249cbc15038d389db8b26a7be59267cd641362a6952015c3181f32108d"
+        }
+      }
+    },
+    {
+      "id": "sb0100",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0100_light.jpg",
+          "sha256": "f539792920076affaffc6a11f8c31fc174111b10d746b831489f3c970b9e2208"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0100_paper.jpg",
+          "sha256": "841b3bfccf2bab5c1fe82ed497dee46decdd6e15f92eca3b17e1ed133a4f5681"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0100_tag.jpg",
+          "sha256": "ccfc0c61386e892291c226468d0475022872e7d305350371a5bf536c7798c354"
+        }
+      }
+    },
+    {
+      "id": "sb0101",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0101_light.jpg",
+          "sha256": "b8b0ebb4d4842e286528c630fb159ab5d74fcf4a925b1019a711be976a69a69a"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0101_paper.jpg",
+          "sha256": "cc6e2130081c5783dd7104196071b70d88d5bd0a7f93ff818cbd3ce6e5cdc035"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0101_tag.jpg",
+          "sha256": "ec1700ca949be354a71c80f98241b471ad747b4602f8102a7a1a02d3b22c36d6"
+        }
+      }
+    },
+    {
+      "id": "sb0102",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0102_light.jpg",
+          "sha256": "3e7c52d10394636427c8d43fa43b57ff5682cd7c3a592acd10fb03315378c4ec"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0102_paper.jpg",
+          "sha256": "06cd670b4658801d61c53e4477a871ba26b26b14b192edc14bdcaa888d59f98b"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0102_tag.jpg",
+          "sha256": "1171fe7517ccab29ff24e4a4c076821051ef6ab628c49a2d3cf84e65423aaa68"
+        }
+      }
+    },
+    {
+      "id": "sb0103",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0103_light.jpg",
+          "sha256": "8d4274a7c10995eef8d7a0d66ebc29009a1aae069d1f599a70ea6af3740c7752"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0103_paper.jpg",
+          "sha256": "ddb4c3abd41b934a62edafa7298043e8e9dd751adef7d8a3b04531a8db6a1894"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0103_tag.jpg",
+          "sha256": "18a3cdf8c9097daa1b1c59054b2e3f1395a21e7158943986b307479041042391"
+        }
+      }
+    },
+    {
+      "id": "sb0104",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0104_light.jpg",
+          "sha256": "1a71c4a5a8ae38cad579dc218b2504160c9587f3b3dfdc86ceeba64191e93deb"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0104_paper.jpg",
+          "sha256": "fc0ee3e36627e0f851a7773a7b7bf11c2d639a7bb86776a0ed7e6fb0b269aeb0"
+        }
+      }
+    },
+    {
+      "id": "sb0105",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0105_light.jpg",
+          "sha256": "7536e3bb7185c76091300c10480e601553af48d2af4e89b532974c192d3ece3b"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0105_paper.jpg",
+          "sha256": "b7ae2e6e611f85ffb11192b3808f1a8de7b776ad3562dec6720c757bfc3c9877"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0105_tag.jpg",
+          "sha256": "9ef8017c382fc873cfa11e874fa76bfdc1a4707409aaaaaed3fe49a16106b982"
+        }
+      }
+    },
+    {
+      "id": "sb0106",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0106_light.jpg",
+          "sha256": "660e8f79b15e4b562e25795ff47a965fcd0bac7c3e616b0b8f1bf59c66109c34"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0106_paper.jpg",
+          "sha256": "42a9ffc238a67b6b7ba666742f49a6ad6bcc4143397c80187c30f2cc63cb24c3"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0106_tag.jpg",
+          "sha256": "f6dc5b319dc100501f3531c8f0083b45d5bf3f62f098fb943389f51bf4e12d85"
+        }
+      }
+    },
+    {
+      "id": "sb0107",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0107_light.jpg",
+          "sha256": "d2134de84fd72c3c29c790335ff50ef211750018c33f70c41f18b43344ab3743"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0107_paper.jpg",
+          "sha256": "c0e022792eed2384f0de7cea81cfb0abe237e560034953c46690c0c646869f78"
+        }
+      }
+    },
+    {
+      "id": "sb0108",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0108_light.jpg",
+          "sha256": "a76bf23b624b11572d1eeed8bf77a8187bc494ce7afdf2caec269533ce1af560"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0108_paper.jpg",
+          "sha256": "069401a091f1effe77db90ab67deea3f8dca4c18f51266f485b6c95ef4a1fccf"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0108_tag.jpg",
+          "sha256": "659f4da7381d77085747c68885a7092bb59b444db15bc16758ae39dc6ee1e1ec"
+        }
+      }
+    },
+    {
+      "id": "sb0109",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0109_light.jpg",
+          "sha256": "37d89961c9adec85e4bc6c97a5f9415e13c9f64488b2b50381c1de6fc2851c79"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0109_paper.jpg",
+          "sha256": "f26a2a7103547c811bb4ce5cea3a9e94a3230f24757d7c2328fe4cb4111efe8f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0109_tag.jpg",
+          "sha256": "ffc1cec289ebae8c305c1ad7c7c7ae863cc00cb1f5345c0730fb7b079a459e1f"
+        }
+      }
+    },
+    {
+      "id": "sb0110",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0110_light.jpg",
+          "sha256": "9adce51358d1153c775f4bdea96fe4f4968369ce372f3ae0da837635dac70989"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0110_paper.jpg",
+          "sha256": "2d014123e171febe918f59734347bbd999ca7146b0edae52e1bdec14d5e72de6"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0110_tag.jpg",
+          "sha256": "87ffb07e86032f0ac9611c7ee4c882e702f1e4af573ec499388043ba808d2f88"
+        }
+      }
+    },
+    {
+      "id": "sb0111",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0111_light.jpg",
+          "sha256": "3a11d14326fc92c10bd4362bb660eaf6af61eeb9dcecb8e60c74c64a5c108f12"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0111_paper.jpg",
+          "sha256": "5bceca1fdaf10c40eb6ab10cc722a33ec9d765cff32798fb2275e8428eddbb93"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0111_tag.jpg",
+          "sha256": "98f991cf06e4eb19eb48ec2f1668de168254b463cc8d3b0554224454ad9e8ffe"
+        }
+      }
+    },
+    {
+      "id": "sb0112",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0112_light.jpg",
+          "sha256": "4589f1256b36547eb062b5b2b2c61a65d5b06c7e039e97284f6fff41dfc1928c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0112_paper.jpg",
+          "sha256": "9cab7ee0347872b41be18086de7a02cccbbd7e5f58ca32766536be3f3055a7ed"
+        }
+      }
+    },
+    {
+      "id": "sb0113",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0113_light.jpg",
+          "sha256": "72b0cd698dbc18fed3cc71d13dbead53a4b6e8d25185d1cdf080c147db013ccb"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0113_paper.jpg",
+          "sha256": "80e066ae83c6ef513d4b66975ffc8467ba500ab9a43156330b93571a5de9f08b"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0113_tag.jpg",
+          "sha256": "9aae677ec2bd3e422230a32aeff9161bf93fe670e660e9f97c43d2b8f9251150"
+        }
+      }
+    },
+    {
+      "id": "sb0114",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0114_light.jpg",
+          "sha256": "fe03f28286665e2f0517191897544e93290bcd0a1bdda1a34065f83319699b3d"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0114_paper.jpg",
+          "sha256": "c069b8751ec381e9368f805dce9985a3497c6c8a4bdb72510698ad46d291df04"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0114_tag.jpg",
+          "sha256": "2b82281993d465ed20beda5f64d65185ecfb1a296af0a63dc0a4d78c0d8c9b3f"
+        }
+      }
+    },
+    {
+      "id": "sb0115",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0115_light.jpg",
+          "sha256": "5cffff156aeddf332e0ca2c519a8f7d1828b0ecf42f2a656dabb5f3522dadf8c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0115_paper.jpg",
+          "sha256": "8cc7a8665ff5b51ba4798e6b417bbccc2405a1ff2fa356ee6d3bd0a84a242ff9"
+        }
+      }
+    },
+    {
+      "id": "sb0116",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0116_light.jpg",
+          "sha256": "3fe9963c2564cccba9c5d183ea652826aba3a682c8ea53c7f0d6b6213b3c4b8f"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0116_paper.jpg",
+          "sha256": "a67d8b452773843b89bbf582272aedf04d998e95c1517d11d1549b8b6c1713f3"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0116_tag.jpg",
+          "sha256": "700c168e3da72d302115901edb5f7267ecae8dfba1662b17e04e07f06fcb3c5b"
+        }
+      }
+    },
+    {
+      "id": "sb0117",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0117_light.jpg",
+          "sha256": "7fe5db8a0e1148b828640f549eba8b3ab31745c8cdcf2a2be79f880e108da7dd"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0117_paper.jpg",
+          "sha256": "7331eb8f6146ec25567fdeb04d6597ddf01e32bada7fb96a226a6b38135d698a"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0117_tag.jpg",
+          "sha256": "0eb8f7dbabb35fd3d438e7bc691bbb9d3c5516f14a4497957e5d82f2c2aa0c9d"
+        }
+      }
+    },
+    {
+      "id": "sb0118",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0118_light.jpg",
+          "sha256": "e5bd87b503355842e6b7ad6742ca47609aae4c98b0337ca7214e5595e96d8c1f"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0118_paper.jpg",
+          "sha256": "4b98d22d446265441fd8f251b87540eb018f6c248551be5d07075ee710509d21"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0118_tag.jpg",
+          "sha256": "27728e997dbb3c8415f14669881b4f0e441a5be88168cfc6ea34a70a3714a3e8"
+        }
+      }
+    },
+    {
+      "id": "sb0119",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0119_light.jpg",
+          "sha256": "cc5edec367ef79b18cca56964d62b270822d9b021c889d798de65dd97ac25c2f"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0119_paper.jpg",
+          "sha256": "55d7b234b04e3c704970a688e984a123c34e84fae82f870f3ab85d23280e6721"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0119_tag.jpg",
+          "sha256": "396eb4586fed8a85b4f0388f1940ecd3021e337fffe1cb09eb3d4619d2fc3621"
+        }
+      }
+    },
+    {
+      "id": "sb0120",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0120_light.jpg",
+          "sha256": "9cea4adb0556430d3b010f5912d881051011650c36b196ec12d9a236a0421c29"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0120_paper.jpg",
+          "sha256": "33e6f926219028d58ce7185118a59cc727479d4d8e0c81306331f1a6fc005040"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0120_tag.jpg",
+          "sha256": "784d6f1f0d5cc5e0a0c5bcf2b9a56b68628b71d610ee81f01c494bf01bcad0f4"
+        }
+      }
+    },
+    {
+      "id": "sb0121",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0121_light.jpg",
+          "sha256": "70a4445ac66ffcdd1adb16c93458b192cf793b15d157184d08c124fae60f52a2"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0121_paper.jpg",
+          "sha256": "713780ae73f2a550eedcb31ab523aa3dc556b33d2d9b5452dfb4a657890cd62b"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0121_tag.jpg",
+          "sha256": "e753a89ff6a447a67b6a95f0ad6dc34df39f1fa6795629193b0ff78181430d78"
+        }
+      }
+    },
+    {
+      "id": "sb0122",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0122_light.jpg",
+          "sha256": "ad0fdcd3c1141b48eb7f85a293681f3ba01e559d88d18a90f6d67f5a2abaf6f8"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0122_paper.jpg",
+          "sha256": "a81f3b8e1f34faf926d24c0d74a515035a8d475d352b65f54edaf4b7a809c1a1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0122_tag.jpg",
+          "sha256": "0b68f69353bafd5583efac3487fa7c0975ef97d743083a7fb4704beff2a9620b"
+        }
+      }
+    },
+    {
+      "id": "sb0123",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0123_light.jpg",
+          "sha256": "d44b152530344cf0a7493586e9d2d7d617749e41a2265bb77cdd3469cf970091"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0123_paper.jpg",
+          "sha256": "47b34674cd0aa9f58624c8c9fa7c2d6ce50ee3b7488f75f1ae4155d99417c275"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0123_tag.jpg",
+          "sha256": "0a1d30267517d869efffc92be6b20f5052578ae9009642ae44411041f165bbe2"
+        }
+      }
+    },
+    {
+      "id": "sb0124",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0124_light.jpg",
+          "sha256": "05167d0a0bf24ccc61b1e25dd6d75f046cc166041793ec3885a3dbaaee2d0ed9"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0124_paper.jpg",
+          "sha256": "6bc96e93d4400adaadd8730cdf16569b6d31c5d32b73b4ea5630b8e4103d7229"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0124_tag.jpg",
+          "sha256": "dbd734680fdaf09fcf26f314a6862db39aa1411669e791c45760987e9a1bf090"
+        }
+      }
+    },
+    {
+      "id": "sb0125",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0125_light.jpg",
+          "sha256": "016c65a6fa696779a0502b152fa10b5d001c373386a8b4e8c9dd6da652c73c6c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0125_paper.jpg",
+          "sha256": "0883daf460519c3692cc0384560269e76ea5d1063110fc303ef78c657d8d0b5f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0125_tag.jpg",
+          "sha256": "92a5a7f4e14d3816ec402262f6f893c05923966c7428fbe3a96d9ca88b7ca36e"
+        }
+      }
+    },
+    {
+      "id": "sb0126",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0126_light.jpg",
+          "sha256": "5d76853e24e3637e5b09ea784495355639b8736188559bd004debe5cb7291b96"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0126_paper.jpg",
+          "sha256": "b1daa40b692e925f2e8663990107380f008b6f42e1b3f49df0a3ef736cba90b0"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0126_tag.jpg",
+          "sha256": "0ccec7428311682cb1f18d0bb0ed7a549ec99b0bc6faa147cb33e88b16833a45"
+        }
+      }
+    },
+    {
+      "id": "sb0127",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0127_light.jpg",
+          "sha256": "547c0280f043e14011c6e7238f43ec9d4f94d5c75afcbe27054e5eb053945370"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0127_paper.jpg",
+          "sha256": "f2f007b04248fe64b3251b36f438e6230211cb224de5d54c8a1311390cbc739f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0127_tag.jpg",
+          "sha256": "8c6cd2af6c71f8e30b6235eb995748ff54ae66e372e9e21a2dd5d5aa62053157"
+        }
+      }
+    },
+    {
+      "id": "sb0128",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0128_light.jpg",
+          "sha256": "801268fb26efa1fea104b75e38203202ebdaf3b2508ac9f81357495ad2f3d463"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0128_paper.jpg",
+          "sha256": "5ba27935d13abcdea6908e99a1a278fe4743f79969fb6cacc4266bd024cdebf7"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0128_tag.jpg",
+          "sha256": "09f9d8fc8c787dabae93f293cc942de0f6bf876def2f2c549e8be7ecb58f1835"
+        }
+      }
+    },
+    {
+      "id": "sb0129",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0129_light.jpg",
+          "sha256": "910c55cf2e767d0c21a1cb48591f059f20e635ee1bc84f3fa70e37f0a3162f59"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0129_paper.jpg",
+          "sha256": "f0039d3a4f878cf7f9ff300ad7c284124f147df0293f17d11780f4ccfffb6e17"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0129_tag.jpg",
+          "sha256": "951791b95db979ee2fbd6270a63c0f52aca6d84494825d4f1202ab2f044288d2"
+        }
+      }
+    },
+    {
+      "id": "sb0130",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0130_light.jpg",
+          "sha256": "0a40d8b2723a39c0cf0f72542200912eb2b4b4dbacabe9dda664fa29be773807"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0130_paper.jpg",
+          "sha256": "836450c4210dc829b95a34208e37ff6e0dcdc458399173e9691094810edbfa2d"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0130_tag.jpg",
+          "sha256": "66354f7aa604a6035a83500775a995576401d67371656878199dc65f1704555c"
+        }
+      }
+    },
+    {
+      "id": "sb0131",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0131_light.jpg",
+          "sha256": "cb94241bb4180eb49976db0c1ea590b073e24c070f642339d54bef06c4707f59"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0131_paper.jpg",
+          "sha256": "1d0993b19cc9532b0e15b6134143e40d4fdc1b87ea214a63c5924e77e0f1d866"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0131_tag.jpg",
+          "sha256": "b32bf70c5ed1df7ec719f61166d985e10d8b3f48cb1335a1e12a16b21e20bc34"
+        }
+      }
+    },
+    {
+      "id": "sb0132",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0132_light.jpg",
+          "sha256": "5097ef3855c71547efe43ad7ab227bbb587e3c7e17c9127ab822dc36459625de"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0132_paper.jpg",
+          "sha256": "72757b795142c38e32f716b741eee2c3120ffe1a6bb9b81e5ffe784898de0391"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0132_tag.jpg",
+          "sha256": "a90f110ef35b1c959abd204a408140df30d26155fbac761d4c998f18d0d72479"
+        }
+      }
+    },
+    {
+      "id": "sb0133",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0133_light.jpg",
+          "sha256": "d0f98f8c0a8616469c2e8b13abc1a31632a59664f78a15e0a9db9020a06c7cb1"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0133_paper.jpg",
+          "sha256": "19b388cc6a677232faec7ff9cdf68649f3e1f6b7ab01fe3b9b88e619dd27d128"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0133_tag.jpg",
+          "sha256": "95c3d57da23bb179fa613fbe3c7f458f512277f9c2a4a3c43515adfb1e4c283f"
+        }
+      }
+    },
+    {
+      "id": "sb0134",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0134_light.jpg",
+          "sha256": "e095716571cc6e2e7c182d1f8842ebfaf4700fe4dc76e5bff9f51a27d07726a4"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0134_paper.jpg",
+          "sha256": "f47d04f3b49df095bd5a8e09196faa0730c1f65884cf6b89c48d04ab1ec867e5"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0134_tag.jpg",
+          "sha256": "554cc95bc713870aa3353202f0fd317a3787bc2dfef47d971c0ee368341744a4"
+        }
+      }
+    },
+    {
+      "id": "sb0135",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0135_light.jpg",
+          "sha256": "abbc65c604093d0600bab2e2491847f9be89eeb5c64049245d0594544d19aa04"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0135_paper.jpg",
+          "sha256": "57e6110bf47ee00c0dda996f1c38da65075091073c065f430f7cfb3638e0c121"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0135_tag.jpg",
+          "sha256": "84a9df597590ae808cc39d600d62d9c263118e1bd9eaa6611eae72b3a28d3e9b"
+        }
+      }
+    },
+    {
+      "id": "sb0136",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0136_light.jpg",
+          "sha256": "6d0d720fd9d2728544ffbe985f6a591990c14642f1167f019cc45e019aef76be"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0136_paper.jpg",
+          "sha256": "f474d9e525c00c2ac5b146215fce82280caec5ed330b8ce7d3c1c52c11d0dcd1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0136_tag.jpg",
+          "sha256": "fbed9a839020b9790cfa2f33f33b06533db5031b87645b2f1ef60c534479c6fc"
+        }
+      }
+    },
+    {
+      "id": "sb0137",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0137_light.jpg",
+          "sha256": "35e8e68179d5e5dd008bda7405c29f614a2d1da15d3dc74964dadceecf779e31"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0137_paper.jpg",
+          "sha256": "067763d15c82ec0508a5290c9baa991ec72eea047b7cfa403d052a9bbc0ea9bb"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0137_tag.jpg",
+          "sha256": "835459d054cde11000eb07e3b3edef76fc51cb2577e262ef9edf64ce5d8612c9"
+        }
+      }
+    },
+    {
+      "id": "sb0138",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0138_light.jpg",
+          "sha256": "bd69389541ba95984fcb5b9a88b5d36be2310d9d052b1db0d5f355f1ba190392"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0138_paper.jpg",
+          "sha256": "d4b53c4dcfae9bbfd2aae237887b29f0875037efb751970d0b37cf96dd5dbac1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0138_tag.jpg",
+          "sha256": "6e52e9d0b553c99d57f7a239b362dc3132b1245f1f8ef8fc25d7a75c9976dfab"
+        }
+      }
+    },
+    {
+      "id": "sb0139",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0139_light.jpg",
+          "sha256": "2b147e0263fe9d2096b92bfedcb1767a7611ebef0e625d47b2a09ae445626d96"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0139_paper.jpg",
+          "sha256": "84eb53f4a8fb447361c8c3fcf5419e330a94e6eb55eda48be6406cc4190ecb59"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0139_tag.jpg",
+          "sha256": "d916895d3fc0ee2ca0501cb667306db17656c2b2161b0a8877ed46881cc1db51"
+        }
+      }
+    },
+    {
+      "id": "sb0140",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0140_light.jpg",
+          "sha256": "0ea9d9dc958cbc39d54f97d87a72bfda395b88f49e78f4d4b76b4abb62b42744"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0140_paper.jpg",
+          "sha256": "feb1b47a544f7dd95d7ab10215daf4000c82548e2a724d7a496aae2b4f4dda5e"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0140_tag.jpg",
+          "sha256": "f2226a03758286f9fba9e61a6ce7b77a37694b609f5ce7d58ba9c21eb9217f09"
+        }
+      }
+    },
+    {
+      "id": "sb0141",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0141_light.jpg",
+          "sha256": "2e4c841768934617f2d5f37bf3d6a85bc5b599398e6ba763edf8356d8d9f2c2c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0141_paper.jpg",
+          "sha256": "67c0859567185d940efd5e0d9d1c558fb2952a7984fd4b7892a10fe0d8f5df79"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0141_tag.jpg",
+          "sha256": "8b56e610233d559f1df3d5e2bc55cc490b921cdb642bca6312b71d3569b40cab"
+        }
+      }
+    },
+    {
+      "id": "sb0142",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0142_light.jpg",
+          "sha256": "e3821b89c766e7786f5260b6ca30f080cd8cf1f58ba6d0e33dcb2863eef4e84c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0142_paper.jpg",
+          "sha256": "ffa9a3f074e252b3436ce78dc3d590a6924b27ce41b76b03d7643cc99b24cda5"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0142_tag.jpg",
+          "sha256": "73e22a7d3f8f1d2b196110956732554c1ae5c56bad86c2ecd4837ff058c5b295"
+        }
+      }
+    },
+    {
+      "id": "sb0143",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0143_light.jpg",
+          "sha256": "ebce882c222c540ce92cfb64303ead25ba2e1f663ce355f5f187b2e26b30c4fb"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0143_paper.jpg",
+          "sha256": "c004e0c45abbd76f1baa59681d2c14e99cd18ebce7291ea178dedb0c3a840b47"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0143_tag.jpg",
+          "sha256": "945ceed7c4336583783cfdbf588374b3beba141fe5c26a8b67480fb53a7dc9af"
+        }
+      }
+    },
+    {
+      "id": "sb0144",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0144_light.jpg",
+          "sha256": "513005b80e6f1452bc97957efff8d5c2ada2787c65eafe8f500442750ad551cc"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0144_paper.jpg",
+          "sha256": "64a9a6fb38d9da332172851f92cd18784be8a46953dadb6a42cf4a4211e719c1"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0144_tag.jpg",
+          "sha256": "13e074c04a6bfa310a6f4e0ad5710fb22fe91eeeab03cda9ef764998a5dc3d36"
+        }
+      }
+    },
+    {
+      "id": "sb0145",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0145_light.jpg",
+          "sha256": "7f82c9335fd21ba6a430d240e2bbe1ae6045c004f96c479505b25629bdedd159"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0145_paper.jpg",
+          "sha256": "8ddd38d401980f1a2ae2fff387c31055016c3d36ffba05b10ecf73fd06940584"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0145_tag.jpg",
+          "sha256": "73cedaad646dd05c7fb13c2367d3daa7191f0aa21e3a24737e73f2a16c0aa6be"
+        }
+      }
+    },
+    {
+      "id": "sb0146",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0146_light.jpg",
+          "sha256": "87703391900431cc66ef80073927b95f08bd9922cd9da5cc8be1de6b0f5e2097"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0146_paper.jpg",
+          "sha256": "ca00da404ccba8b03b9e97787b153d2eabfc2b5d3370f8773f305f86fa473f0b"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0146_tag.jpg",
+          "sha256": "80da7d0ab486cbc7a43fc3a215c0b4b0e838876103e74a6733fafc3329d30408"
+        }
+      }
+    },
+    {
+      "id": "sb0147",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0147_light.jpg",
+          "sha256": "a8781a4db70c271f32e1a042ec3e571950009eb3680a4880e4b931d4483c972a"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0147_paper.jpg",
+          "sha256": "387ab630838d22044f85728c88b13cf4df0752a58f668204dbd9bf70cc18a1a8"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0147_tag.jpg",
+          "sha256": "f67f1fe64ed97ee03f334782dddb9d7bf8d12e64f09d1cdbb4411b6250712f5f"
+        }
+      }
+    },
+    {
+      "id": "sb0148",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0148_light.jpg",
+          "sha256": "233f42b09ab83255250e565c1e16d954cb771c9f522e133759693bd75d510861"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0148_paper.jpg",
+          "sha256": "608026dad18e5ef8a96b809735532cc06b727fa5cac7705552a2770781ff06f0"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0148_tag.jpg",
+          "sha256": "e7b24c9c8fe6bd31e82ad5b20a6bb8aec3ad1a69fe6220fba4595c3260b1a2b8"
+        }
+      }
+    },
+    {
+      "id": "sb0149",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0149_light.jpg",
+          "sha256": "312573d2d52067b5bc802fdc51541ea2867d87c72d6d1c0a8c7619ec5bb5c753"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0149_paper.jpg",
+          "sha256": "d183d2aac27fd00b22fcf6d36881e8c44e2e3927b4f59fee4b92755dd4617a8a"
+        }
+      }
+    },
+    {
+      "id": "sb0150",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0150_light.jpg",
+          "sha256": "e47b2307ebf92f07cfe2f34610ed4d5da524c746b20ef7e10801e2546c85501b"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0150_paper.jpg",
+          "sha256": "ad77e13139d85ef15ff3d5c1227d8288c085294ceec8e08ec6b7516f3a3e7d6f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0150_tag.jpg",
+          "sha256": "63f5f453bf609591b200c0ca6d7649018278719bf6984372d5f764437915b5d7"
+        }
+      }
+    },
+    {
+      "id": "sb0151",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0151_light.jpg",
+          "sha256": "a0535c2bc99076b8e94953a800bd69531f2deebcc1a771d0039b013499a02932"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0151_paper.jpg",
+          "sha256": "9c7b1baeb3e89e3c5647148ab163b1aaad91cc022567c0087b4e9f7521ebdbcc"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0151_tag.jpg",
+          "sha256": "8f8395921a6cebbd21300e4435cc1dccc8d88a58d9876447a66ea01266be3a36"
+        }
+      }
+    },
+    {
+      "id": "sb0152",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0152_light.jpg",
+          "sha256": "26e83385ed11240093ab5aeee2e824d3a2384ddd722f3036c962d6637bdcfa04"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0152_paper.jpg",
+          "sha256": "d47ddce716a77df19786b82c4769f00cc065106f842199296f557d5e3c8942e1"
+        }
+      }
+    },
+    {
+      "id": "sb0153",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0153_light.jpg",
+          "sha256": "3926f276558c5aca90027e671ea45e2a3fd1cc0cf7453d0e2e2c272226ea54ff"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0153_paper.jpg",
+          "sha256": "4147e538271291cf814c11f03853b792d677b5429b8253e95e7fe2c467167777"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0153_tag.jpg",
+          "sha256": "ed1aba700115bcefd3bdab7c13be7900fc722b690512f4df0dc75bc14ffc8f5b"
+        }
+      }
+    },
+    {
+      "id": "sb0154",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0154_light.jpg",
+          "sha256": "9b0f07961424adb5a09fdbe02ba4e5c23e8f3116a2563dd3ea17d36a8439f625"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0154_paper.jpg",
+          "sha256": "856d50e29591c9fe56b9bae2daa19ebf57c2164ef025737167862201d28af9b8"
+        }
+      }
+    },
+    {
+      "id": "sb0155",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0155_light.jpg",
+          "sha256": "74bbf822855533bf29f262ad226e43883bf154bae1d563d8c4e97b9c29d855a2"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0155_paper.jpg",
+          "sha256": "dd1a74b5a74e16bdf79bdb17a20e88d4b3c8a525ed206a97d2d010cb4958f4ee"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0155_tag.jpg",
+          "sha256": "7080dc6e17c8c53978e3e543dde19d599a55031dfbbc3b728779c68965398a77"
+        }
+      }
+    },
+    {
+      "id": "sb0156",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0156_light.jpg",
+          "sha256": "b3a03aae34afe3f94c2fc145079389add113d16c652f28f236d48ced4da7601e"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0156_paper.jpg",
+          "sha256": "9cab538db54cc5d8d64b59750d7e6339f777c91ae1314dcb8248a0a80698d683"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0156_tag.jpg",
+          "sha256": "b8f219b8c14f08a97aa7e045f9038df7d722434421c44dca586ef2482e4b3835"
+        }
+      }
+    },
+    {
+      "id": "sb0157",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0157_light.jpg",
+          "sha256": "65e0ed8f9fa356466c613f27fdd991886f8d81ded859092b97431dca6ae047ce"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0157_paper.jpg",
+          "sha256": "0267953d0d320eee28df54c2dbb8cfbfeae8db5ab80c1362a168e7c5ebe2270f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0157_tag.jpg",
+          "sha256": "84c0247f95f93f5174e35eb0216f4178d7aef7b8214e08c1c2c262429e503b48"
+        }
+      }
+    },
+    {
+      "id": "sb0158",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0158_light.jpg",
+          "sha256": "949af0593b55972ec811dbaad64b7caafa4b33b99b89ce82f9c6642f8d925895"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0158_paper.jpg",
+          "sha256": "4100283b744a57e104b86800ff53577f8f2e33f277f9c0500ec5b9d26d11d479"
+        }
+      }
+    },
+    {
+      "id": "sb0159",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0159_light.jpg",
+          "sha256": "2ea632cc05a546b842fe6cb424256d9b03f17b4c72d6dafad427a1aa21ab0632"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0159_paper.jpg",
+          "sha256": "e90a1e06f94cd716dbbb30508e7286bd18b9815031297e31a9fd9b6791361c1e"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0159_tag.jpg",
+          "sha256": "ace16efdbd9e86b4379ab68dcd54ed443a46c3260f85b6f1d1ff87777d019367"
+        }
+      }
+    },
+    {
+      "id": "sb0160",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0160_light.jpg",
+          "sha256": "d428d7f60150a72241f54c051881cdeb2d7e36ce15fa5da1f21e8659af581f5d"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0160_paper.jpg",
+          "sha256": "d00187fefd2dd11bf4704f35f96796b7c816ab6fc22d079ed85d8cfc086b4374"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0160_tag.jpg",
+          "sha256": "cd795023ecd362c44fe9014dbe74fe3f728cd26aac421556e7d1fd6061bcef75"
+        }
+      }
+    },
+    {
+      "id": "sb0161",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0161_light.jpg",
+          "sha256": "df66111c1d1da35377f72341cb50aaf9e40f26f3a7b50e1020f83c30f37a35e9"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0161_paper.jpg",
+          "sha256": "0751c2a7c49ef99c653b23082b414502c01c6759eff18aae33df6f1f398551a7"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0161_tag.jpg",
+          "sha256": "85b0827b27cd774dddc8a20aea2ef0899627176062d8f4f035c34610b747b94c"
+        }
+      }
+    },
+    {
+      "id": "sb0162",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0162_light.jpg",
+          "sha256": "7c32b31b1abd61205b43320a790c162ff99d96d0fefb5636608b63a058e99c39"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0162_paper.jpg",
+          "sha256": "7f1113202a631618f54b5c7e06cc5a97c578e6d34427d6013b76c75e0d16ba49"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0162_tag.jpg",
+          "sha256": "a2e74855390a2e2942c7ebf67c6604443f0e3eaeef0cd43971690d0104747587"
+        }
+      }
+    },
+    {
+      "id": "sb0163",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0163_light.jpg",
+          "sha256": "1e2b90d16c35d4a798c7552274e534621fc95768407ec187d3d8c6ee9d977b2c"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0163_paper.jpg",
+          "sha256": "e80abf5ac83165cf3e76cbae38114c6bceef0bee49745dc2520f845cf78ee403"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0163_tag.jpg",
+          "sha256": "8e1356396e3e06c7110d1df0f15ed9efdd3d3281c08961d37f71534f5e768cee"
+        }
+      }
+    },
+    {
+      "id": "sb0164",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0164_light.jpg",
+          "sha256": "cecc1fd16b9e72da5e040b98611e4564bfcc01d1d9fde64812fa6d4e37b48d16"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0164_paper.jpg",
+          "sha256": "8299cd50b2c02ec33ff7054f675fc2e3d01572bd9ffed5e9b739b3f6cd0fb6c8"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0164_tag.jpg",
+          "sha256": "0fcf57d16482480e8478dd311c8838aeaf5952c0d7583de48c03c013473d5c75"
+        }
+      }
+    },
+    {
+      "id": "sb0165",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0165_light.jpg",
+          "sha256": "034cf73e206c28f2388015b11fbe090c600dbd5cf9a9ea9e79d2a911cb5c432e"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0165_paper.jpg",
+          "sha256": "b52b01ea1ac30f7612c759f6c0a29b4dea4e68b515b29b23f829f3520cb04d41"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0165_tag.jpg",
+          "sha256": "d07641abf3bc067e912202720f342d3b86290f06db464d3ffce0d5b58a07d2e1"
+        }
+      }
+    },
+    {
+      "id": "sb0166",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0166_light.jpg",
+          "sha256": "fe2dfce0dd7ceced3e8bd6bd6761e11ca9b6b21ea6caab66c426b34424b6ae09"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0166_paper.jpg",
+          "sha256": "b1f0b8c0733d7ecf635a5107933d2c19d89f690ffdd457825bcd143ae7d26efe"
+        }
+      }
+    },
+    {
+      "id": "sb0167",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0167_light.jpg",
+          "sha256": "bbd2d3b8daad749e3f02d917773f8b724cb2ae21e26a14478ab146f7eae95bca"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0167_paper.jpg",
+          "sha256": "9a867865df9719c9ba0fa50dac3798d34ad8b4ec5fb8ff1758e123924352b502"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0167_tag.jpg",
+          "sha256": "74411a01a09ef6e3d01589be1dc0447e72c8af1be733d40c484f30b160bd4189"
+        }
+      }
+    },
+    {
+      "id": "sb0168",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0168_light.jpg",
+          "sha256": "98f125cdffac060e4ed8f9a6f722a4f5b1af4894da964333cd02da993944ca7d"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0168_paper.jpg",
+          "sha256": "9e73086e83c8bd3a699b7004223ab564608b106b9c671ebce5d30f871545b102"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0168_tag.jpg",
+          "sha256": "2825b5ee1917410bafb99b8dabdf8c8a89c1884478668140d4db46ccfd11bb28"
+        }
+      }
+    },
+    {
+      "id": "sb0169",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0169_light.jpg",
+          "sha256": "53ea91ea6eb1571d610c3481ea2acbe22d9125e87cb05f30db2d3c49c9d24d19"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0169_paper.jpg",
+          "sha256": "c01bc53accf7823d61e4b46e8f6e6490103123d2fbddd130d1ee6f884ef219dc"
+        }
+      }
+    },
+    {
+      "id": "sb0170",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0170_light.jpg",
+          "sha256": "4c375adceb1e6b0fa6979ac94a1ce2d15ebde75bf568b864240f1f8db226820e"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0170_paper.jpg",
+          "sha256": "ff52f1e043bb8102e71aa9dcb3e642520530c33ed70efb6d8cf81bb99356ae90"
+        }
+      }
+    },
+    {
+      "id": "sb0171",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0171_light.jpg",
+          "sha256": "9a1a6dce626d072eda55b33bcd5f8cc39b1353cf327e2931077f1fb9587e9fc5"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0171_paper.jpg",
+          "sha256": "376229ea333a66af04696b31ca7e738d6f6eb46948c1d2115277a9e0b09d5abb"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0171_tag.jpg",
+          "sha256": "ede6a5574ef812effa6f19c1d50ca0c6822ab6333bec74e05c3142931ab8095e"
+        }
+      }
+    },
+    {
+      "id": "sb0172",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0172_light.jpg",
+          "sha256": "983556e466337b008707da531c30a317502c6a41d0f7bc94b52a599eb38e3066"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0172_paper.jpg",
+          "sha256": "ed4fd640fab1f4db8a0298640acb6a5de130daddd8209c18ef0d7ff8e29fa433"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0172_tag.jpg",
+          "sha256": "d2906845aebe7d15fdb9b4f2eda8f3c17029f1837ae6225179294814fcfeba63"
+        }
+      }
+    },
+    {
+      "id": "sb0173",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0173_light.jpg",
+          "sha256": "5d3e3c19df9e30590a196c3eba91a748a6c46fdb51f4ebbb9592f2856942df15"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0173_paper.jpg",
+          "sha256": "181271218b5f1411e734833283bc727028a5f75e578c57102bfa94b27eb90f18"
+        }
+      }
+    },
+    {
+      "id": "sb0174",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0174_light.jpg",
+          "sha256": "d57953a7d3a84890f3c5f5dbd52a21c172dd9462eeb1721653e8cb3cbd583a40"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0174_paper.jpg",
+          "sha256": "50dc1f369e26f6ba74b0c7404e5ce0959f584c4cd42b23124902f40e6cdc5f7f"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0174_tag.jpg",
+          "sha256": "7ef09056bed320fbb5f243c94f11f1c09ca600493a5a32091c20f079bbcbe479"
+        }
+      }
+    },
+    {
+      "id": "sb0175",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0175_light.jpg",
+          "sha256": "d9b92e156c22f590f666720187175e73408d7391ab7208d93f8c6ec2eaf8fa44"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0175_paper.jpg",
+          "sha256": "12505ddc3645864e166dfa92966f85b3b10ad03b9e68de3aae9f31befb857eb6"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0175_tag.jpg",
+          "sha256": "f41e8a7d3ddf73f780d5807a01d8b8baeeef4c32714262e3194ddde700051b6e"
+        }
+      }
+    },
+    {
+      "id": "sb0176",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0176_light.jpg",
+          "sha256": "3df349903db2353ed3f36651eedbb178bac74692dadd0548e3f509a27a303ce2"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0176_paper.jpg",
+          "sha256": "5d19c8b0d36aeea1c8678dd9590ba24ae5417b4e5d19749420d06f4344711263"
+        }
+      }
+    },
+    {
+      "id": "sb0177",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0177_light.jpg",
+          "sha256": "3fe20d521ca64010dc64f8a149d05b798e067ceb40a4eec0a5e1e5914c6bfc91"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0177_paper.jpg",
+          "sha256": "a5a6986f1cf18f02ddab8ffdc2ce17cc538a0d9ca6ea9fe872641aae2ec3ec51"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0177_tag.jpg",
+          "sha256": "1f8109358323c258f31049916af64bd10e562f625c0cdccaa0fcbd2f9b4e407b"
+        }
+      }
+    },
+    {
+      "id": "sb0178",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0178_light.jpg",
+          "sha256": "3ee559cd302db537a19e5e5053f9202a98b819101ba62307a4e1f5b946fa0fec"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0178_paper.jpg",
+          "sha256": "3a731af34dbfdf221a9b1cbd8a211f0d8bc8bda1fa098eb2f11a6c8e65e3acac"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0178_tag.jpg",
+          "sha256": "88618c1f7c9669619b3a30ab3a7707f554d691eb8434fbb8d1ceb5d5484e2508"
+        }
+      }
+    },
+    {
+      "id": "sb0179",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0179_light.jpg",
+          "sha256": "942a5ffa93d0b789d7282e6a7304a5ed532067f0d821a9e335a6f46376dcfbc1"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0179_paper.jpg",
+          "sha256": "58b7394398c19bef80594594bf9a8aa23fdae3f517f3121e43c9c2dcd6337c57"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0179_tag.jpg",
+          "sha256": "d1adaf47de05931ab91f0fb1312dad33385b8005af0c15ebc8f2484730b1ce07"
+        }
+      }
+    },
+    {
+      "id": "sb0180",
+      "files": {
+        "light": {
+          "path": "../../data/raw/sightbench/retakes/sb0180_light.jpg",
+          "sha256": "2f91f6d3e8bb5427328dc0c59e815218348ed55452f4e7e1a891800670cafa0e"
+        },
+        "paper": {
+          "path": "../../data/raw/sightbench/retakes/sb0180_paper.jpg",
+          "sha256": "6731884465ad022b26f04ba11f662b880297b653bc1d192c249bd8d420b3ef84"
+        },
+        "tag": {
+          "path": "../../data/raw/sightbench/retakes/sb0180_tag.jpg",
+          "sha256": "628399b08bd613067670bd50d8f839fbe610763d73433829b873ee04bcde8326"
+        }
+      }
+    }
+  ]
+}

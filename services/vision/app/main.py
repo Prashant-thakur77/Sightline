@@ -3,6 +3,7 @@
 GET  /health   service status and which engines are configured
 POST /quality  one camera frame -> framing hint (for ~1 fps live guidance)
 POST /verify   item photo(s), size tag, optional damage photo and the listing -> verdict
+POST /recheck  the first check's modules plus ONE extra photo it asked for -> verdict from both looks
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ from .config import Limits, thresholds
 from .imageio import ImageError, SanitizedImage, decode, sanitize
 from .label import RapidOcrEngine, get_ocr_engine
 from .mask import item_mask  # noqa: F401  (imported so a broken OpenCV install fails at boot)
-from .pipeline import VerifyInputs, run_verify
+from .pipeline import VerifyInputs, run_second_look, run_verify
 from .vlm import get_vlm_client
 
 log = logging.getLogger("vision")
@@ -60,11 +61,22 @@ class ReasonOut(BaseModel):
     sentence: str
 
 
+class RetakeOut(BaseModel):
+    kind: Literal["tag", "light", "paper"]
+    module: str
+    why: str
+    title: str
+    prompt: str
+
+
 class VerdictOut(BaseModel):
     kind: Literal["match", "mismatch", "unsure"]
     reasons: list[ReasonOut]
     headline: str
     next_steps: list[str]
+    retake: RetakeOut | None = Field(default=None, description="The one extra photo that would help, when the check is not sure.")
+    looks: int = Field(default=1, description="Photos of the item behind this verdict: 1, or 2 after a retake.")
+    signals: int = Field(default=0, description="Independent signals that the item differs.")
 
 
 class VerifyOut(BaseModel):
@@ -285,4 +297,59 @@ async def verify(
         listing=listing_obj.model_dump(),
     )
     result = await run_in_threadpool(run_verify, inputs)
+    return JSONResponse(result)
+
+
+# --------------------------------------------------------------------------------------------
+# Recheck: the first check plus ONE extra photo
+# --------------------------------------------------------------------------------------------
+
+_PREVIOUS_MODULES = ("quality", "colour", "size", "identity", "damage")
+
+
+def _previous_modules(raw: str) -> dict[str, Any]:
+    bad = HTTPException(422, detail=_detail("bad_previous", "The first check's results were not readable."))
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise bad from exc
+    if not isinstance(data, dict) or not any(isinstance(data.get(k), dict) for k in _PREVIOUS_MODULES):
+        raise bad
+    if int(data.get("looks") or 1) >= 2:
+        raise HTTPException(422, detail=_detail("already_rechecked", "This check already has its extra photo."))
+    return {k: data[k] for k in _PREVIOUS_MODULES if isinstance(data.get(k), dict)}
+
+
+@app.post(
+    "/recheck",
+    response_model=VerifyOut,
+    responses={413: {"model": ErrorOut}, 415: {"model": ErrorOut}, 422: {"model": ErrorOut}},
+)
+async def recheck(
+    retake: Annotated[UploadFile, File(description="The one extra photo the first check asked for.")],
+    retake_kind: Annotated[Literal["tag", "light", "paper"], Form(description="Which extra photo it is: tag, light or paper.")],
+    previous: Annotated[str, Form(description="JSON: the first check's `modules` (from /verify), as stored by the caller.")],
+    listing: Annotated[str, Form(description='JSON: {"title", "colour", "size", "attributes"}.')],
+    listing_images: Annotated[list[UploadFile] | None, File(description="Listing image file(s); repeat the part for each.")] = None,
+) -> JSONResponse:
+    """Check again with both looks: the first check's module outputs and one extra photo.
+
+    Only the modules the extra photo can inform run again (size for a tag photo; colour, identity
+    and damage for a photo in better light; colour for a photo next to white paper). A "sure"
+    mismatch still needs two signals that agree, which the two photos can now give. No further
+    extra photo is asked for after this.
+    """
+    try:
+        listing_obj = Listing.model_validate(json.loads(listing))
+    except (json.JSONDecodeError, ValidationError, TypeError) as exc:
+        raise HTTPException(422, detail=_detail("bad_listing", "The listing details were not readable.")) from exc
+    previous_modules = _previous_modules(previous)
+    files = [u for u in (listing_images or []) if u.filename or u.size]
+    if len(files) > Limits.max_listing_images:
+        raise HTTPException(
+            422, detail=_detail("too_many_listing_images", f"Please send at most {Limits.max_listing_images} listing photos.")
+        )
+    retake_clean = await run_in_threadpool(_read_upload, retake)
+    listing_clean = [await run_in_threadpool(_read_upload, u) for u in files]
+    result = await run_in_threadpool(run_second_look, previous_modules, retake_kind, retake_clean, listing_clean, listing_obj.model_dump())
     return JSONResponse(result)

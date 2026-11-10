@@ -15,6 +15,7 @@ Anything simulated says so in its row or its limitations. `duplicates-sandbox` a
 | Grounded answers | 8 | 2 | 2026-11-10T14:52:17.065Z | 4c740eb |
 | Adversarial listings (red team), sandbox ledger | 4 | 0 | 2026-11-10T15:55:10.335Z | uncommitted |
 | Adversarial listings (red team) | 6 | 0 | 2026-11-10T14:52:22.950Z | 4c740eb |
+| SightBench: two looks before "sure", quoted reads, one extra photo | 9 | 3 | 2026-11-10T16:22:06.502Z | uncommitted |
 | SightBench: does the parcel match? | 12 | 3 | 2026-11-09T13:24:31.985Z | 73ce251 |
 | Store agent: policy, invented facts, choice | 8 | 0 | 2026-11-10T14:52:17.672Z | 4c740eb |
 
@@ -320,6 +321,46 @@ Limitations:
 - Ten listings per card: a zero count still leaves an upper bound near 28% per card.
 
 Full per-item data: `evals/results/redteam.json` (`details`).
+
+## SightBench: two looks before "sure", quoted reads, one extra photo
+
+Suite `sightbench-looks` · ran 2026-11-10T16:22:06.502Z · git uncommitted
+
+| Result | Value | Baseline | Interval | n | Script |
+| --- | --- | --- | --- | --- | --- |
+| Two looks before "sure": mismatches flagged on the frozen test split **(negative result)** | 81 of 210 (38.6%) | current rule: 121 of 210 | 95% Wilson 32.2%–45.3% | 210 | `evals/sightbench/looks.ts` |
+| Two looks before "sure": matching items wrongly called a mismatch | 2 of 210 (1.0%) | current rule: 4 of 210 | 95% Wilson 0.3%–3.4% | 210 | `evals/sightbench/looks.ts` |
+| Two looks before "sure": "not sure" / accuracy when it answers | 325/420 · 92/95 | current: 283/420 · 132/137 | — | 420 | `evals/sightbench/looks.ts` |
+| Quoted reads (with two looks): matching items given any disagreeing reason | 14 of 66 (21.2%) | same pairs, current reads: 29 of 66 | 95% Wilson 13.1%–32.5% | 66 | `evals/sightbench/looks.ts` |
+| Quoted reads (with two looks): mismatches flagged / false alarms **(negative result)** | 18/64 · 0/66 | same pairs, current reads: 22/64 · 1/66 | — | 130 | `evals/sightbench/looks.ts` |
+| After one SIMULATED retake: mismatches flagged / false alarms | 33/64 · 0/66 | before it, same pairs: 18/64 · 0/66 | 95% Wilson 39.6%–63.4% | 130 | `evals/sightbench/looks.ts` |
+| After one SIMULATED retake: "not sure" / accuracy when it answers | 80/130 · 49/50 | before it, same pairs: 106/130 · 23/24 | — | 130 | `evals/sightbench/looks.ts` |
+| Colour mismatches caught: current / two looks / quoted / after one SIMULATED retake **(negative result)** | 2/53 · 0/53 · 0/15 · 1/15 | — | — | 53 | `evals/sightbench/looks.ts` |
+| Anthropic API spend on new reads for these results (dev and test) | 11.46 USD, 550 calls | cap: 11.5 USD | — | — | `evals/sightbench/looks.ts` |
+
+Notes:
+
+- Two looks before "sure": mismatches flagged on the frozen test split: Synthetic renders, not real photos. The same saved module outputs as the current numbers, fused with the two-looks rule (no new model call). A "sure" disagreement from one module on one photo becomes "not sure" with one extra photo asked for. Per type, current -> two looks: colour 2 -> 0 of 53, size 44 -> 44 of 53, model 43 -> 23 of 52, damage 32 -> 14 of 52.
+- Two looks before "sure": matching items wrongly called a mismatch: Synthetic renders, not real photos. Same pairs and module outputs as the current numbers.
+- Two looks before "sure": "not sure" / accuracy when it answers: Synthetic renders, not real photos. Accuracy when it answers 96.8% (95% Wilson 91.1%–98.9%), current 96.4%. Extra photo asked for on the "not sure" pairs: light 304, paper 15, none 3, tag 3.
+- Quoted reads (with two looks): matching items given any disagreeing reason: Synthetic renders, not real photos. Stratified test subset of 130 pairs (66 matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made; 10 sampled pairs were not run (budget). Disagreeing modules on matching pairs, current reads -> quoted reads: damage 25 -> 9, identity 1 -> 0, colour 7 -> 7, size 0 -> 0. Reads that counted as "not sure" for want of a citation: identity 0, damage 40 (on matching pairs 0 and 20).
+- Quoted reads (with two looks): mismatches flagged / false alarms: Synthetic renders, not real photos. Stratified test subset of 130 pairs (66 matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made; 10 sampled pairs were not run (budget). Both columns use the two-looks rule; the current rule on the same pairs: 33/64 · 1/66. Per type (quoted): colour 0 of 15, size 11 of 15, model 5 of 18, damage 2 of 16.
+- After one SIMULATED retake: mismatches flagged / false alarms: SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took. Synthetic renders, not real photos. Stratified test subset of 130 pairs (66 matching; mismatches spread over type and light), chosen in a fixed hash order before any read was made; 10 sampled pairs were not run (budget). Quoted reads and two looks, then one extra photo for every "not sure" pair that asked for one. Current numbers on the same pairs: 33/64 · 1/66. Per type after the retake: colour 1 of 15, size 11 of 15, model 13 of 18, damage 8 of 16.
+- After one SIMULATED retake: "not sure" / accuracy when it answers: SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took. Synthetic renders, not real photos. Extra photos asked for: light 98, tag 3, paper 5. Answers that changed: match: unsure -> match 11; mismatch: unsure -> mismatch 15. Current numbers on the same pairs: 91/130 · 37/39.
+- Colour mismatches caught: current / two looks / quoted / after one SIMULATED retake: Synthetic renders, not real photos. The first two are on the whole test split, the last two on the 130-pair subset. SIMULATED retake: the extra photo is a render of the same item, not a photo a buyer took for the last. A sure colour mismatch needs the colour seen as wrong on two photos (or a second module agreeing); a first photo the colour check gave up on (dim light, tinted light, wood) plus one better photo is still one look. Colour also asks for a photo in better light rather than white paper when the light was dim or tinted (decided on dev, see README).
+- Anthropic API spend on new reads for these results (dev and test): claude-opus-5-5, effort low, prompt version quote-or-unsure-1, from the API's token counts at list price (claude-opus-5-5 4/20 USD per million input/output tokens). Size-tag reads were reused from the saved run where the tag photo was the same.
+
+Limitations:
+
+- Synthetic renders, not real photos. Real photos will differ; the real photo set (evals/sightbench/real/SHOTLIST.md) is not collected yet.
+- Retakes are SIMULATED. SightBench has one photo of each delivered item, so each extra photo is rendered by evals/sightbench/py/sightbench/retake.py from the pair's own seed (the same item and damage, checked byte for byte against the pair's photo): "light" is a new day-light photo, "paper" a new photo under the pair's own light with an A4 sheet of white paper beside the item, "tag" the pair's own tag under its own light, closer and flatter. No number here says how real buyers' retakes would go.
+- The two-looks rows use all 420 test pairs and the module outputs saved by the last with-model test run; re-fusing them with the old rule reproduced every saved verdict (420 of 420).
+- Quoted reads and retakes need new model calls, capped at about 12 USD, so they cover a stratified subset of 130 test pairs, not all 420. Intervals on the subset are wide. Cells: match / day 22, match / dim 21, match / lamp 23, mismatch colour / day 5, mismatch colour / dim 4, mismatch colour / lamp 6, mismatch damage / day 6, mismatch damage / dim 4, mismatch damage / lamp 6, mismatch model / day 6, mismatch model / dim 6, mismatch model / lamp 6, mismatch size / day 6, mismatch size / dim 4, mismatch size / lamp 5.
+- Nothing was fitted on test. The citation rules (which words name a region, which descriptions are hedges) and the retake choice were written and checked on the dev split only; the two-looks rule has no threshold.
+- The test split has now been scored with the two-looks rule once, with quoted reads once and with a simulated retake once, in one run (details.run).
+- The test run stopped early: budget: spent 11.46 of 11.50 USD at pair sb0580.
+
+Full per-item data: `evals/results/sightbench-looks.json` (`details`).
 
 ## SightBench: does the parcel match?
 

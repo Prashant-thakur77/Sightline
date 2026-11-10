@@ -130,6 +130,19 @@ export interface Verdict {
   headline: string;
   /** Spoken guidance when unsure, e.g. try daylight or ask a helper. */
   nextSteps: string[];
+  /** When unsure: the ONE extra photo that would help most, chosen from why it was unsure. */
+  retake?: VerdictRetake | null;
+  /** Photos of the item behind this verdict: 1, or 2 after the extra photo. */
+  looks?: number;
+}
+
+/** The extra photo a "not sure" check asks for: a close size tag, better light, or white paper beside the item. */
+export interface VerdictRetake {
+  kind: 'tag' | 'light' | 'paper';
+  /** Short name of the photo, e.g. "A close photo of the size tag". */
+  title: string;
+  /** What to do, spoken as is. */
+  prompt: string;
 }
 
 export interface Preferences {
