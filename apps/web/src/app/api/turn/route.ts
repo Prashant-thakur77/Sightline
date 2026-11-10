@@ -7,7 +7,9 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const Req = z.union([
-  z.object({ text: z.string().min(1).max(500), source: z.enum(['voice', 'keyboard']) }),
+  // capture: how spoken words were taken. 'held' only while the buyer held Talk down; anything
+  // else (or nothing) is treated as not pressed: on its own it can never confirm a purchase.
+  z.object({ text: z.string().min(1).max(500), source: z.enum(['voice', 'keyboard']), capture: z.enum(['held', 'open']).optional() }),
   z.object({ action: z.enum(['choose', 'details', 'buy']), index: z.number().int().min(1).max(3) }),
   z.object({ action: z.enum(['confirm-button', 'hold']), readbackId: z.string().min(1) }),
   z.object({ action: z.literal('paypal-approved'), readbackId: z.string().min(1), paypalOrderId: z.string().min(1) }),

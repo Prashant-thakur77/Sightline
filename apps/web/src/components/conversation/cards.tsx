@@ -204,7 +204,7 @@ export function CardView({
               </button>
             </div>
             {card.paypalConnected ? (
-              <p className="receipt-note">Paying with {card.payWith}. To change something, say what to change.</p>
+              <p className="receipt-note">Paying with {card.payWith}. To pay by voice, hold Talk while you say ‘confirm purchase’. To change something, say what to change.</p>
             ) : (
               // Also the Confirm button's description, so it is heard before the first press.
               <p id="paypal-off" className="receipt-note receipt-warn">

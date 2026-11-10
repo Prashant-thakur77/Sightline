@@ -35,6 +35,12 @@ export interface PaymentIntent {
   paymentSource: PaymentSourceKind;
   intent: 'CAPTURE' | 'AUTHORIZE';
   now: Date;
+  /**
+   * The buyer's own utterances in this conversation, oldest first, as recorded by the server
+   * (typed or spoken by the buyer; never model text). IntentGuard parses them with the grammar to
+   * learn the colour, size and material asked for. Missing means nothing to compare.
+   */
+  buyerUtterances?: Array<{ text: string; at?: string }>;
 }
 
 export interface SpendLimits {
@@ -132,6 +138,7 @@ export type GateCode =
   | 'READBACK_TAMPERED'
   | 'CART_TAMPERED'
   | 'READBACK_CART_MISMATCH'
+  | 'INTENT_MISMATCH'
   | 'USER_MISMATCH'
   | 'NOT_CONFIRMED'
   | 'SINGLE_KEY_CONFIRMATION'

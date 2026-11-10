@@ -11,6 +11,14 @@
  * Key 2 (the model classifier) needs ANTHROPIC_API_KEY and is not run here. The full two-key
  * state machine (decideConfirmation) is run with key 2 stubbed to always agree, which is the
  * worst case for false confirms, to show the wiring adds no confirmations of its own.
+ *
+ * Press rule: a spoken confirmation only counts while the buyer holds Talk, or after Confirm was
+ * pressed for the readback. Background speech (a TV, a radio) is modelled as arriving with no
+ * press; misrecognitions of the buyer's own words are modelled as held, since the buyer was
+ * talking to us. Both go through the real state machine with key 2 stubbed to always agree.
+ *
+ * "Before" numbers come from evals/confirmation/before.json: the values this script wrote before
+ * the press rule and the widened phrases, with the run time and git commit they came from.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -34,6 +42,19 @@ const heldoutPath = 'evals/confirmation/heldout.json';
 const dev = JSON.parse(readFileSync(path.join(REPO_ROOT, devPath), 'utf8')) as Row[];
 const heldoutFile = JSON.parse(readFileSync(path.join(REPO_ROOT, heldoutPath), 'utf8')) as { protocol: string[]; rows: Row[] };
 const heldout = heldoutFile.rows;
+const beforePath = 'evals/confirmation/before.json';
+const before = JSON.parse(readFileSync(path.join(REPO_ROOT, beforePath), 'utf8')) as {
+  ranAt: string;
+  gitSha: string;
+  heldoutFalseReject: string;
+  devFalseReject: string;
+  transcriptIdentical: string;
+};
+const beforeAt = 'before';
+const beforeFrom = `"Before" is from the run of ${before.ranAt} at git ${before.gitSha} (${beforePath}).`;
+
+/** Categories that are speech from a TV, radio or someone else in the room, not the buyer talking to us. */
+const BACKGROUND = new Set(['background_tv', 'background_tv_exact']);
 
 const key1 = (u: string) => matchConfirmationPhrase(u, { phase: 'readback' });
 /** Baseline: confirms if the text contains "yes", "confirm" or "buy". */
@@ -110,7 +131,7 @@ function evaluate(rows: Row[]) {
   };
 }
 
-/** Run the real state machine over every utterance with key 2 stubbed. */
+/** Run the real state machine over every utterance with key 2 stubbed, every utterance arriving held (the worst case). */
 async function twoKeyWiring(rows: Row[], label: 'confirm' | 'not_confirm') {
   const stub: ConfirmationClassifier = { classify: async () => ({ label, rationale: `stub: always ${label}` }) };
   const readback = { text: 'Stub readback for the wiring check.', textHash: 'stub-readback', total: usd(3672) };
@@ -119,7 +140,7 @@ async function twoKeyWiring(rows: Row[], label: 'confirm' | 'not_confirm') {
   let notMeantN = 0;
   let meantN = 0;
   for (const [i, r] of rows.entries()) {
-    const d = await decideConfirmation({ phrase: r.utterance, classifier: stub, buttonPressed: false, readback, now: 1_700_000_000_000 + i });
+    const d = await decideConfirmation({ phrase: r.utterance, classifier: stub, buttonPressed: false, capture: 'held', readback, now: 1_700_000_000_000 + i });
     const confirmed = d.outcome === 'confirmed';
     if (r.intent === 'confirm') {
       meantN++;
@@ -130,6 +151,39 @@ async function twoKeyWiring(rows: Row[], label: 'confirm' | 'not_confirm') {
     }
   }
   return { key2Stub: label, falseConfirms: ofN(confirmedNotMeant, notMeantN), intendedConfirmed: ofN(confirmedMeant, meantN) };
+}
+
+/**
+ * The press rule over the real state machine, key 2 stubbed to always agree (the worst case).
+ * Background speech arrives with no press; the buyer's own misheard words arrive held.
+ */
+async function pressRule(rows: Row[]) {
+  const stub: ConfirmationClassifier = { classify: async () => ({ label: 'confirm', rationale: 'stub: always confirm' }) };
+  const readback = { text: 'Stub readback for the press check.', textHash: 'stub-readback', total: usd(3672) };
+  const run = async (r: Row, capture: 'open' | 'held', i: number) =>
+    (await decideConfirmation({ phrase: r.utterance, classifier: stub, buttonPressed: false, capture, readback, now: 1_700_000_000_000 + i })).outcome;
+  const background = rows.filter((r) => BACKGROUND.has(r.category));
+  const misheard = rows.filter((r) => r.transcriptMeaning === 'confirm' && !BACKGROUND.has(r.category));
+  const bgOut = await Promise.all(background.map((r, i) => run(r, 'open', i)));
+  const misOut = await Promise.all(misheard.map((r, i) => run(r, 'held', i)));
+  const exactBg = background.filter((r) => r.transcriptMeaning === 'confirm');
+  return {
+    background: {
+      n: background.length,
+      confirmed: bgOut.filter((o) => o === 'confirmed').length,
+      key1TextAloneConfirms: background.filter((r) => key1(r.utterance).decision === 'confirm').length,
+      exactPhrase: {
+        n: exactBg.length,
+        confirmed: exactBg.filter((r) => bgOut[background.indexOf(r)] === 'confirmed').length,
+        toldHowToConfirm: exactBg.filter((r) => bgOut[background.indexOf(r)] === 'needs_press').length,
+      },
+    },
+    misheardHeld: {
+      n: misheard.length,
+      confirmed: misOut.filter((o) => o === 'confirmed').length,
+      rows: misheard.map((r, i) => ({ utterance: r.utterance, note: r.note ?? '', outcome: misOut[i] })),
+    },
+  };
 }
 
 async function main() {
@@ -146,6 +200,12 @@ async function main() {
   const dfc = devR.key1.falseConfirm;
   const ti = hoR.transcriptIdentical!;
   const allFc = both.key1.falseConfirm;
+  const press = { heldout: await pressRule(heldout), dev: await pressRule(dev) };
+  const hp = press.heldout;
+  const tiAfter = hp.background.exactPhrase.confirmed + hp.misheardHeld.confirmed;
+  const dfr = devR.key1.falseReject;
+  const bgN = hp.background.n + press.dev.background.n;
+  const bgConfirmed = hp.background.confirmed + press.dev.background.confirmed;
 
   const headlines: Headline[] = [
     {
@@ -172,23 +232,33 @@ async function main() {
       id: 'heldout-false-reject',
       label: 'Intended confirmations the matcher rejects, held-out utterances',
       value: `${ofN(fr.k, fr.n)} (${fr.rate})`,
-      baseline: `naive keyword match: ${ofN(hoR.naive.falseReject.k, hoR.naive.falseReject.n)}`,
+      baseline: `${beforeAt}: ${before.heldoutFalseReject}; naive: ${ofN(hoR.naive.falseReject.k, hoR.naive.falseReject.n)}`,
       interval: wilsonText(fr.k, fr.n),
       n: fr.n,
       script: SCRIPT,
       negative: true,
-      note: `Strict by design; each reject is answered with how to confirm. Plain English confirmations rejected: ${hoR.falseRejectsByCategory.clear_confirm}; other languages: ${hoR.falseRejectsByCategory.other_language}; misheard words: ${hoR.falseRejectsByCategory.asr_error}.`,
+      note: `${beforeFrom} Target was under 10%; not reached. Phrases were widened only from the development fixture's rejected cases (development rejects ${before.devFalseReject} before, ${ofN(dfr.k, dfr.n)} now). Plain English confirmations rejected: ${hoR.falseRejectsByCategory.clear_confirm}; polite requests: ${hoR.falseRejectsByCategory.polite}; other languages: ${hoR.falseRejectsByCategory.other_language}; misheard words: ${hoR.falseRejectsByCategory.asr_error}. The development fixture has no misheard words, so nothing was added for them. Each reject is answered with how to confirm.`,
     },
     {
       id: 'transcript-identical',
-      label: 'Background speech or misrecognition that yields an exact allowed phrase',
-      value: `${ofN(ti.key1.k, ti.key1.n)} confirmed by key 1`,
-      baseline: `naive keyword match: ${ofN(ti.naive.k, ti.naive.n)}`,
-      interval: wilsonText(ti.key1.k, ti.key1.n),
+      label: 'Background speech or misrecognition that yields an exact allowed phrase, with the press rule',
+      value: `${ofN(tiAfter, ti.key1.n)} confirmed`,
+      baseline: `${beforeAt}: ${before.transcriptIdentical.replace(/ confirmed.*$/, '')} (text alone); naive: ${ofN(ti.naive.k, ti.naive.n)}`,
+      interval: wilsonText(tiAfter, ti.key1.n),
       n: ti.key1.n,
       script: SCRIPT,
-      negative: true,
-      note: 'A text check cannot tell "confirm purchase" from a TV or a dropped "don\'t". Push-to-talk limits this; the classifier sees the same text.',
+      negative: tiAfter > 0,
+      note: `${beforeFrom} Background speech arrives with no press: ${ofN(hp.background.exactPhrase.confirmed, hp.background.exactPhrase.n)} confirmed, ${ofN(hp.background.exactPhrase.toldHowToConfirm, hp.background.exactPhrase.n)} told how to confirm. Misrecognitions of the buyer's own words, spoken while holding Talk: ${ofN(hp.misheardHeld.confirmed, hp.misheardHeld.n)} confirmed. The press rule cannot catch those, and key 2 sees the same text.`,
+    },
+    {
+      id: 'background-no-press',
+      label: 'All background speech arriving with no press, two-key state machine with key 2 always agreeing',
+      value: `${ofN(bgConfirmed, bgN)} confirmed`,
+      baseline: `key 1 text alone: ${ofN(hp.background.key1TextAloneConfirms + press.dev.background.key1TextAloneConfirms, bgN)}`,
+      interval: wilsonText(bgConfirmed, bgN),
+      n: bgN,
+      script: SCRIPT,
+      note: `Held-out ${ofN(hp.background.confirmed, hp.background.n)}, development ${ofN(press.dev.background.confirmed, press.dev.background.n)}. The press is what the client reports and the server enforces; a TV speaking while the buyer holds Talk is not covered.`,
     },
     {
       id: 'combined-false-confirm',
@@ -204,7 +274,11 @@ async function main() {
   const plainRejected = fr.items.filter((i) => i.category === 'clear_confirm');
   const plainMeant = heldout.filter((r) => r.category === 'clear_confirm' && r.intent === 'confirm').length;
   const limitations = [
-    `Plain-English intended confirmations rejected on the held-out set (${ofN(plainRejected.length, plainMeant)}): ${plainRejected.map((i) => `"${i.utterance}" (${i.reason})`).join(', ')}. Each gets the reply telling the buyer to say "confirm purchase"; widening the phrase list would have to keep the false-confirm count at zero.`,
+    'Other languages: only phrases from the development fixture were added, and only next to a confirmation phrase ("haan, confirm", "sí, compra", "confirmar compra"). A bare foreign yes ("sí", "haan", "oui") stays rejected, as a bare English "yes" does, and non-Latin scripts stay rejected.',
+    'The press rule trusts the client to report whether Talk was held. The server treats a missing report as not pressed; a modified client could still claim a press.',
+    plainRejected.length === 0
+      ? `Plain-English intended confirmations rejected on the held-out set: ${ofN(0, plainMeant)}. The rejects left are polite forms not in the development fixture, other languages and misheard words.`
+      : `Plain-English intended confirmations rejected on the held-out set (${ofN(plainRejected.length, plainMeant)}): ${plainRejected.map((i) => `"${i.utterance}" (${i.reason})`).join(', ')}. Each gets the reply telling the buyer to say "confirm purchase"; widening the phrase list would have to keep the false-confirm count at zero.`,
     'Key 2 (the model classifier) not run: needs ANTHROPIC_API_KEY. Every number is for key 1 alone. A spoken confirmation needs both keys, so the two-key false-confirm rate cannot be higher than key 1\'s; the state machine was also run with key 2 stubbed to always agree and produced the same false confirms as key 1 alone.',
     'Held-out utterances were written by an author who had read the matcher source and the development fixture. They were held out from tuning, not written blind by a third party.',
     'Text transcripts only. No audio and no real speech recogniser: the misrecognitions are hand-written imitations.',
@@ -217,13 +291,16 @@ async function main() {
     limitations,
     details: {
       design: {
+        pressRule: 'A spoken phrase is key 1 only when captured while Talk was held, typed, or said after Confirm was pressed for this readback. The client sends capture; the server treats a missing value as not pressed.',
         keys: 'Key 1: deterministic phrase matcher (matchConfirmationPhrase) or the Confirm button. Key 2: a model classifier that must also label the same utterance "confirm". Button-only path: two deliberate presses at least 500 ms apart.',
         stateMachine: 'decideConfirmation in packages/agent/src/confirm.ts; hold, cancel and change always win; questions, conditionals, reported speech, hesitation and other languages veto even a button press.',
         key2Status: 'not run: needs ANTHROPIC_API_KEY',
       },
       baseline: 'naive: lower-cased text contains "yes", "confirm" or "buy" (substring).',
       scoring: heldoutFile.protocol,
-      sources: { dev: devPath, heldout: heldoutPath },
+      sources: { dev: devPath, heldout: heldoutPath, before: beforePath },
+      before,
+      pressRule: press,
       heldout: hoR,
       dev: devR,
       combined: { falseConfirm: both.key1.falseConfirm, naiveFalseConfirm: both.naive.falseConfirm },
@@ -231,7 +308,7 @@ async function main() {
     },
   });
 
-  console.log(`confirmation: held-out false confirm ${ofN(fc.k, fc.n)}, false reject ${ofN(fr.k, fr.n)}, transcript-identical ${ofN(ti.key1.k, ti.key1.n)}; dev false confirm ${ofN(dfc.k, dfc.n)}`);
+  console.log(`confirmation: held-out false confirm ${ofN(fc.k, fc.n)}, false reject ${ofN(fr.k, fr.n)}, transcript-identical with press rule ${ofN(tiAfter, ti.key1.n)}, background no press ${ofN(bgConfirmed, bgN)}; dev false confirm ${ofN(dfc.k, dfc.n)}`);
 }
 
 await main();

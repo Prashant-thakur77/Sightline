@@ -168,6 +168,8 @@ export const en = {
     change: 'Okay, nothing is paid. Tell me what to change.',
     notSure: "I want to be sure before I pay. To pay, say 'confirm purchase'. To stop, say 'cancel'.",
     needPhrase: "To pay, say 'confirm purchase', or press the Confirm button. Nothing is paid yet.",
+    /** A confirmation phrase heard with no press: Talk was not held and Confirm was not pressed. */
+    needPress: "Nothing is paid yet. To pay by voice, hold the Talk button while you say 'confirm purchase'. Or press Confirm.",
     classifierDown: (total: Money): string =>
       `My second check isn't available right now, so saying it again won't pay. To pay ${mFull(total)}, press Confirm twice. Nothing is paid until then.`,
     otherLanguage: "For now I can only take payment confirmations in English. Say 'confirm purchase' to pay, or 'cancel' to stop.",

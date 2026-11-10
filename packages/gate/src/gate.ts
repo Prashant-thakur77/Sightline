@@ -11,6 +11,7 @@ import { CatalogPriceGuard } from './guards/catalogPrice';
 import { DuplicateGuard } from './guards/duplicate';
 import { EnvGuard } from './guards/env';
 import { FreshnessGuard } from './guards/freshness';
+import { IntentGuard } from './guards/intent';
 import { PayeeGuard } from './guards/payee';
 import { RateLimitGuard } from './guards/rateLimit';
 import { ReadbackBindingGuard } from './guards/readbackBinding';
@@ -39,6 +40,7 @@ export const AUTHORIZE_RESERVATION_TTL_MS = 29 * DAY;
 export const GUARD_ORDER = [
   'EnvGuard',
   'ReadbackBindingGuard',
+  'IntentGuard',
   'CatalogPriceGuard',
   'PayeeGuard',
   'BudgetGuard',
@@ -52,6 +54,7 @@ export function createGuards(): Guard[] {
   return [
     new EnvGuard(),
     new ReadbackBindingGuard(),
+    new IntentGuard(),
     new CatalogPriceGuard(),
     new PayeeGuard(),
     new BudgetGuard(),

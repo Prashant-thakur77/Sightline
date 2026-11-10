@@ -22,6 +22,18 @@ function minutes(ms: unknown, fallback: number): number {
   return typeof ms === 'number' && Number.isFinite(ms) && ms > 0 ? Math.round(ms / MINUTE) : fallback;
 }
 
+/** Values come from the buyer's parsed words and the listing snapshot, never from model text. */
+function intentMismatch(details: Record<string, unknown>): string {
+  const first = Array.isArray(details.conflicts) ? (details.conflicts[0] as Record<string, unknown> | undefined) : undefined;
+  const attribute = first?.attribute;
+  const asked = typeof first?.asked === 'string' ? first.asked : null;
+  const cart = typeof first?.cart === 'string' ? first.cart.toLowerCase() : null;
+  if (!asked || !cart) return "This isn't quite what you asked for, so I didn't buy it. Your cart is saved. Tell me what to change.";
+  const [a, c] = attribute === 'size' ? [`size ${asked}`, `size ${cart.toUpperCase()}`] : [asked, cart];
+  const fine = attribute === 'size' ? `size ${cart.toUpperCase()}` : cart;
+  return `You asked for ${a}, but this one is ${c}, so I didn't buy it. Your cart is saved. If ${fine} is fine, say '${fine} is fine'. Or ask me for ${a}.`;
+}
+
 const FALLBACK = "I couldn't complete the payment, so I didn't charge you. Your cart is saved.";
 
 export function refusalSentence(code: GateCode | string, details: Record<string, unknown> = {}): string {
@@ -43,6 +55,8 @@ export function refusalSentence(code: GateCode | string, details: Record<string,
       return "Something in your order didn't check out, so I didn't charge you. I'll read it to you again.";
     case 'READBACK_CART_MISMATCH':
       return "Your cart changed after I read it to you, so I didn't charge you. I'll read the new cart.";
+    case 'INTENT_MISMATCH':
+      return intentMismatch(details);
     case 'USER_MISMATCH':
       return "That cart isn't linked to this account, so I didn't charge you. Your own cart is unchanged.";
     case 'NOT_CONFIRMED':

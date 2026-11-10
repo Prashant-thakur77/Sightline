@@ -1,0 +1,6 @@
+{
+  "source": "evals/results/redteam.json as written by evals/redteam/run.ts before the intent guard",
+  "ranAt": "2026-11-09T13:26:39.708Z",
+  "gitSha": "73ce251",
+  "colourGateLimit": "10 of 10"
+}

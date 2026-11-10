@@ -1,6 +1,7 @@
 export * from './readback';
 export * from './readback-answers';
 export * from './confirm';
+export * from './asked';
 export * from './grammar';
 export * from './grounding';
 export * from './ranking';

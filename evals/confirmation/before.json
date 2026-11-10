@@ -1,0 +1,9 @@
+{
+  "source": "evals/results/confirmation.json as written by evals/confirmation/run.ts before the press rule and the widened phrases",
+  "ranAt": "2026-11-09T13:26:39.274Z",
+  "gitSha": "73ce251",
+  "heldoutFalseReject": "39 of 71 (54.9%)",
+  "heldoutFalseConfirm": "0 of 140",
+  "devFalseReject": "26 of 74",
+  "transcriptIdentical": "6 of 6 confirmed by key 1"
+}

@@ -13,6 +13,7 @@
     "lint": "echo ok"
   },
   "dependencies": {
+    "@sightline/agent": "workspace:*",
     "@sightline/core": "workspace:*",
     "@sightline/evidence": "workspace:*"
   },

@@ -37,9 +37,13 @@
  * hash discards any earlier state, so a press made before a price change can never pay the new
  * total. CONFIRMED, CANCELLED and CHANGE_REQUESTED are terminal for that readback.
  *
- * Background speech is limited upstream by push-to-talk: audio is only captured while the user
- * holds Space or the Talk button. Key 1 also requires the whole utterance to be a confirmation
- * phrase, so "confirm your subscription today" or "he said confirm" never pass.
+ * Background speech: a spoken phrase only counts as key 1 when the buyer was pressing for it. The
+ * caller says how the utterance was captured (`capture`): held while the buyer held Talk down,
+ * typed and sent, or open (Talk left listening, continuous listening, or unknown). An open
+ * utterance confirms only after the Confirm control was pressed for this readback; otherwise it
+ * gets a short reply saying how to confirm, so a TV in the room can never pay. Key 1 also
+ * requires the whole utterance to be a confirmation phrase, so "confirm your subscription today"
+ * or "he said confirm" never pass.
  */
 import { PRODUCT_NAME, type Money } from '@sightline/core';
 import { z } from 'zod';
@@ -331,7 +335,24 @@ const READBACK_CORES = [
   'let us buy it',
   'i want to pay',
   'i would like to pay',
+  // Widened from rejected intended confirmations in the development fixture only.
+  'checkout',
+  'check out',
+  'get it for me',
+  'buy it for me',
+  'take my money',
 ] as const;
+
+/**
+ * Other-language words accepted as key 1, taken from the development fixture's rejected cases.
+ * An affirmative here never confirms alone (like "yes"); it only stands next to a confirmation
+ * phrase ("haan, confirm", "theek hai, buy it"). Every other word of another language still
+ * blocks, so a foreign negation, condition or question can never be skipped over. Unaccented
+ * "si" is not here: in Spanish and French it means "if".
+ */
+const OTHER_LANGUAGE_AFFIRMATIVES = ['sí', 'oui', 'ja', 'haan', 'haan ji', 'theek hai', 'sim'] as const;
+/** Bare "compra" (Spanish "buy") needs an affirmative with it, as bare "buy" needs "now". */
+const OTHER_LANGUAGE_CORES = ['confirmar compra', 'compra'] as const;
 
 const OFFER_CORES = [
   'accept',
@@ -398,9 +419,10 @@ const CORE_WORDS = ['confirm', 'confirmed', 'buy', 'pay', 'purchase', 'order', '
  * Bare "buy" and "pay" are only accepted with the word "now" ("buy now", "pay now"); "now" is
  * otherwise stripped like a filler. This keeps a stray "buy" or "pay" from counting.
  */
-function segmentsIntoCores(ws: string[], cores: readonly string[], hadNow: boolean): boolean {
-  const units = [...cores, ...AFFIRMATIVE_UNITS].map((u) => u.split(' '));
+function segmentsIntoCores(ws: string[], cores: readonly string[], hadNow: boolean, extraUnits: readonly string[] = []): boolean {
+  const units = [...cores, ...AFFIRMATIVE_UNITS, ...extraUnits].map((u) => u.split(' '));
   const coreSet = new Set(cores);
+  const affirmed = ws.some((w) => (AFFIRMATIVE_UNITS as readonly string[]).includes(w) || extraUnits.some((u) => u.split(' ')[0] === w));
   const n = ws.length;
   // reach[i] = best state at position i: 0 unreachable, 1 reachable without a core, 2 with a core
   const reach = new Array<number>(n + 1).fill(0);
@@ -415,6 +437,7 @@ function segmentsIntoCores(ws: string[], cores: readonly string[], hadNow: boole
       const phrase = u.join(' ');
       const isCore = coreSet.has(phrase);
       if (isCore && (phrase === 'buy' || phrase === 'pay') && !hadNow) continue;
+      if (isCore && phrase === 'compra' && !affirmed) continue;
       const next = isCore || reach[i] === 2 ? 2 : 1;
       reach[i + u.length] = Math.max(reach[i + u.length]!, next);
     }
@@ -480,13 +503,22 @@ export function matchConfirmationPhrase(utterance: string, opts: { phase: Confir
   const exactAffirmative = (AFFIRMATIVE_ONLY as readonly string[]).includes(ws.join(' '));
   if (exactAffirmative && !isQuestionMark) return result('none', 'affirmative_only', ws);
   const politeRequest = /^(can|could|would|will) you /.test(s.trim() + ' ');
+  // "Could you place the order please" is a request, not a question, when what follows "can you"
+  // is itself a whole confirmation phrase. A question mark keeps it a question.
+  // "Would you buy it" asks for an opinion; with "please" or "for me" it is a request.
+  const politeEnough = ws[0] !== 'would' || raw.includes('please') || has(s, 'for me');
+  if (politeRequest && politeEnough && !isQuestionMark && ws.length > 2 && matchConfirmationPhrase(ws.slice(2).join(' '), opts).decision === 'confirm')
+    return result('confirm', 'phrase', ws);
   if (isQuestionMark || QUESTION_STARTS.has(ws[0]!) || politeRequest) return result('none', 'question', ws);
   if (firstIndexOf(s, CONDITIONAL) >= 0) return result('none', 'conditional', ws);
   // "I said no" is the user's own words; "he said confirm" is not.
   const reported = REPORTED.some((r) => has(s, r) && !(SELF_REPORT.has(r) && has(s, `i ${r}`)));
   if (reported) return result('none', 'reported_speech', ws);
   if (firstIndexOf(s, NEGATION) >= 0) return result('cancel', 'negation', ws);
-  if (ws.some((w) => OTHER_LANGUAGE.has(w))) return result('none', 'other_language', ws);
+  if (ws.some((w) => OTHER_LANGUAGE.has(w))) {
+    const accepted = opts.phase === 'readback' && segmentsIntoCores(ws, [...READBACK_CORES, ...OTHER_LANGUAGE_CORES], hadNow, OTHER_LANGUAGE_AFFIRMATIVES);
+    return accepted ? result('confirm', 'phrase', ws) : result('none', 'other_language', ws);
+  }
   if (findPhrases(ws, COLOURS).length > 0 || findPhrases(ws, SIZE_WORDS).length > 0) return result('change', 'change', ws);
   if (trailingHesitation) return result('none', 'hesitation', ws);
 
@@ -530,10 +562,20 @@ export function buildClassifierPrompt(utterance: string, readbackText: string): 
 // ---------------------------------------------------------------------------------------------
 // Two-key decision
 
+/**
+ * How an utterance reached the server.
+ *   held   spoken while the buyer held the Talk control down (pointer, touch, Space or Enter)
+ *   typed  typed and sent, or a suggestion the buyer pressed
+ *   open   anything else: Talk pressed once and left listening, continuous listening, or unknown
+ */
+export type UtteranceCapture = 'held' | 'typed' | 'open';
+
 export interface KeyEvidence {
   source: 'phrase' | 'button' | 'classifier' | 'second_press';
   at: number;
   detail: string;
+  /** For a spoken or typed key: how it was captured. */
+  capture?: UtteranceCapture;
 }
 
 export interface ConfirmationEvidence {
@@ -559,6 +601,8 @@ export type ConfirmationOutcome =
   | 'not_confirmed'
   | 'unclear'
   | 'ignored'
+  /** A confirmation phrase with no active press: it never counts, and the reply says how to confirm. */
+  | 'needs_press'
   | 'closed';
 
 export interface ConfirmationDecision {
@@ -586,6 +630,11 @@ export interface DecideConfirmationInput {
   classifier: ConfirmationClassifier;
   /** The Confirm button was activated (click, tap or Shift+Enter) with this input. */
   buttonPressed: boolean;
+  /**
+   * How the utterance was captured. Missing means "open": not pressed. Only a held or typed
+   * utterance can be key 1 on its own.
+   */
+  capture?: UtteranceCapture;
   readback: { text: string; textHash: string; total: Money };
   state?: ConfirmationState;
   /** Milliseconds since epoch. */
@@ -708,10 +757,17 @@ export async function decideConfirmation(input: DecideConfirmationInput): Promis
     return { outcome: 'not_confirmed', state: open(), say: sayForNone(phraseMatch.reason), phraseMatch };
   }
 
+  const capture: UtteranceCapture = input.capture ?? 'open';
   let key1: KeyEvidence;
   if (buttonPressed) key1 = { source: 'button', at: now, detail: 'pressed while speaking' };
-  else if (phraseMatch.decision === 'confirm') key1 = { source: 'phrase', at: now, detail: phraseMatch.normalised };
-  else return { outcome: 'not_confirmed', state: prev, say: sayForNone(phraseMatch.reason), phraseMatch };
+  else if (phraseMatch.decision === 'confirm') {
+    if (capture === 'held' || capture === 'typed') key1 = { source: 'phrase', at: now, detail: phraseMatch.normalised, capture };
+    // Confirm was pressed for this readback and is waiting: the press is key 1, whatever the capture.
+    else if (prev.kind === 'awaiting_second_press')
+      key1 = { source: 'button', at: prev.firstPressAt, detail: `Confirm pressed, then said "${phraseMatch.normalised}"`, capture };
+    // No press at all: background speech, a TV, or continuous listening. Never key 1.
+    else return { outcome: 'needs_press', state: prev, say: en.confirm.needPress, phraseMatch };
+  } else return { outcome: 'not_confirmed', state: prev, say: sayForNone(phraseMatch.reason), phraseMatch };
 
   const classification = await classifyWithTimeout(input.classifier, utterance, readback.text, opts.classifierTimeoutMs);
   if ('error' in classification) {

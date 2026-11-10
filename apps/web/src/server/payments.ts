@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm';
 import { tables } from '@sightline/db';
 import { formatMoney, newId, type Cart, type Money } from '@sightline/core';
 import { runGate, type ConfirmedReadback, type GateDecision } from '@sightline/gate';
@@ -59,6 +59,27 @@ async function loadReadback(readbackId: string, userId: string) {
 async function latestReceiptId(requestId: string): Promise<string | undefined> {
   const rows = await db().select({ id: tables.receipts.id, createdAt: tables.receipts.createdAt }).from(tables.receipts).where(eq(tables.receipts.subjectId, requestId));
   return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.id;
+}
+
+/**
+ * The buyer's own words in their current conversation, oldest first: only messages the server
+ * recorded from the buyer (role "user"), never the agent's or a model's text. The gate's
+ * IntentGuard reads the colour, size and material asked for from them.
+ */
+async function buyerUtterances(userId: string): Promise<{ text: string; at: string }[]> {
+  const [convo] = await db()
+    .select({ id: tables.conversations.id })
+    .from(tables.conversations)
+    .where(eq(tables.conversations.userId, userId))
+    .orderBy(desc(tables.conversations.updatedAt))
+    .limit(1);
+  if (!convo) return [];
+  const rows = await db()
+    .select({ text: tables.messages.text, createdAt: tables.messages.createdAt })
+    .from(tables.messages)
+    .where(and(eq(tables.messages.conversationId, convo.id), eq(tables.messages.role, 'user')))
+    .orderBy(asc(tables.messages.createdAt));
+  return rows.map((r) => ({ text: r.text, at: r.createdAt }));
 }
 
 async function vaultIdFor(userId: string): Promise<string | null> {
@@ -148,6 +169,7 @@ export async function payForReadback(input: { userId: string; readbackId: string
       paymentSource: vaultId ? 'vault' : 'paypal-popup',
       intent,
       now: new Date(),
+      buyerUtterances: await buyerUtterances(input.userId),
     },
     gatePorts(),
     { env: { PAYPAL_ENV: ENV.PAYPAL_ENV, PAYPAL_API_BASE: ENV.PAYPAL_API_BASE }, signingKey: signingSecret() },

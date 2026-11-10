@@ -38,11 +38,11 @@ describe('confirmation fixture (key 1)', () => {
   it('reports the false-reject rate (strict by design)', () => {
     const meant = rows.filter((r) => r.intent === 'confirm');
     const rejected = meant.filter((r) => matchConfirmationPhrase(r.utterance, { phase: 'readback' }).decision !== 'confirm');
-    // Every reject is an affirmative without a purchase verb, a polite question, or another language;
-    // each is answered with "To pay, say 'confirm purchase'".
-    expect(new Set(rejected.map((r) => r.category))).toEqual(new Set(['affirmative_only', 'indirect_confirm', 'polite_question', 'other_language']));
+    // Every reject is an affirmative with no purchase phrase, in English or another language; each
+    // is answered with "To pay, say 'confirm purchase'".
+    expect(new Set(rejected.map((r) => r.category))).toEqual(new Set(['affirmative_only', 'other_language']));
     expect(meant.length).toBe(74);
-    expect(rejected.length).toBe(26);
+    expect(rejected.length).toBe(17);
   });
 });
 
@@ -114,7 +114,7 @@ function classifier(label: ClassifierResult['label'] | 'throw' | 'hang' | 'garba
 describe('decideConfirmation: voice', () => {
   it('confirms when the phrase and the classifier agree', async () => {
     const c = classifier('confirm');
-    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: c, buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: c, buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('confirmed');
     expect(d.state.kind).toBe('confirmed');
     expect(d.evidence?.key1.source).toBe('phrase');
@@ -124,21 +124,21 @@ describe('decideConfirmation: voice', () => {
   });
 
   it('does not confirm when the classifier disagrees', async () => {
-    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('not_confirm'), buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('not_confirm'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('not_confirmed');
     expect(d.state.kind).toBe('open');
     expect(d.say).toBe("I want to be sure before I pay. To pay, say 'confirm purchase'. To stop, say 'cancel'.");
   });
 
   it('treats an unclear classifier as not confirmed', async () => {
-    const d = await decideConfirmation({ phrase: 'confirm', classifier: classifier('unclear'), buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'confirm', classifier: classifier('unclear'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('unclear');
     expect(d.state.kind).toBe('open');
   });
 
   it('never asks the model when key 1 fails', async () => {
     const c = classifier('confirm');
-    const d = await decideConfirmation({ phrase: 'yes', classifier: c, buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'yes', classifier: c, buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('not_confirmed');
     expect(c.calls).toEqual([]);
     expect(d.say).toContain("say 'confirm purchase'");
@@ -147,13 +147,13 @@ describe('decideConfirmation: voice', () => {
   it('a model that always says confirm cannot pay for background speech', async () => {
     const c = classifier('confirm');
     for (const u of ['confirm your subscription today', 'he said confirm', 'should I confirm?', 'confirm if it is cheaper']) {
-      const d = await decideConfirmation({ phrase: u, classifier: c, buttonPressed: false, readback: READBACK, now: T0 });
+      const d = await decideConfirmation({ phrase: u, classifier: c, buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
       expect(d.outcome).not.toBe('confirmed');
     }
   });
 
   it('falls back with a clear message when the classifier throws', async () => {
-    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('throw'), buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('throw'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('unclear');
     expect(d.say).toBe("My second check isn't available right now, so saying it again won't pay. To pay $36.72, press Confirm twice. Nothing is paid until then.");
     expect(d.classification).toEqual({ error: 'model unavailable' });
@@ -164,6 +164,7 @@ describe('decideConfirmation: voice', () => {
       phrase: 'confirm purchase',
       classifier: classifier('hang'),
       buttonPressed: false,
+      capture: 'held',
       readback: READBACK,
       now: T0,
       options: { classifierTimeoutMs: 20 },
@@ -173,13 +174,13 @@ describe('decideConfirmation: voice', () => {
   });
 
   it('rejects malformed classifier output', async () => {
-    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('garbage'), buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('garbage'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('unclear');
     expect(d.classification).toEqual({ error: 'invalid_output' });
   });
 
   it('hold keeps the readback open with no time limit', async () => {
-    const d = await decideConfirmation({ phrase: 'hold on', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'hold on', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('hold');
     expect(d.state).toEqual({ kind: 'open', readbackHash: 'rb-hash-1', held: true });
     expect(d.say).toBe("Okay, I'll wait. Nothing is paid. Say 'confirm purchase' when you're ready, or 'cancel' to stop.");
@@ -187,6 +188,7 @@ describe('decideConfirmation: voice', () => {
       phrase: 'confirm purchase',
       classifier: classifier('confirm'),
       buttonPressed: false,
+      capture: 'held',
       readback: READBACK,
       state: d.state,
       now: T0 + 6 * 60 * 60 * 1000,
@@ -196,30 +198,30 @@ describe('decideConfirmation: voice', () => {
   });
 
   it('cancel and change close the readback', async () => {
-    const cancel = await decideConfirmation({ phrase: 'cancel', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, now: T0 });
+    const cancel = await decideConfirmation({ phrase: 'cancel', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(cancel.state.kind).toBe('cancelled');
     expect(cancel.say).toBe("Okay, I won't pay. Your cart is still here. Say 'buy it' when you're ready.");
-    const change = await decideConfirmation({ phrase: 'change the size to large', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, now: T0 });
+    const change = await decideConfirmation({ phrase: 'change the size to large', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(change.state).toMatchObject({ kind: 'change_requested', utterance: 'change the size to large' });
-    const after = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, state: cancel.state, now: T0 });
+    const after = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, state: cancel.state, now: T0 });
     expect(after.outcome).toBe('closed');
   });
 
   it('a confirmed readback cannot be confirmed twice', async () => {
-    const first = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, now: T0 });
-    const again = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, state: first.state, now: T0 + 10 });
+    const first = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
+    const again = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, state: first.state, now: T0 + 10 });
     expect(again.outcome).toBe('closed');
     expect(again.say).toBe('That purchase is already confirmed.');
   });
 
   it('says what to do in other languages without blaming', async () => {
-    const d = await decideConfirmation({ phrase: 'sí', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, now: T0 });
+    const d = await decideConfirmation({ phrase: 'sí', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0 });
     expect(d.outcome).toBe('not_confirmed');
     expect(d.say).toContain("Say 'confirm purchase' to pay");
   });
 
   it('accepting an offer uses the offer phrases', async () => {
-    const d = await decideConfirmation({ phrase: 'accept the offer', classifier: classifier('confirm'), buttonPressed: false, readback: READBACK, now: T0, phase: 'offer' });
+    const d = await decideConfirmation({ phrase: 'accept the offer', classifier: classifier('confirm'), buttonPressed: false, capture: 'held', readback: READBACK, now: T0, phase: 'offer' });
     expect(d.outcome).toBe('confirmed');
     expect(d.say).toBe('Accepted. I am telling PayPal now.');
   });
@@ -340,5 +342,99 @@ describe('explicit confirmations with polite words', () => {
   );
   it.each(['thank you', "that's right", 'sounds good', "that's correct, thanks", 'thanks, but wait'])('%s alone does not confirm', (u) => {
     expect(matchConfirmationPhrase(u).decision).not.toBe('confirm');
+  });
+});
+
+describe('phrases widened from the development fixture', () => {
+  it.each([
+    'checkout',
+    'check out',
+    'get it for me',
+    'take my money',
+    'can you confirm the purchase',
+    'could you buy it for me',
+    'would you place the order please',
+    'confirmar compra',
+    'sí, compra',
+    'haan, confirm',
+    'theek hai, buy it',
+  ])('%j confirms', (u) => {
+    expect(matchConfirmationPhrase(u).decision).toBe('confirm');
+  });
+
+  it.each([
+    ['can you confirm the purchase?', 'question'],
+    ['could you tell me the total', 'question'],
+    ['can you confirm if it ships today', 'question'],
+    ['would you buy it', 'question'],
+    ['sí', 'other_language'],
+    ['haan ji', 'other_language'],
+    ['ja, bitte', 'other_language'],
+    ['compra', 'other_language'],
+    ['si compra', 'other_language'],
+    ['nahi, confirm', 'other_language'],
+    ['haan, confirm karo', 'other_language'],
+    ['oui, confirm purchase', 'phrase'],
+  ])('%j -> %s', (u, r) => {
+    expect(matchConfirmationPhrase(u).reason).toBe(r);
+  });
+
+  it('other-language phrases are not accepted for offers', () => {
+    expect(matchConfirmationPhrase('sí, compra', { phase: 'offer' }).decision).toBe('none');
+  });
+});
+
+describe('decideConfirmation: a spoken confirmation needs an active press', () => {
+  const press = (state: ConfirmationState | undefined, now: number) =>
+    decideConfirmation({ phrase: null, classifier: classifier('confirm'), buttonPressed: true, readback: READBACK, state, now });
+  const tv = ['confirm purchase', 'buy it now', 'place the order', 'yes buy it'];
+
+  it.each(tv)('%j with no press never confirms and says how to confirm', async (u) => {
+    const c = classifier('confirm');
+    for (const capture of ['open', undefined] as const) {
+      const d = await decideConfirmation({ phrase: u, classifier: c, buttonPressed: false, capture, readback: READBACK, now: T0 });
+      expect(d.outcome).toBe('needs_press');
+      expect(d.state).toEqual(initialConfirmationState('rb-hash-1'));
+      expect(d.say).toBe("Nothing is paid yet. To pay by voice, hold the Talk button while you say 'confirm purchase'. Or press Confirm.");
+    }
+    // The model is never asked, so it cannot agree its way into a payment.
+    expect(c.calls).toEqual([]);
+  });
+
+  it('held and typed confirmations still count', async () => {
+    for (const capture of ['held', 'typed'] as const) {
+      const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, capture, readback: READBACK, now: T0 });
+      expect(d.outcome).toBe('confirmed');
+      expect(d.evidence?.key1).toMatchObject({ source: 'phrase', capture });
+    }
+  });
+
+  it('after Confirm was pressed for this readback, a spoken confirmation counts with the press as key 1', async () => {
+    const first = await press(undefined, T0);
+    const d = await decideConfirmation({ phrase: 'confirm purchase', classifier: classifier('confirm'), buttonPressed: false, capture: 'open', readback: READBACK, state: first.state, now: T0 + 2000 });
+    expect(d.outcome).toBe('confirmed');
+    expect(d.evidence?.key1).toMatchObject({ source: 'button', at: T0, capture: 'open' });
+    expect(d.evidence?.key2.source).toBe('classifier');
+  });
+
+  it('a press made for an earlier readback does not let open speech confirm a new one', async () => {
+    const first = await press(undefined, T0);
+    const d = await decideConfirmation({
+      phrase: 'confirm purchase',
+      classifier: classifier('confirm'),
+      buttonPressed: false,
+      capture: 'open',
+      readback: { ...READBACK, textHash: 'rb-hash-2' },
+      state: first.state,
+      now: T0 + 2000,
+    });
+    expect(d.outcome).toBe('needs_press');
+  });
+
+  it('hold, cancel and change still work without a press', async () => {
+    const opts = { classifier: classifier('confirm'), buttonPressed: false, capture: 'open' as const, readback: READBACK, now: T0 };
+    expect((await decideConfirmation({ ...opts, phrase: 'wait' })).outcome).toBe('hold');
+    expect((await decideConfirmation({ ...opts, phrase: 'cancel' })).outcome).toBe('cancel');
+    expect((await decideConfirmation({ ...opts, phrase: 'make it two' })).outcome).toBe('change');
   });
 });

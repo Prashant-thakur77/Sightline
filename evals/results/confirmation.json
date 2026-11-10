@@ -1,8 +1,8 @@
 {
   "suite": "confirmation",
   "title": "Spoken purchase confirmation",
-  "ranAt": "2026-11-09T13:26:39.274Z",
-  "gitSha": "73ce251",
+  "ranAt": "2026-11-10T14:47:05.810Z",
+  "gitSha": "df0a5e8",
   "headlines": [
     {
       "id": "heldout-false-confirm",
@@ -27,24 +27,34 @@
     {
       "id": "heldout-false-reject",
       "label": "Intended confirmations the matcher rejects, held-out utterances",
-      "value": "39 of 71 (54.9%)",
-      "baseline": "naive keyword match: 23 of 71",
-      "interval": "95% Wilson 43.4%–66.0%",
+      "value": "35 of 71 (49.3%)",
+      "baseline": "before: 39 of 71 (54.9%); naive: 23 of 71",
+      "interval": "95% Wilson 38.0%–60.7%",
       "n": 71,
       "script": "evals/confirmation/run.ts",
       "negative": true,
-      "note": "Strict by design; each reject is answered with how to confirm. Plain English confirmations rejected: 1 of 30; other languages: 17 of 17; misheard words: 15 of 15."
+      "note": "\"Before\" is from the run of 2026-11-09T13:26:39.274Z at git 73ce251 (evals/confirmation/before.json). Target was under 10%; not reached. Phrases were widened only from the development fixture's rejected cases (development rejects 26 of 74 before, 17 of 74 now). Plain English confirmations rejected: 0 of 30; polite requests: 4 of 9; other languages: 16 of 17; misheard words: 15 of 15. The development fixture has no misheard words, so nothing was added for them. Each reject is answered with how to confirm."
     },
     {
       "id": "transcript-identical",
-      "label": "Background speech or misrecognition that yields an exact allowed phrase",
-      "value": "6 of 6 confirmed by key 1",
-      "baseline": "naive keyword match: 5 of 6",
-      "interval": "95% Wilson 61.0%–100.0%",
+      "label": "Background speech or misrecognition that yields an exact allowed phrase, with the press rule",
+      "value": "3 of 6 confirmed",
+      "baseline": "before: 6 of 6 (text alone); naive: 5 of 6",
+      "interval": "95% Wilson 18.8%–81.2%",
       "n": 6,
       "script": "evals/confirmation/run.ts",
       "negative": true,
-      "note": "A text check cannot tell \"confirm purchase\" from a TV or a dropped \"don't\". Push-to-talk limits this; the classifier sees the same text."
+      "note": "\"Before\" is from the run of 2026-11-09T13:26:39.274Z at git 73ce251 (evals/confirmation/before.json). Background speech arrives with no press: 0 of 3 confirmed, 3 of 3 told how to confirm. Misrecognitions of the buyer's own words, spoken while holding Talk: 3 of 3 confirmed. The press rule cannot catch those, and key 2 sees the same text."
+    },
+    {
+      "id": "background-no-press",
+      "label": "All background speech arriving with no press, two-key state machine with key 2 always agreeing",
+      "value": "0 of 42 confirmed",
+      "baseline": "key 1 text alone: 3 of 42",
+      "interval": "95% Wilson 0.0%–8.4%",
+      "n": 42,
+      "script": "evals/confirmation/run.ts",
+      "note": "Held-out 0 of 25, development 0 of 17. The press is what the client reports and the server enforces; a TV speaking while the buyer holds Talk is not covered."
     },
     {
       "id": "combined-false-confirm",
@@ -57,7 +67,9 @@
     }
   ],
   "limitations": [
-    "Plain-English intended confirmations rejected on the held-out set (1 of 30): \"checkout\" (extra_words). Each gets the reply telling the buyer to say \"confirm purchase\"; widening the phrase list would have to keep the false-confirm count at zero.",
+    "Other languages: only phrases from the development fixture were added, and only next to a confirmation phrase (\"haan, confirm\", \"sí, compra\", \"confirmar compra\"). A bare foreign yes (\"sí\", \"haan\", \"oui\") stays rejected, as a bare English \"yes\" does, and non-Latin scripts stay rejected.",
+    "The press rule trusts the client to report whether Talk was held. The server treats a missing report as not pressed; a modified client could still claim a press.",
+    "Plain-English intended confirmations rejected on the held-out set: 0 of 30. The rejects left are polite forms not in the development fixture, other languages and misheard words.",
     "Key 2 (the model classifier) not run: needs ANTHROPIC_API_KEY. Every number is for key 1 alone. A spoken confirmation needs both keys, so the two-key false-confirm rate cannot be higher than key 1's; the state machine was also run with key 2 stubbed to always agree and produced the same false confirms as key 1 alone.",
     "Held-out utterances were written by an author who had read the matcher source and the development fixture. They were held out from tuning, not written blind by a third party.",
     "Text transcripts only. No audio and no real speech recogniser: the misrecognitions are hand-written imitations.",
@@ -65,6 +77,7 @@
   ],
   "details": {
     "design": {
+      "pressRule": "A spoken phrase is key 1 only when captured while Talk was held, typed, or said after Confirm was pressed for this readback. The client sends capture; the server treats a missing value as not pressed.",
       "keys": "Key 1: deterministic phrase matcher (matchConfirmationPhrase) or the Confirm button. Key 2: a model classifier that must also label the same utterance \"confirm\". Button-only path: two deliberate presses at least 500 ms apart.",
       "stateMachine": "decideConfirmation in packages/agent/src/confirm.ts; hold, cancel and change always win; questions, conditionals, reported speech, hesitation and other languages veto even a button press.",
       "key2Status": "not run: needs ANTHROPIC_API_KEY"
@@ -79,7 +92,69 @@
     ],
     "sources": {
       "dev": "packages/agent/test/fixtures/confirmations.json",
-      "heldout": "evals/confirmation/heldout.json"
+      "heldout": "evals/confirmation/heldout.json",
+      "before": "evals/confirmation/before.json"
+    },
+    "before": {
+      "source": "evals/results/confirmation.json as written by evals/confirmation/run.ts before the press rule and the widened phrases",
+      "ranAt": "2026-11-09T13:26:39.274Z",
+      "gitSha": "73ce251",
+      "heldoutFalseReject": "39 of 71 (54.9%)",
+      "heldoutFalseConfirm": "0 of 140",
+      "devFalseReject": "26 of 74",
+      "transcriptIdentical": "6 of 6 confirmed by key 1"
+    },
+    "pressRule": {
+      "heldout": {
+        "background": {
+          "n": 25,
+          "confirmed": 0,
+          "key1TextAloneConfirms": 3,
+          "exactPhrase": {
+            "n": 3,
+            "confirmed": 0,
+            "toldHowToConfirm": 3
+          }
+        },
+        "misheardHeld": {
+          "n": 3,
+          "confirmed": 3,
+          "rows": [
+            {
+              "utterance": "confirm purchase",
+              "note": "speaker said 'don't confirm purchase'; the recogniser dropped 'don't'",
+              "outcome": "confirmed"
+            },
+            {
+              "utterance": "buy now",
+              "note": "speaker said 'bye now' to a family member",
+              "outcome": "confirmed"
+            },
+            {
+              "utterance": "yes buy it",
+              "note": "speaker said 'yes, but I need to think'; the recogniser cut the tail",
+              "outcome": "confirmed"
+            }
+          ]
+        }
+      },
+      "dev": {
+        "background": {
+          "n": 17,
+          "confirmed": 0,
+          "key1TextAloneConfirms": 0,
+          "exactPhrase": {
+            "n": 0,
+            "confirmed": 0,
+            "toldHowToConfirm": 0
+          }
+        },
+        "misheardHeld": {
+          "n": 0,
+          "confirmed": 0,
+          "rows": []
+        }
+      }
     },
     "heldout": {
       "size": 217,
@@ -96,33 +171,15 @@
         },
         "falseReject": {
           "n": 71,
-          "k": 39,
-          "rate": "54.9%",
+          "k": 35,
+          "rate": "49.3%",
           "interval": [
-            0.4340106587147449,
-            0.6595203882517588
+            0.38005150511212876,
+            0.6065869167497993
           ],
           "items": [
             {
-              "utterance": "checkout",
-              "category": "clear_confirm",
-              "decision": "none",
-              "reason": "extra_words"
-            },
-            {
-              "utterance": "could you confirm the purchase please",
-              "category": "polite",
-              "decision": "none",
-              "reason": "question"
-            },
-            {
               "utterance": "would you place the order for me",
-              "category": "polite",
-              "decision": "none",
-              "reason": "question"
-            },
-            {
-              "utterance": "can you buy it for me",
               "category": "polite",
               "decision": "none",
               "reason": "question"
@@ -330,18 +387,12 @@
               "category": "other_language",
               "decision": "none",
               "reason": "extra_words"
-            },
-            {
-              "utterance": "theek hai, buy it",
-              "category": "other_language",
-              "decision": "none",
-              "reason": "other_language"
             }
           ]
         },
         "decisions": {
-          "confirm": 38,
-          "none": 125,
+          "confirm": 42,
+          "none": 121,
           "cancel": 33,
           "hold": 19,
           "change": 2
@@ -1010,7 +1061,7 @@
       "byCategory": {
         "clear_confirm": {
           "n": 30,
-          "key1Confirms": 29,
+          "key1Confirms": 30,
           "naiveConfirms": 25,
           "intents": {
             "confirm": 30
@@ -1018,7 +1069,7 @@
         },
         "polite": {
           "n": 12,
-          "key1Confirms": 3,
+          "key1Confirms": 5,
           "naiveConfirms": 9,
           "intents": {
             "confirm": 9,
@@ -1044,7 +1095,7 @@
         },
         "other_language": {
           "n": 23,
-          "key1Confirms": 0,
+          "key1Confirms": 1,
           "naiveConfirms": 7,
           "intents": {
             "confirm": 17,
@@ -1136,10 +1187,10 @@
         }
       },
       "falseRejectsByCategory": {
-        "clear_confirm": "1 of 30",
-        "polite": "6 of 9",
+        "clear_confirm": "0 of 30",
+        "polite": "4 of 9",
         "asr_error": "15 of 15",
-        "other_language": "17 of 17"
+        "other_language": "16 of 17"
       }
     },
     "dev": {
@@ -1157,11 +1208,11 @@
         },
         "falseReject": {
           "n": 74,
-          "k": 26,
-          "rate": "35.1%",
+          "k": 17,
+          "rate": "23.0%",
           "interval": [
-            0.252381884912968,
-            0.46499237382649816
+            0.14867187110841973,
+            0.33746314478151873
           ],
           "items": [
             {
@@ -1199,42 +1250,6 @@
               "category": "affirmative_only",
               "decision": "none",
               "reason": "affirmative_only"
-            },
-            {
-              "utterance": "get it for me",
-              "category": "indirect_confirm",
-              "decision": "none",
-              "reason": "unrecognised"
-            },
-            {
-              "utterance": "take my money",
-              "category": "indirect_confirm",
-              "decision": "none",
-              "reason": "unrecognised"
-            },
-            {
-              "utterance": "checkout",
-              "category": "indirect_confirm",
-              "decision": "none",
-              "reason": "extra_words"
-            },
-            {
-              "utterance": "can you confirm the purchase",
-              "category": "polite_question",
-              "decision": "none",
-              "reason": "question"
-            },
-            {
-              "utterance": "could you buy it for me",
-              "category": "polite_question",
-              "decision": "none",
-              "reason": "question"
-            },
-            {
-              "utterance": "would you place the order please",
-              "category": "polite_question",
-              "decision": "none",
-              "reason": "question"
             },
             {
               "utterance": "sí",
@@ -1279,25 +1294,7 @@
               "reason": "other_language"
             },
             {
-              "utterance": "sí, compra",
-              "category": "other_language",
-              "decision": "none",
-              "reason": "other_language"
-            },
-            {
               "utterance": "ja, bitte",
-              "category": "other_language",
-              "decision": "none",
-              "reason": "other_language"
-            },
-            {
-              "utterance": "confirmar compra",
-              "category": "other_language",
-              "decision": "none",
-              "reason": "other_language"
-            },
-            {
-              "utterance": "haan, confirm",
               "category": "other_language",
               "decision": "none",
               "reason": "other_language"
@@ -1323,8 +1320,8 @@
           ]
         },
         "decisions": {
-          "confirm": 48,
-          "none": 83,
+          "confirm": 57,
+          "none": 74,
           "cancel": 29,
           "hold": 24,
           "change": 16
@@ -1754,7 +1751,7 @@
         },
         "indirect_confirm": {
           "n": 7,
-          "key1Confirms": 4,
+          "key1Confirms": 7,
           "naiveConfirms": 3,
           "intents": {
             "confirm": 7
@@ -1771,7 +1768,7 @@
         },
         "polite_question": {
           "n": 3,
-          "key1Confirms": 0,
+          "key1Confirms": 3,
           "naiveConfirms": 2,
           "intents": {
             "confirm": 3
@@ -1852,7 +1849,7 @@
         },
         "other_language": {
           "n": 16,
-          "key1Confirms": 0,
+          "key1Confirms": 3,
           "naiveConfirms": 2,
           "intents": {
             "confirm": 14,
@@ -1871,10 +1868,10 @@
       "falseRejectsByCategory": {
         "clear_confirm": "0 of 32",
         "filler_confirm": "0 of 12",
-        "indirect_confirm": "3 of 7",
+        "indirect_confirm": "0 of 7",
         "affirmative_only": "6 of 6",
-        "polite_question": "3 of 3",
-        "other_language": "14 of 14"
+        "polite_question": "0 of 3",
+        "other_language": "11 of 14"
       }
     },
     "combined": {
@@ -2565,7 +2562,7 @@
         {
           "key2Stub": "confirm",
           "falseConfirms": "0 of 140",
-          "intendedConfirmed": "32 of 71"
+          "intendedConfirmed": "36 of 71"
         },
         {
           "key2Stub": "not_confirm",
@@ -2577,7 +2574,7 @@
         {
           "key2Stub": "confirm",
           "falseConfirms": "0 of 126",
-          "intendedConfirmed": "48 of 74"
+          "intendedConfirmed": "57 of 74"
         },
         {
           "key2Stub": "not_confirm",

@@ -191,6 +191,8 @@ function request(w: World, r: RequestSpec): void {
         phrase: r.phrase ?? null,
         classifier: key2Stub,
         buttonPressed: r.button,
+        // Spoken while holding Talk; this suite tests duplicates, not the press rule.
+        capture: 'held',
         readback: { text: p.row.text, textHash: p.row.textHash, total: p.cart.totals.total },
         state: seen,
         now: T0 + decideAt,

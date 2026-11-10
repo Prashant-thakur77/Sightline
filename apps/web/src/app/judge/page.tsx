@@ -4,6 +4,7 @@ import { tables } from '@sightline/db';
 import { PRODUCT_NAME } from '@sightline/core';
 import { SiteFooter, SiteHeader } from '@/components/shell/site-chrome';
 import { SpeechViewer } from '@/components/a11y/speech-viewer';
+import { ScrollRegion } from '@/components/a11y/scroll-region';
 import { REPO_URL, VIDEO_URL } from '@/lib/links';
 import { loadSuites } from '@/server/stats';
 import { featuredHeadlines } from '@/server/headlines';
@@ -284,7 +285,7 @@ export default async function Judge() {
           {hooks.length === 0 ? (
             <p>No PayPal messages yet on this server. Run the whole lifecycle above and they arrive within a minute.</p>
           ) : (
-            <div className="table-scroll" role="region" aria-label="Webhook log, scrolls sideways" tabIndex={0}>
+            <ScrollRegion label="Webhook log" className="table-scroll">
               <table className="hooks-table">
                 <caption className="sr-only">Latest PayPal webhooks: what happened, PayPal’s event name, signature check and time.</caption>
                 <thead>
@@ -306,7 +307,7 @@ export default async function Judge() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollRegion>
           )}
         </section>
 

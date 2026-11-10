@@ -209,12 +209,22 @@ export function Conversation({
     announce(v ? 'Single-key shortcuts on.' : 'Single-key shortcuts off. Use Alt and Shift with the key.', { source: 'settings' });
   };
 
+  /**
+   * Push-to-talk state, for the server's confirmation rule: words count as pressed ("held") only
+   * when Talk (pointer, touch, Space or Enter) was held down for them. Words from Talk left
+   * listening are sent as "open", and the server never lets them confirm a purchase on their own.
+   */
+  const holding = useRef(false);
+  const releasedFromHold = useRef(false);
+
   const speech = useSpeechInput(
     (heard) => {
+      const capture = holding.current || releasedFromHold.current ? 'held' : 'open';
+      releasedFromHold.current = false;
       // Said once, before the reply, so a misheard word is caught before it matters. The
       // transcript already shows what was sent, so the echo is not added there.
       if (heardEchoOn()) announce(`I heard: ${heard.trim().replace(/[.!?]+$/, '')}.`, { source: 'microphone' });
-      void send({ text: heard, source: 'voice' });
+      void send({ text: heard, source: 'voice', capture });
     },
     (msg) => announce(msg, { politeness: 'assertive', source: 'microphone' }),
   );
@@ -247,11 +257,23 @@ export function Conversation({
     }, MIC_OPEN_DELAY_MS);
   }, [announce, cancelArming, speech, stopSpeaking]);
 
-  /** Stop and send what was heard; before the microphone opened, nothing was heard or sent. */
-  const stopListening = useCallback(() => {
-    if (cancelArming()) announce('Nothing was sent. Hold Talk a moment longer before you speak.', { source: 'microphone' });
-    else speech.stop();
-  }, [announce, cancelArming, speech]);
+  /**
+   * Stop and send what was heard; before the microphone opened, nothing was heard or sent.
+   * `held` is true when this stop is the release of a hold, so the words are sent as pressed.
+   */
+  const stopListening = useCallback(
+    (held = false) => {
+      holding.current = false;
+      if (cancelArming()) {
+        releasedFromHold.current = false;
+        announce('Nothing was sent. Hold Talk a moment longer before you speak.', { source: 'microphone' });
+      } else {
+        releasedFromHold.current = held;
+        speech.stop();
+      }
+    },
+    [announce, cancelArming, speech],
+  );
 
   const micOn = speech.listening || arming;
 
@@ -267,6 +289,8 @@ export function Conversation({
   }, [micOn, startListening, stopListening]);
   /** The pointer press in progress on Talk: when it began, and whether it started listening. */
   const press = useRef<{ at: number; started: boolean } | null>(null);
+  /** The same for Space or Enter on the Talk button, so a keyboard can hold to talk too. */
+  const keyPress = useRef<{ at: number; started: boolean } | null>(null);
   const lastKeyPress = useRef(0);
 
   useEffect(() => {
@@ -275,6 +299,8 @@ export function Conversation({
         stopSpeaking();
         const wasArming = cancelArming();
         if (speech.listening || wasArming) {
+          holding.current = false;
+          releasedFromHold.current = false;
           speech.cancel();
           setToggleTalk(false);
           announce('Stopped listening. Nothing was sent.', { source: 'microphone' });
@@ -300,6 +326,7 @@ export function Conversation({
       if (!chord && singleKeys && e.code === 'Space' && !e.repeat && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLAnchorElement)) {
         e.preventDefault();
         spaceDown.current = true;
+        holding.current = true;
         startListening();
         return;
       }
@@ -334,7 +361,7 @@ export function Conversation({
     const up = (e: KeyboardEvent) => {
       if (e.code === 'Space' && spaceDown.current) {
         spaceDown.current = false;
-        stopListening();
+        stopListening(true);
       }
     };
     window.addEventListener('keydown', down);
@@ -440,6 +467,7 @@ export function Conversation({
                   return;
                 }
                 press.current = { at: performance.now(), started: true };
+                holding.current = true;
                 setToggleTalk(false);
                 startListening();
               }}
@@ -453,24 +481,48 @@ export function Conversation({
                   setToggleTalk(false);
                 } else if (performance.now() - p.at < 350) {
                   // A quick tap (and touch screen readers' double tap) starts listening and keeps it on.
+                  holding.current = false;
                   setToggleTalk(true);
                 } else {
-                  // Held, then released: send.
-                  stopListening();
+                  // Held, then released: send as pressed.
+                  stopListening(true);
                 }
               }}
               onPointerLeave={() => {
                 if (press.current?.started && !toggleTalk) {
                   press.current = null;
-                  stopListening();
+                  stopListening(true);
                 }
               }}
               onKeyDown={(e) => {
-                if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
-                  e.preventDefault();
-                  lastKeyPress.current = performance.now();
-                  toggleListening();
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
+                if (e.repeat) return;
+                lastKeyPress.current = performance.now();
+                if (micOn) {
+                  // A second press while listening sends.
+                  keyPress.current = { at: performance.now(), started: false };
+                  stopListening();
+                  setToggleTalk(false);
+                  return;
                 }
+                // Held down like the pointer: release after a moment to send as pressed.
+                keyPress.current = { at: performance.now(), started: true };
+                holding.current = true;
+                setToggleTalk(false);
+                startListening();
+              }}
+              onKeyUp={(e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                const k = keyPress.current;
+                keyPress.current = null;
+                if (!k?.started) return;
+                lastKeyPress.current = performance.now();
+                if (performance.now() - k.at < 350) {
+                  // A quick press starts listening and keeps it on; press again to send.
+                  holding.current = false;
+                  setToggleTalk(true);
+                } else stopListening(true);
               }}
               onClick={(e) => {
                 // Assistive tech that sends only a click (no pointer or key events) has detail 0.
@@ -489,7 +541,7 @@ export function Conversation({
             </button>
             {/* Read as the Talk button's description; hidden here so browse mode doesn't read it twice. */}
             <p id="talk-hint" className="hint talk-hint" aria-hidden="true">
-              Hold to talk, or press once to start and again to send.
+              Hold to talk, or press once to start and again to send. To pay by voice, hold it while you say 'confirm purchase'.
             </p>
             {ownVoice.enabled && (
               <button type="button" className="btn" onClick={() => stopSpeaking()}>

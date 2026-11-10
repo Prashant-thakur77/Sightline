@@ -12,6 +12,7 @@ export {
 } from './gate';
 export { EnvGuard } from './guards/env';
 export { ReadbackBindingGuard } from './guards/readbackBinding';
+export { IntentGuard, MAX_BUYER_UTTERANCES } from './guards/intent';
 export { CatalogPriceGuard, MAX_LINE_QUANTITY } from './guards/catalogPrice';
 export { PayeeGuard } from './guards/payee';
 export { BudgetGuard } from './guards/budget';

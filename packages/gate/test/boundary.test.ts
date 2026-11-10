@@ -29,6 +29,8 @@ describe('boundary: model output cannot move money', () => {
         // Read-only checks; each returns a GuardResult and cannot permit a payment on its own.
         'EnvGuard',
         'ReadbackBindingGuard',
+        'IntentGuard',
+        'MAX_BUYER_UTTERANCES',
         'CatalogPriceGuard',
         'PayeeGuard',
         'BudgetGuard',

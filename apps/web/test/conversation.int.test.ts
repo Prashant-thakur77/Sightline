@@ -136,6 +136,27 @@ describe.skipIf(!hasDb)('conversation turns (Postgres)', () => {
     await say(userId, 'cancel');
   });
 
+  it('spoken "confirm purchase" with Talk not held never pays and says how to confirm', async () => {
+    const userId = await personas.ensurePersona('maya');
+    await say(userId, 'navy crew-neck sweater');
+    const rb = await conductor.handleTurn(userId, { action: 'buy', index: 1 });
+    expect(rb.card?.kind).toBe('readback');
+    const needPress = "Nothing is paid yet. To pay by voice, hold the Talk button while you say 'confirm purchase'. Or press Confirm.";
+    // A TV in the room, or Talk left listening: no capture, or capture 'open'.
+    for (const capture of [undefined, 'open'] as const) {
+      const heard = await conductor.handleTurn(userId, { text: 'confirm purchase', source: 'voice', ...(capture ? { capture } : {}) });
+      expect(heard.say).toBe(needPress);
+      expect(heard.card?.kind).toBe('readback');
+      expect(heard.phase).toBe('readback');
+    }
+    // Held: the phrase counts as key 1 and goes on to the second key (no model here, so it asks for a press).
+    const held = await conductor.handleTurn(userId, { text: 'confirm purchase', source: 'voice', capture: 'held' });
+    expect(held.say).not.toBe(needPress);
+    expect(held.say).toMatch(/press Confirm twice/);
+    expect(await rt.db().select().from(t.orders).where(eq(t.orders.userId, userId))).toHaveLength(0);
+    await say(userId, 'cancel');
+  });
+
   it('"why these" names what differs instead of three identical reasons', async () => {
     const userId = await personas.ensurePersona('maya');
     const found = await say(userId, 'navy crew-neck sweater');

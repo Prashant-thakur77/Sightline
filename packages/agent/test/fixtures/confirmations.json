@@ -375,37 +375,37 @@
   "utterance": "get it for me",
   "category": "indirect_confirm",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "take my money",
   "category": "indirect_confirm",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "checkout",
   "category": "indirect_confirm",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "can you confirm the purchase",
   "category": "polite_question",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "could you buy it for me",
   "category": "polite_question",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "would you place the order please",
   "category": "polite_question",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "don't confirm",
@@ -1101,7 +1101,7 @@
   "utterance": "sí, compra",
   "category": "other_language",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "ja, bitte",
@@ -1113,13 +1113,13 @@
   "utterance": "confirmar compra",
   "category": "other_language",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "haan, confirm",
   "category": "other_language",
   "intent": "confirm",
-  "expected": "none"
+  "expected": "confirm"
  },
  {
   "utterance": "हाँ",

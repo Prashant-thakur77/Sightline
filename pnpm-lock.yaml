@@ -529,6 +529,9 @@ importers:
 
   packages/gate:
     dependencies:
+      '@sightline/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@sightline/core':
         specifier: workspace:*
         version: link:../core

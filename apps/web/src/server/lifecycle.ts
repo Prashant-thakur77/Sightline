@@ -75,7 +75,7 @@ export async function* runLifecycle(): AsyncGenerator<StepEvent> {
   if (rb.card?.kind !== 'readback') return;
 
   yield { step: 3, title: 'She confirms twice: her words, then an independent check', status: 'running' };
-  let paid = await handleTurn(userId, { text: 'confirm purchase', source: 'voice' });
+  let paid = await handleTurn(userId, { text: 'confirm purchase', source: 'voice', capture: 'held' });
   // Without the model classifier, two separate Confirm presses stand in for key 2.
   for (let i = 0; i < 3 && paid.card?.kind === 'readback'; i++) {
     yield { step: 3, title: 'She confirms twice: her words, then an independent check', status: 'running', spoken: paid.say };

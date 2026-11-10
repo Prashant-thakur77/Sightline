@@ -49,7 +49,7 @@ describe('runGate', () => {
 
     expect(d.allowed).toBe(false);
     expect(d.firstFailure).toMatchObject({ guard: 'PayeeGuard', code: 'PAYEE_MISMATCH' });
-    expect(d.results.map((r) => r.guard)).toEqual(GUARD_ORDER.slice(0, 4));
+    expect(d.results.map((r) => r.guard)).toEqual(GUARD_ORDER.slice(0, 5));
     expect(limits).not.toHaveBeenCalled();
     expect(d.reservation).toBeUndefined();
     expect(d.receipt.body.firstFailure).toBe('PAYEE_MISMATCH');
@@ -78,7 +78,7 @@ describe('runGate', () => {
     const cart = makeCart([{ snapshot: makeSnapshot({ capturedAt: ago(16 * MIN) }), quantity: 1 }]);
     const d = await runGate(makeIntent({ cart }), makePorts(), OPTS);
     expect(d.firstFailure).toMatchObject({ guard: 'FreshnessGuard', code: 'SNAPSHOT_STALE' });
-    expect(d.results).toHaveLength(8);
+    expect(d.results).toHaveLength(GUARD_ORDER.length);
   });
 });
 

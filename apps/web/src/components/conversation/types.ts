@@ -89,7 +89,11 @@ export interface TurnResponse {
 }
 
 export type TurnRequest =
-  | { text: string; source: 'voice' | 'keyboard' }
+  /**
+   * capture (voice only): 'held' when the words were spoken while Talk was held down; 'open' when
+   * Talk was left listening. The server treats a missing value as 'open', which never confirms on its own.
+   */
+  | { text: string; source: 'voice' | 'keyboard'; capture?: 'held' | 'open' }
   | { action: 'choose'; index: number }
   | { action: 'details'; index: number }
   | { action: 'buy'; index: number }

@@ -29,6 +29,7 @@ import {
   type MoneyAsk,
   type RankedOption as AgentRankedOption,
   type ShopperResult,
+  type UtteranceCapture,
   domainOf,
   joinAnd,
   joinOr,
@@ -145,6 +146,8 @@ interface Ctx {
   state: ConvoState;
   prefs: typeof tables.preferences.$inferSelect;
   out: { messages: ChatMessage[] };
+  /** How this turn's words were captured. Only held or typed words can be key 1 of a confirmation. */
+  capture: UtteranceCapture;
 }
 
 type Reply = Omit<TurnResponse, 'messages' | 'phase'>;
@@ -758,6 +761,9 @@ function payStepSummary(o: PayOutcome, cart: Cart, vaulted: boolean): string {
 /** Gate refusals whose wording promises to read the order again. */
 const REREAD_AFTER = new Set([
   'CART_TAMPERED',
+  // Not what the buyer asked for: the refusal says so, then the readback is read again, so the
+  // buyer can say "charcoal is fine" (a change) or ask for what they wanted.
+  'INTENT_MISMATCH',
   'CONFIRMATION_OUT_OF_ORDER',
   'CONFIRMATION_EXPIRED',
   'INVALID_QUANTITY',
@@ -787,6 +793,7 @@ async function confirmStep(ctx: Ctx, opts: { phrase?: string; button: boolean; a
     readback: { text: rb.text, textHash: rb.textHash, total: cart.totals.total },
     state: ctx.state.confirm ?? initialConfirmationState(rb.textHash),
     now: Date.now(),
+    capture: ctx.capture,
   });
   ctx.state.confirm = decision.state;
   const vaulted = rb.text.includes('saved PayPal');
@@ -1777,6 +1784,7 @@ async function loadContext(userId: string): Promise<Ctx> {
     state: { phase: 'browsing', ...(convo!.state as Partial<ConvoState>) } as ConvoState,
     prefs: prefs!,
     out: { messages: [] },
+    capture: 'open',
   };
 }
 
@@ -1820,7 +1828,10 @@ export async function handleTurn(userId: string, req: TurnRequest): Promise<Turn
   let reply: Reply;
   if ('text' in req) {
     const text = req.text.trim().slice(0, 500);
-    await record(ctx, 'user', text, { source: req.source });
+    // Typed words were sent with a key press. Spoken words count as pressed only when the client
+    // says Talk was held down for them; anything else is open-microphone speech.
+    ctx.capture = req.source === 'keyboard' ? 'typed' : req.capture === 'held' ? 'held' : 'open';
+    await record(ctx, 'user', text, { source: req.source, capture: ctx.capture });
     const parsed = parseIntent(text, grammarCtx(ctx));
     reply = await route(ctx, parsed, text, asked);
   } else {
