@@ -10,10 +10,10 @@ Anything simulated says so in its row or its limitations. `duplicates-sandbox` a
 | Shopping agent | 8 | 1 | 2026-11-09T13:26:42.295Z | 73ce251 |
 | Checkout Barrier Index | 7 | 0 | 2026-11-08T22:07:14.585Z | 0406ebe |
 | Spoken purchase confirmation | 6 | 2 | 2026-11-10T14:52:22.511Z | 4c740eb |
-| Duplicate orders, sandbox ledger | 7 | 1 | 2026-11-10T15:49:25.319Z | uncommitted |
+| Duplicate orders, sandbox ledger | 7 | 1 | 2026-11-12T17:30:42.373Z | aaed85c |
 | Duplicate orders | 8 | 2 | 2026-11-10T14:52:29.948Z | 4c740eb |
 | Grounded answers | 8 | 2 | 2026-11-10T14:52:17.065Z | 4c740eb |
-| Adversarial listings (red team), sandbox ledger | 4 | 0 | 2026-11-10T15:55:10.335Z | uncommitted |
+| Adversarial listings (red team), sandbox ledger | 4 | 0 | 2026-11-12T17:00:51.152Z | 20f062e |
 | Adversarial listings (red team) | 6 | 0 | 2026-11-10T14:52:22.950Z | 4c740eb |
 | SightBench: two looks before "sure", quoted reads, one extra photo | 9 | 3 | 2026-11-10T17:58:40.374Z | ac84cb2 |
 | SightBench: does the parcel match? | 13 | 6 | 2026-11-10T17:58:40.128Z | ac84cb2 |
@@ -151,7 +151,7 @@ Full per-item data: `evals/results/confirmation.json` (`details`).
 
 ## Duplicate orders, sandbox ledger
 
-Suite `duplicates-sandbox` · ran 2026-11-10T15:49:25.319Z · git uncommitted
+Suite `duplicates-sandbox` · ran 2026-11-12T17:30:42.373Z · git aaed85c
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
@@ -261,7 +261,7 @@ Full per-item data: `evals/results/grounding.json` (`details`).
 
 ## Adversarial listings (red team), sandbox ledger
 
-Suite `redteam-sandbox` · ran 2026-11-10T15:55:10.335Z · git uncommitted
+Suite `redteam-sandbox` · ran 2026-11-12T17:00:51.152Z · git 20f062e
 
 | Result | Value | Baseline | Interval | n | Script |
 | --- | --- | --- | --- | --- | --- |
