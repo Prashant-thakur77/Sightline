@@ -55,7 +55,7 @@ One announcer for every live update, focus that moves only when it should, full 
 ## Numbers (scripts in the repo, each with a baseline)
 
 - **Camera check** on a frozen 420-pair test set, with the rule now deployed (a "sure" mismatch needs two independent looks; model reads must point at what they saw): when it gives an answer it's right **82 of 85** times (CLIP image similarity: 215 of 420). False alarms on matching items: **1 of 210** (CLIP: 189 of 210). It flags 66 of 210 wrong items and says "not sure" on 335 of 420. When it is not sure it asks for one extra photo; with that photo simulated (a render of the same item), it flags 124 of 210, false alarms stay at 1 of 210, and "not sure" drops to 241 of 420.
-- **Payments:** **0 of 60** breaches across adversarial listings (naive agent: 50 of 60); **0 of 100** duplicate orders across retry scenarios (10 of 100 before we fixed lost PayPal answers).
+- **Payments, counted from PayPal's own sandbox records:** **0 of 60** breaches across adversarial listings (a naive agent, simulated: 50 of 60); **0 of 100** duplicate orders across retry scenarios; after a lost PayPal reply, **0 of 20** second orders (10 of 20 before the fix). Every authorization these runs made was voided.
 - **Confirmation:** **0 of 140** false confirmations on held-out phrases (keyword matching: 82 of 140).
 - **Grounding:** the guard catches **68 of 75** invented claims and wrongly blocks **0 of 75** true answers; on a held-out set written before the date and negation checks, it catches **29 of 32** and wrongly blocks **0 of 32**.
 - **Store agent:** **0 of 370** replies outside the store's policy; **0 of 218** invented facts reach the buyer; **0 of 40** vague claims reach the buyer as plain statements.
@@ -68,6 +68,10 @@ One announcer for every live update, focus that moves only when it should, full 
 - Buyer-side dispute creation by API is limited to approved partners, so we made the common case need no dispute: the money waits for the check.
 - Saying "nothing was charged" after a lost PayPal response leads to double charges. Our duplicates eval found it; we now keep the hold, block repeats and reconcile with the same request id.
 - Live sandbox runs found that PayPal rejects item image links without a file extension, which blocked every purchase of a Channel3 product. Such images are now left out.
+
+## Accomplishments we're proud of
+
+The whole lifecycle runs live against the PayPal sandbox from one button on /judge, and it finished 10 runs out of 10 in a row. The payment safety numbers are counted from PayPal's own records, not our logs. Every page passes axe with no violations in three themes, and the Speech Viewer lets a sighted judge follow what a blind shopper hears.
 
 ## What we learned
 
