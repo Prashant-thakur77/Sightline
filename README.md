@@ -8,6 +8,8 @@ Tools exist that help blind people find products. Checking what arrived and gett
 
 **Live:** https://sightline.prashantthakur.dev (no sign-up; judges start at `/judge`).
 
+**Demo video (2:59):** https://youtu.be/NHhY-IyEk_M
+
 All payments run on the **PayPal sandbox**. The app refuses to start if it is pointed anywhere else.
 
 ## The 60-second path for judges

@@ -6,6 +6,10 @@ Every number below is read from `evals/results/*.json` (rendered in `evals/RESUL
 
 Shopping on your own when you can't see the screen: hear exactly what you pay, let PayPal hold the money, check the parcel with your phone, and get your money back from the store's own agent.
 
+## Demo video
+
+https://youtu.be/NHhY-IyEk_M
+
 ## Live demo
 
 https://sightline.prashantthakur.dev (PayPal sandbox; no sign-up). Judges start at `/judge`: one press runs the whole lifecycle against the PayPal sandbox in under a minute.
