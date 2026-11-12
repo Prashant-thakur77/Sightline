@@ -29,7 +29,7 @@ export const StoryClip: React.FC<{ c: Clip; dur: number; dim?: number }> = ({ c,
       </AbsoluteFill>
     );
   }
-  // Placeholder: the same action drawn, labelled, so the cut reads before the real clip arrives.
+  // No footage yet: the same action as an ink drawing in the product's own style (an illustration, not pretend footage).
   return (
     <AbsoluteFill>
       <Paper tone="warm" />
@@ -37,10 +37,6 @@ export const StoryClip: React.FC<{ c: Clip; dur: number; dim?: number }> = ({ c,
         <Drawing name={c.drawing} at={2} per={2} w={c.drawing === "parcel" || c.drawing === "closed" ? 980 : 620} />
       </AbsoluteFill>
       {dim > 0 && <AbsoluteFill style={{ background: `rgba(243,246,251,${dim})` }} />}
-      <div style={{ position: "absolute", left: 56, bottom: 150, fontFamily: T.font, fontSize: 28, color: T.ink, background: "#fff",
-        border: `2.5px dashed ${T.ink}`, borderRadius: 14, padding: "10px 18px", opacity: ramp(f, 4, 10) }}>
-        <b>Placeholder · owner clip {c.id}</b> · {c.action}
-      </div>
     </AbsoluteFill>
   );
 };
